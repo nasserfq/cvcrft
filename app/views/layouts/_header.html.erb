@@ -1,0 +1,58 @@
+<!-- Background Accents -->
+<div class="pointer-events-none fixed inset-0 -z-10">
+  <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
+  <div class="absolute top-1/3 -right-20 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
+  <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+</div>
+<!-- Header -->
+<header class="sticky top-0 z-30 backdrop-blur-xl bg-white/70 border-b border-slate-200/60">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between py-3">
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <div class="grid place-items-center w-9 h-9 rounded-lg bg-emerald-500 text-white ring-1 ring-black/5 shadow-sm">
+          <span class="text-sm font-semibold tracking-tight">CV</span>
+        </div>
+        <span class="text-slate-900 text-base font-semibold tracking-tight">CV•AI</span>
+      </div>
+      <!-- Nav -->
+      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
+        <a href="#features" class="hover:text-emerald-600 transition-colors">الميزات</a>
+        <a href="#how" class="hover:text-emerald-600 transition-colors">كيف يعمل</a>
+        <a href="#pricing" class="hover:text-emerald-600 transition-colors">الأسعار</a>
+        <a href="#faq" class="hover:text-emerald-600 transition-colors">الأسئلة الشائعة</a>
+      </nav>
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span>تسجيل الدخول</span>
+        </a>
+        <a href="/resumes/new" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:shadow transition-colors">
+          <i data-lucide="wand-2" class="w-4 h-4"></i>
+          <span>ابدأ الآن مجانًا</span>
+        </a>
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200/60" style="display: none;">
+      <div class="py-4 space-y-3">
+        <a href="#features" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الميزات</a>
+        <a href="#how" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">كيف يعمل</a>
+        <a href="#pricing" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الأسعار</a>
+        <a href="#faq" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الأسئلة الشائعة</a>
+        <div class="pt-3 border-t border-slate-200/60">
+          <a href="#" class="block px-3 py-2 text-sm text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors">
+            <i data-lucide="log-in" class="w-4 h-4 inline mr-2"></i>
+            تسجيل الدخول
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>

@@ -1,0 +1,11 @@
+{
+  "entrypoints/application.jsx": {
+    "file": "assets/application-CvACygx-.js",
+    "name": "entrypoints/application.jsx",
+    "src": "entrypoints/application.jsx",
+    "isEntry": true,
+    "imports": [
+      "entrypoints/application.jsx"
+    ]
+  }
+}

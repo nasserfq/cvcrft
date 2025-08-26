@@ -1,0 +1,53 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">My Resumes</h1>
+    <%= link_to 'Create New Resume', new_resume_path, class: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
+  </div>
+
+  <% if @resumes.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @resumes.each do |resume| %>
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+          <div class="flex justify-between items-start mb-4">
+            <h2 class="text-xl font-semibold text-gray-900"><%= resume.title %></h2>
+            <div class="flex space-x-2">
+              <%= link_to 'View', resume_path(resume), class: 'text-blue-600 hover:text-blue-800' %>
+              <%= link_to 'Edit', edit_resume_path(resume), class: 'text-green-600 hover:text-green-800' %>
+            </div>
+          </div>
+          
+          <p class="text-gray-600 mb-3"><%= resume.target_position %></p>
+          
+          <div class="mb-4">
+            <p class="text-sm text-gray-500 mb-2">ATS Score</p>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="bg-green-600 h-2 rounded-full" style="width: <%= resume.ats_score || 0 %>%"></div>
+            </div>
+            <span class="text-sm text-gray-600"><%= resume.ats_score || 0 %>%</span>
+          </div>
+          
+          <div class="flex justify-between text-sm text-gray-500">
+            <span><%= pluralize(resume.work_experiences.count, 'experience') %></span>
+            <span><%= pluralize(resume.skills.count, 'skill') %></span>
+          </div>
+          
+          <div class="mt-4 flex space-x-2">
+            <%= link_to 'Generate PDF', generate_pdf_resume_path(resume), class: 'bg-green-600 hover:bg-green-700 text-white text-sm py-1 px-3 rounded' %>
+            <%= link_to 'Optimize ATS', optimize_ats_resume_path(resume), method: :post, class: 'bg-purple-600 hover:bg-purple-700 text-white text-sm py-1 px-3 rounded' %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-12">
+      <div class="text-gray-400 mb-4">
+        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No resumes yet</h3>
+      <p class="text-gray-500 mb-6">Get started by creating your first professional resume.</p>
+      <%= link_to 'Create Your First Resume', new_resume_path, class: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
+    </div>
+  <% end %>
+</div>

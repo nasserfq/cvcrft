@@ -1,0 +1,2 @@
+module AiTranslationsHelper
+end

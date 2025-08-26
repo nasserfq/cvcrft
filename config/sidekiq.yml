@@ -1,0 +1,24 @@
+:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 5) %>
+:queues:
+  - [default, 1]
+  - [mailers, 2]
+  - [ai_translations, 3]
+  - [pdf_generation, 4]
+
+:max_retries: 3
+:retry_interval: 60
+
+# Redis configuration
+:redis:
+  :url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/0") %>
+  :namespace: cvcraft
+
+# Logging
+:logfile: log/sidekiq.log
+:loglevel: info
+
+# Process monitoring
+:pidfile: tmp/pids/sidekiq.pid
+
+# Memory monitoring
+:memory_threshold: 1_000_000_000 # 1GB 

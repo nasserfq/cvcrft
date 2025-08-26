@@ -1,0 +1,1758 @@
+import React, { useState } from "react";
+
+const MultiStepResumeForm = ({ resume, onSubmit }) => {
+ console.log("MultiStepResumeForm component rendered with props:", {
+  resume,
+  onSubmit,
+ });
+
+ const [currentStep, setCurrentStep] = useState(1);
+ const [formData, setFormData] = useState({
+  complete_name: resume?.complete_name || "",
+  email: resume?.email || "",
+  phone_number: resume?.phone_number || "",
+  city: resume?.city || "",
+  country: resume?.country || "",
+  professional_summary: resume?.professional_summary || "",
+  education: resume?.education || [
+   {
+    degree: "",
+    institution: "",
+    start_date: "",
+    end_date: "",
+    gpa: "",
+    is_current: false,
+   },
+  ],
+  work_experience: resume?.work_experience || [
+   {
+    job_title: "",
+    company: "",
+    start_date: "",
+    end_date: "",
+    is_current: false,
+    responsibilities: [""],
+   },
+  ],
+  skills: resume?.skills || [
+   {
+    category: "",
+    skill_names: [""],
+   },
+  ],
+  certifications: resume?.certifications || [
+   {
+    name: "",
+    organization: "",
+    date: "",
+   },
+  ],
+  languages: resume?.languages || [
+   {
+    language: "",
+    proficiency: "",
+   },
+  ],
+  // Add more fields as needed
+ });
+
+ const totalSteps = 8;
+
+ const handleInputChange = (field, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   [field]: value,
+  }));
+ };
+
+ const handleEducationChange = (index, field, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   education: prev.education.map((edu, i) =>
+    i === index ? { ...edu, [field]: value } : edu
+   ),
+  }));
+ };
+
+ const addEducation = () => {
+  setFormData((prev) => ({
+   ...prev,
+   education: [
+    ...prev.education,
+    {
+     degree: "",
+     institution: "",
+     start_date: "",
+     end_date: "",
+     gpa: "",
+     is_current: false,
+    },
+   ],
+  }));
+ };
+
+ const removeEducation = (index) => {
+  if (formData.education.length > 1) {
+   setFormData((prev) => ({
+    ...prev,
+    education: prev.education.filter((_, i) => i !== index),
+   }));
+  }
+ };
+
+ const handleWorkExperienceChange = (index, field, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   work_experience: prev.work_experience.map((work, i) =>
+    i === index ? { ...work, [field]: value } : work
+   ),
+  }));
+ };
+
+ const addWorkExperience = () => {
+  setFormData((prev) => ({
+   ...prev,
+   work_experience: [
+    ...prev.work_experience,
+    {
+     job_title: "",
+     company: "",
+     start_date: "",
+     end_date: "",
+     is_current: false,
+     responsibilities: [""],
+    },
+   ],
+  }));
+ };
+
+ const removeWorkExperience = (index) => {
+  if (formData.work_experience.length > 1) {
+   setFormData((prev) => ({
+    ...prev,
+    work_experience: prev.work_experience.filter((_, i) => i !== index),
+   }));
+  }
+ };
+
+ const addResponsibility = (workIndex) => {
+  setFormData((prev) => ({
+   ...prev,
+   work_experience: prev.work_experience.map((work, i) =>
+    i === workIndex
+     ? { ...work, responsibilities: [...work.responsibilities, ""] }
+     : work
+   ),
+  }));
+ };
+
+ const removeResponsibility = (workIndex, respIndex) => {
+  if (formData.work_experience[workIndex].responsibilities.length > 1) {
+   setFormData((prev) => ({
+    ...prev,
+    work_experience: prev.work_experience.map((work, i) =>
+     i === workIndex
+      ? {
+         ...work,
+         responsibilities: work.responsibilities.filter(
+          (_, j) => j !== respIndex
+         ),
+        }
+      : work
+    ),
+   }));
+  }
+ };
+
+ const handleResponsibilityChange = (workIndex, respIndex, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   work_experience: prev.work_experience.map((work, i) =>
+    i === workIndex
+     ? {
+        ...work,
+        responsibilities: work.responsibilities.map((resp, j) =>
+         j === respIndex ? value : resp
+        ),
+       }
+     : work
+   ),
+  }));
+ };
+
+ const handleSkillsChange = (index, field, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   skills: prev.skills.map((skill, i) =>
+    i === index ? { ...skill, [field]: value } : skill
+   ),
+  }));
+ };
+
+ const addSkills = () => {
+  setFormData((prev) => ({
+   ...prev,
+   skills: [
+    ...prev.skills,
+    {
+     category: "",
+     skill_names: [""],
+    },
+   ],
+  }));
+ };
+
+ const removeSkills = (index) => {
+  if (formData.skills.length > 1) {
+   setFormData((prev) => ({
+    ...prev,
+    skills: prev.skills.filter((_, i) => i !== index),
+   }));
+  }
+ };
+
+ const addSkillName = (skillIndex) => {
+  setFormData((prev) => ({
+   ...prev,
+   skills: prev.skills.map((skill, i) =>
+    i === skillIndex
+     ? { ...skill, skill_names: [...skill.skill_names, ""] }
+     : skill
+   ),
+  }));
+ };
+
+ const removeSkillName = (skillIndex, nameIndex) => {
+  if (formData.skills[skillIndex].skill_names.length > 1) {
+   setFormData((prev) => ({
+    ...prev,
+    skills: prev.skills.map((skill, i) =>
+     i === skillIndex
+      ? {
+         ...skill,
+         skill_names: skill.skill_names.filter((_, j) => j !== nameIndex),
+        }
+      : skill
+    ),
+   }));
+  }
+ };
+
+ const handleSkillNameChange = (skillIndex, nameIndex, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   skills: prev.skills.map((skill, i) =>
+    i === skillIndex
+     ? {
+        ...skill,
+        skill_names: skill.skill_names.map((name, j) =>
+         j === nameIndex ? value : name
+        ),
+       }
+     : skill
+   ),
+  }));
+ };
+
+ const handleCertificationChange = (index, field, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   certifications: prev.certifications.map((cert, i) =>
+    i === index ? { ...cert, [field]: value } : cert
+   ),
+  }));
+ };
+
+ const addCertification = () => {
+  setFormData((prev) => ({
+   ...prev,
+   certifications: [
+    ...prev.certifications,
+    {
+     name: "",
+     organization: "",
+     date: "",
+    },
+   ],
+  }));
+ };
+
+ const removeCertification = (index) => {
+  if (formData.certifications.length > 1) {
+   setFormData((prev) => ({
+    ...prev,
+    certifications: prev.certifications.filter((_, i) => i !== index),
+   }));
+  }
+ };
+
+ const handleLanguageChange = (index, field, value) => {
+  setFormData((prev) => ({
+   ...prev,
+   languages: prev.languages.map((lang, i) =>
+    i === index ? { ...lang, [field]: value } : lang
+   ),
+  }));
+ };
+
+ const addLanguage = () => {
+  setFormData((prev) => ({
+   ...prev,
+   languages: [
+    ...prev.languages,
+    {
+     language: "",
+     proficiency: "",
+    },
+   ],
+  }));
+ };
+
+ const removeLanguage = (index) => {
+  if (formData.languages.length > 1) {
+   setFormData((prev) => ({
+    ...prev,
+    languages: prev.languages.filter((_, i) => i !== index),
+   }));
+  }
+ };
+
+ const nextStep = () => {
+  if (currentStep < totalSteps) {
+   setCurrentStep(currentStep + 1);
+  }
+ };
+
+ const prevStep = () => {
+  if (currentStep > 1) {
+   setCurrentStep(currentStep - 1);
+  }
+ };
+
+ const handleSubmit = (e) => {
+  e.preventDefault();
+
+  // Validate form data
+  if (
+   !formData.complete_name ||
+   !formData.email ||
+   !formData.phone_number ||
+   !formData.city ||
+   !formData.country ||
+   !formData.professional_summary
+  ) {
+   alert("يرجى ملء جميع الحقول المطلوبة");
+   return;
+  }
+
+  // Validate education data
+  const hasValidEducation = formData.education.some(
+   (edu) => edu.degree && edu.institution && edu.start_date
+  );
+
+  if (!hasValidEducation) {
+   alert("يرجى إدخال معلومات تعليمية واحدة على الأقل");
+   return;
+  }
+
+  // Validate work experience data
+  const hasValidWorkExperience = formData.work_experience.some(
+   (work) => work.job_title && work.company && work.start_date
+  );
+
+  if (!hasValidWorkExperience) {
+   alert("يرجى إدخال خبرة عمل واحدة على الأقل");
+   return;
+  }
+
+  // Validate skills data
+  const hasValidSkills = formData.skills.some(
+   (skill) =>
+    skill.category && skill.skill_names.some((name) => name.trim() !== "")
+  );
+
+  if (!hasValidSkills) {
+   alert("يرجى إدخال مهارة واحدة على الأقل");
+   return;
+  }
+
+  // Validate certifications data
+  const hasValidCertifications = formData.certifications.some(
+   (cert) => cert.name && cert.organization && cert.date
+  );
+
+  if (!hasValidCertifications) {
+   alert("يرجى إدخال شهادة واحدة على الأقل");
+   return;
+  }
+
+  // Validate languages data
+  const hasValidLanguages = formData.languages.some(
+   (lang) => lang.language && lang.proficiency
+  );
+
+  if (!hasValidLanguages) {
+   alert("يرجى إدخال لغة واحدة على الأقل");
+   return;
+  }
+
+  console.log("Form data before submission:", formData);
+
+  if (onSubmit) {
+   // Transform form data to Rails parameter format
+   const railsFormData = {
+    "resume[complete_name]": formData.complete_name,
+    "resume[email]": formData.email,
+    "resume[phone_number]": formData.phone_number,
+    "resume[city]": formData.city,
+    "resume[country]": formData.country,
+    "resume[professional_summary]": formData.professional_summary,
+    "resume[education_attributes]": formData.education.map((edu) => ({
+     degree: edu.degree,
+     institution: edu.institution,
+     start_date: edu.start_date,
+     end_date: edu.end_date,
+     gpa: edu.gpa,
+     is_current: edu.is_current,
+    })),
+    "resume[work_experience_attributes]": formData.work_experience.map(
+     (work) => ({
+      job_title: work.job_title,
+      company: work.company,
+      start_date: work.start_date,
+      end_date: work.end_date,
+      is_current: work.is_current,
+      responsibilities: work.responsibilities.filter(
+       (resp) => resp.trim() !== ""
+      ),
+     })
+    ),
+    "resume[skills_attributes]": formData.skills.map((skill) => ({
+     category: skill.category,
+     skill_names: skill.skill_names.filter((name) => name.trim() !== ""),
+    })),
+    "resume[certifications_attributes]": formData.certifications.map(
+     (cert) => ({
+      name: cert.name,
+      organization: cert.organization,
+      date: cert.date,
+     })
+    ),
+    "resume[languages_attributes]": formData.languages.map((lang) => ({
+     language: lang.language,
+     proficiency: lang.proficiency,
+    })),
+   };
+
+   console.log("Rails form data:", railsFormData);
+   onSubmit(railsFormData);
+  }
+ };
+
+ const renderStep1 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">المعلومات الشخصية</h2>
+    <p className="text-slate-600 mt-2">ابدأ بإدخال معلوماتك الشخصية الأساسية</p>
+   </div>
+
+   <div className="grid gap-6">
+    <div>
+     <label className="block text-sm font-semibold text-slate-900 mb-2">
+      الاسم الكامل
+     </label>
+     <input
+      type="text"
+      value={formData.complete_name}
+      onChange={(e) => handleInputChange("complete_name", e.target.value)}
+      className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+      placeholder="مثال: Ahmed Ali"
+     />
+     <p className="mt-2 text-xs text-slate-500">أدخل اسمك الكامل</p>
+    </div>
+
+    <div>
+     <label className="block text-sm font-semibold text-slate-900 mb-2">
+      البريد الإلكتروني
+     </label>
+     <input
+      type="email"
+      value={formData.email}
+      onChange={(e) => handleInputChange("email", e.target.value)}
+      className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+      placeholder="مثال: ahmed@example.com"
+     />
+     <p className="mt-2 text-xs text-slate-500">
+      البريد الإلكتروني المستخدم للتواصل المهني
+     </p>
+    </div>
+
+    <div>
+     <label className="block text-sm font-semibold text-slate-900 mb-2">
+      رقم الهاتف
+     </label>
+     <input
+      type="tel"
+      value={formData.phone_number}
+      onChange={(e) => handleInputChange("phone_number", e.target.value)}
+      className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+      placeholder="مثال: +966501234567"
+     />
+     <p className="mt-2 text-xs text-slate-500">رقم الهاتف مع رمز الدولة</p>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+     <div>
+      <label className="block text-sm font-semibold text-slate-900 mb-2">
+       المدينة
+      </label>
+      <input
+       type="text"
+       value={formData.city}
+       onChange={(e) => handleInputChange("city", e.target.value)}
+       className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+       placeholder="مثال: Riyadh"
+      />
+     </div>
+
+     <div>
+      <label className="block text-sm font-semibold text-slate-900 mb-2">
+       الدولة
+      </label>
+      <input
+       type="text"
+       value={formData.country}
+       onChange={(e) => handleInputChange("country", e.target.value)}
+       className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+       placeholder="مثال: Saudi Arabia"
+      />
+     </div>
+    </div>
+   </div>
+  </div>
+ );
+
+ const renderStep2 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">الملخص المهني</h2>
+    <p className="text-slate-600 mt-2">
+     اكتب ملخصًا مهنيًا مقنعًا يصف خبراتك وأهدافك
+    </p>
+   </div>
+
+   <div className="space-y-4">
+    <div>
+     <label className="block text-sm font-semibold text-slate-900 mb-2">
+      الملخص المهني
+     </label>
+     <textarea
+      value={formData.professional_summary}
+      onChange={(e) =>
+       handleInputChange("professional_summary", e.target.value)
+      }
+      rows={6}
+      className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all resize-none"
+      placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية. يجب أن يكون 3-5 جمل تعطي صورة واضحة عنك كمحترف..."
+     />
+     <p className="mt-2 text-xs text-slate-500">
+      اكتب 3-5 جمل تصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية
+     </p>
+    </div>
+
+    <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
+     <h3 className="text-sm font-medium text-slate-900 mb-2">
+      نصائح لكتابة ملخص مهني قوي:
+     </h3>
+     <ul className="text-xs text-slate-600 space-y-1">
+      <li>• ابدأ بوصف هويتك المهنية وعدد سنوات الخبرة</li>
+      <li>• اذكر مجالات التخصص والمهارات الرئيسية</li>
+      <li>• وضح الإنجازات المهمة والمسؤوليات</li>
+      <li>• اختتم بأهدافك الوظيفية القصيرة والطويلة المدى</li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ );
+
+ const renderStep3 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M12 14l9-5-9-5-9 5 9 5z"
+      />
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-1.998 12.078 12.078 0 01.665-6.479L12 14z"
+      />
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-1.998 12.078 12.078 0 01.665-6.479L12 14z"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">التعليم</h2>
+    <p className="text-slate-600 mt-2">
+     أضف معلوماتك التعليمية والخبرات الأكاديمية
+    </p>
+   </div>
+
+   <div className="space-y-6">
+    {formData.education.map((edu, index) => (
+     <div
+      key={index}
+      className="p-6 border border-slate-200/60 rounded-lg bg-slate-50/50"
+     >
+      <div className="flex items-center justify-between mb-4">
+       <h3 className="text-lg font-semibold text-slate-900">
+        {index === 0 ? "التعليم الأساسي" : `التعليم الإضافي ${index + 1}`}
+       </h3>
+       {formData.education.length > 1 && (
+        <button
+         type="button"
+         onClick={() => removeEducation(index)}
+         className="text-red-500 hover:text-red-700 text-sm font-medium"
+        >
+         حذف
+        </button>
+       )}
+      </div>
+
+      <div className="grid gap-4">
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         الدرجة العلمية
+        </label>
+        <input
+         type="text"
+         value={edu.degree}
+         onChange={(e) =>
+          handleEducationChange(index, "degree", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: Bachelor of Computer Science"
+        />
+       </div>
+
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         المؤسسة التعليمية
+        </label>
+        <input
+         type="text"
+         value={edu.institution}
+         onChange={(e) =>
+          handleEducationChange(index, "institution", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: King Fahd University of Petroleum and Minerals"
+        />
+       </div>
+
+       <div className="grid grid-cols-2 gap-4">
+        <div>
+         <label className="block text-sm font-semibold text-slate-900 mb-2">
+          تاريخ البداية
+         </label>
+         <input
+          type="month"
+          value={edu.start_date}
+          onChange={(e) =>
+           handleEducationChange(index, "start_date", e.target.value)
+          }
+          className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         />
+        </div>
+
+        <div>
+         <label className="block text-sm font-semibold text-slate-900 mb-2">
+          تاريخ النهاية
+         </label>
+         <input
+          type="month"
+          value={edu.end_date}
+          onChange={(e) =>
+           handleEducationChange(index, "end_date", e.target.value)
+          }
+          className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+          disabled={edu.is_current}
+         />
+        </div>
+       </div>
+
+       <div className="grid grid-cols-2 gap-4">
+        <div>
+         <label className="block text-sm font-semibold text-slate-900 mb-2">
+          التقدير (GPA)
+         </label>
+         <input
+          type="text"
+          value={edu.gpa}
+          onChange={(e) => handleEducationChange(index, "gpa", e.target.value)}
+          className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+          placeholder="مثال: 3.8/4.0"
+         />
+        </div>
+
+        <div className="flex items-center">
+         <label className="flex items-center cursor-pointer">
+          <input
+           type="checkbox"
+           checked={edu.is_current}
+           onChange={(e) =>
+            handleEducationChange(index, "is_current", e.target.checked)
+           }
+           className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+          />
+          <span className="ml-2 text-sm text-slate-700">دراسة حالية</span>
+         </label>
+        </div>
+       </div>
+      </div>
+     </div>
+    ))}
+
+    <div className="text-center">
+     <button
+      type="button"
+      onClick={addEducation}
+      className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 text-emerald-700 px-6 py-3 text-sm font-medium hover:bg-emerald-200 transition-all"
+     >
+      <svg
+       className="w-4 h-4"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24"
+      >
+       <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+       />
+      </svg>
+      إضافة تعليم آخر
+     </button>
+    </div>
+   </div>
+  </div>
+ );
+
+ const renderStep4 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">الخبرات العملية</h2>
+    <p className="text-slate-600 mt-2">أضف خبراتك العملية السابقة والحالية</p>
+   </div>
+
+   <div className="space-y-6">
+    {formData.work_experience.map((work, index) => (
+     <div
+      key={index}
+      className="p-6 border border-slate-200/60 rounded-lg bg-slate-50/50"
+     >
+      <div className="flex items-center justify-between mb-4">
+       <h3 className="text-lg font-semibold text-slate-900">
+        {index === 0 ? "الخبرة الأساسية" : `الخبرة الإضافية ${index + 1}`}
+       </h3>
+       {formData.work_experience.length > 1 && (
+        <button
+         type="button"
+         onClick={() => removeWorkExperience(index)}
+         className="text-red-500 hover:text-red-700 text-sm font-medium"
+        >
+         حذف
+        </button>
+       )}
+      </div>
+
+      <div className="grid gap-4">
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         المسمى الوظيفي
+        </label>
+        <input
+         type="text"
+         value={work.job_title}
+         onChange={(e) =>
+          handleWorkExperienceChange(index, "job_title", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: Technical Product Manager"
+        />
+       </div>
+
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         اسم الشركة
+        </label>
+        <input
+         type="text"
+         value={work.company}
+         onChange={(e) =>
+          handleWorkExperienceChange(index, "company", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: Advanced Technology Company"
+        />
+       </div>
+
+       <div className="grid grid-cols-2 gap-4">
+        <div>
+         <label className="block text-sm font-semibold text-slate-900 mb-2">
+          تاريخ البداية
+         </label>
+         <input
+          type="month"
+          value={work.start_date}
+          onChange={(e) =>
+           handleWorkExperienceChange(index, "start_date", e.target.value)
+          }
+          className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         />
+        </div>
+
+        <div>
+         <label className="block text-sm font-semibold text-slate-900 mb-2">
+          تاريخ النهاية
+         </label>
+         <input
+          type="month"
+          value={work.end_date}
+          onChange={(e) =>
+           handleWorkExperienceChange(index, "end_date", e.target.value)
+          }
+          className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+          disabled={work.is_current}
+         />
+        </div>
+       </div>
+
+       <div className="flex items-center">
+        <label className="flex items-center cursor-pointer">
+         <input
+          type="checkbox"
+          checked={work.is_current}
+          onChange={(e) =>
+           handleWorkExperienceChange(index, "is_current", e.target.checked)
+          }
+          className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+         />
+         <span className="ml-2 text-sm text-slate-700">عمل حالي</span>
+        </label>
+       </div>
+
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         المسؤوليات والإنجازات
+        </label>
+        <div className="space-y-3">
+         {work.responsibilities.map((resp, respIndex) => (
+          <div key={respIndex} className="flex items-center gap-2">
+           <span className="text-emerald-600 text-lg">•</span>
+           <input
+            type="text"
+            value={resp}
+            onChange={(e) =>
+             handleResponsibilityChange(index, respIndex, e.target.value)
+            }
+            className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-4 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+            placeholder="اكتب مسؤولية أو إنجاز..."
+           />
+           {work.responsibilities.length > 1 && (
+            <button
+             type="button"
+             onClick={() => removeResponsibility(index, respIndex)}
+             className="text-red-500 hover:text-red-700 text-sm font-medium"
+            >
+             حذف
+            </button>
+           )}
+          </div>
+         ))}
+         <button
+          type="button"
+          onClick={() => addResponsibility(index)}
+          className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+         >
+          + إضافة مسؤولية أخرى
+         </button>
+        </div>
+       </div>
+      </div>
+     </div>
+    ))}
+
+    <div className="text-center">
+     <button
+      type="button"
+      onClick={addWorkExperience}
+      className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 text-emerald-700 px-6 py-3 text-sm font-medium hover:bg-emerald-200 transition-all"
+     >
+      <svg
+       className="w-4 h-4"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24"
+      >
+       <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+       />
+      </svg>
+      إضافة خبرة عمل أخرى
+     </button>
+    </div>
+   </div>
+  </div>
+ );
+
+ const renderStep5 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">المهارات</h2>
+    <p className="text-slate-600 mt-2">أضف مهاراتك التقنية والشخصية</p>
+   </div>
+
+   <div className="space-y-6">
+    {formData.skills.map((skill, index) => (
+     <div
+      key={index}
+      className="p-6 border border-slate-200/60 rounded-lg bg-slate-50/50"
+     >
+      <div className="flex items-center justify-between mb-4">
+       <h3 className="text-lg font-semibold text-slate-900">
+        {index === 0 ? "فئة المهارات الأساسية" : `فئة المهارات ${index + 1}`}
+       </h3>
+       {formData.skills.length > 1 && (
+        <button
+         type="button"
+         onClick={() => removeSkills(index)}
+         className="text-red-500 hover:text-red-700 text-sm font-medium"
+        >
+         حذف
+        </button>
+       )}
+      </div>
+
+      <div className="grid gap-4">
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         فئة المهارات
+        </label>
+        <input
+         type="text"
+         value={skill.category}
+         onChange={(e) => handleSkillsChange(index, "category", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: Product Management & AI"
+        />
+       </div>
+
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         المهارات
+        </label>
+        <div className="space-y-3">
+         {skill.skill_names.map((skillName, nameIndex) => (
+          <div key={nameIndex} className="flex items-center gap-2">
+           <span className="text-emerald-600 text-lg">•</span>
+           <input
+            type="text"
+            value={skillName}
+            onChange={(e) =>
+             handleSkillNameChange(index, nameIndex, e.target.value)
+            }
+            className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-4 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+            placeholder="اكتب اسم المهارة..."
+           />
+           {skill.skill_names.length > 1 && (
+            <button
+             type="button"
+             onClick={() => removeSkillName(index, nameIndex)}
+             className="text-red-500 hover:text-red-700 text-sm font-medium"
+            >
+             حذف
+            </button>
+           )}
+          </div>
+         ))}
+         <button
+          type="button"
+          onClick={() => addSkillName(index)}
+          className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+         >
+          + إضافة مهارة أخرى
+         </button>
+        </div>
+        <p className="mt-2 text-xs text-slate-500">
+         اكتب المهارات مفصولة بفواصل أو أضف كل مهارة في سطر منفصل
+        </p>
+       </div>
+      </div>
+     </div>
+    ))}
+
+    <div className="text-center">
+     <button
+      type="button"
+      onClick={addSkills}
+      className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 text-emerald-700 px-6 py-3 text-sm font-medium hover:bg-emerald-200 transition-all"
+     >
+      <svg
+       className="w-4 h-4"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24"
+      >
+       <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+       />
+      </svg>
+      إضافة فئة مهارات أخرى
+     </button>
+    </div>
+
+    <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
+     <h3 className="text-sm font-medium text-slate-900 mb-2">
+      أمثلة على فئات المهارات:
+     </h3>
+     <ul className="text-xs text-slate-600 space-y-1">
+      <li>
+       • <strong>Product Management & AI:</strong> Product Management, AI,
+       Strategic Planning, Business Analysis
+      </li>
+      <li>
+       • <strong>Technical Development:</strong> Ruby on Rails, PostgreSQL,
+       Power BI, Data Modeling
+      </li>
+      <li>
+       • <strong>Project Management:</strong> Project Management, Agile
+       Methodologies, Technical Leadership
+      </li>
+      <li>
+       • <strong>Data Science:</strong> Data Science, Python, R, SQL
+      </li>
+      <li>
+       • <strong>Soft Skills:</strong> Innovation, Team Collaboration, Customer
+       Reach
+      </li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ );
+
+ const renderStep6 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">الشهادات</h2>
+    <p className="text-slate-600 mt-2">أضف شهاداتك المهنية والتعليمية</p>
+   </div>
+
+   <div className="space-y-6">
+    {formData.certifications.map((cert, index) => (
+     <div
+      key={index}
+      className="p-6 border border-slate-200/60 rounded-lg bg-slate-50/50"
+     >
+      <div className="flex items-center justify-between mb-4">
+       <h3 className="text-lg font-semibold text-slate-900">
+        {index === 0 ? "الشهادة الأساسية" : `الشهادة الإضافية ${index + 1}`}
+       </h3>
+       {formData.certifications.length > 1 && (
+        <button
+         type="button"
+         onClick={() => removeCertification(index)}
+         className="text-red-500 hover:text-red-700 text-sm font-medium"
+        >
+         حذف
+        </button>
+       )}
+      </div>
+
+      <div className="grid gap-4">
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         اسم الشهادة
+        </label>
+        <input
+         type="text"
+         value={cert.name}
+         onChange={(e) =>
+          handleCertificationChange(index, "name", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: PMP®"
+        />
+       </div>
+
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         المؤسسة المانحة
+        </label>
+        <input
+         type="text"
+         value={cert.organization}
+         onChange={(e) =>
+          handleCertificationChange(index, "organization", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: PMI"
+        />
+       </div>
+
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         تاريخ الحصول
+        </label>
+        <input
+         type="month"
+         value={cert.date}
+         onChange={(e) =>
+          handleCertificationChange(index, "date", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+        />
+       </div>
+      </div>
+     </div>
+    ))}
+
+    <div className="text-center">
+     <button
+      type="button"
+      onClick={addCertification}
+      className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 text-emerald-700 px-6 py-3 text-sm font-medium hover:bg-emerald-200 transition-all"
+     >
+      <svg
+       className="w-4 h-4"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24"
+      >
+       <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+       />
+      </svg>
+      إضافة شهادة أخرى
+     </button>
+    </div>
+
+    <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
+     <h3 className="text-sm font-medium text-slate-900 mb-2">
+      أمثلة على الشهادات:
+     </h3>
+     <ul className="text-xs text-slate-600 space-y-1">
+      <li>
+       • <strong>PMP®</strong> - PMI (Aug 2025)
+      </li>
+      <li>
+       • <strong>Microsoft Certified: Azure AI Engineer Associate</strong> -
+       Microsoft (Jul 2025)
+      </li>
+      <li>
+       • <strong>Data Science</strong> - SDA (Dec 2020)
+      </li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ );
+
+ const renderStep7 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M12 14l9-5-9-5-9 5 9 5z"
+      />
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-1.998 12.078 12.078 0 01.665-6.479L12 14z"
+      />
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-1.998 12.078 12.078 0 01.665-6.479L12 14z"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">اللغات</h2>
+    <p className="text-slate-600 mt-2">أضف اللغات التي تتحدثها ومستواها</p>
+   </div>
+
+   <div className="space-y-6">
+    {formData.languages.map((lang, index) => (
+     <div
+      key={index}
+      className="p-6 border border-slate-200/60 rounded-lg bg-slate-50/50"
+     >
+      <div className="flex items-center justify-between mb-4">
+       <h3 className="text-lg font-semibold text-slate-900">
+        {index === 0 ? "اللغة الأساسية" : `اللغة الإضافية ${index + 1}`}
+       </h3>
+       {formData.languages.length > 1 && (
+        <button
+         type="button"
+         onClick={() => removeLanguage(index)}
+         className="text-red-500 hover:text-red-700 text-sm font-medium"
+        >
+         حذف
+        </button>
+       )}
+      </div>
+
+      <div className="grid gap-4">
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         اللغة
+        </label>
+        <input
+         type="text"
+         value={lang.language}
+         onChange={(e) =>
+          handleLanguageChange(index, "language", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+         placeholder="مثال: Arabic"
+        />
+       </div>
+
+       <div>
+        <label className="block text-sm font-semibold text-slate-900 mb-2">
+         مستوى الإتقان
+        </label>
+        <select
+         value={lang.proficiency}
+         onChange={(e) =>
+          handleLanguageChange(index, "proficiency", e.target.value)
+         }
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+        >
+         <option value="">اختر مستوى الإتقان</option>
+         <option value="Native">أمية</option>
+         <option value="Fluent">إتقان كامل</option>
+         <option value="Advanced">متقدم</option>
+         <option value="Intermediate">متوسط</option>
+         <option value="Beginner">مبتدئ</option>
+        </select>
+       </div>
+      </div>
+     </div>
+    ))}
+
+    <div className="text-center">
+     <button
+      type="button"
+      onClick={addLanguage}
+      className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 text-emerald-700 px-6 py-3 text-sm font-medium hover:bg-emerald-200 transition-all"
+     >
+      <svg
+       className="w-4 h-4"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24"
+      >
+       <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+       />
+      </svg>
+      إضافة لغة أخرى
+     </button>
+    </div>
+
+    <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
+     <h3 className="text-sm font-medium text-slate-900 mb-2">
+      أمثلة على اللغات:
+     </h3>
+     <ul className="text-xs text-slate-600 space-y-1">
+      <li>
+       • <strong>Arabic:</strong> Native, Fluent
+      </li>
+      <li>
+       • <strong>English:</strong> Fluent, Advanced
+      </li>
+      <li>
+       • <strong>French:</strong> Advanced
+      </li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ );
+
+ const renderStep8 = () => (
+  <div className="space-y-6">
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg
+      className="w-8 h-8"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+     >
+      <path
+       strokeLinecap="round"
+       strokeLinejoin="round"
+       strokeWidth={2}
+       d="M15 6v12a3 3 0 103-3H6a3 3 0 103 3V6a3 3 0 10-3 3h18a3 3 0 10-3-3"
+      />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">
+     معاينة السيرة الذاتية
+    </h2>
+    <p className="text-slate-600 mt-2">
+     تصفح السيرة الذاتية التي قمت بإنشائها للتأكد من أن كل المعلومات صحيحة.
+    </p>
+   </div>
+
+   {/* Resume Preview */}
+   <div
+    className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 max-w-4xl mx-auto"
+    dir="ltr"
+   >
+    {/* Header */}
+    <div className="text-center mb-8 pb-4 border-b-2 border-blue-300">
+     <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      {formData.complete_name || "Your Name"}
+     </h1>
+     <div className="text-gray-600 text-sm">
+      {formData.email && `${formData.email}`}
+      {formData.phone_number && ` | ${formData.phone_number}`}
+      {formData.city &&
+       formData.country &&
+       ` | ${formData.city}, ${formData.country}`}
+     </div>
+    </div>
+
+    {/* Professional Summary */}
+    {formData.professional_summary && (
+     <div className="mb-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-2 pb-1 border-b border-blue-300 text-left">
+       Professional Summary
+      </h2>
+      <p className="text-gray-700 leading-relaxed text-left">
+       {formData.professional_summary}
+      </p>
+     </div>
+    )}
+
+    {/* Education */}
+    {formData.education.some((edu) => edu.degree && edu.institution) && (
+     <div className="mb-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+       Education
+      </h2>
+      <div className="space-y-3">
+       {formData.education.map(
+        (edu, index) =>
+         edu.degree &&
+         edu.institution && (
+          <div key={index} className="flex justify-between items-start">
+           <div className="text-left">
+            <div className="font-semibold text-gray-900">{edu.degree}</div>
+            <div className="text-gray-600 text-sm">{edu.institution}</div>
+           </div>
+           <div className="text-right text-gray-500 text-sm">
+            {edu.start_date && (
+             <>
+              {edu.start_date}
+              {edu.end_date && !edu.is_current && ` - ${edu.end_date}`}
+              {edu.is_current && " - Present"}
+             </>
+            )}
+            {edu.gpa && <div className="mt-1">(GPA: {edu.gpa})</div>}
+           </div>
+          </div>
+         )
+       )}
+      </div>
+     </div>
+    )}
+
+    {/* Work Experience */}
+    {formData.work_experience.some(
+     (work) => work.job_title && work.company
+    ) && (
+     <div className="mb-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+       Work Experience
+      </h2>
+      <div className="space-y-4">
+       {formData.work_experience.map(
+        (work, index) =>
+         work.job_title &&
+         work.company && (
+          <div key={index} className="mb-4">
+           <div className="flex justify-between items-start mb-2">
+            <div className="text-left font-semibold text-gray-900">
+             {work.job_title}
+            </div>
+            <div className="text-right text-gray-500 text-sm">
+             {work.start_date && (
+              <>
+               {work.start_date}
+               {work.end_date && !work.is_current && ` - ${work.end_date}`}
+               {work.is_current && " - Present"}
+              </>
+             )}
+            </div>
+           </div>
+           <div className="text-left text-gray-600 text-sm mb-2">
+            {work.company}
+           </div>
+           {work.responsibilities.some((resp) => resp.trim()) && (
+            <ul className="list-disc list-inside text-gray-700 text-sm space-y-1 text-left">
+             {work.responsibilities
+              .filter((resp) => resp.trim())
+              .map((resp, respIndex) => (
+               <li key={respIndex}>{resp}</li>
+              ))}
+            </ul>
+           )}
+          </div>
+         )
+       )}
+      </div>
+     </div>
+    )}
+
+    {/* Skills */}
+    {formData.skills.some(
+     (skill) => skill.category && skill.skill_names.some((name) => name.trim())
+    ) && (
+     <div className="mb-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+       Skills
+      </h2>
+      <div className="space-y-2">
+       {formData.skills.map(
+        (skill, index) =>
+         skill.category &&
+         skill.skill_names.some((name) => name.trim()) && (
+          <div key={index} className="mb-2 text-left">
+           <span className="font-semibold text-gray-900">
+            {skill.category}:
+           </span>
+           <span className="text-gray-700 ml-2">
+            {skill.skill_names.filter((name) => name.trim()).join(", ")}
+           </span>
+          </div>
+         )
+       )}
+      </div>
+     </div>
+    )}
+
+    {/* Certificates */}
+    {formData.certifications.some((cert) => cert.name && cert.organization) && (
+     <div className="mb-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+       Certificates
+      </h2>
+      <div className="space-y-2">
+       {formData.certifications.map(
+        (cert, index) =>
+         cert.name &&
+         cert.organization && (
+          <div key={index} className="flex justify-between items-start">
+           <div className="text-left">
+            <span className="font-semibold text-gray-900">{cert.name}</span>
+            <span className="text-gray-600 ml-2">{cert.organization}</span>
+           </div>
+           <span className="text-right text-gray-500 text-sm">{cert.date}</span>
+          </div>
+         )
+       )}
+      </div>
+     </div>
+    )}
+
+    {/* Languages */}
+    {formData.languages.some((lang) => lang.language && lang.proficiency) && (
+     <div className="mb-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+       Languages
+      </h2>
+      <div className="space-y-2">
+       {formData.languages.map(
+        (lang, index) =>
+         lang.language &&
+         lang.proficiency && (
+          <div key={index} className="flex justify-between items-start">
+           <span className="text-left font-semibold text-gray-900">
+            {lang.language}
+           </span>
+           <span className="text-right text-gray-500 text-sm">
+            {lang.proficiency}
+           </span>
+          </div>
+         )
+       )}
+      </div>
+     </div>
+    )}
+   </div>
+  </div>
+ );
+
+ const renderStepContent = () => {
+  switch (currentStep) {
+   case 1:
+    return renderStep1();
+   case 2:
+    return renderStep2();
+   case 3:
+    return renderStep3();
+   case 4:
+    return renderStep4();
+   case 5:
+    return renderStep5();
+   case 6:
+    return renderStep6();
+   case 7:
+    return renderStep7();
+   case 8:
+    return renderStep8();
+   default:
+    return renderStep1();
+  }
+ };
+
+ return (
+  <form
+   onSubmit={handleSubmit}
+   className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm ring-1 ring-black/5"
+  >
+   {/* Progress Bar */}
+   <div className="mb-8">
+    <div className="flex items-center justify-between mb-4">
+     <h1 className="text-2xl font-bold text-slate-900">
+      إنشاء سيرة ذاتية جديدة
+     </h1>
+     <span className="text-sm text-slate-500">
+      الخطوة {currentStep} من {totalSteps}
+     </span>
+    </div>
+    <div className="w-full bg-slate-200 rounded-full h-2">
+     <div
+      className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+      style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+     ></div>
+    </div>
+   </div>
+
+   {/* Step Content */}
+   {renderStepContent()}
+
+   {/* Navigation Buttons */}
+   <div className="flex items-center justify-between pt-6 border-t border-slate-200/60">
+    <div className="flex items-center gap-3">
+     {currentStep > 1 && (
+      <button
+       type="button"
+       onClick={prevStep}
+       className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
+      >
+       <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+       >
+        <path
+         strokeLinecap="round"
+         strokeLinejoin="round"
+         strokeWidth={2}
+         d="M9 5l7 7-7 7"
+        />
+       </svg>
+       السابق
+      </button>
+     )}
+    </div>
+
+    <div className="flex items-center gap-3">
+     <a
+      href="/resumes"
+      className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
+     >
+      <svg
+       className="w-4 h-4"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24"
+      >
+       <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+       />
+      </svg>
+      إلغاء
+     </a>
+
+     {currentStep < totalSteps ? (
+      <button
+       type="button"
+       onClick={nextStep}
+       className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
+      >
+       التالي
+       <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+       >
+        <path
+         strokeLinecap="round"
+         strokeLinejoin="round"
+         strokeWidth={2}
+         d="M15 19l-7-7 7-7"
+        />
+       </svg>
+      </button>
+     ) : (
+      <button
+       type="submit"
+       className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
+      >
+       إنشاء السيرة الذاتية
+       <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+       >
+        <path
+         strokeLinecap="round"
+         strokeLinejoin="round"
+         strokeWidth={2}
+         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+        />
+       </svg>
+      </button>
+     )}
+    </div>
+   </div>
+  </form>
+ );
+};
+
+export default MultiStepResumeForm;
