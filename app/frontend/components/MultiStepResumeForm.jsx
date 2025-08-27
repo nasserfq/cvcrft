@@ -1637,9 +1637,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   <form
    onSubmit={handleSubmit}
    className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-sm ring-1 ring-black/5"
+   dir="rtl"
   >
    {/* Progress Bar */}
-   <div className="mb-8">
+   <div className="mb-8" dir="rtl">
     <div className="flex items-center justify-between mb-4">
      <h1 className="text-2xl font-bold text-slate-900">
       إنشاء سيرة ذاتية جديدة
@@ -1660,7 +1661,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    {renderStepContent()}
 
    {/* Navigation Buttons */}
-   <div className="flex items-center justify-between pt-6 border-t border-slate-200/60">
+   <div
+    className="flex items-center justify-between pt-6 border-t border-slate-200/60"
+    dir="rtl"
+   >
     <div className="flex items-center gap-3">
      {currentStep > 1 && (
       <button
