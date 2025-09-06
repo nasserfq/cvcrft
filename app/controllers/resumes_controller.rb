@@ -20,9 +20,15 @@ class ResumesController < ApplicationController
   def create
     @resume = Resume.new(resume_params)  # Temporarily disabled user association
     if @resume.save
-      redirect_to @resume, notice: 'Resume created successfully!'
+      respond_to do |format|
+        format.html { redirect_to @resume, notice: 'Resume created successfully!' }
+        format.json { render json: @resume, status: :created }
+      end
     else
-      render :new, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @resume.errors }, status: :unprocessable_entity }
+      end
     end
   end
   
@@ -65,6 +71,14 @@ class ResumesController < ApplicationController
   end
   
   def resume_params
-    params.require(:resume).permit(:title, :target_position, :summary, :ats_score, :ats_keywords)
+    params.require(:resume).permit(
+      :complete_name, :email, :phone_number, :city, :country, 
+      :professional_summary, :professional_summary_english,
+      educations_attributes: [:degree, :institution, :start_date, :end_date, :gpa, :is_current],
+      work_experiences_attributes: [:job_title, :company, :start_date, :end_date, :is_current, responsibilities: []],
+      skills_attributes: [:category, skill_names: []],
+      certifications_attributes: [:name, :organization, :date],
+      languages_attributes: [:language, :proficiency]
+    )
   end
 end

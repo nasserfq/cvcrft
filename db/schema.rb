@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_23_225423) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_05_205418) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "ai_translations", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.bigint "resume_id", null: false
+    t.bigint "resume_id"
     t.text "arabic_text"
     t.text "english_text"
     t.string "translation_quality"
@@ -25,12 +25,46 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_23_225423) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "metadata", default: {}
+    t.index ["metadata"], name: "index_ai_translations_on_metadata", using: :gin
     t.index ["resume_id"], name: "index_ai_translations_on_resume_id"
     t.index ["user_id"], name: "index_ai_translations_on_user_id"
   end
 
+  create_table "certifications", force: :cascade do |t|
+    t.bigint "resume_id", null: false
+    t.string "name"
+    t.string "organization"
+    t.text "date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resume_id"], name: "index_certifications_on_resume_id"
+  end
+
+  create_table "educations", force: :cascade do |t|
+    t.bigint "resume_id", null: false
+    t.string "degree"
+    t.string "institution"
+    t.text "start_date"
+    t.text "end_date"
+    t.string "gpa"
+    t.boolean "is_current"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resume_id"], name: "index_educations_on_resume_id"
+  end
+
+  create_table "languages", force: :cascade do |t|
+    t.bigint "resume_id", null: false
+    t.string "language"
+    t.string "proficiency"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resume_id"], name: "index_languages_on_resume_id"
+  end
+
   create_table "resumes", force: :cascade do |t|
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.string "title"
     t.string "target_position"
     t.text "summary"
@@ -38,6 +72,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_23_225423) do
     t.json "ats_keywords"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "professional_summary"
+    t.string "complete_name"
+    t.string "email"
+    t.string "phone_number"
+    t.string "city"
+    t.string "country"
+    t.text "professional_summary_english"
     t.index ["user_id"], name: "index_resumes_on_user_id"
   end
 
@@ -48,6 +89,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_23_225423) do
     t.string "category"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "skill_names"
     t.index ["resume_id"], name: "index_skills_on_resume_id"
   end
 
@@ -62,18 +104,24 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_23_225423) do
     t.bigint "resume_id", null: false
     t.string "company"
     t.string "position"
-    t.date "start_date"
-    t.date "end_date"
+    t.text "start_date"
+    t.text "end_date"
     t.text "arabic_description"
     t.text "english_description"
     t.json "ats_keywords"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "job_title"
+    t.text "responsibilities"
+    t.boolean "is_current"
     t.index ["resume_id"], name: "index_work_experiences_on_resume_id"
   end
 
   add_foreign_key "ai_translations", "resumes"
   add_foreign_key "ai_translations", "users"
+  add_foreign_key "certifications", "resumes"
+  add_foreign_key "educations", "resumes"
+  add_foreign_key "languages", "resumes"
   add_foreign_key "resumes", "users"
   add_foreign_key "skills", "resumes"
   add_foreign_key "work_experiences", "resumes"

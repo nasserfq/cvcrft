@@ -1,0 +1,5 @@
+class AddSkillNamesToSkills < ActiveRecord::Migration[8.0]
+  def change
+    add_column :skills, :skill_names, :text
+  end
+end

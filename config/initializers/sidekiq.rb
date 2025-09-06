@@ -8,16 +8,16 @@ Sidekiq.configure_server do |config|
   # Configure concurrency
   config.concurrency = ENV.fetch('SIDEKIQ_CONCURRENCY', 5).to_i
   
-  # Configure retry
-  config.retry_interval = 60
+  # Configure retry (retry_interval is not available in Sidekiq 8.0.4)
+  # config.retry_interval = 60
   
-  # Configure memory monitoring
-  config.memory_threshold = 1_000_000_000 # 1GB
+  # Configure memory monitoring (memory_threshold is not available in Sidekiq 8.0.4)
+  # config.memory_threshold = 1_000_000_000 # 1GB
   
-  # Configure dead job handling
-  config.death_handlers << ->(job, ex) do
-    Rails.logger.error "Job #{job['class']} failed with error: #{ex.message}"
-  end
+  # Configure dead job handling (death_handlers is not available in Sidekiq 8.0.4)
+  # config.death_handlers << ->(job, ex) do
+  #   Rails.logger.error "Job #{job['class']} failed with error: #{ex.message}"
+  # end
 end
 
 Sidekiq.configure_client do |config|

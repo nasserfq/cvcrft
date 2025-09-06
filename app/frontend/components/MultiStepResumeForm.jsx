@@ -14,6 +14,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   city: resume?.city || "",
   country: resume?.country || "",
   professional_summary: resume?.professional_summary || "",
+  professional_summary_english: resume?.professional_summary_english || "",
+  skills_extracted: resume?.skills_extracted || [],
+  translation_notes: resume?.translation_notes || "",
   education: resume?.education || [
    {
     degree: "",
@@ -55,6 +58,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   ],
   // Add more fields as needed
  });
+
+ const [isTranslating, setIsTranslating] = useState(false);
+ const [translationError, setTranslationError] = useState("");
+ const [isExporting, setIsExporting] = useState(false);
 
  const totalSteps = 8;
 
@@ -295,6 +302,404 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }));
  };
 
+ const translateProfessionalSummary = async () => {
+  if (!formData.professional_summary.trim()) {
+   setTranslationError("يرجى إدخال الملخص المهني أولاً");
+   return;
+  }
+
+  setIsTranslating(true);
+  setTranslationError("");
+
+  try {
+   const response = await fetch("/api/translate_professional_summary", {
+    method: "POST",
+    headers: {
+     "Content-Type": "application/json",
+     "X-CSRF-Token": document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute("content"),
+    },
+    body: JSON.stringify({
+     arabic_text: formData.professional_summary,
+     user_id: 1, // You might want to get this from props or context
+     resume_id: resume?.id,
+    }),
+   });
+
+   if (response.ok) {
+    const result = await response.json();
+    if (result.status === "queued" && result.job_id) {
+     // Poll for completion
+     pollTranslationStatus(result.job_id);
+    } else {
+     setTranslationError("Unexpected response format from translation API");
+     setIsTranslating(false);
+    }
+   } else {
+    throw new Error("Translation request failed");
+   }
+  } catch (error) {
+   console.error("Translation error:", error);
+   setTranslationError("حدث خطأ في الترجمة. يرجى المحاولة مرة أخرى.");
+   setIsTranslating(false);
+  }
+ };
+
+ const exportToPDF = async () => {
+  console.log("PDF export button clicked! Current step:", currentStep);
+  setIsExporting(true);
+  setTranslationError("");
+
+  try {
+   console.log("Starting PDF export process...");
+
+   let resumeId = null;
+
+   // Try to save the resume to the database first
+   try {
+    const saveResponse = await fetch("/resumes", {
+     method: "POST",
+     headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": document
+       .querySelector('meta[name="csrf-token"]')
+       ?.getAttribute("content"),
+     },
+     body: JSON.stringify({
+      resume: {
+       complete_name: formData.complete_name,
+       email: formData.email,
+       phone_number: formData.phone_number,
+       city: formData.city,
+       country: formData.country,
+       professional_summary: formData.professional_summary,
+       professional_summary_english: formData.professional_summary_english,
+       educations_attributes: formData.education
+        .filter(
+         (edu) =>
+          edu.degree.trim() !== "" &&
+          edu.institution.trim() !== "" &&
+          edu.start_date.trim() !== ""
+        )
+        .map((edu) => ({
+         degree: edu.degree,
+         institution: edu.institution,
+         start_date: edu.start_date,
+         end_date: edu.end_date,
+         gpa: edu.gpa,
+         is_current: edu.is_current,
+        })),
+       work_experiences_attributes: formData.work_experience
+        .filter(
+         (work) =>
+          work.job_title.trim() !== "" &&
+          work.company.trim() !== "" &&
+          work.start_date.trim() !== ""
+        )
+        .map((work) => ({
+         job_title: work.job_title,
+         company: work.company,
+         start_date: work.start_date,
+         end_date: work.end_date,
+         is_current: work.is_current,
+         responsibilities: work.responsibilities.filter(
+          (resp) => resp.trim() !== ""
+         ),
+        })),
+       skills_attributes: formData.skills
+        .filter(
+         (skill) =>
+          skill.category.trim() !== "" &&
+          skill.skill_names.some((name) => name.trim() !== "")
+        )
+        .map((skill) => ({
+         category: skill.category,
+         skill_names: skill.skill_names.filter((name) => name.trim() !== ""),
+        })),
+       certifications_attributes: formData.certifications
+        .filter(
+         (cert) =>
+          cert.name.trim() !== "" &&
+          cert.organization.trim() !== "" &&
+          cert.date.trim() !== ""
+        )
+        .map((cert) => ({
+         name: cert.name,
+         organization: cert.organization,
+         date: cert.date,
+        })),
+       languages_attributes: formData.languages
+        .filter(
+         (lang) => lang.language.trim() !== "" && lang.proficiency.trim() !== ""
+        )
+        .map((lang) => ({
+         language: lang.language,
+         proficiency: lang.proficiency,
+        })),
+      },
+     }),
+    });
+
+    if (saveResponse.ok) {
+     const savedResume = await saveResponse.json();
+     resumeId = savedResume.id;
+     console.log("Resume saved with ID:", resumeId);
+    } else {
+     console.log("Resume save failed, will export PDF directly from form data");
+    }
+   } catch (saveError) {
+    console.log(
+     "Resume save error:",
+     saveError,
+     "Will export PDF directly from form data"
+    );
+   }
+
+   // Export the PDF - either with saved resume ID or directly from form data
+   console.log("Making PDF export request...");
+   let response;
+
+   if (resumeId) {
+    // Use saved resume
+    response = await fetch(`/api/export_pdf?resume_id=${resumeId}&user_id=1`, {
+     method: "GET",
+     headers: {
+      "X-CSRF-Token": document
+       .querySelector('meta[name="csrf-token"]')
+       ?.getAttribute("content"),
+     },
+    });
+   } else {
+    // Export directly from form data
+    response = await fetch("/api/export_pdf", {
+     method: "POST",
+     headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": document
+       .querySelector('meta[name="csrf-token"]')
+       ?.getAttribute("content"),
+     },
+     body: JSON.stringify({
+      resume: {
+       complete_name: formData.complete_name,
+       email: formData.email,
+       phone_number: formData.phone_number,
+       city: formData.city,
+       country: formData.country,
+       professional_summary: formData.professional_summary,
+       professional_summary_english: formData.professional_summary_english,
+       educations_attributes: formData.education
+        .filter(
+         (edu) =>
+          edu.degree.trim() !== "" &&
+          edu.institution.trim() !== "" &&
+          edu.start_date.trim() !== ""
+        )
+        .map((edu) => ({
+         degree: edu.degree,
+         institution: edu.institution,
+         start_date: edu.start_date,
+         end_date: edu.end_date,
+         gpa: edu.gpa,
+         is_current: edu.is_current,
+        })),
+       work_experiences_attributes: formData.work_experience
+        .filter(
+         (work) =>
+          work.job_title.trim() !== "" &&
+          work.company.trim() !== "" &&
+          work.start_date.trim() !== ""
+        )
+        .map((work) => ({
+         job_title: work.job_title,
+         company: work.company,
+         start_date: work.start_date,
+         end_date: work.end_date,
+         is_current: work.is_current,
+         responsibilities: work.responsibilities.filter(
+          (resp) => resp.trim() !== ""
+         ),
+        })),
+       skills_attributes: formData.skills
+        .filter(
+         (skill) =>
+          skill.category.trim() !== "" &&
+          skill.skill_names.some((name) => name.trim() !== "")
+        )
+        .map((skill) => ({
+         category: skill.category,
+         skill_names: skill.skill_names.filter((name) => name.trim() !== ""),
+        })),
+       certifications_attributes: formData.certifications
+        .filter(
+         (cert) =>
+          cert.name.trim() !== "" &&
+          cert.organization.trim() !== "" &&
+          cert.date.trim() !== ""
+        )
+        .map((cert) => ({
+         name: cert.name,
+         organization: cert.organization,
+         date: cert.date,
+        })),
+       languages_attributes: formData.languages
+        .filter(
+         (lang) => lang.language.trim() !== "" && lang.proficiency.trim() !== ""
+        )
+        .map((lang) => ({
+         language: lang.language,
+         proficiency: lang.proficiency,
+        })),
+      },
+     }),
+    });
+   }
+   console.log("PDF export response status:", response.status);
+
+   if (response.ok) {
+    // Check if response is actually a PDF
+    const contentType = response.headers.get("content-type");
+    console.log("Response content type:", contentType);
+
+    if (contentType && contentType.includes("application/pdf")) {
+     // Get the PDF blob
+     const pdfBlob = await response.blob();
+     console.log("PDF blob size:", pdfBlob.size);
+
+     // Create a download link
+     console.log("Creating download link...");
+     const url = window.URL.createObjectURL(pdfBlob);
+     const link = document.createElement("a");
+     link.href = url;
+     link.download = `resume_${resumeId}.pdf`;
+     document.body.appendChild(link);
+     link.click();
+     document.body.removeChild(link);
+     window.URL.revokeObjectURL(url);
+     console.log("PDF download triggered successfully!");
+    } else {
+     // If not PDF, try to get as text to see what we got
+     const text = await response.text();
+     console.log("Non-PDF response:", text);
+     throw new Error("Response is not a PDF");
+    }
+   } else {
+    const errorText = await response.text();
+    console.log("Error response:", errorText);
+    throw new Error("PDF export failed");
+   }
+  } catch (error) {
+   console.error("PDF export error:", error);
+   setTranslationError("حدث خطأ في تصدير PDF. يرجى المحاولة مرة أخرى.");
+  } finally {
+   setIsExporting(false);
+  }
+ };
+
+ const pollTranslationStatus = async (jobId) => {
+  const maxAttempts = 30; // 30 seconds max
+  let attempts = 0;
+
+  const poll = async () => {
+   try {
+    const response = await fetch(`/api/translation_status/${jobId}?user_id=1`);
+    if (response.ok) {
+     const status = await response.json();
+
+     if (status.status === "completed") {
+      // Convert extracted skills to the skills section format
+      const extractedSkills = status.skills_extracted || [];
+
+      // Group skills by category to avoid duplicates
+      const skillsByCategory = {};
+      extractedSkills.forEach((skill) => {
+       const category = skill.category || "technical";
+       if (!skillsByCategory[category]) {
+        skillsByCategory[category] = [];
+       }
+       skillsByCategory[category].push(skill.name);
+      });
+
+      // Convert grouped skills to the skills section format
+      const newSkills = Object.entries(skillsByCategory).map(
+       ([category, skillNames]) => ({
+        category: category,
+        skill_names: skillNames,
+       })
+      );
+
+      setFormData((prev) => {
+       // Merge new skills with existing skills by category
+       const existingSkills = [...prev.skills];
+
+       newSkills.forEach((newSkill) => {
+        const existingCategoryIndex = existingSkills.findIndex(
+         (existing) => existing.category === newSkill.category
+        );
+
+        if (existingCategoryIndex >= 0) {
+         // Merge with existing category
+         const existingSkill = existingSkills[existingCategoryIndex];
+         const mergedSkillNames = [
+          ...new Set([...existingSkill.skill_names, ...newSkill.skill_names]),
+         ];
+         existingSkills[existingCategoryIndex] = {
+          ...existingSkill,
+          skill_names: mergedSkillNames,
+         };
+        } else {
+         // Add new category
+         existingSkills.push(newSkill);
+        }
+       });
+
+       return {
+        ...prev,
+        professional_summary_english: status.english_text,
+        skills_extracted: extractedSkills,
+        translation_notes: status.translation_notes || "",
+        skills: existingSkills,
+       };
+      });
+
+      // Show success message about skills being added
+      if (newSkills.length > 0) {
+       setTranslationError(""); // Clear any previous errors
+       // You could add a success state here if you want to show a success message
+      }
+
+      setIsTranslating(false);
+      return;
+     } else if (status.status === "failed") {
+      setTranslationError("فشلت الترجمة. يرجى المحاولة مرة أخرى.");
+      setIsTranslating(false);
+      return;
+     }
+    }
+
+    attempts++;
+    if (attempts < maxAttempts) {
+     setTimeout(poll, 1000); // Poll every second
+    } else {
+     setTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setIsTranslating(false);
+    }
+   } catch (error) {
+    console.error("Polling error:", error);
+    attempts++;
+    if (attempts < maxAttempts) {
+     setTimeout(poll, 1000);
+    } else {
+     setTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setIsTranslating(false);
+    }
+   }
+  };
+
+  poll();
+ };
+
  const addLanguage = () => {
   setFormData((prev) => ({
    ...prev,
@@ -407,16 +812,31 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     "resume[city]": formData.city,
     "resume[country]": formData.country,
     "resume[professional_summary]": formData.professional_summary,
-    "resume[education_attributes]": formData.education.map((edu) => ({
-     degree: edu.degree,
-     institution: edu.institution,
-     start_date: edu.start_date,
-     end_date: edu.end_date,
-     gpa: edu.gpa,
-     is_current: edu.is_current,
-    })),
-    "resume[work_experience_attributes]": formData.work_experience.map(
-     (work) => ({
+    "resume[professional_summary_english]":
+     formData.professional_summary_english,
+    "resume[educations_attributes]": formData.education
+     .filter(
+      (edu) =>
+       edu.degree.trim() !== "" &&
+       edu.institution.trim() !== "" &&
+       edu.start_date.trim() !== ""
+     )
+     .map((edu) => ({
+      degree: edu.degree,
+      institution: edu.institution,
+      start_date: edu.start_date,
+      end_date: edu.end_date,
+      gpa: edu.gpa,
+      is_current: edu.is_current,
+     })),
+    "resume[work_experiences_attributes]": formData.work_experience
+     .filter(
+      (work) =>
+       work.job_title.trim() !== "" &&
+       work.company.trim() !== "" &&
+       work.start_date.trim() !== ""
+     )
+     .map((work) => ({
       job_title: work.job_title,
       company: work.company,
       start_date: work.start_date,
@@ -425,23 +845,37 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       responsibilities: work.responsibilities.filter(
        (resp) => resp.trim() !== ""
       ),
-     })
-    ),
-    "resume[skills_attributes]": formData.skills.map((skill) => ({
-     category: skill.category,
-     skill_names: skill.skill_names.filter((name) => name.trim() !== ""),
-    })),
-    "resume[certifications_attributes]": formData.certifications.map(
-     (cert) => ({
+     })),
+    "resume[skills_attributes]": formData.skills
+     .filter(
+      (skill) =>
+       skill.category.trim() !== "" &&
+       skill.skill_names.some((name) => name.trim() !== "")
+     )
+     .map((skill) => ({
+      category: skill.category,
+      skill_names: skill.skill_names.filter((name) => name.trim() !== ""),
+     })),
+    "resume[certifications_attributes]": formData.certifications
+     .filter(
+      (cert) =>
+       cert.name.trim() !== "" &&
+       cert.organization.trim() !== "" &&
+       cert.date.trim() !== ""
+     )
+     .map((cert) => ({
       name: cert.name,
       organization: cert.organization,
       date: cert.date,
-     })
-    ),
-    "resume[languages_attributes]": formData.languages.map((lang) => ({
-     language: lang.language,
-     proficiency: lang.proficiency,
-    })),
+     })),
+    "resume[languages_attributes]": formData.languages
+     .filter(
+      (lang) => lang.language.trim() !== "" && lang.proficiency.trim() !== ""
+     )
+     .map((lang) => ({
+      language: lang.language,
+      proficiency: lang.proficiency,
+     })),
    };
 
    console.log("Rails form data:", railsFormData);
@@ -574,7 +1008,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    <div className="space-y-4">
     <div>
      <label className="block text-sm font-semibold text-slate-900 mb-2">
-      الملخص المهني
+      الملخص المهني (بالعربية)
      </label>
      <textarea
       value={formData.professional_summary}
@@ -588,7 +1022,119 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      <p className="mt-2 text-xs text-slate-500">
       اكتب 3-5 جمل تصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية
      </p>
+     <p className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
+      💡 <strong>ملاحظة:</strong> سيقوم النظام بترجمة النص العربي إلى الإنجليزية{" "}
+      <strong>وإنشاء</strong> ملخص مهني شامل ومحسن لسيرتك الذاتية
+     </p>
     </div>
+
+    {/* Translation Button */}
+    <div className="text-center">
+     <button
+      type="button"
+      onClick={translateProfessionalSummary}
+      disabled={isTranslating || !formData.professional_summary.trim()}
+      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-6 py-3 text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+     >
+      {isTranslating ? (
+       <>
+        <svg
+         className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+         xmlns="http://www.w3.org/2000/svg"
+         fill="none"
+         viewBox="0 0 24 24"
+        >
+         <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+         ></circle>
+         <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+         ></path>
+        </svg>
+        جاري الترجمة...
+       </>
+      ) : (
+       <>
+        <svg
+         className="w-5 h-5"
+         fill="none"
+         stroke="currentColor"
+         viewBox="0 0 24 24"
+        >
+         <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+         />
+        </svg>
+        ترجم وأنشئ ملخص مهني
+       </>
+      )}
+     </button>
+    </div>
+
+    {/* Translation Error */}
+    {translationError && (
+     <div className="p-3 border border-red-200 rounded-lg bg-red-50">
+      <p className="text-sm text-red-600 text-center">{translationError}</p>
+     </div>
+    )}
+
+    {/* English Translation Result */}
+    {formData.professional_summary_english && (
+     <div className="space-y-3">
+      <label className="block text-sm font-semibold text-slate-900 mb-2">
+       الملخص المهني (بالإنجليزية)
+      </label>
+      <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
+       <p className="text-slate-700 leading-relaxed text-left" dir="ltr">
+        {formData.professional_summary_english}
+       </p>
+      </div>
+
+      {/* Skills Extracted */}
+      {formData.skills_extracted && formData.skills_extracted.length > 0 && (
+       <div className="space-y-2">
+        <h4 className="text-sm font-medium text-slate-900">
+         المهارات المستخرجة:
+        </h4>
+        <div className="flex flex-wrap gap-2">
+         {formData.skills_extracted.map((skill, index) => (
+          <span
+           key={index}
+           className="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full border border-blue-200"
+          >
+           {skill.name} ({skill.level})
+          </span>
+         ))}
+        </div>
+       </div>
+      )}
+
+      {/* Translation Notes */}
+      {formData.translation_notes && (
+       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+        <h4 className="text-sm font-medium text-amber-800 mb-1">
+         ملاحظات الترجمة:
+        </h4>
+        <p className="text-xs text-amber-700">{formData.translation_notes}</p>
+       </div>
+      )}
+
+      <p className="text-xs text-slate-500 text-center">
+       تم ترجمة النص العربي وإنشاء هذا الملخص المهني المحسن باستخدام الذكاء
+       الاصطناعي
+      </p>
+     </div>
+    )}
 
     <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
      <h3 className="text-sm font-medium text-slate-900 mb-2">
@@ -1397,21 +1943,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const renderStep8 = () => (
   <div className="space-y-6">
    <div className="text-center mb-6">
-    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
-     <svg
-      className="w-8 h-8"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-     >
-      <path
-       strokeLinecap="round"
-       strokeLinejoin="round"
-       strokeWidth={2}
-       d="M15 6v12a3 3 0 103-3H6a3 3 0 103 3V6a3 3 0 10-3 3h18a3 3 0 10-3-3"
-      />
-     </svg>
-    </div>
     <h2 className="text-xl font-semibold text-slate-900">
      معاينة السيرة الذاتية
     </h2>
@@ -1440,13 +1971,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     </div>
 
     {/* Professional Summary */}
-    {formData.professional_summary && (
+    {formData.professional_summary_english && (
      <div className="mb-6">
       <h2 className="text-lg font-bold text-gray-900 mb-2 pb-1 border-b border-blue-300 text-left">
        Professional Summary
       </h2>
       <p className="text-gray-700 leading-relaxed text-left">
-       {formData.professional_summary}
+       {formData.professional_summary_english}
       </p>
      </div>
     )}
@@ -1734,23 +2265,53 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       </button>
      ) : (
       <button
-       type="submit"
-       className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
+       type="button"
+       onClick={exportToPDF}
+       disabled={isExporting}
+       className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
       >
-       إنشاء السيرة الذاتية
-       <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-       >
-        <path
-         strokeLinecap="round"
-         strokeLinejoin="round"
-         strokeWidth={2}
-         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-        />
-       </svg>
+       {isExporting ? (
+        <>
+         <svg
+          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+         >
+          <circle
+           className="opacity-25"
+           cx="12"
+           cy="12"
+           r="10"
+           stroke="currentColor"
+           strokeWidth="4"
+          ></circle>
+          <path
+           className="opacity-75"
+           fill="currentColor"
+           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+         </svg>
+         جاري التصدير...
+        </>
+       ) : (
+        <>
+          إنشاء السيرة الذاتية و تحميلها
+         <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+         >
+          <path
+           strokeLinecap="round"
+           strokeLinejoin="round"
+           strokeWidth={2}
+           d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+         </svg>
+        </>
+       )}
       </button>
      )}
     </div>

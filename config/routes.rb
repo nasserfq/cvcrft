@@ -49,5 +49,11 @@ Rails.application.routes.draw do
         resources :skills, only: [ :create, :update, :destroy ]
       end
     end
+    
+    # Translation API routes
+    post 'translate_professional_summary', to: 'translations#translate_professional_summary'
+    get 'translation_status/:id', to: 'translations#translation_status'
+    get 'export_pdf', to: 'translations#export_pdf'
+    post 'export_pdf', to: 'translations#export_pdf'
   end
 end

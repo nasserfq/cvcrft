@@ -2,14 +2,16 @@ class WorkExperience < ApplicationRecord
   belongs_to :resume
   belongs_to :ai_translation, optional: true
 
+  # New validations for updated structure
   validates :company, presence: true, length: { minimum: 2, maximum: 100 }
-  validates :position, presence: true, length: { minimum: 3, maximum: 100 }
+  validates :job_title, presence: true, length: { minimum: 3, maximum: 100 }
   validates :start_date, presence: true
-  validates :arabic_description, presence: true, length: { minimum: 20, maximum: 2000 }
-  validates :english_description, length: { maximum: 2000 }
 
-  # ATS keywords tracking
-  validates :ats_keywords, presence: true
+  # Legacy validations (keeping for backward compatibility)
+  validates :position, presence: true, length: { minimum: 3, maximum: 100 }, allow_blank: true
+  validates :arabic_description, presence: true, length: { minimum: 20, maximum: 2000 }, allow_blank: true
+  validates :english_description, length: { maximum: 2000 }, allow_blank: true
+  validates :ats_keywords, presence: true, allow_blank: true
 
   # Validations
   validate :end_date_after_start_date, if: :end_date?
@@ -22,12 +24,24 @@ class WorkExperience < ApplicationRecord
 
   # Methods
   def duration
-    end_date ||= Date.current
-    ((end_date - start_date).to_i / 365.25).round(1)
+    return 0 unless start_date.present?
+    end_date_value = end_date.present? ? end_date : Date.current.strftime('%Y-%m')
+    start_date_value = start_date
+    
+    # Simple calculation for text dates in YYYY-MM format
+    if start_date_value.match?(/\d{4}-\d{2}/) && end_date_value.match?(/\d{4}-\d{2}/)
+      start_year, start_month = start_date_value.split('-').map(&:to_i)
+      end_year, end_month = end_date_value.split('-').map(&:to_i)
+      
+      months_diff = (end_year - start_year) * 12 + (end_month - start_month)
+      (months_diff / 12.0).round(1)
+    else
+      0
+    end
   end
 
   def current?
-    end_date.nil?
+    end_date.blank? || is_current
   end
 
   def needs_translation?
@@ -37,14 +51,23 @@ class WorkExperience < ApplicationRecord
   private
 
   def end_date_after_start_date
-    if end_date <= start_date
-      errors.add(:end_date, "must be after start date")
+    return unless end_date.present? && start_date.present?
+    
+    if start_date.match?(/\d{4}-\d{2}/) && end_date.match?(/\d{4}-\d{2}/)
+      if end_date <= start_date
+        errors.add(:end_date, "must be after start date")
+      end
     end
   end
 
   def start_date_not_in_future
-    if start_date > Date.current
-      errors.add(:start_date, "cannot be in the future")
+    return unless start_date.present?
+    
+    if start_date.match?(/\d{4}-\d{2}/)
+      current_date = Date.current.strftime('%Y-%m')
+      if start_date > current_date
+        errors.add(:start_date, "cannot be in the future")
+      end
     end
   end
 end

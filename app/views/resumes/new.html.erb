@@ -28,6 +28,6 @@
 <script type="module" src="<%= vite_asset_path('entrypoints/resume_form.jsx') %>?v=<%= Time.current.to_i %>"></script>
 <script>
   // Pass resume data to JavaScript
-  window.resumeData = <%= raw @resume.to_json(only: [:complete_name, :email, :phone_number, :city, :country, :professional_summary, :education, :work_experience, :skills, :certifications, :languages]) %>;
+  window.resumeData = <%= raw @resume.to_json(only: [:complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :education, :work_experience, :skills, :certifications, :languages]) %>;
   console.log('Resume data set:', window.resumeData);
 </script>

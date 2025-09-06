@@ -1,9 +1,13 @@
 class Skill < ApplicationRecord
   belongs_to :resume
 
-  validates :name, presence: true, length: { minimum: 2, maximum: 50 }
-  validates :level, inclusion: { in: %w[beginner intermediate advanced expert] }
-  validates :category, presence: true, inclusion: { in: %w[technical soft language framework tool methodology] }
+  # New validations for updated structure
+  validates :category, presence: true
+  validates :skill_names, presence: true
+
+  # Legacy validations (keeping for backward compatibility)
+  validates :name, presence: true, length: { minimum: 2, maximum: 50 }, allow_blank: true
+  validates :level, inclusion: { in: %w[beginner intermediate advanced expert] }, allow_blank: true
 
   # Scopes
   scope :by_category, ->(category) { where(category: category) }
@@ -24,7 +28,11 @@ class Skill < ApplicationRecord
   end
 
   def display_name
-    "#{name} (#{level})"
+    if skill_names.present?
+      skill_names.join(", ")
+    else
+      "#{name} (#{level})"
+    end
   end
 
   def technical?
