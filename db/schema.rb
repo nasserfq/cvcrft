@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_05_205418) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_12_140517) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,6 +63,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_05_205418) do
     t.index ["resume_id"], name: "index_languages_on_resume_id"
   end
 
+  create_table "otp_verifications", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "otp_code", null: false
+    t.datetime "expires_at", null: false
+    t.boolean "verified", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_otp_verifications_on_email"
+    t.index ["expires_at"], name: "index_otp_verifications_on_expires_at"
+    t.index ["otp_code"], name: "index_otp_verifications_on_otp_code"
+  end
+
   create_table "resumes", force: :cascade do |t|
     t.bigint "user_id"
     t.string "title"
@@ -98,6 +110,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_05_205418) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   create_table "work_experiences", force: :cascade do |t|

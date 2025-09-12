@@ -2,6 +2,8 @@
   "name": "app",
   "private": "true",
   "dependencies": {
+    "@hotwired/turbo": "^8.0.13",
+    "@rails/activestorage": "^8.0.201",
     "@tailwindcss/cli": "^4.1.12",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

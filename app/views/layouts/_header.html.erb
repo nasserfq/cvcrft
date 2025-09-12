@@ -24,10 +24,24 @@
       </nav>
       <!-- Actions -->
       <div class="flex items-center gap-3">
-        <a href="#" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors">
-          <i data-lucide="log-in" class="w-4 h-4"></i>
-          <span>تسجيل الدخول</span>
-        </a>
+        
+        <% if user_signed_in? %>
+          <span class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-600">
+            <i data-lucide="user" class="w-4 h-4"></i>
+            <span>مرحباً، <%= current_user.email %></span>
+          </span>
+          <%= form_with url: "/auth/logout", method: :delete, class: "hidden sm:inline-flex" do |f| %>
+            <button type="submit" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-red-700 transition-colors">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+              <span>تسجيل الخروج</span>
+            </button>
+          <% end %>
+        <% else %>
+          <a href="/login" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors">
+            <i data-lucide="log-in" class="w-4 h-4"></i>
+            <span>تسجيل الدخول</span>
+          </a>
+        <% end %>
         <a href="/resumes/new" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:shadow transition-colors">
           <i data-lucide="wand-2" class="w-4 h-4"></i>
           <span>ابدأ الآن مجانًا</span>
@@ -46,10 +60,23 @@
         <a href="#pricing" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الأسعار</a>
         <a href="#faq" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الأسئلة الشائعة</a>
         <div class="pt-3 border-t border-slate-200/60">
-          <a href="#" class="block px-3 py-2 text-sm text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors">
-            <i data-lucide="log-in" class="w-4 h-4 inline mr-2"></i>
-            تسجيل الدخول
-          </a>
+          <% if user_signed_in? %>
+            <div class="px-3 py-2 text-sm text-slate-600">
+              <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>
+              <span>مرحباً، <%= current_user.email %></span>
+            </div>
+            <%= form_with url: "/auth/logout", method: :delete, class: "block" do |f| %>
+              <button type="submit" class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4 inline mr-2"></i>
+                تسجيل الخروج
+              </button>
+            <% end %>
+          <% else %>
+            <a href="/login" class="block px-3 py-2 text-sm text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors">
+              <i data-lucide="log-in" class="w-4 h-4 inline mr-2"></i>
+              تسجيل الدخول
+            </a>
+          <% end %>
         </div>
       </div>
     </div>

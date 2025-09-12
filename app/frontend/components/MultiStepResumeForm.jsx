@@ -2294,6 +2294,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          </svg>
          جاري التصدير...
         </>
+        
        ) : (
         <>
           إنشاء السيرة الذاتية و تحميلها

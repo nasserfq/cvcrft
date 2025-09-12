@@ -19,6 +19,27 @@
       <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
     </div>
     <!-- Header -->
+    <!-- Flash Messages -->
+    <% if flash[:notice] %>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
+          <div class="flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
+            <p class="text-sm text-emerald-800"><%= flash[:notice] %></p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+          <div class="flex items-center gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 text-red-600"></i>
+            <p class="text-sm text-red-800"><%= flash[:alert] %></p>
+          </div>
+        </div>
+      </div>
+    <% end %>
     <!-- Hero -->
     <section class="relative">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

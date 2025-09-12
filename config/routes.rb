@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Devise routes (for authentication helpers)
+  devise_for :users, skip: [:registrations, :sessions, :passwords, :confirmations, :unlocks]
+  
   # Root route
   root "home#index"
 
@@ -36,10 +39,12 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => "/sidekiq"
   end
 
-  # User authentication routes (placeholder for now)
-  # get '/login', to: 'sessions#new'
-  # post '/login', to: 'sessions#create'
-  # delete '/logout', to: 'sessions#destroy'
+  # Authentication routes
+  get '/login', to: 'auth#login'
+  post '/auth/send_otp', to: 'auth#send_otp'
+  post '/auth/verify_otp', to: 'auth#verify_otp'
+  delete '/auth/logout', to: 'auth#logout'
+  get '/auth/status', to: 'auth#status'
 
   # API routes for AJAX calls
   namespace :api do
