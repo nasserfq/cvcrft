@@ -1,3 +1,8 @@
+<% unless user_signed_in? %>
+  <script>
+    window.location.href = '/auth/login';
+  </script>
+<% else %>
 <div class="bg-gradient-to-b from-white via-emerald-50 to-white min-h-screen">
   <!-- Background Accents -->
   <div class="pointer-events-none fixed inset-0 -z-10">
@@ -31,3 +36,4 @@
   window.resumeData = <%= raw @resume.to_json(only: [:complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :education, :work_experience, :skills, :certifications, :languages]) %>;
   console.log('Resume data set:', window.resumeData);
 </script>
+<% end %>

@@ -1,7 +1,6 @@
 class Api::TranslationsController < ApplicationController
-  # Remove authentication for now - you can add it back when you implement user authentication
-  # before_action :authenticate_user!
-  
+  before_action :authenticate_user!
+
   # Skip CSRF protection for API endpoints
   skip_before_action :verify_authenticity_token
 
@@ -88,7 +87,7 @@ class Api::TranslationsController < ApplicationController
 
       if resume_id.present?
         # GET request - use existing resume from database
-        resume = Resume.find(resume_id)
+        resume = current_user.resumes.find(resume_id)
         Rails.logger.info "Using existing resume with ID: #{resume_id}"
       elsif request.post? && params[:resume].present?
         # POST request - create temporary resume from form data
@@ -143,12 +142,12 @@ class Api::TranslationsController < ApplicationController
       # Generate HTML content using the service
       # For CV Builder, prioritize professional_summary_english (what preview shows)
       professional_summary = resume.professional_summary_english.present? ? resume.professional_summary_english : resume.professional_summary
-      
+
       Rails.logger.info "=== CV BUILDER PDF EXPORT ==="
       Rails.logger.info "Resume ID: #{resume.id rescue 'new'}"
       Rails.logger.info "Professional Summary: #{professional_summary&.truncate(100)}"
       Rails.logger.info "Professional Summary English: #{resume.professional_summary_english&.truncate(100)}"
-      
+
       pdf_service = ResumePdfService.new(resume, professional_summary)
       html_content = pdf_service.generate
 
@@ -180,11 +179,11 @@ class Api::TranslationsController < ApplicationController
 
       # Send the PDF as a download
       filename = resume.complete_name.present? ? "#{resume.complete_name.parameterize}_resume.pdf" : "resume.pdf"
-      
+
       # Set proper headers
-      response.headers['Content-Type'] = 'application/pdf'
-      response.headers['Content-Disposition'] = "attachment; filename=\"#{filename}\""
-      
+      response.headers["Content-Type"] = "application/pdf"
+      response.headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
+
       send_data pdf,
         filename: filename,
         type: "application/pdf",
@@ -207,7 +206,7 @@ class Api::TranslationsController < ApplicationController
     else
       {}
     end
-    
+
     resume_data.permit(
       :complete_name, :email, :phone_number, :city, :country,
       :professional_summary, :professional_summary_english,

@@ -1,10 +1,9 @@
 class ResumesController < ApplicationController
-  # before_action :authenticate_user!  # Temporarily disabled
+  before_action :authenticate_user!
   before_action :set_resume, only: [:show, :edit, :update, :destroy, :generate_pdf, :optimize_ats]
   
   def index
-    # @resumes = current_user.resumes.recent  # Temporarily disabled
-    @resumes = Resume.all.limit(10)  # Show all resumes temporarily
+    @resumes = current_user.resumes.recent
     
     respond_to do |format|
       format.html
@@ -38,11 +37,11 @@ class ResumesController < ApplicationController
   end
   
   def new
-    @resume = Resume.new  # Temporarily disabled user association
+    @resume = current_user.resumes.build
   end
   
   def create
-    @resume = Resume.new(resume_params)  # Temporarily disabled user association
+    @resume = current_user.resumes.build(resume_params)
     if @resume.save
       respond_to do |format|
         format.html { redirect_to @resume, notice: 'Resume created successfully!' }
@@ -91,7 +90,7 @@ class ResumesController < ApplicationController
   private
   
   def set_resume
-    @resume = Resume.find(params[:id])  # Temporarily disabled user association
+    @resume = current_user.resumes.find(params[:id])
   end
   
   def resume_params

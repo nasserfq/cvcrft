@@ -1,11 +1,11 @@
 class CvGenerationsController < ApplicationController
-  # before_action :authenticate_user!  # Temporarily disabled
+  before_action :authenticate_user!
   before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf ]
 
   def index
     if params[:recent_with_pdf] == "true"
       # Return most recent completed CV with PDF as JSON
-      recent_cv = CvGeneration.where(status: "completed")
+      recent_cv = current_user.cv_generations.where(status: "completed")
                              .where("metadata->>'pdf_generated' = 'true'")
                              .order(created_at: :desc)
                              .first
@@ -16,14 +16,13 @@ class CvGenerationsController < ApplicationController
         render json: { error: "No completed CV with PDF found" }, status: 404
       end
     else
-      # @cv_generations = current_user.cv_generations.recent  # Temporarily disabled
-      @cv_generations = CvGeneration.all.limit(20)  # Show all CV generations temporarily
-      
+      @cv_generations = current_user.cv_generations.recent
+
       # Filter by resume_id if provided
       if params[:resume_id].present?
         @cv_generations = @cv_generations.where(resume_id: params[:resume_id])
       end
-      
+
       respond_to do |format|
         format.html
         format.json { render json: @cv_generations }
@@ -42,12 +41,11 @@ class CvGenerationsController < ApplicationController
 
   def new
     @cv_generation = CvGeneration.new
-    @resumes = Resume.all.limit(10)  # Show available resumes for selection
+    @resumes = current_user.resumes.limit(10)  # Show user's resumes for selection
   end
 
   def create
-    # For now, we'll use a default user ID since authentication is disabled
-    user_id = User.first&.id || 1  # Use first user or default to 1
+    user_id = current_user.id
 
     # Initialize the Azure OpenAI service
     service = AzureOpenaiService.new(user_id, cv_generation_params[:resume_id])
@@ -129,8 +127,7 @@ class CvGenerationsController < ApplicationController
   end
 
   def stats
-    # For now, we'll use a default user ID since authentication is disabled
-    user_id = User.first&.id || 1
+    user_id = current_user.id
     service = AzureOpenaiService.new(user_id)
 
     @stats = service.get_cv_generation_stats
@@ -170,7 +167,7 @@ class CvGenerationsController < ApplicationController
   private
 
   def set_cv_generation
-    @cv_generation = CvGeneration.find(params[:id])
+    @cv_generation = current_user.cv_generations.find(params[:id])
   end
 
   def cv_generation_params
