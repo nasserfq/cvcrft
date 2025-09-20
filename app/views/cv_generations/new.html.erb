@@ -91,41 +91,45 @@
 
           // Load resumes and their CV generations on component mount
           useEffect(() => {
-            const loadResumesWithGenerations = async () => {
-              try {
-                // Load resumes
-                const resumesResponse = await fetch('/resumes.json');
-                const resumesData = await resumesResponse.json();
+          const loadResumesWithGenerations = async () => {
+            try {
+              // Load resumes
+              const resumesResponse = await fetch('/resumes.json');
+              const resumesData = await resumesResponse.json();
 
-                // Load CV generations for each resume
-                const resumesWithGenerations = await Promise.all(
-                  resumesData.map(async (resume) => {
-                    try {
-                      const cvResponse = await fetch(`/cv_generations.json?resume_id=${resume.id}`);
-                      const cvData = await cvResponse.json();
-                      const latestCv = cvData.find(cv => cv.resume_id === resume.id && cv.status === 'completed');
+              // Load CV generations for each resume (optional - for display purposes)
+              const resumesWithGenerations = await Promise.all(
+                resumesData.map(async (resume) => {
+                  try {
+                    const cvResponse = await fetch(`/cv_generations.json?resume_id=${resume.id}`);
+                    const cvData = await cvResponse.json();
+                    const latestCv = cvData.find(cv => cv.resume_id === resume.id && cv.status === 'completed');
 
-                      return {
-                        ...resume,
-                        latest_cv_generation: latestCv,
-                        last_generated: latestCv ? new Date(latestCv.created_at) : null
-                      };
-                    } catch (err) {
-                      console.error(`Error loading CV for resume ${resume.id}:`, err);
-                      return {
-                        ...resume,
-                        latest_cv_generation: null,
-                        last_generated: null
-                      };
-                    }
-                  })
-                );
+                    return {
+                      ...resume,
+                      latest_cv_generation: latestCv,
+                      last_generated: latestCv ? new Date(latestCv.created_at) : null,
+                      // Add a flag to indicate if this is a CV Builder resume (no CV generations)
+                      is_cv_builder: !latestCv && (resume.professional_summary || resume.professional_summary_english)
+                    };
+                  } catch (err) {
+                    console.error(`Error loading CV for resume ${resume.id}:`, err);
+                    return {
+                      ...resume,
+                      latest_cv_generation: null,
+                      last_generated: null,
+                      // Mark as CV Builder if it has professional summary but no CV generations
+                      is_cv_builder: !!(resume.professional_summary || resume.professional_summary_english)
+                    };
+                  }
+                })
+              );
 
-                setResumes(resumesWithGenerations);
-              } catch (err) {
-                console.error('Error loading resumes:', err);
-              }
-            };
+              setResumes(resumesWithGenerations);
+            } catch (err) {
+              console.error('Error loading resumes:', err);
+            }
+          };
 
             loadResumesWithGenerations();
           }, []);
@@ -384,7 +388,14 @@
                     >
                       {/* Header */}
                       <div className="mb-3">
-                        <h3 className="font-medium text-slate-900 mb-1">{resume.complete_name}</h3>
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-medium text-slate-900">{resume.complete_name}</h3>
+                          {resume.is_cv_builder && (
+                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full font-medium">
+                              CV Builder
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-slate-600">{resume.email}</p>
                       </div>
 
@@ -400,7 +411,7 @@
                       )}
 
                       {/* CV Generation Info */}
-                      {resume.latest_cv_generation && (
+                      {resume.latest_cv_generation ? (
                         <div className="mb-3 p-2 bg-slate-50 rounded border">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-slate-700">آخر إنشاء:</span>
@@ -418,6 +429,28 @@
                                 {(resume.latest_cv_generation.metadata.pdf_size / 1024).toFixed(1)} KB
                               </span>
                             )}
+                          </div>
+                        </div>
+                      ) : resume.is_cv_builder ? (
+                        <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span className="text-xs text-blue-700 font-medium">سيرة ذاتية مبنية</span>
+                            </div>
+                            <span className="text-xs text-blue-600">جاهزة للتحسين</span>
+                          </div>
+                          <div className="text-xs text-blue-600 mt-1">
+                            تم إنشاؤها: {new Date(resume.created_at).toLocaleDateString('ar-SA')}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mb-3 p-2 bg-slate-50 rounded border">
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                              <span className="text-xs text-slate-600">سيرة ذاتية أساسية</span>
+                            </div>
                           </div>
                         </div>
                       )}

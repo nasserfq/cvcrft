@@ -1,5 +1,5 @@
 class Resume < ApplicationRecord
-  # belongs_to :user  # Temporarily disabled
+  belongs_to :user
   has_many :work_experiences, dependent: :destroy
   has_many :skills, dependent: :destroy
   has_many :educations, dependent: :destroy
@@ -16,12 +16,15 @@ class Resume < ApplicationRecord
   accepts_nested_attributes_for :languages, allow_destroy: true, reject_if: :all_blank
 
   # Validations for new fields
+  validates :user_id, presence: true
   validates :complete_name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :phone_number, length: { maximum: 50 }, allow_blank: true
   validates :city, length: { maximum: 100 }, allow_blank: true
   validates :country, length: { maximum: 100 }, allow_blank: true
-  validates :professional_summary, presence: true, length: { minimum: 20, maximum: 1000 }
+  # Professional summary validation - minimal for CV Builder
+  validates :professional_summary, length: { maximum: 1000 }, allow_blank: true
+  validates :professional_summary_english, length: { maximum: 1000 }, allow_blank: true
 
   # Legacy validations (keeping for backward compatibility)
   validates :title, length: { minimum: 3, maximum: 100 }, allow_blank: true

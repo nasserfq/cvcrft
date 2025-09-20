@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   # Devise routes (for authentication helpers)
-  devise_for :users, skip: [:registrations, :sessions, :passwords, :confirmations, :unlocks]
-  
+  devise_for :users, skip: [ :registrations, :sessions, :passwords, :confirmations, :unlocks ]
+
   # Root route
   root "home#index"
 
@@ -18,6 +18,9 @@ Rails.application.routes.draw do
       get :generate_pdf
       post :optimize_ats
     end
+
+    # Test endpoint
+    get :test_auth, on: :collection
   end
 
   # AI Translation routes
@@ -54,11 +57,11 @@ Rails.application.routes.draw do
   end
 
   # Authentication routes
-  get '/login', to: 'auth#login'
-  post '/auth/send_otp', to: 'auth#send_otp'
-  post '/auth/verify_otp', to: 'auth#verify_otp'
-  delete '/auth/logout', to: 'auth#logout'
-  get '/auth/status', to: 'auth#status'
+  get "/login", to: "auth#login"
+  post "/auth/send_otp", to: "auth#send_otp"
+  post "/auth/verify_otp", to: "auth#verify_otp"
+  delete "/auth/logout", to: "auth#logout"
+  get "/auth/status", to: "auth#status"
 
   # API routes for AJAX calls
   namespace :api do
@@ -68,11 +71,11 @@ Rails.application.routes.draw do
         resources :skills, only: [ :create, :update, :destroy ]
       end
     end
-    
+
     # Translation API routes
-    post 'translate_professional_summary', to: 'translations#translate_professional_summary'
-    get 'translation_status/:id', to: 'translations#translation_status'
-    get 'export_pdf', to: 'translations#export_pdf'
-    post 'export_pdf', to: 'translations#export_pdf'
+    post "translate_professional_summary", to: "translations#translate_professional_summary"
+    get "translation_status/:id", to: "translations#translation_status"
+    get "export_pdf", to: "translations#export_pdf"
+    post "export_pdf", to: "translations#export_pdf"
   end
 end

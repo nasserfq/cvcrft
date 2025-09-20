@@ -1,6 +1,9 @@
 class CvGenerationsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf ]
+  
+  # Skip CSRF protection for JSON requests from frontend
+  skip_before_action :verify_authenticity_token, only: [:create], if: -> { request.format.json? }
 
   def index
     if params[:recent_with_pdf] == "true"
@@ -45,7 +48,21 @@ class CvGenerationsController < ApplicationController
   end
 
   def create
+    Rails.logger.info "=== CV GENERATION CREATE ==="
+    Rails.logger.info "Current user: #{current_user&.email} (ID: #{current_user&.id})"
+    Rails.logger.info "User signed in: #{user_signed_in?}"
+    
+    if current_user.nil?
+      Rails.logger.error "No current user found for CV generation!"
+      respond_to do |format|
+        format.html { redirect_to new_user_session_path, alert: 'Please sign in to generate a CV.' }
+        format.json { render json: { error: 'Authentication required' }, status: :unauthorized }
+      end
+      return
+    end
+    
     user_id = current_user.id
+    Rails.logger.info "Using user_id: #{user_id} for CV generation"
 
     # Initialize the Azure OpenAI service
     service = AzureOpenaiService.new(user_id, cv_generation_params[:resume_id])
