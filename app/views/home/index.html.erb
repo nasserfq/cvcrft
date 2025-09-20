@@ -20,7 +20,7 @@
     </div>
     <!-- Header -->
     <!-- Flash Messages -->
-    <% if flash[:notice] %>
+    <% if flash[:notice] && !flash[:notice].include?("CV generation job has been queued successfully") %>
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
         <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
           <div class="flex items-center gap-3">
@@ -87,10 +87,16 @@
                   </button>
                 </div>
               </form>
-              <a href="#demo" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors">
-                <i data-lucide="play-circle" class="w-5 h-5"></i>
-                شاهد نموذج
-              </a>
+              <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                <a href="#demo" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors">
+                  <i data-lucide="play-circle" class="w-5 h-5"></i>
+                  شاهد نموذج
+                </a>
+                <%= link_to cv_generations_path, class: "inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors" do %>
+                  <i data-lucide="wand-2" class="w-5 h-5"></i>
+                  منشئ السيرة الذاتية
+                <% end %>
+              </div>
             </div>
             <!-- Trust -->
             <div class="pt-4">
@@ -230,6 +236,28 @@
             </div>
             <h3 class="text-lg font-semibold tracking-tight text-slate-900">خصوصية وأمان</h3>
             <p class="mt-2 text-sm text-slate-600">تشفير واشتراك دقيق، مع سيطرة كاملة على بياناتك.</p>
+          </div>
+        </div>
+        <!-- CV Generator CTA -->
+        <div class="mt-12 text-center">
+          <div class="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-200/50">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-600 text-white ring-1 ring-black/5 mx-auto mb-4 grid place-items-center">
+              <i data-lucide="sparkles" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-semibold tracking-tight text-slate-900 mb-2">منشئ السيرة الذاتية بالذكاء الاصطناعي</h3>
+            <p class="text-slate-600 mb-6 max-w-2xl mx-auto">
+              أدخل وصف الوظيفة المطلوبة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة ومحسنة لـ ATS
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <%= link_to new_cv_generation_path, class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors" do %>
+                <i data-lucide="wand-2" class="w-5 h-5"></i>
+                ابدأ الآن
+              <% end %>
+              <%= link_to cv_generations_path, class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 transition-colors" do %>
+                <i data-lucide="list" class="w-5 h-5"></i>
+                عرض السير المولدة
+              <% end %>
+            </div>
           </div>
         </div>
       </div>

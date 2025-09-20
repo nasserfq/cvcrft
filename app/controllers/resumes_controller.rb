@@ -5,12 +5,36 @@ class ResumesController < ApplicationController
   def index
     # @resumes = current_user.resumes.recent  # Temporarily disabled
     @resumes = Resume.all.limit(10)  # Show all resumes temporarily
+    
+    respond_to do |format|
+      format.html
+      format.json { 
+        render json: @resumes.as_json(
+          only: [:id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :created_at, :updated_at]
+        )
+      }
+    end
   end
   
   def show
     @work_experiences = @resume.work_experiences.chronological
     @skills = @resume.skills.group_by(&:category)
     @ai_translations = @resume.ai_translations.recent
+    
+    respond_to do |format|
+      format.html
+      format.json { 
+        render json: @resume.as_json(
+          include: {
+            work_experiences: {},
+            skills: {},
+            educations: {},
+            certifications: {},
+            languages: {}
+          }
+        )
+      }
+    end
   end
   
   def new

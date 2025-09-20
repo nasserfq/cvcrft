@@ -27,6 +27,20 @@ Rails.application.routes.draw do
     end
   end
 
+  # CV Generation routes
+  resources :cv_generations do
+    member do
+      get :status
+      post :retry
+      post :cancel
+      get :download_pdf
+      get :view_pdf
+    end
+    collection do
+      get :stats
+    end
+  end
+
   # Sidekiq web interface (admin only in production)
   require "sidekiq/web"
   if Rails.env.production?

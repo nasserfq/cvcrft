@@ -1,0 +1,548 @@
+<!-- Include React and Babel -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<div id="cv-generation-show-root">
+  <!-- Fallback HTML content while React loads -->
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">CV Generation #<%= @cv_generation.id %></h1>
+        <div class="flex space-x-2">
+          <%= link_to "Back to List", cv_generations_path, 
+              class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Status and Info Panel -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Status & Information</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Status</label>
+                <span class="px-3 py-1 rounded-full text-sm font-medium mt-1 inline-block
+                  <%= case @cv_generation.status
+                      when 'completed' then 'bg-green-100 text-green-800'
+                      when 'processing' then 'bg-yellow-100 text-yellow-800'
+                      when 'failed' then 'bg-red-100 text-red-800'
+                      when 'cancelled' then 'bg-gray-100 text-gray-800'
+                      else 'bg-gray-100 text-gray-800'
+                      end %>">
+                  <%= @cv_generation.status.humanize %>
+                </span>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Created</label>
+                <p class="text-sm text-gray-600"><%= @cv_generation.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Last Updated</label>
+                <p class="text-sm text-gray-600"><%= @cv_generation.updated_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+              </div>
+              <% if @cv_generation.tokens_used %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Tokens Used</label>
+                  <p class="text-sm text-gray-600"><%= number_with_delimiter(@cv_generation.tokens_used) %></p>
+                </div>
+              <% end %>
+              <% if @cv_generation.resume_id %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Resume ID</label>
+                  <p class="text-sm text-gray-600">
+                    <%= @cv_generation.resume_id %>
+                    <%= link_to "View Resume", resume_path(@cv_generation.resume_id), 
+                        class: "text-blue-600 hover:text-blue-800 ml-2" %>
+                  </p>
+                </div>
+              <% end %>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">AI Model</label>
+                <p class="text-sm text-gray-600"><%= @cv_generation.ai_model %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+          <!-- Job Description -->
+          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
+            <div class="bg-gray-50 p-4 rounded border">
+              <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= @cv_generation.job_description %></p>
+            </div>
+          </div>
+
+          <!-- Generated Content -->
+          <% if @cv_generation.generated_content.present? %>
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Professional Summary</h2>
+              <div class="bg-gray-50 p-4 rounded border">
+                <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= @cv_generation.generated_content %></p>
+              </div>
+              <% if @cv_generation.metadata&.dig("pdf_generated") %>
+                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                  <p class="text-sm text-green-700">
+                    <strong>✓ PDF Generated Successfully</strong> - 
+                    Size: <%= number_to_human_size(@cv_generation.metadata["pdf_size"]) %> | 
+                    Filename: <%= @cv_generation.metadata["pdf_filename"] %>
+                  </p>
+                  <div class="mt-2">
+                    <%= link_to "Download PDF", download_pdf_cv_generation_path(@cv_generation), 
+                        class: "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 mr-2" %>
+                    <%= link_to "View PDF", view_pdf_cv_generation_path(@cv_generation), 
+                        target: "_blank",
+                        class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <!-- PDF Display (Fallback) -->
+          <% if @cv_generation.metadata&.dig("pdf_generated") && @cv_generation.metadata&.dig("pdf_data") %>
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated CV PDF</h2>
+              <div class="border border-gray-300 rounded-lg overflow-hidden">
+                <iframe 
+                  src="<%= view_pdf_cv_generation_path(@cv_generation) %>" 
+                  width="100%" 
+                  height="800px" 
+                  style="border: none;"
+                  title="Generated CV PDF">
+                  <p>Your browser does not support PDFs. 
+                    <%= link_to "Download the PDF instead", download_pdf_cv_generation_path(@cv_generation) %>.
+                  </p>
+                </iframe>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Processing Status -->
+          <% if @cv_generation.status == 'processing' %>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+              <div class="flex items-center">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-3"></div>
+                <div>
+                  <h3 class="text-lg font-medium text-yellow-800">Processing CV Generation</h3>
+                  <p class="text-sm text-yellow-700">Your CV is being generated. This may take a few minutes. The page will refresh automatically when complete.</p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Error Status -->
+          <% if @cv_generation.status == 'failed' %>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+              <h3 class="text-lg font-medium text-red-800">Generation Failed</h3>
+              <p class="text-sm text-red-700">There was an error generating your CV. You can try again using the retry button above.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/babel">
+  const { createRoot } = ReactDOM;
+  const { useState, useEffect } = React;
+
+  // PdfViewer Component
+  const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
+    const [pdfUrl, setPdfUrl] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+      if (pdfData) {
+        try {
+          // Create a blob from the base64 PDF data
+          const byteCharacters = atob(pdfData);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+          // Create object URL for the PDF
+          const url = URL.createObjectURL(blob);
+          setPdfUrl(url);
+          setLoading(false);
+        } catch (err) {
+          console.error('Error creating PDF URL:', err);
+          setError('Failed to load PDF');
+          setLoading(false);
+        }
+      } else {
+        setError('No PDF data available');
+        setLoading(false);
+      }
+
+      // Cleanup function to revoke object URL
+      return () => {
+        if (pdfUrl) {
+          URL.revokeObjectURL(pdfUrl);
+        }
+      };
+    }, [pdfData]);
+
+    const handleDownload = () => {
+      if (pdfUrl) {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = filename || 'generated_cv.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    };
+
+    const handleOpenInNewTab = () => {
+      if (pdfUrl) {
+        window.open(pdfUrl, '_blank');
+      }
+    };
+
+    if (loading) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Loading PDF...</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 text-lg mb-2">❌ {error}</div>
+            <p className="text-gray-600">Unable to display PDF preview</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Generated CV PDF</h2>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleDownload}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+            >
+              ⬇️ Download PDF
+            </button>
+            <button
+              onClick={handleOpenInNewTab}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+            >
+              🔗 Open in New Tab
+            </button>
+          </div>
+        </div>
+
+        {/* PDF Display */}
+        <div className="border border-gray-300 rounded-lg overflow-hidden">
+          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">
+                📄 {filename || 'generated_cv.pdf'}
+              </span>
+              <span className="text-sm text-gray-500">
+                {fileSize ? `${(fileSize / 1024).toFixed(1)} KB` : ''}
+              </span>
+            </div>
+          </div>
+
+          <div className="relative" style={{ height: '800px' }}>
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="100%"
+              style={{ border: 'none' }}
+              title="Generated CV PDF"
+              onLoad={() => setLoading(false)}
+            >
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <p className="text-gray-600 mb-4">Your browser doesn't support PDF preview</p>
+                  <button
+                    onClick={handleDownload}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                  >
+                    Download PDF Instead
+                  </button>
+                </div>
+              </div>
+            </iframe>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+          <p className="text-sm text-blue-700">
+            <strong>📄 PDF Preview</strong> - The PDF is displayed above. You can scroll within the frame or download it using the button above.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  // CvGenerationShow Component
+  const CvGenerationShow = () => {
+    const [cvGeneration, setCvGeneration] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    useEffect(() => {
+      fetchCvGeneration();
+
+      // Set up auto-refresh for processing jobs
+      const interval = setInterval(() => {
+        if (cvGeneration && cvGeneration.status === 'processing') {
+          setRefreshing(true);
+          fetchCvGeneration();
+        }
+      }, 3000); // Check every 3 seconds
+
+      return () => clearInterval(interval);
+    }, [cvGeneration?.status]);
+
+    const fetchCvGeneration = async () => {
+      try {
+        const response = await fetch(`/cv_generations/<%= @cv_generation.id %>.json`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch CV generation');
+        }
+        const data = await response.json();
+        setCvGeneration(data);
+
+        // If job completed, stop refreshing
+        if (data.status === 'completed' || data.status === 'failed') {
+          setRefreshing(false);
+        }
+      } catch (err) {
+        setError(err.message);
+        setRefreshing(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const formatDate = (dateString) => {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    const getStatusColor = (status) => {
+      switch (status) {
+        case 'completed': return 'bg-green-100 text-green-800';
+        case 'processing': return 'bg-yellow-100 text-yellow-800';
+        case 'failed': return 'bg-red-100 text-red-800';
+        case 'cancelled': return 'bg-gray-100 text-gray-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    };
+
+    if (loading) {
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Loading CV generation...</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (error || !cvGeneration) {
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="text-red-500 text-lg mb-4">❌ {error || 'CV generation not found'}</div>
+            <button
+              onClick={() => window.location.href = '/cv_generations'}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            >
+              Back to CV Generations
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">CV Generation #{cvGeneration.id}</h1>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => window.location.href = '/cv_generations'}
+                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+              >
+                Back to List
+              </button>
+              {cvGeneration.status === 'failed' && (
+                <button
+                  onClick={() => window.location.href = `/cv_generations/${cvGeneration.id}/retry`}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Status and Info Panel */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Status & Information</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium mt-1 inline-block ${getStatusColor(cvGeneration.status)}`}>
+                      {cvGeneration.status?.charAt(0).toUpperCase() + cvGeneration.status?.slice(1)}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Created</label>
+                    <p className="text-sm text-gray-600">{formatDate(cvGeneration.created_at)}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Last Updated</label>
+                    <p className="text-sm text-gray-600">{formatDate(cvGeneration.updated_at)}</p>
+                  </div>
+                  {cvGeneration.tokens_used && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Tokens Used</label>
+                      <p className="text-sm text-gray-600">{cvGeneration.tokens_used.toLocaleString()}</p>
+                    </div>
+                  )}
+                  {cvGeneration.resume_id && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Resume ID</label>
+                      <p className="text-sm text-gray-600">
+                        {cvGeneration.resume_id}
+                        <a
+                          href={`/resumes/${cvGeneration.resume_id}`}
+                          className="text-blue-600 hover:text-blue-800 ml-2"
+                        >
+                          View Resume
+                        </a>
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">AI Model</label>
+                    <p className="text-sm text-gray-600">{cvGeneration.ai_model}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-2">
+              {/* Job Description */}
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
+                <div className="bg-gray-50 p-4 rounded border">
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{cvGeneration.job_description}</p>
+                </div>
+              </div>
+
+              {/* Generated Professional Summary */}
+              {cvGeneration.generated_content && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Generated Professional Summary</h2>
+                  <div className="bg-gray-50 p-4 rounded border">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{cvGeneration.generated_content}</p>
+                  </div>
+                  {cvGeneration.metadata?.pdf_generated && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                      <p className="text-sm text-green-700">
+                        <strong>✓ PDF Generated Successfully</strong> -
+                        Size: {cvGeneration.metadata.pdf_size ? `${(cvGeneration.metadata.pdf_size / 1024).toFixed(1)} KB` : 'Unknown'} |
+                        Filename: {cvGeneration.metadata.pdf_filename || 'generated_cv.pdf'}
+                      </p>
+                    </div>
+                  )}
+                  {cvGeneration.metadata?.pdf_error && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                      <p className="text-sm text-red-700">
+                        <strong>✗ PDF Generation Failed:</strong> {cvGeneration.metadata.pdf_error}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* PDF Viewer */}
+              {cvGeneration.metadata?.pdf_generated && cvGeneration.metadata?.pdf_data && (
+                <PdfViewer
+                  cvGenerationId={cvGeneration.id}
+                  pdfData={cvGeneration.metadata.pdf_data}
+                  filename={cvGeneration.metadata.pdf_filename}
+                  fileSize={cvGeneration.metadata.pdf_size}
+                />
+              )}
+
+              {/* Processing Status */}
+              {cvGeneration.status === 'processing' && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-3"></div>
+                    <div>
+                      <h3 className="text-lg font-medium text-yellow-800">Processing CV Generation</h3>
+                      <p className="text-sm text-yellow-700">
+                        Your CV is being generated. This may take a few minutes.
+                        {refreshing && <span className="ml-2 text-blue-600">🔄 Checking for updates...</span>}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Status */}
+              {cvGeneration.status === 'failed' && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                  <h3 className="text-lg font-medium text-red-800">Generation Failed</h3>
+                  <p className="text-sm text-red-700">There was an error generating your CV. You can try again using the retry button above.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Debug: Check if React is loaded
+  console.log('React loaded:', typeof React !== 'undefined');
+  console.log('ReactDOM loaded:', typeof ReactDOM !== 'undefined');
+  console.log('Root element:', document.getElementById('cv-generation-show-root'));
+
+  // Render the component
+  if (typeof React !== 'undefined' && typeof ReactDOM !== 'undefined') {
+    const root = createRoot(document.getElementById('cv-generation-show-root'));
+    root.render(<CvGenerationShow />);
+    console.log('React component rendered successfully');
+  } else {
+    console.error('React or ReactDOM not loaded');
+    document.getElementById('cv-generation-show-root').innerHTML = '<div class="text-red-500">Error: React not loaded. Please refresh the page.</div>';
+  }
+</script>

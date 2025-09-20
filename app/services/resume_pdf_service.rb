@@ -1,19 +1,37 @@
 class ResumePdfService
-  def initialize(resume)
+  def initialize(resume, generated_content = nil)
     @resume = resume
+    @generated_content = generated_content
   end
-  
+
   def generate
     # This is a placeholder implementation
     # In production, you would use Prawn or WickedPDF to generate ATS-friendly PDF
-    
+
     # For now, return a simple HTML that can be converted to PDF
     generate_html_content
   end
-  
+
   private
-  
+
   def generate_html_content
+    Rails.logger.info "=== RESUME PDF SERVICE ==="
+    Rails.logger.info "Generated Content Present: #{@generated_content.present?}"
+    Rails.logger.info "Generated Content: #{@generated_content&.truncate(100)}"
+    Rails.logger.info "Resume Professional Summary: #{@resume.professional_summary&.truncate(100)}"
+    Rails.logger.info "Resume Professional Summary English: #{@resume.professional_summary_english&.truncate(100)}"
+
+    # Determine which content to use
+    content_to_use = if @generated_content.present?
+      @generated_content
+    elsif @resume.professional_summary.present?
+      @resume.professional_summary
+    else
+      @resume.professional_summary_english
+    end
+
+    Rails.logger.info "Content to use for PDF: #{content_to_use&.truncate(100)}"
+
     <<~HTML
       <!DOCTYPE html>
       <html>
@@ -22,147 +40,147 @@ class ResumePdfService
         <title>#{@resume.complete_name} - CV</title>
         <style>
           /* ATS-Friendly Styling */
-          body { 
-            font-family: Arial, sans-serif; 
-            margin: 0.75in; 
-            line-height: 1.15; 
-            color: #000000; 
+          body {#{' '}
+            font-family: Arial, sans-serif;#{' '}
+            margin: 0.75in;#{' '}
+            line-height: 1.15;#{' '}
+            color: #000000;#{' '}
             font-size: 11pt;
             background: white;
           }
-          .header { 
-            text-align: center; 
-            margin-bottom: 15pt; 
+          .header {#{' '}
+            text-align: center;#{' '}
+            margin-bottom: 15pt;#{' '}
             border-bottom: 2pt solid #000000;
             padding-bottom: 8pt;
           }
-          .header h1 { 
-            font-size: 16pt; 
-            font-weight: bold; 
-            margin: 0 0 4pt 0; 
-            color: #000000; 
+          .header h1 {#{' '}
+            font-size: 16pt;#{' '}
+            font-weight: bold;#{' '}
+            margin: 0 0 4pt 0;#{' '}
+            color: #000000;#{' '}
             text-transform: uppercase;
             letter-spacing: 1pt;
           }
-          .contact-info { 
-            font-size: 10pt; 
-            color: #000000; 
-            margin-bottom: 8pt; 
+          .contact-info {#{' '}
+            font-size: 10pt;#{' '}
+            color: #000000;#{' '}
+            margin-bottom: 8pt;#{' '}
             font-weight: normal;
           }
-          .section { 
-            margin-bottom: 12pt; 
+          .section {#{' '}
+            margin-bottom: 12pt;#{' '}
             page-break-inside: avoid;
           }
-          .section-title { 
-            font-size: 12pt; 
-            font-weight: bold; 
-            color: #000000; 
-            border-bottom: 1pt solid #000000; 
-            margin-bottom: 6pt; 
+          .section-title {#{' '}
+            font-size: 12pt;#{' '}
+            font-weight: bold;#{' '}
+            color: #000000;#{' '}
+            border-bottom: 1pt solid #000000;#{' '}
+            margin-bottom: 6pt;#{' '}
             padding-bottom: 2pt;
             text-transform: uppercase;
             letter-spacing: 0.5pt;
           }
-          .experience-item { 
-            margin-bottom: 8pt; 
+          .experience-item {#{' '}
+            margin-bottom: 8pt;#{' '}
             page-break-inside: avoid;
           }
-          .experience-header { 
-            margin-bottom: 2pt; 
+          .experience-header {#{' '}
+            margin-bottom: 2pt;#{' '}
           }
-          .position { 
-            font-weight: bold; 
-            font-size: 11pt; 
-            color: #000000; 
+          .position {#{' '}
+            font-weight: bold;#{' '}
+            font-size: 11pt;#{' '}
+            color: #000000;#{' '}
             display: inline;
           }
-          .company { 
-            font-size: 10pt; 
-            color: #000000; 
-            margin: 0 0 2pt 0; 
+          .company {#{' '}
+            font-size: 10pt;#{' '}
+            color: #000000;#{' '}
+            margin: 0 0 2pt 0;#{' '}
             font-style: italic;
           }
-          .dates { 
-            color: #000000; 
-            font-size: 10pt; 
+          .dates {#{' '}
+            color: #000000;#{' '}
+            font-size: 10pt;#{' '}
             float: right;
             font-weight: normal;
           }
-          .description { 
-            margin-top: 3pt; 
+          .description {#{' '}
+            margin-top: 3pt;#{' '}
             clear: both;
           }
-          .description ul { 
-            margin: 2pt 0; 
-            padding-left: 15pt; 
+          .description ul {#{' '}
+            margin: 2pt 0;#{' '}
+            padding-left: 15pt;#{' '}
             list-style-type: disc;
           }
-          .description li { 
-            margin-bottom: 1pt; 
-            font-size: 10pt; 
+          .description li {#{' '}
+            margin-bottom: 1pt;#{' '}
+            font-size: 10pt;#{' '}
             line-height: 1.1;
           }
-          .education-item { 
-            margin-bottom: 8pt; 
+          .education-item {#{' '}
+            margin-bottom: 8pt;#{' '}
             page-break-inside: avoid;
           }
-          .education-degree { 
-            font-weight: bold; 
-            font-size: 11pt; 
-            color: #000000; 
+          .education-degree {#{' '}
+            font-weight: bold;#{' '}
+            font-size: 11pt;#{' '}
+            color: #000000;#{' '}
             display: inline;
           }
-          .education-institution { 
-            font-size: 10pt; 
-            color: #000000; 
-            margin: 0 0 2pt 0; 
+          .education-institution {#{' '}
+            font-size: 10pt;#{' '}
+            color: #000000;#{' '}
+            margin: 0 0 2pt 0;#{' '}
             font-style: italic;
           }
-          .education-dates { 
-            color: #000000; 
-            font-size: 10pt; 
+          .education-dates {#{' '}
+            color: #000000;#{' '}
+            font-size: 10pt;#{' '}
             float: right;
             font-weight: normal;
           }
-          .skills { 
-            margin-bottom: 6pt; 
+          .skills {#{' '}
+            margin-bottom: 6pt;#{' '}
           }
-          .skill-category { 
-            font-weight: bold; 
-            font-size: 10pt; 
-            color: #000000; 
+          .skill-category {#{' '}
+            font-weight: bold;#{' '}
+            font-size: 10pt;#{' '}
+            color: #000000;#{' '}
             display: inline;
           }
-          .skill-items { 
-            font-size: 10pt; 
-            color: #000000; 
+          .skill-items {#{' '}
+            font-size: 10pt;#{' '}
+            color: #000000;#{' '}
             display: inline;
           }
-          .certification-item { 
-            margin-bottom: 3pt; 
-            font-size: 10pt; 
+          .certification-item {#{' '}
+            margin-bottom: 3pt;#{' '}
+            font-size: 10pt;#{' '}
           }
-          .cert-name { 
-            font-weight: bold; 
+          .cert-name {#{' '}
+            font-weight: bold;#{' '}
             display: inline;
           }
-          .cert-date { 
-            color: #000000; 
-            font-size: 10pt; 
+          .cert-date {#{' '}
+            color: #000000;#{' '}
+            font-size: 10pt;#{' '}
             float: right;
             font-weight: normal;
           }
-          .language-item { 
-            margin-bottom: 2pt; 
-            font-size: 10pt; 
+          .language-item {#{' '}
+            margin-bottom: 2pt;#{' '}
+            font-size: 10pt;#{' '}
           }
-          .language-name { 
-            font-weight: bold; 
+          .language-name {#{' '}
+            font-weight: bold;#{' '}
             display: inline;
           }
-          .language-proficiency { 
-            color: #000000; 
+          .language-proficiency {#{' '}
+            color: #000000;#{' '}
             float: right;
             font-weight: normal;
           }
@@ -188,7 +206,7 @@ class ResumePdfService
       #{'  '}
         <div class="section">
           <div class="section-title">Professional Summary</div>
-          <p>#{@resume.professional_summary_english.present? ? @resume.professional_summary_english : @resume.professional_summary}</p>
+          <p>#{content_to_use}</p>
         </div>
       #{'  '}
         <div class="section">
@@ -219,13 +237,13 @@ class ResumePdfService
       </html>
     HTML
   end
-  
+
   def generate_work_experience_html
     # Remove duplicate work experiences based on job_title, company, and dates
     unique_experiences = @resume.work_experiences.uniq do |exp|
       "#{exp.job_title}-#{exp.company}-#{exp.start_date}-#{exp.end_date}"
     end
-    
+
     unique_experiences.map do |exp|
       start_date = exp.start_date.present? ? exp.start_date : "N/A"
       # Show "Present" if it's marked as current or if there's no end date (assuming ongoing)
@@ -244,10 +262,10 @@ class ResumePdfService
           begin
             JSON.parse(exp.responsibilities)
           rescue JSON::ParserError
-            [exp.responsibilities]
+            [ exp.responsibilities ]
           end
         else
-          [exp.responsibilities.to_s]
+          [ exp.responsibilities.to_s ]
         end
 
         # Format as bullet points (remove duplicates for cleaner CV)
@@ -273,15 +291,15 @@ class ResumePdfService
       HTML
     end.join
   end
-  
+
   def generate_skills_html
     # Remove duplicate skills based on category and skill_names
     unique_skills = @resume.skills.uniq do |skill|
       "#{skill.category}-#{skill.skill_names}"
     end
-    
+
     skills_by_category = unique_skills.group_by(&:category)
-    
+
     skills_by_category.map do |category, skills|
       skill_names = skills.flat_map do |skill|
         if skill.skill_names.is_a?(Array)
@@ -311,7 +329,7 @@ class ResumePdfService
     unique_educations = @resume.educations.uniq do |edu|
       "#{edu.degree}-#{edu.institution}-#{edu.start_date}-#{edu.end_date}"
     end
-    
+
     unique_educations.map do |edu|
       start_date = edu.start_date.present? ? edu.start_date : "N/A"
       # Show "Present" if it's marked as current or if there's no end date (assuming ongoing)
@@ -342,7 +360,7 @@ class ResumePdfService
     unique_certifications = @resume.certifications.uniq do |cert|
       "#{cert.name}-#{cert.organization}-#{cert.date}"
     end
-    
+
     unique_certifications.map do |cert|
       date_info = cert.date.present? ? " #{cert.date}" : ""
 
@@ -360,7 +378,7 @@ class ResumePdfService
     unique_languages = @resume.languages.uniq do |lang|
       "#{lang.language}-#{lang.proficiency}"
     end
-    
+
     unique_languages.map do |lang|
       <<~HTML
         <div class="language-item clearfix">

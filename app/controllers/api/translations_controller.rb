@@ -82,8 +82,6 @@ class Api::TranslationsController < ApplicationController
 
   def export_pdf
     begin
-      # Get user_id from params
-      user_id = params[:user_id] || 1
       resume_id = params[:resume_id]
 
       resume = nil
@@ -143,7 +141,15 @@ class Api::TranslationsController < ApplicationController
       end
 
       # Generate HTML content using the service
-      pdf_service = ResumePdfService.new(resume)
+      # For CV Builder, prioritize professional_summary_english (what preview shows)
+      professional_summary = resume.professional_summary_english.present? ? resume.professional_summary_english : resume.professional_summary
+      
+      Rails.logger.info "=== CV BUILDER PDF EXPORT ==="
+      Rails.logger.info "Resume ID: #{resume.id rescue 'new'}"
+      Rails.logger.info "Professional Summary: #{professional_summary&.truncate(100)}"
+      Rails.logger.info "Professional Summary English: #{resume.professional_summary_english&.truncate(100)}"
+      
+      pdf_service = ResumePdfService.new(resume, professional_summary)
       html_content = pdf_service.generate
 
       Rails.logger.info "Generated HTML length: #{html_content.length}"

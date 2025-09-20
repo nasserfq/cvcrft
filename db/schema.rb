@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_12_140517) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_13_132147) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,6 +39,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_12_140517) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["resume_id"], name: "index_certifications_on_resume_id"
+  end
+
+  create_table "cv_generations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "resume_id"
+    t.text "job_description"
+    t.text "generated_content"
+    t.string "ai_model"
+    t.string "status"
+    t.integer "tokens_used"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resume_id"], name: "index_cv_generations_on_resume_id"
+    t.index ["user_id"], name: "index_cv_generations_on_user_id"
   end
 
   create_table "educations", force: :cascade do |t|
@@ -137,6 +152,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_12_140517) do
   add_foreign_key "ai_translations", "resumes"
   add_foreign_key "ai_translations", "users"
   add_foreign_key "certifications", "resumes"
+  add_foreign_key "cv_generations", "resumes"
+  add_foreign_key "cv_generations", "users"
   add_foreign_key "educations", "resumes"
   add_foreign_key "languages", "resumes"
   add_foreign_key "resumes", "users"

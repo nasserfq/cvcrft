@@ -1971,13 +1971,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     </div>
 
     {/* Professional Summary */}
-    {formData.professional_summary_english && (
+    {(formData.professional_summary_english ||
+     formData.professional_summary) && (
      <div className="mb-6">
       <h2 className="text-lg font-bold text-gray-900 mb-2 pb-1 border-b border-blue-300 text-left">
        Professional Summary
       </h2>
       <p className="text-gray-700 leading-relaxed text-left">
-       {formData.professional_summary_english}
+       {formData.professional_summary_english || formData.professional_summary}
       </p>
      </div>
     )}
@@ -2294,7 +2295,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          </svg>
          جاري التصدير...
         </>
-        
        ) : (
         <>
           إنشاء السيرة الذاتية و تحميلها

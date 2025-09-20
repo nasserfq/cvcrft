@@ -6,6 +6,7 @@ class Resume < ApplicationRecord
   has_many :certifications, dependent: :destroy
   has_many :languages, dependent: :destroy
   has_many :ai_translations, dependent: :destroy
+  has_many :cv_generations, dependent: :destroy
 
   # Accept nested attributes
   accepts_nested_attributes_for :work_experiences, allow_destroy: true
