@@ -165,6 +165,10 @@ class ResumePdfService
             font-weight: bold;#{' '}
             display: inline;
           }
+          .cert-org {#{' '}
+            font-weight: normal;#{' '}
+            display: inline;
+          }
           .cert-date {#{' '}
             color: #000000;#{' '}
             font-size: 10pt;#{' '}
@@ -366,7 +370,7 @@ class ResumePdfService
 
       <<~HTML
         <div class="certification-item clearfix">
-          <span class="cert-name">#{cert.name} #{cert.organization}</span>
+          <span class="cert-name">#{cert.name}</span> <span class="cert-org">#{cert.organization}</span>
           <span class="cert-date">#{date_info.strip}</span>
         </div>
       HTML

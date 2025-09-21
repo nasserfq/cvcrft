@@ -416,7 +416,7 @@
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-slate-700">آخر إنشاء:</span>
                             <span className="text-xs text-slate-600">
-                              {resume.last_generated ? resume.last_generated.toLocaleDateString('ar-SA') : 'غير محدد'}
+                              {resume.last_generated ? resume.last_generated.toLocaleDateString('en-GB') : 'غير محدد'}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -441,7 +441,7 @@
                             <span className="text-xs text-blue-600">جاهزة للتحسين</span>
                           </div>
                           <div className="text-xs text-blue-600 mt-1">
-                            تم إنشاؤها: {new Date(resume.created_at).toLocaleDateString('ar-SA')}
+                            تم إنشاؤها: {new Date(resume.created_at).toLocaleDateString('en-GB')}
                           </div>
                         </div>
                       ) : (
