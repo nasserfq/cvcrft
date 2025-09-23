@@ -50,8 +50,9 @@ RUN npm ci --include=optional && \
 # Copy application code
 COPY . .
 
-# Remove dummy npm script since we need npm for Vite
-RUN rm -f /usr/local/bin/npm
+# Create a dummy npm script that skips CSS build but allows Vite to work
+RUN echo '#!/bin/bash\nif [[ "$*" == *"build:css"* ]]; then echo "Skipping CSS build - using pre-built CSS"; exit 0; fi\n/usr/bin/npm "$@"' > /usr/local/bin/npm && \
+    chmod +x /usr/local/bin/npm
 
 # Ensure the CSS file exists and is readable
 RUN ls -la app/assets/builds/ && \
