@@ -1,5 +1,6 @@
 class CvGenerationsController < ApplicationController
   before_action :authenticate_user!
+  before_action :ensure_user_has_resume, only: [:index, :new, :create, :stats]
   before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf ]
   
   # Skip CSRF protection for JSON requests from frontend
@@ -192,5 +193,14 @@ class CvGenerationsController < ApplicationController
       :job_description, :resume_id, :complete_name, :email,
       :temperature, :max_tokens
     )
+  end
+
+  def ensure_user_has_resume
+    return unless current_user.resumes.empty?
+    
+    respond_to do |format|
+      format.html { redirect_to new_resume_path, alert: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة.' }
+      format.json { render json: { error: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة.' }, status: :unprocessable_entity }
+    end
   end
 end
