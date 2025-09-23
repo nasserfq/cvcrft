@@ -52,6 +52,10 @@ RUN npm ci --include=optional && \
 RUN echo '#!/bin/bash\nif [[ "$*" == *"build:css"* ]]; then echo "Skipping CSS build - using pre-built CSS"; exit 0; fi\n/usr/bin/npm "$@"' > /usr/local/bin/npm && \
     chmod +x /usr/local/bin/npm
 
+# Remove problematic CSS files from manifest to avoid SassC processing
+RUN sed -i '/link application.css/d' app/assets/config/manifest.js && \
+    sed -i '/link_directory.*stylesheets/d' app/assets/config/manifest.js
+
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
