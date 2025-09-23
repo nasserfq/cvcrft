@@ -41,16 +41,15 @@ RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Skip npm install since CSS is already built
-# COPY package.json package-lock.json ./
-# RUN npm ci --include=optional && npm rebuild @parcel/watcher
+# Install Node.js dependencies for Vite and React
+COPY package.json package-lock.json ./
+RUN npm ci --include=optional
 
 # Copy application code
 COPY . .
 
-# Create a dummy npm script to avoid CSS build issues
-RUN echo '#!/bin/bash\necho "Skipping CSS build"\nexit 0' > /usr/local/bin/npm && \
-    chmod +x /usr/local/bin/npm
+# Remove dummy npm script since we need npm for Vite
+RUN rm -f /usr/local/bin/npm
 
 # Ensure the CSS file exists and is readable
 RUN ls -la app/assets/builds/ && \
@@ -68,12 +67,12 @@ RUN bundle exec bootsnap precompile app/ lib/
 RUN mkdir -p public/assets && \
     cp app/assets/builds/application.css public/assets/application.css
 
-# Create a minimal Vite config that won't fail
-RUN echo 'export default { build: { rollupOptions: { input: {} } } }' > vite.config.mts
+# Restore the original Vite config
+RUN mv vite.config.mts.disabled vite.config.mts 2>/dev/null || echo "Vite config already exists"
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 # Skip CSS build for now to avoid parcel watcher issues
-RUN SECRET_KEY_BASE_DUMMY=1 VITE_SKIP_COMPILATION=1 VITE_RUBY_SKIP_COMPILATION=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 
 
