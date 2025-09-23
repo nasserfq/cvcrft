@@ -43,7 +43,8 @@ RUN bundle install && \
 
 # Install Node.js dependencies for Vite and React
 COPY package.json package-lock.json ./
-RUN npm ci --include=optional
+RUN npm ci --include=optional && \
+    npm rebuild @parcel/watcher --build-from-source
 
 # Copy application code
 COPY . .
