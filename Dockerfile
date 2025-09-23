@@ -68,9 +68,8 @@ RUN bundle exec bootsnap precompile app/ lib/
 RUN mkdir -p public/assets && \
     cp app/assets/builds/application.css public/assets/application.css
 
-# Create a dummy vite command to avoid Vite compilation issues
-RUN echo '#!/bin/bash\necho "Skipping Vite build"\nexit 0' > /usr/local/bin/vite && \
-    chmod +x /usr/local/bin/vite
+# Disable Vite by renaming the config file
+RUN mv vite.config.mts vite.config.mts.disabled
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 # Skip CSS build for now to avoid parcel watcher issues
