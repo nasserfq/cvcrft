@@ -58,7 +58,8 @@ RUN ls -la app/assets/builds/ && \
     echo "CSS file found and accessible"
 
 # Remove the problematic CSS file from the manifest to avoid SassC processing
-RUN sed -i '/link application.css/d' app/assets/config/manifest.js
+RUN sed -i '/link application.css/d' app/assets/config/manifest.js && \
+    sed -i '/link_directory.*stylesheets/d' app/assets/config/manifest.js
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
