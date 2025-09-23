@@ -57,6 +57,9 @@ RUN ls -la app/assets/builds/ && \
     test -f app/assets/builds/application.css && \
     echo "CSS file found and accessible"
 
+# Replace the tailwind import file to avoid import issues since CSS is already built
+RUN echo "/* CSS already built - see app/assets/builds/application.css */" > app/assets/stylesheets/application.tailwind.css
+
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
