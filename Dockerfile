@@ -44,10 +44,10 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
-# Install JavaScript dependencies and rebuild native modules
-RUN npm ci --include=optional && \
-    npm rebuild @parcel/watcher --build-from-source && \
-    npm rebuild rollup --build-from-source
+# Clean install JavaScript dependencies to fix native module issues
+RUN rm -rf node_modules package-lock.json && \
+    npm install --include=optional && \
+    npm rebuild @parcel/watcher --build-from-source
 
 # Create a dummy npm script that skips CSS build but allows Vite to work
 RUN echo '#!/bin/bash\nif [[ "$*" == *"build:css"* ]]; then echo "Skipping CSS build - using pre-built CSS"; exit 0; fi\n/usr/bin/npm "$@"' > /usr/local/bin/npm && \
