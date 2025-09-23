@@ -44,8 +44,10 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
-# Install JavaScript dependencies
-RUN npm ci --include=optional
+# Install JavaScript dependencies and rebuild native modules
+RUN npm ci --include=optional && \
+    npm rebuild @parcel/watcher --build-from-source && \
+    npm rebuild lightningcss --build-from-source
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
