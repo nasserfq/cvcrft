@@ -14,12 +14,8 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
     <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <% if Rails.application.assets&.find_asset("application.css") %>
-      <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <% else %>
-      <!-- CSS not available in asset pipeline - using pre-built CSS -->
-      <link rel="stylesheet" href="/assets/application.css" data-turbo-track="reload">
-    <% end %>
+    <!-- Using pre-built CSS directly -->
+    <link rel="stylesheet" href="/assets/application.css" data-turbo-track="reload">
     <%= javascript_importmap_tags %>
     <!--
       If using a TypeScript entrypoint file:
