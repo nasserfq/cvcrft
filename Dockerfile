@@ -68,12 +68,12 @@ RUN bundle exec bootsnap precompile app/ lib/
 RUN mkdir -p public/assets && \
     cp app/assets/builds/application.css public/assets/application.css
 
-# Disable Vite by renaming the config file
-RUN mv vite.config.mts vite.config.mts.disabled
+# Create a minimal Vite config that won't fail
+RUN echo 'export default { build: { rollupOptions: { input: {} } } }' > vite.config.mts
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 # Skip CSS build for now to avoid parcel watcher issues
-RUN SECRET_KEY_BASE_DUMMY=1 VITE_SKIP_COMPILATION=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 VITE_SKIP_COMPILATION=1 VITE_RUBY_SKIP_COMPILATION=1 ./bin/rails assets:precompile
 
 
 
