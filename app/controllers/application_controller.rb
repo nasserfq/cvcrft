@@ -2,9 +2,10 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
-  # Basic HTTP Authentication
+  # Basic HTTP Authentication (skip for health check)
   http_basic_authenticate_with name: ENV["BASIC_AUTH_USERNAME"] || "admin",
-                              password: ENV["BASIC_AUTH_PASSWORD"] || "cvcraft2024"
+                              password: ENV["BASIC_AUTH_PASSWORD"] || "cvcraft2024",
+                              except: [:health_check]
 
   # Include Devise helpers for authentication
   include Devise::Controllers::Helpers
