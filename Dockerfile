@@ -2,8 +2,8 @@
 # check=error=true
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t cvcraft .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name cvcraft cvcraft
+# docker build -t trends .
+# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name trends trends
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
@@ -28,11 +28,9 @@ ENV RAILS_ENV="production" \
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
-# Install packages needed to build gems and Node.js
+# Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config curl python3 make g++ && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install --no-install-recommends -y nodejs && \
+    apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
@@ -41,40 +39,13 @@ RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Install Node.js dependencies for Vite and React
-COPY package.json package-lock.json ./
-RUN npm ci --include=optional && \
-    npm rebuild @parcel/watcher --build-from-source && \
-    npm rebuild lightningcss --build-from-source
-
 # Copy application code
 COPY . .
-
-# Create a dummy npm script that skips CSS build but allows Vite to work
-RUN echo '#!/bin/bash\nif [[ "$*" == *"build:css"* ]]; then echo "Skipping CSS build - using pre-built CSS"; exit 0; fi\n/usr/bin/npm "$@"' > /usr/local/bin/npm && \
-    chmod +x /usr/local/bin/npm
-
-# Ensure the CSS file exists and is readable
-RUN ls -la app/assets/builds/ && \
-    test -f app/assets/builds/application.css && \
-    echo "CSS file found and accessible"
-
-# Remove the problematic CSS file from the manifest to avoid SassC processing
-RUN sed -i '/link application.css/d' app/assets/config/manifest.js && \
-    sed -i '/link_directory.*stylesheets/d' app/assets/config/manifest.js
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
-# Create public assets directory and copy the built CSS file
-RUN mkdir -p public/assets && \
-    cp app/assets/builds/application.css public/assets/application.css
-
-# Restore the original Vite config
-RUN mv vite.config.mts.disabled vite.config.mts 2>/dev/null || echo "Vite config already exists"
-
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-# Skip CSS build for now to avoid parcel watcher issues
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 
@@ -99,3 +70,5 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 # Start server via Thruster by default, this can be overwritten at runtime
 EXPOSE 80
 CMD ["./bin/thrust", "./bin/rails", "server"]
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
