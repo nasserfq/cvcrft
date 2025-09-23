@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Health check route for Kamal
+  get "/up", to: "application#health_check"
+
   # Devise routes (for authentication helpers)
   devise_for :users, skip: [ :registrations, :sessions, :passwords, :confirmations, :unlocks ]
 

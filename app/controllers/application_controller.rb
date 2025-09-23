@@ -11,4 +11,9 @@ class ApplicationController < ActionController::Base
 
   # Make Devise helpers available in views
   helper_method :user_signed_in?, :current_user
+
+  # Health check endpoint for Kamal
+  def health_check
+    render json: { status: "ok", timestamp: Time.current }
+  end
 end
