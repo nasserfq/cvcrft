@@ -28,9 +28,11 @@ ENV RAILS_ENV="production" \
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
-# Install packages needed to build gems
+# Install packages needed to build gems and Node.js
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
+    apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config curl python3 make g++ && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install --no-install-recommends -y nodejs && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
@@ -41,6 +43,9 @@ RUN bundle install && \
 
 # Copy application code
 COPY . .
+
+# Install JavaScript dependencies
+RUN npm ci --include=optional
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
@@ -70,5 +75,3 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 # Start server via Thruster by default, this can be overwritten at runtime
 EXPOSE 80
 CMD ["./bin/thrust", "./bin/rails", "server"]
-COPY Gemfile Gemfile.lock ./
-RUN bundle install
