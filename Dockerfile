@@ -63,8 +63,8 @@ RUN bundle exec bootsnap precompile app/ lib/
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-# Copy pre-built CSS to public directory for direct access
-RUN mkdir -p public/assets && cp app/assets/builds/application.css public/assets/application.css
+# Build CSS and copy to public directory for direct access
+RUN npm run build:css && mkdir -p public/assets && cp app/assets/builds/application.css public/assets/application.css
 
 
 
