@@ -37,7 +37,9 @@ RUN apt-get update -qq && \
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
-RUN bundle install && \
+# Temporarily comment out cssbundling-rails to avoid CSS build issues
+RUN sed -i 's/gem "cssbundling-rails"/# gem "cssbundling-rails"/' Gemfile && \
+    bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
@@ -53,7 +55,7 @@ RUN bundle exec bootsnap precompile app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 # Skip CSS build for now to avoid parcel watcher issues
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 SKIP_CSS_BUILD=1 ./bin/rails assets:precompile
 
 
 
