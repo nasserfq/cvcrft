@@ -35,9 +35,9 @@ env:
   REDIS_URL: redis://cvcraft-trends-redis:6379/1
   # IMPORTANT FIX: Set DATABASE_HOST to the actual container name Kamal creates
   DATABASE_HOST: cvcraft-trends-db # Corrected to match Kamal's automatic naming convention
-  DATABASE_USER: postgres
-  DATABASE_NAME: hllelai_production
-  DATABASE_PASSWORD: wisconsinQ1413!
+  DATABASE_USER: cvcraft
+  DATABASE_NAME: cvcraft_production
+  CVCRAFT_DATABASE_PASSWORD: wisconsinQ1413!
 
 accessories:
  # The key 'trends-redis' IS the name of the accessory container
@@ -54,8 +54,8 @@ accessories:
   # No 'name:' key here, the key itself acts as the name
   env:
    clear:
-    POSTGRES_USER: postgres
-    POSTGRES_DB: hllelai_production
+    POSTGRES_USER: cvcraft
+    POSTGRES_DB: cvcraft_production
     POSTGRES_PASSWORD: wisconsinQ1413!
   directories:
    - data:/var/lib/postgresql/data # Ensure data persistence for PostgreSQL
