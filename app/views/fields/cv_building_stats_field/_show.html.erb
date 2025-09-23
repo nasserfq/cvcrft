@@ -1,0 +1,60 @@
+<div class="cv-building-stats">
+  <h4>CV Building Summary</h4>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <strong>Total CVs Built:</strong> <%= data.resume_count %>
+    </div>
+    <div class="stat-item">
+      <strong>With Work Experience:</strong> <%= data.resumes_with_work_experience %>
+    </div>
+    <div class="stat-item">
+      <strong>With Skills:</strong> <%= data.resumes_with_skills %>
+    </div>
+    <div class="stat-item">
+      <strong>With ATS Scores:</strong> <%= data.resumes_with_ats_score %>
+    </div>
+    <% if data.average_ats_score > 0 %>
+    <div class="stat-item">
+      <strong>Average ATS Score:</strong> <%= data.average_ats_score %>
+    </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.cv-building-stats {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px 0;
+}
+
+.cv-building-stats h4 {
+  margin-top: 0;
+  color: #495057;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.stat-item {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-item strong {
+  color: #495057;
+  display: block;
+  margin-bottom: 5px;
+}
+</style>

@@ -51,7 +51,7 @@ gem "actionmailbox"
 gem "actiontext"
 gem "actioncable"
 gem "image_processing", "~> 1.2"
-
+gem "administrate"
 # Background job processing
 gem "sidekiq"
 

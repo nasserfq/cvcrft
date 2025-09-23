@@ -1,0 +1,39 @@
+<% if field.data.present? %>
+  <div class="user-detail">
+    <strong><%= field.data.name %></strong><br>
+    <span class="email"><%= field.data.email %></span><br>
+    <small class="user-id">User ID: <%= field.data.id %></small>
+  </div>
+<% else %>
+  <div class="user-detail no-user">
+    <span class="text-muted">No user associated</span>
+  </div>
+<% end %>
+<style>
+  .user-detail {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+  }
+
+  .user-detail.no-user {
+    border-left-color: #dc3545;
+    background: #f8d7da;
+  }
+
+  .user-detail .email {
+    color: #6c757d;
+    font-size: 0.9em;
+  }
+
+  .user-detail .user-id {
+    color: #6c757d;
+    font-size: 0.8em;
+  }
+
+  .text-muted {
+    color: #6c757d;
+    font-style: italic;
+  }
+</style>

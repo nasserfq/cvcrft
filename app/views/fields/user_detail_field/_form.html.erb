@@ -1,0 +1,6 @@
+<div class="form-group">
+  <%= label_tag field.attribute, field.name, class: "form-label" %>
+  <%= select_tag field.attribute, 
+      options_from_collection_for_select(User.all, :id, :email, field.data&.id),
+      { include_blank: "Select a user", class: "form-control" } %>
+</div>

@@ -1,0 +1,5 @@
+<% if field.data.present? %>
+  <%= field.data.name %> (<%= field.data.email %>)
+<% else %>
+  <span class="text-muted">No user</span>
+<% end %>

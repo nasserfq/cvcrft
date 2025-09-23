@@ -1,18 +1,18 @@
 # WickedPDF configuration
-WickedPdf.config = {
+WickedPdf.configure do |config|
   # Path to the wkhtmltopdf executable
-  exe_path: Gem.bin_path('wkhtmltopdf-binary', 'wkhtmltopdf'),
+  config.exe_path = Gem.bin_path('wkhtmltopdf-binary', 'wkhtmltopdf')
   
   # Default options
-  page_size: 'A4',
-  orientation: 'Portrait',
-  margin: {
+  config.page_size = 'A4'
+  config.orientation = 'Portrait'
+  config.margin = {
     top: 20,
     bottom: 20,
     left: 20,
     right: 20
-  },
-  print_media_type: true,
-  disable_smart_shrinking: false,
-  encoding: 'UTF-8'
-}
+  }
+  config.print_media_type = true
+  config.disable_smart_shrinking = false
+  config.encoding = 'UTF-8'
+end

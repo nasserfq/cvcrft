@@ -44,6 +44,20 @@ Rails.application.routes.draw do
     end
   end
 
+  # Admin routes
+  namespace :admin do
+    root "users#index"
+    resources :users
+    resources :resumes
+    resources :cv_generations
+    resources :ai_translations
+    resources :skills
+    resources :work_experiences
+    resources :certifications
+    resources :educations
+    resources :languages
+  end
+
   # Sidekiq web interface (admin only in production)
   require "sidekiq/web"
   if Rails.env.production?
