@@ -82,8 +82,8 @@ production:
   <<: *default
   database: <%= ENV.fetch("DATABASE_NAME", "cvcraft_production") %>
   username: <%= ENV.fetch("DATABASE_USER", "cvcraft") %>
-  password: <%= ENV["AFT_DATABASE_PASSWORD"] %>
-  host: <%= ENV.fetch("BASE_HOST", "localhost") %>
+  password: <%= ENV["CVCRAFT_DATABASE_PASSWORD"] %>
+  host: <%= ENV.fetch("DATABASE_HOST", "localhost") %>
   port: <%= ENV.fetch("DATABASE_PORT", "5432") %>
  cache:
   <<: *primary_production
