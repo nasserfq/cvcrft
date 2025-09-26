@@ -59,6 +59,17 @@ Rails.application.routes.draw do
     resources :certifications
     resources :educations
     resources :languages
+    
+    # Email load testing routes
+    resources :email_load_test, only: [:index] do
+      collection do
+        post :start_test
+        post :stop_test
+        post :cleanup
+        get :monitor
+        get :results
+      end
+    end
   end
 
   # Sidekiq web interface (admin only in production)

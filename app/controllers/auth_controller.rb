@@ -8,10 +8,11 @@ class AuthController < ApplicationController
 
   def send_otp
     email = params[:email]&.strip&.downcase
+    return_to = params[:return_to]
 
     unless email.present? && email.match?(URI::MailTo::EMAIL_REGEXP)
       flash[:alert] = "يرجى إدخال بريد إلكتروني صحيح"
-      redirect_to login_path and return
+      redirect_to login_path(return_to: return_to) and return
     end
 
     begin
@@ -22,21 +23,22 @@ class AuthController < ApplicationController
       SendOtpEmailJob.perform_later(email, otp_verification.otp_code)
 
       flash[:notice] = "تم إرسال رمز التحقق إلى بريدك الإلكتروني"
-      redirect_to login_path(otp_sent: "true", email: email)
+      redirect_to login_path(otp_sent: "true", email: email, return_to: return_to)
     rescue => e
       Rails.logger.error "OTP Send Error: #{e.message}"
       flash[:alert] = "فشل في إرسال رمز التحقق. يرجى المحاولة مرة أخرى."
-      redirect_to login_path
+      redirect_to login_path(return_to: return_to)
     end
   end
 
   def verify_otp
     email = params[:email]&.strip&.downcase
     otp_code = params[:otp_code]&.strip
+    return_to = params[:return_to]
 
     unless email.present? && otp_code.present?
       flash[:alert] = "البريد الإلكتروني ورمز التحقق مطلوبان"
-      redirect_to login_path and return
+      redirect_to login_path(return_to: return_to) and return
     end
 
     # Find valid OTP
@@ -44,7 +46,7 @@ class AuthController < ApplicationController
 
     unless otp_verification
       flash[:alert] = "رمز التحقق غير صحيح أو منتهي الصلاحية"
-      redirect_to login_path(otp_sent: "true", email: email) and return
+      redirect_to login_path(otp_sent: "true", email: email, return_to: return_to) and return
     end
 
     begin
@@ -68,15 +70,21 @@ class AuthController < ApplicationController
         Rails.logger.info "Warden user key: #{session['warden.user.user.key']}"
 
         flash[:notice] = "تم تسجيل الدخول بنجاح!"
-        redirect_to root_path
+        
+        # Redirect to the intended destination or root path
+        if return_to.present? && return_to.start_with?('/')
+          redirect_to return_to
+        else
+          redirect_to root_path
+        end
       else
         flash[:alert] = "رمز التحقق غير صحيح"
-        redirect_to login_path(otp_sent: "true", email: email)
+        redirect_to login_path(otp_sent: "true", email: email, return_to: return_to)
       end
     rescue => e
       Rails.logger.error "OTP Verification Error: #{e.message}"
       flash[:alert] = "فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى."
-      redirect_to login_path
+      redirect_to login_path(return_to: return_to)
     end
   end
 

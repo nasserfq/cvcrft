@@ -55,6 +55,9 @@ gem "administrate"
 # Background job processing
 gem "sidekiq"
 
+# Parallel processing for load testing
+gem "parallel"
+
 # PDF generation
 gem "wicked_pdf"
 gem "wkhtmltopdf-binary"

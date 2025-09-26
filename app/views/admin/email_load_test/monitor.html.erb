@@ -1,0 +1,306 @@
+<div class="monitor-dashboard">
+  <div class="dashboard-header">
+    <h1>Email Load Test Monitor</h1>
+    <p>Real-time monitoring of email job processing</p>
+  </div>
+  <!-- Queue Statistics -->
+  <div class="stats-section">
+    <h2>Queue Statistics</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <h3><%= @queue_stats[:processed] %></h3>
+          <p>Processed</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="stat-content">
+          <h3><%= @queue_stats[:failed] %></h3>
+          <p>Failed</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <h3><%= @queue_stats[:enqueued] %></h3>
+          <p>Enqueued</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-content">
+          <h3><%= @queue_stats[:retry] %></h3>
+          <p>Retry</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Queue Details -->
+  <div class="queue-details-section">
+    <h2>Queue Details</h2>
+    <div class="queue-list">
+      <% @queue_stats[:queues].each do |queue| %>
+        <div class="queue-item">
+          <div class="queue-info">
+            <span class="queue-name"><%= queue[:name] %></span>
+            <span class="queue-size"><%= queue[:size] %> jobs</span>
+          </div>
+          <div class="queue-status">
+            <% if queue[:size] > 0 %>
+              <span class="status-busy">Processing</span>
+            <% else %>
+              <span class="status-idle">Idle</span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <!-- Recent Jobs -->
+  <div class="recent-jobs-section">
+    <h2>Recent Jobs</h2>
+    <% if @recent_jobs.any? %>
+      <div class="jobs-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Queue</th>
+              <th>Job Class</th>
+              <th>Arguments</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_jobs.each do |job| %>
+              <tr>
+                <td><%= job[:queue] %></td>
+                <td><%= job[:class] %></td>
+                <td><%= job[:args].inspect.truncate(50) %></td>
+                <td><%= job[:created_at].strftime("%H:%M:%S") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="no-jobs">No recent jobs found</p>
+    <% end %>
+  </div>
+  <!-- Actions -->
+  <div class="actions-section">
+    <div class="action-buttons">
+      <a href="<%= admin_email_load_test_index_path %>" class="btn btn-primary">← Back to Load Test</a>
+      <a href="<%= admin_email_load_test_monitor_path %>" class="btn btn-secondary">🔄 Refresh</a>
+      <a href="/sidekiq" target="_blank" class="btn btn-info">Sidekiq Dashboard</a>
+    </div>
+  </div>
+</div>
+<style>
+  .monitor-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .dashboard-header h1 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  .dashboard-header p {
+    color: #666;
+    font-size: 16px;
+  }
+
+  .stats-section, .queue-details-section, .recent-jobs-section {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .stat-icon {
+    font-size: 24px;
+  }
+
+  .stat-content h3 {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+  }
+
+  .stat-content p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+  }
+
+  .queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+  }
+
+  .queue-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .queue-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+  }
+
+  .queue-size {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .queue-status {
+    display: flex;
+    align-items: center;
+  }
+
+  .status-busy {
+    background: #ffc107;
+    color: #212529;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-idle {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .jobs-table {
+    overflow-x: auto;
+  }
+
+  .jobs-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  .jobs-table th,
+  .jobs-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .jobs-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .jobs-table tr:hover {
+    background: #f8f9fa;
+  }
+
+  .no-jobs {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px;
+  }
+
+  .actions-section {
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: #007bff;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #0056b3;
+    color: white;
+  }
+
+  .btn-secondary {
+    background: #6c757d;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: #545b62;
+    color: white;
+  }
+
+  .btn-info {
+    background: #17a2b8;
+    color: white;
+  }
+
+  .btn-info:hover {
+    background: #138496;
+    color: white;
+  }
+</style>
+

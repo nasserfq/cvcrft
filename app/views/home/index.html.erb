@@ -92,7 +92,7 @@
                   <i data-lucide="play-circle" class="w-5 h-5"></i>
                   شاهد نموذج
                 </a>
-                <%= link_to cv_generations_path, class: "inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors" do %>
+                <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors" do %>
                   <i data-lucide="wand-2" class="w-5 h-5"></i>
                   منشئ السيرة الذاتية
                 <% end %>
@@ -249,11 +249,11 @@
               أدخل وصف الوظيفة المطلوبة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة ومحسنة لـ ATS
             </p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-              <%= link_to new_cv_generation_path, class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors" do %>
+              <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors" do %>
                 <i data-lucide="wand-2" class="w-5 h-5"></i>
                 ابدأ الآن
               <% end %>
-              <%= link_to cv_generations_path, class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 transition-colors" do %>
+              <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 transition-colors" do %>
                 <i data-lucide="list" class="w-5 h-5"></i>
                 عرض السير المولدة
               <% end %>

@@ -1,0 +1,112 @@
+# Email Load Testing Configuration
+# This file contains settings for optimizing email sending performance
+
+# AWS SES Configuration
+aws_ses:
+  # Rate limits (requests per second)
+  rate_limit: 14  # AWS SES default sending rate
+  burst_limit: 20  # Burst capacity
+  
+  # Batch processing
+  batch_size: 50  # Emails per batch
+  batch_delay: 0.1  # Delay between batches (seconds)
+  
+  # Retry configuration
+  max_retries: 3
+  retry_delay: 60  # seconds
+  
+  # Timeout settings
+  timeout: 30  # seconds
+
+# Sidekiq Configuration
+sidekiq:
+  # Concurrency settings
+  concurrency: 10  # Number of worker threads
+  
+  # Queue priorities
+  queues:
+    mailers: 2      # High priority for email jobs
+    default: 1      # Normal priority
+    ai_translations: 3  # Lower priority
+    pdf_generation: 4   # Lowest priority
+  
+  # Memory management
+  memory_threshold: 1_000_000_000  # 1GB
+  
+  # Job limits
+  max_jobs_per_worker: 1000
+
+# Load Testing Configuration
+load_test:
+  # Default test parameters
+  default_users: 10000
+  default_batch_size: 100
+  max_users: 50000
+  
+  # Performance monitoring
+  enable_monitoring: true
+  log_level: info
+  
+  # Test data generation
+  test_email_domain: "example.com"
+  test_user_prefix: "test_user_"
+  
+  # Cleanup settings
+  auto_cleanup: false
+  cleanup_after_hours: 24
+
+# Email Templates
+email_templates:
+  otp:
+    subject: "Your CV Craft Login Code"
+    template: "otp_email"
+  
+  welcome:
+    subject: "Welcome to CV Craft!"
+    template: "welcome_email"
+  
+  notification:
+    subject: "CV Craft Notification"
+    template: "notification_email"
+
+# Monitoring and Alerting
+monitoring:
+  # Performance thresholds
+  max_processing_time: 300  # 5 minutes
+  max_failure_rate: 0.05    # 5%
+  
+  # Alerting
+  enable_alerts: true
+  alert_email: "admin@cvcraft.com"
+  
+  # Metrics collection
+  collect_metrics: true
+  metrics_retention_days: 7
+
+# Development/Testing
+development:
+  # Use test email service in development
+  use_test_service: true
+  test_email_service: "mailcatcher"  # or "letter_opener"
+  
+  # Mock AWS SES for testing
+  mock_aws_ses: true
+  
+  # Reduced limits for development
+  max_test_users: 1000
+  reduced_batch_size: 10
+
+# Production optimizations
+production:
+  # Enable all optimizations
+  enable_optimizations: true
+  
+  # Use connection pooling
+  connection_pool_size: 20
+  
+  # Enable compression
+  enable_compression: true
+  
+  # Cache frequently used data
+  enable_caching: true
+  cache_ttl: 3600  # 1 hour

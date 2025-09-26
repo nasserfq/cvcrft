@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Email Load Testing - CV Craft Admin</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+      }
+      
+      .admin-header {
+        background: #2c3e50;
+        color: white;
+        padding: 1rem 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .admin-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+      
+      .admin-header a {
+        color: white;
+        text-decoration: none;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+      }
+      
+      .admin-header a:hover {
+        text-decoration: underline;
+      }
+      
+      .admin-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      
+      .flash-messages {
+        margin-bottom: 2rem;
+      }
+      
+      .flash-message {
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+      }
+      
+      .flash-notice {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      
+      .flash-alert {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="admin-header">
+      <h1>CV Craft Admin - Email Load Testing</h1>
+      <a href="/admin">← Back to Admin</a>
+      <a href="/sidekiq" target="_blank">Sidekiq Dashboard</a>
+    </div>
+
+    <div class="admin-content">
+      <% if notice %>
+        <div class="flash-messages">
+          <div class="flash-message flash-notice"><%= notice %></div>
+        </div>
+      <% end %>
+      
+      <% if alert %>
+        <div class="flash-messages">
+          <div class="flash-message flash-alert"><%= alert %></div>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </div>
+  </body>
+</html>

@@ -42,10 +42,10 @@
             <span>تسجيل الدخول</span>
           </a>
         <% end %>
-        <a href="/resumes/new" class="inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:shadow transition-colors">
+        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:shadow transition-colors" do %>
           <i data-lucide="wand-2" class="w-4 h-4"></i>
           <span>ابدأ الآن مجانًا</span>
-        </a>
+        <% end %>
         <!-- Mobile menu button -->
         <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
           <i data-lucide="menu" class="w-5 h-5"></i>
