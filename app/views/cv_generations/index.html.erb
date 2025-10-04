@@ -4,18 +4,27 @@
     <%= link_to "Generate New CV", new_cv_generation_path, 
         class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
   </div>
-
   <div class="grid gap-6">
     <% if @cv_generations.any? %>
       <% @cv_generations.each do |generation| %>
-        <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div class="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-lg shadow-md p-6 border border-emerald-200 relative">
+          <!-- AI Generated Badge -->
+          <div class="absolute top-4 right-4">
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+              <i data-lucide="sparkles" class="w-3 h-3"></i>
+              AI Generated
+            </span>
+          </div>
           <div class="flex justify-between items-start mb-4">
             <div class="flex-1">
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                CV Generation #<%= generation.id %>
+              <h3 class="text-lg font-semibold text-slate-900 mb-2">
+                <span class="inline-flex items-center gap-2">
+                  <i data-lucide="wand-2" class="w-5 h-5 text-emerald-600"></i>
+                  CV Generated #<%= generation.id %>
+                </span>
               </h3>
               <p class="text-sm text-gray-600 mb-2">
-                <strong>Status:</strong> 
+                <strong>Status:</strong>
                 <span class="px-2 py-1 rounded-full text-xs font-medium
                   <%= case generation.status
                       when 'completed' then 'bg-green-100 text-green-800'
@@ -62,14 +71,12 @@
                   class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
             </div>
           </div>
-          
           <div class="mb-4">
             <h4 class="text-sm font-medium text-gray-700 mb-2">Job Description:</h4>
             <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded border">
               <%= truncate(generation.job_description, length: 200) %>
             </p>
           </div>
-
           <% if generation.generated_content.present? %>
             <div class="mb-4">
               <h4 class="text-sm font-medium text-gray-700 mb-2">Generated Content:</h4>
@@ -78,7 +85,6 @@
               </p>
             </div>
           <% end %>
-
           <% if generation.resume_id %>
             <div class="text-sm text-gray-600 mb-2">
               <strong>Resume ID:</strong> <%= generation.resume_id %>
@@ -86,7 +92,6 @@
                   class: "text-blue-600 hover:text-blue-800 ml-2" %>
             </div>
           <% end %>
-
           <% if generation.metadata&.dig("pdf_generated") %>
             <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded">
               <div class="flex items-center justify-between">
@@ -118,7 +123,6 @@
       </div>
     <% end %>
   </div>
-
   <div class="mt-8 text-center">
     <%= link_to "View Statistics", stats_cv_generations_path, 
         class: "text-blue-600 hover:text-blue-800 font-medium" %>

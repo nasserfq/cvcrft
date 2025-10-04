@@ -7,6 +7,7 @@ class ResumesController < ApplicationController
 
   def index
     @resumes = current_user.resumes.recent
+    @cv_generations = current_user.cv_generations.where(status: "completed").recent
 
     respond_to do |format|
       format.html

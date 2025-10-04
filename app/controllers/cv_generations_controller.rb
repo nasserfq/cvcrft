@@ -46,6 +46,8 @@ class CvGenerationsController < ApplicationController
   def new
     @cv_generation = CvGeneration.new
     @resumes = current_user.resumes.limit(10)  # Show user's resumes for selection
+    @recent_cv_generations = current_user.cv_generations.where(status: "completed").recent.limit(3)
+    @recent_resumes = current_user.resumes.recent.limit(3)
   end
 
   def create

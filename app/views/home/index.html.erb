@@ -76,416 +76,456 @@
                 <span>حفظ آمن وخصوصية على مستوى المؤسسة</span>
               </li>
             </ul>
-            <!-- CTA -->
-            <div id="cta" class="flex flex-col sm:flex-row gap-3 sm:items-center">
-              <form class="w-full sm:max-w-sm">
-                <div class="flex items-stretch gap-2">
-                  <input type="email" placeholder="أدخل بريدك الإلكتروني" class="w-full rounded-md border border-slate-300/70 bg-white/70 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5" />
-                  <button type="submit" class="whitespace-nowrap inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors">
-                    <i data-lucide="flashlight" class="w-4 h-4"></i>
-                    جرّبه مجانًا
-                  </button>
+            <!-- Dual CTA Approach -->
+            <div id="cta" class="grid md:grid-cols-2 gap-6 mb-8">
+              <!-- CV Builder -->
+              <div class="bg-white p-6 rounded-xl border border-blue-200 hover:border-blue-400 transition-all shadow-sm">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                  <i data-lucide="edit-3" class="w-6 h-6 text-blue-600"></i>
                 </div>
-              </form>
-              <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                <h3 class="text-xl font-semibold mb-3">منشئ السيرة الذاتية</h3>
+                <p class="text-slate-600 mb-4 text-sm">أنشئ سيرتك الذاتية خطوة بخطوة مع تحكم كامل في كل التفاصيل</p>
+                <ul class="space-y-2 mb-6 text-sm">
+                  <li class="flex items-center gap-2">
+                    <li class="flex items-center gap-2">
+                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                      <span>تحرير مباشر وتخصيص كامل</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                      <span>تصدير PDF بجودة عالية</span>
+                    </li>
+                  </ul>
+                  <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full bg-blue-600 text-white py-3 rounded-lg text-center block hover:bg-blue-700 transition-colors font-medium" do %>
+                    <i data-lucide="edit-3" class="w-4 h-4 inline mr-2"></i>
+                    ابدأ البناء الآن
+                  <% end %>
+                </div>
+                <!-- CV Generator -->
+                <div class="bg-gradient-to-br from-emerald-50 to-blue-50 p-6 rounded-xl border border-emerald-200 hover:border-emerald-400 transition-all shadow-sm">
+                  <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-emerald-600"></i>
+                  </div>
+                  <h3 class="text-xl font-semibold mb-3">مولد الذكاء الاصطناعي</h3>
+                  <p class="text-slate-600 mb-4 text-sm">أدخل وصف الوظيفة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة</p>
+                  <ul class="space-y-2 mb-6 text-sm">
+                    <li class="flex items-center gap-2">
+                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                      <span>تحليل ذكي لوصف الوظيفة</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                      <span>تحسين تلقائي لـ ATS</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                      <span>صياغة نقاط قوية ومؤثرة</span>
+                    </li>
+                  </ul>
+                  <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "w-full bg-emerald-600 text-white py-3 rounded-lg text-center block hover:bg-emerald-700 transition-colors font-medium" do %>
+                    <i data-lucide="sparkles" class="w-4 h-4 inline mr-2"></i>
+                    ابدأ التوليد الآن
+                  <% end %>
+                </div>
+              </div>
+              <!-- Additional CTA Options -->
+              <div class="flex flex-col sm:flex-row gap-3 sm:items-center justify-center">
                 <a href="#demo" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors">
                   <i data-lucide="play-circle" class="w-5 h-5"></i>
-                  شاهد نموذج
+                  شاهد نموذج تفاعلي
                 </a>
-                <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors" do %>
+                <span class="hidden sm:inline text-slate-400">•</span>
+              </div>
+              <!-- Trust -->
+              <div class="pt-4">
+                <!--
+                -->
+                <p class="text-xs text-slate-500 mb-3">موثوق به من محترفين في شركات رائدة</p>
+                <div class="flex items-center gap-6 opacity-80">
+                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
+                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
+                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
+                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
+                </div>
+              </div>
+            </div>
+            <!-- Visual -->
+            <div class="relative">
+              <div class="absolute -inset-6 -z-10 bg-gradient-to-b from-emerald-200/40 to-transparent rounded-2xl blur-2xl"></div>
+              <div class="rounded-2xl bg-white/80 backdrop-blur-xl ring-1 ring-slate-200/80 shadow-sm overflow-hidden">
+                <!-- CV Mockup Header -->
+                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200/80">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span class="text-sm font-medium text-slate-800">سيرتي الذاتية</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-slate-500">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                  </div>
+                </div>
+                <!-- CV Content -->
+                <div class="grid md:grid-cols-3">
+                  <aside class="md:col-span-1 p-4 border-l md:border-l-0 md:border-r border-slate-200/80 bg-gradient-to-b from-emerald-50/60 to-white">
+                    <div class="flex items-center gap-3 mb-4">
+                      <img src="/saudi_male.png" alt="avatar" class="w-12 h-12 rounded-full ring-1 ring-black/5 object-cover" />
+                      <div>
+                        <div class="text-sm font-semibold tracking-tight">أحمد علي</div>
+                        <div class="text-xs text-slate-500">مدير منتجات</div>
+                      </div>
+                    </div>
+                    <div class="space-y-3 text-xs">
+                      <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                        <span>sarakh@example.com</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+                        <span>+966 555 000 123</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                        <span>الرياض، السعودية</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-slate-700">
+                        <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                        <span>linkedin.com/sara</span>
+                      </div>
+                    </div>
+                    <div class="mt-5">
+                      <h4 class="text-sm font-semibold tracking-tight text-slate-900 mb-2">المهارات</h4>
+                      <div class="flex flex-wrap gap-2">
+                        <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">إدارة المنتج</span>
+                        <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">تحليل البيانات</span>
+                        <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">UX</span>
+                      </div>
+                    </div>
+                  </aside>
+                  <main class="md:col-span-2 p-5">
+                    <h3 class="text-lg font-semibold tracking-tight text-slate-900">الملخص</h3>
+                    <p class="mt-2 text-sm text-slate-700 leading-6">
+                      قائد منتجات بخبرة 6 سنوات في بناء حلول نموّية. حقق زيادة 32% في الاحتفاظ من خلال تجارب A/B وتحديد فرص السوق.
+                    </p>
+                    <div class="mt-5">
+                      <h3 class="text-lg font-semibold tracking-tight text-slate-900">الخبرات</h3>
+                      <div class="mt-2 space-y-4">
+                        <div class="p-3 rounded-lg ring-1 ring-slate-200 bg-white">
+                          <div class="flex items-center justify-between gap-2">
+                            <div class="text-sm font-medium">مدير منتجات أولى — NOVA</div>
+                            <div class="text-xs text-slate-500">2021 - الآن</div>
+                          </div>
+                          <ul class="mt-2 list-disc pr-5 text-sm text-slate-700 space-y-1">
+                            <li>صاغ الذكاء الاصطناعي نقاط إنجاز قابلة للقياس وتحسنت نسبة القبول 2.4x.</li>
+                            <li>قيادة فريق متعدد التخصصات لإطلاق ميزات أثّرت على 1.2M مستخدم.</li>
+                          </ul>
+                        </div>
+                        <div class="p-3 rounded-lg ring-1 ring-slate-200 bg-white">
+                          <div class="flex items-center justify-between gap-2">
+                            <div class="text-sm font-medium">مدير منتجات — ATLAS</div>
+                            <div class="text-xs text-slate-500">2019 - 2021</div>
+                          </div>
+                          <ul class="mt-2 list-disc pr-5 text-sm text-slate-700 space-y-1">
+                            <li>تحسين تجربة الإعداد لزيادة التحويل بنسبة 18%.</li>
+                            <li>تنسيق خارطة طريق فصلية بميزانية 2.5M ر.س.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-5">
+                      <h3 class="text-lg font-semibold tracking-tight text-slate-900">التعليم</h3>
+                      <p class="mt-2 text-sm text-slate-700">بكالوريوس علوم الحاسب — جامعة الملك سعود</p>
+                    </div>
+                  </main>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Features -->
+      <section id="features" class="py-10 sm:py-14 border-t border-slate-200/70">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex items-end justify-between mb-8">
+            <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">كل ما تحتاجه لسيرة ذاتية تُقبل</h2>
+            <a href="#pricing" class="hidden sm:inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800">
+              الأسعار
+              <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            </a>
+          </div>
+          <div class="grid md:grid-cols-3 gap-5">
+            <!-- Card 1 -->
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
+              <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
+                <i data-lucide="wand-2" class="w-5 h-5"></i>
+              </div>
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">توليد ذكي للنقاط</h3>
+              <p class="mt-2 text-sm text-slate-600">حوّل خبرتك إلى إنجازات قابلة للقياس بصياغة قوية مدعومة بمقاييس واضحة.</p>
+            </div>
+            <!-- Card 2 -->
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
+              <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
+                <i data-lucide="languages" class="w-5 h-5"></i>
+              </div>
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">دعم متعدد اللغات</h3>
+              <p class="mt-2 text-sm text-slate-600">اكتب سيرتك بالعربية أو الإنجليزية مع ضبط الأسلوب تلقائيًا.</p>
+            </div>
+            <!-- Card 3 -->
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
+              <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
+                <i data-lucide="shield" class="w-5 h-5"></i>
+              </div>
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">خصوصية وأمان</h3>
+              <p class="mt-2 text-sm text-slate-600">تشفير واشتراك دقيق، مع سيطرة كاملة على بياناتك.</p>
+            </div>
+          </div>
+          <!-- CV Generator CTA -->
+          <div class="mt-12 text-center">
+            <div class="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-200/50">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-600 text-white ring-1 ring-black/5 mx-auto mb-4 grid place-items-center">
+                <i data-lucide="sparkles" class="w-8 h-8"></i>
+              </div>
+              <h3 class="text-xl font-semibold tracking-tight text-slate-900 mb-2">منشئ السيرة الذاتية بالذكاء الاصطناعي</h3>
+              <p class="text-slate-600 mb-6 max-w-2xl mx-auto">
+                أدخل وصف الوظيفة المطلوبة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة ومحسنة لـ ATS
+              </p>
+              <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors" do %>
                   <i data-lucide="wand-2" class="w-5 h-5"></i>
-                  منشئ السيرة الذاتية
+                  ابدأ الآن
+                <% end %>
+                <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 transition-colors" do %>
+                  <i data-lucide="list" class="w-5 h-5"></i>
+                  عرض السير المبنية
                 <% end %>
               </div>
             </div>
-            <!-- Trust -->
-            <div class="pt-4">
-              <p class="text-xs text-slate-500 mb-3">موثوق به من محترفين في شركات رائدة</p>
-              <div class="flex items-center gap-6 opacity-80">
-                <div class="text-slate-400 text-sm font-medium tracking-tight">ALPHA</div>
-                <div class="text-slate-400 text-sm font-medium tracking-tight">NOVA</div>
-                <div class="text-slate-400 text-sm font-medium tracking-tight">PIXEL</div>
-                <div class="text-slate-400 text-sm font-medium tracking-tight">ATLAS</div>
+          </div>
+        </div>
+      </section>
+      <!-- How it works -->
+      <section id="how" class="py-10 sm:py-14">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-6">كيف يعمل؟</h2>
+          <div class="grid md:grid-cols-3 gap-5">
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
+              <div class="flex items-center gap-3">
+                <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">1</span>
+                <h3 class="text-base font-semibold tracking-tight">أدخل خبراتك</h3>
               </div>
+              <p class="mt-2 text-sm text-slate-600">حمّل ملفك أو الصق خبراتك كما هي.</p>
+            </div>
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
+              <div class="flex items-center gap-3">
+                <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">2</span>
+                <h3 class="text-base font-semibold tracking-tight">دع الذكاء يصيغ</h3>
+              </div>
+              <p class="mt-2 text-sm text-slate-600">نقح النقاط، عدّل النبرة، واختر القالب المناسب.</p>
+            </div>
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
+              <div class="flex items-center gap-3">
+                <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">3</span>
+                <h3 class="text-base font-semibold tracking-tight">صدّر وشارك</h3>
+              </div>
+              <p class="mt-2 text-sm text-slate-600">حمّل PDF بجودة عالية أو شارك رابطًا قابلاً للعرض.</p>
             </div>
           </div>
-          <!-- Visual -->
-          <div class="relative">
-            <div class="absolute -inset-6 -z-10 bg-gradient-to-b from-emerald-200/40 to-transparent rounded-2xl blur-2xl"></div>
-            <div class="rounded-2xl bg-white/80 backdrop-blur-xl ring-1 ring-slate-200/80 shadow-sm overflow-hidden">
-              <!-- CV Mockup Header -->
-              <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200/80">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <span class="text-sm font-medium text-slate-800">سيرتي الذاتية</span>
+        </div>
+      </section>
+      <!-- Testimonials -->
+      <section class="py-10 sm:py-14 border-y border-slate-200/70 bg-white/60">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex items-end justify-between mb-6">
+            <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">ماذا يقول المستخدمون</h2>
+            <div class="hidden sm:flex items-center gap-2 text-emerald-700 text-sm">
+              <i data-lucide="star" class="w-4 h-4"></i>
+              <span>تقييم 4.9/5</span>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-5">
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
+                <div>
+                  <div class="text-sm font-semibold tracking-tight">أحمد السلمي</div>
+                  <div class="text-xs text-slate-500">مهندس برمجيات</div>
                 </div>
-                <div class="flex items-center gap-2 text-slate-500">
-                  <i data-lucide="download" class="w-4 h-4"></i>
-                  <i data-lucide="share-2" class="w-4 h-4"></i>
+              </div>
+              <p class="mt-3 text-sm text-slate-700">خلال 15 دقيقة حصلت على نسخة ممتازة، وتم قبولي في أول شركتين قدّمت لهما.</p>
+            </div>
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
+                <div>
+                  <div class="text-sm font-semibold tracking-tight">ليان القحطاني</div>
+                  <div class="text-xs text-slate-500">مصممة UX</div>
                 </div>
               </div>
-              <!-- CV Content -->
-              <div class="grid md:grid-cols-3">
-                <aside class="md:col-span-1 p-4 border-l md:border-l-0 md:border-r border-slate-200/80 bg-gradient-to-b from-emerald-50/60 to-white">
-                  <div class="flex items-center gap-3 mb-4">
-                    <img src="/saudi_male.png" alt="avatar" class="w-12 h-12 rounded-full ring-1 ring-black/5 object-cover" />
-                    <div>
-                      <div class="text-sm font-semibold tracking-tight">أحمد علي</div>
-                      <div class="text-xs text-slate-500">مدير منتجات</div>
-                    </div>
-                  </div>
-                  <div class="space-y-3 text-xs">
-                    <div class="flex items-center gap-2 text-slate-700">
-                      <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-                      <span>sarakh@example.com</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-slate-700">
-                      <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
-                      <span>+966 555 000 123</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-slate-700">
-                      <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                      <span>الرياض، السعودية</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-slate-700">
-                      <i data-lucide="link" class="w-3.5 h-3.5"></i>
-                      <span>linkedin.com/sara</span>
-                    </div>
-                  </div>
-                  <div class="mt-5">
-                    <h4 class="text-sm font-semibold tracking-tight text-slate-900 mb-2">المهارات</h4>
-                    <div class="flex flex-wrap gap-2">
-                      <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">إدارة المنتج</span>
-                      <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">تحليل البيانات</span>
-                      <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">UX</span>
-                    </div>
-                  </div>
-                </aside>
-                <main class="md:col-span-2 p-5">
-                  <h3 class="text-lg font-semibold tracking-tight text-slate-900">الملخص</h3>
-                  <p class="mt-2 text-sm text-slate-700 leading-6">
-                    قائد منتجات بخبرة 6 سنوات في بناء حلول نموّية. حقق زيادة 32% في الاحتفاظ من خلال تجارب A/B وتحديد فرص السوق.
-                  </p>
-                  <div class="mt-5">
-                    <h3 class="text-lg font-semibold tracking-tight text-slate-900">الخبرات</h3>
-                    <div class="mt-2 space-y-4">
-                      <div class="p-3 rounded-lg ring-1 ring-slate-200 bg-white">
-                        <div class="flex items-center justify-between gap-2">
-                          <div class="text-sm font-medium">مدير منتجات أولى — NOVA</div>
-                          <div class="text-xs text-slate-500">2021 - الآن</div>
-                        </div>
-                        <ul class="mt-2 list-disc pr-5 text-sm text-slate-700 space-y-1">
-                          <li>صاغ الذكاء الاصطناعي نقاط إنجاز قابلة للقياس وتحسنت نسبة القبول 2.4x.</li>
-                          <li>قيادة فريق متعدد التخصصات لإطلاق ميزات أثّرت على 1.2M مستخدم.</li>
-                        </ul>
-                      </div>
-                      <div class="p-3 rounded-lg ring-1 ring-slate-200 bg-white">
-                        <div class="flex items-center justify-between gap-2">
-                          <div class="text-sm font-medium">مدير منتجات — ATLAS</div>
-                          <div class="text-xs text-slate-500">2019 - 2021</div>
-                        </div>
-                        <ul class="mt-2 list-disc pr-5 text-sm text-slate-700 space-y-1">
-                          <li>تحسين تجربة الإعداد لزيادة التحويل بنسبة 18%.</li>
-                          <li>تنسيق خارطة طريق فصلية بميزانية 2.5M ر.س.</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="mt-5">
-                    <h3 class="text-lg font-semibold tracking-tight text-slate-900">التعليم</h3>
-                    <p class="mt-2 text-sm text-slate-700">بكالوريوس علوم الحاسب — جامعة الملك سعود</p>
-                  </div>
-                </main>
+              <p class="mt-3 text-sm text-slate-700">القوالب جميلة، والذكاء يقترح صيغ أقوى لكل وظيفة. أنصح به!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Pricing -->
+      <section id="pricing" class="py-10 sm:py-14">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-2xl mx-auto">
+            <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">اختر الخطة المناسبة</h2>
+            <p class="mt-2 text-sm text-slate-600">ابدأ مجانًا وارتقِ لاحقًا كلما احتجت إلى مزايا متقدمة.</p>
+          </div>
+          <div class="mt-8 grid md:grid-cols-2 gap-5">
+            <!-- Free -->
+            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-6 shadow-sm hover:ring-emerald-300/60 transition-all">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold tracking-tight text-slate-900">مجاني</h3>
+                <span class="text-slate-500 text-sm">للبدء</span>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Features -->
-    <section id="features" class="py-10 sm:py-14 border-t border-slate-200/70">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex items-end justify-between mb-8">
-          <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">كل ما تحتاجه لسيرة ذاتية تُقبل</h2>
-          <a href="#pricing" class="hidden sm:inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800">
-            الأسعار
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-          </a>
-        </div>
-        <div class="grid md:grid-cols-3 gap-5">
-          <!-- Card 1 -->
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
-            <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
-              <i data-lucide="wand-2" class="w-5 h-5"></i>
-            </div>
-            <h3 class="text-lg font-semibold tracking-tight text-slate-900">توليد ذكي للنقاط</h3>
-            <p class="mt-2 text-sm text-slate-600">حوّل خبرتك إلى إنجازات قابلة للقياس بصياغة قوية مدعومة بمقاييس واضحة.</p>
-          </div>
-          <!-- Card 2 -->
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
-            <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
-              <i data-lucide="languages" class="w-5 h-5"></i>
-            </div>
-            <h3 class="text-lg font-semibold tracking-tight text-slate-900">دعم متعدد اللغات</h3>
-            <p class="mt-2 text-sm text-slate-600">اكتب سيرتك بالعربية أو الإنجليزية مع ضبط الأسلوب تلقائيًا.</p>
-          </div>
-          <!-- Card 3 -->
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
-            <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
-              <i data-lucide="shield" class="w-5 h-5"></i>
-            </div>
-            <h3 class="text-lg font-semibold tracking-tight text-slate-900">خصوصية وأمان</h3>
-            <p class="mt-2 text-sm text-slate-600">تشفير واشتراك دقيق، مع سيطرة كاملة على بياناتك.</p>
-          </div>
-        </div>
-        <!-- CV Generator CTA -->
-        <div class="mt-12 text-center">
-          <div class="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-200/50">
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-600 text-white ring-1 ring-black/5 mx-auto mb-4 grid place-items-center">
-              <i data-lucide="sparkles" class="w-8 h-8"></i>
-            </div>
-            <h3 class="text-xl font-semibold tracking-tight text-slate-900 mb-2">منشئ السيرة الذاتية بالذكاء الاصطناعي</h3>
-            <p class="text-slate-600 mb-6 max-w-2xl mx-auto">
-              أدخل وصف الوظيفة المطلوبة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة ومحسنة لـ ATS
-            </p>
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-              <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors" do %>
-                <i data-lucide="wand-2" class="w-5 h-5"></i>
-                ابدأ الآن
-              <% end %>
-              <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 transition-colors" do %>
-                <i data-lucide="list" class="w-5 h-5"></i>
-                عرض السير المولدة
-              <% end %>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- How it works -->
-    <section id="how" class="py-10 sm:py-14">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-6">كيف يعمل؟</h2>
-        <div class="grid md:grid-cols-3 gap-5">
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
-            <div class="flex items-center gap-3">
-              <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">1</span>
-              <h3 class="text-base font-semibold tracking-tight">أدخل خبراتك</h3>
-            </div>
-            <p class="mt-2 text-sm text-slate-600">حمّل ملفك أو الصق خبراتك كما هي.</p>
-          </div>
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
-            <div class="flex items-center gap-3">
-              <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">2</span>
-              <h3 class="text-base font-semibold tracking-tight">دع الذكاء يصيغ</h3>
-            </div>
-            <p class="mt-2 text-sm text-slate-600">نقح النقاط، عدّل النبرة، واختر القالب المناسب.</p>
-          </div>
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
-            <div class="flex items-center gap-3">
-              <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">3</span>
-              <h3 class="text-base font-semibold tracking-tight">صدّر وشارك</h3>
-            </div>
-            <p class="mt-2 text-sm text-slate-600">حمّل PDF بجودة عالية أو شارك رابطًا قابلاً للعرض.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Testimonials -->
-    <section class="py-10 sm:py-14 border-y border-slate-200/70 bg-white/60">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex items-end justify-between mb-6">
-          <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">ماذا يقول المستخدمون</h2>
-          <div class="hidden sm:flex items-center gap-2 text-emerald-700 text-sm">
-            <i data-lucide="star" class="w-4 h-4"></i>
-            <span>تقييم 4.9/5</span>
-          </div>
-        </div>
-        <div class="grid md:grid-cols-2 gap-5">
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
-            <div class="flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
-              <div>
-                <div class="text-sm font-semibold tracking-tight">أحمد السلمي</div>
-                <div class="text-xs text-slate-500">مهندس برمجيات</div>
+              <div class="mt-2 flex items-end gap-1">
+                <span class="text-3xl font-semibold tracking-tight text-slate-900">0</span>
+                <span class="text-slate-500">ر.س</span>
               </div>
+              <ul class="mt-4 text-sm text-slate-700 space-y-2">
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مولد نقاط أساسي</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> قالب واحد</li>
+                <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i> تصدير PDF بدون علامة مائية</li>
+              </ul>
+              <a href="#cta" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors">ابدأ مجانًا</a>
             </div>
-            <p class="mt-3 text-sm text-slate-700">خلال 15 دقيقة حصلت على نسخة ممتازة، وتم قبولي في أول شركتين قدّمت لهما.</p>
-          </div>
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
-            <div class="flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
-              <div>
-                <div class="text-sm font-semibold tracking-tight">ليان القحطاني</div>
-                <div class="text-xs text-slate-500">مصممة UX</div>
+            <!-- Pro -->
+            <div class="relative rounded-xl bg-gradient-to-b from-white to-emerald-50 ring-1 ring-emerald-200 p-6 shadow-sm hover:shadow-md hover:ring-emerald-300/70 transition-all">
+              <span class="absolute -top-3 right-4 text-[11px] px-2 py-1 rounded-full bg-emerald-600 text-white ring-1 ring-black/5">الأكثر اختيارًا</span>
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold tracking-tight text-slate-900">احترافي</h3>
+                <span class="text-emerald-700 text-sm">للباحثين الجادين</span>
               </div>
+              <div class="mt-2 flex items-end gap-1">
+                <span class="text-3xl font-semibold tracking-tight text-slate-900">0</span>
+                <span class="text-slate-500">قريباً</span>
+              </div>
+              <ul class="mt-4 text-sm text-slate-700 space-y-2">
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تحسين ATS متقدم</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مكتبة قوالب كاملة</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تصدير PDF/Docx بدون علامة مائية</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مسارات خاصة وخصوصية معززة</li>
+              </ul>
+              <a href="#cta" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-800 transition-colors">البدء بالخطة الاحترافية</a>
             </div>
-            <p class="mt-3 text-sm text-slate-700">القوالب جميلة، والذكاء يقترح صيغ أقوى لكل وظيفة. أنصح به!</p>
           </div>
         </div>
-      </div>
-    </section>
-    <!-- Pricing -->
-    <section id="pricing" class="py-10 sm:py-14">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto">
-          <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">اختر الخطة المناسبة</h2>
-          <p class="mt-2 text-sm text-slate-600">ابدأ مجانًا وارتقِ لاحقًا كلما احتجت إلى مزايا متقدمة.</p>
-        </div>
-        <div class="mt-8 grid md:grid-cols-2 gap-5">
-          <!-- Free -->
-          <div class="rounded-xl bg-white ring-1 ring-slate-200 p-6 shadow-sm hover:ring-emerald-300/60 transition-all">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold tracking-tight text-slate-900">مجاني</h3>
-              <span class="text-slate-500 text-sm">للبدء</span>
-            </div>
-            <div class="mt-2 flex items-end gap-1">
-              <span class="text-3xl font-semibold tracking-tight text-slate-900">0</span>
-              <span class="text-slate-500">ر.س</span>
-            </div>
-            <ul class="mt-4 text-sm text-slate-700 space-y-2">
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مولد نقاط أساسي</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> قالب واحد</li>
-              <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i> تصدير PDF بدون علامة مائية</li>
-            </ul>
-            <a href="#cta" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors">ابدأ مجانًا</a>
-          </div>
-          <!-- Pro -->
-          <div class="relative rounded-xl bg-gradient-to-b from-white to-emerald-50 ring-1 ring-emerald-200 p-6 shadow-sm hover:shadow-md hover:ring-emerald-300/70 transition-all">
-            <span class="absolute -top-3 right-4 text-[11px] px-2 py-1 rounded-full bg-emerald-600 text-white ring-1 ring-black/5">الأكثر اختيارًا</span>
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold tracking-tight text-slate-900">احترافي</h3>
-              <span class="text-emerald-700 text-sm">للباحثين الجادين</span>
-            </div>
-            <div class="mt-2 flex items-end gap-1">
-              <span class="text-3xl font-semibold tracking-tight text-slate-900">29</span>
-              <span class="text-slate-500">ر.س / شهر</span>
-            </div>
-            <ul class="mt-4 text-sm text-slate-700 space-y-2">
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تحسين ATS متقدم</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مكتبة قوالب كاملة</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تصدير PDF/Docx بدون علامة مائية</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مسارات خاصة وخصوصية معززة</li>
-            </ul>
-            <a href="#cta" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-800 transition-colors">البدء بالخطة الاحترافية</a>
+      </section>
+      <!-- FAQ -->
+      <section id="faq" class="py-10 sm:py-14 border-t border-slate-200/70">
+        <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-6">الأسئلة الشائعة</h2>
+          <div class="space-y-3">
+            <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
+              <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
+                هل يمكنني تعديل النصوص بعد التوليد؟
+                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <p class="mt-2 text-sm text-slate-600">نعم، يمكنك تعديل كل جزء، وسيتكيف الذكاء مع أسلوبك ويقترح تحسينات.</p>
+            </details>
+            <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
+              <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
+                هل يدعم النظام العربية بالكامل؟
+                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <p class="mt-2 text-sm text-slate-600">يدعم العربية والإنجليزية، بما في ذلك المحاذاة من اليمين لليسار والتشكيل الأساسي.</p>
+            </details>
+            <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
+              <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
+                هل يمكن التصدير بدون علامة مائية؟
+                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <p class="mt-2 text-sm text-slate-600">متاح في الخطة الاحترافية بصيغ PDF وDocx بجودة عالية.</p>
+            </details>
           </div>
         </div>
-      </div>
-    </section>
-    <!-- FAQ -->
-    <section id="faq" class="py-10 sm:py-14 border-t border-slate-200/70">
-      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-6">الأسئلة الشائعة</h2>
-        <div class="space-y-3">
-          <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
-            <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
-              هل يمكنني تعديل النصوص بعد التوليد؟
-              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="mt-2 text-sm text-slate-600">نعم، يمكنك تعديل كل جزء، وسيتكيف الذكاء مع أسلوبك ويقترح تحسينات.</p>
-          </details>
-          <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
-            <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
-              هل يدعم النظام العربية بالكامل؟
-              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="mt-2 text-sm text-slate-600">يدعم العربية والإنجليزية، بما في ذلك المحاذاة من اليمين لليسار والتشكيل الأساسي.</p>
-          </details>
-          <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
-            <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
-              هل يمكن التصدير بدون علامة مائية؟
-              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <p class="mt-2 text-sm text-slate-600">متاح في الخطة الاحترافية بصيغ PDF وDocx بجودة عالية.</p>
-          </details>
-        </div>
-      </div>
-    </section>
-  </div>
-  <!-- Footer -->
-  <!-- JavaScript for mobile menu and icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      // Initialize Lucide icons
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons({
-          attrs: { 'stroke-width': 1.5 }
-        });
-      }
+      </section>
+    </div>
+    <!-- Footer -->
+    <!-- JavaScript for mobile menu and icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons({
+            attrs: { 'stroke-width': 1.5 }
+          });
+        }
 
-            // Mobile menu functionality
-      const mobileMenuButton = document.getElementById('mobile-menu-button');
-      const mobileMenu = document.getElementById('mobile-menu');
+              // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
 
-      console.log('Mobile menu button:', mobileMenuButton);
-      console.log('Mobile menu:', mobileMenu);
+        console.log('Mobile menu button:', mobileMenuButton);
+        console.log('Mobile menu:', mobileMenu);
 
-      // Ensure mobile menu is hidden by default
-      if (mobileMenu) {
-        mobileMenu.classList.add('hidden');
-        mobileMenu.style.display = 'none';
-      }
+        // Ensure mobile menu is hidden by default
+        if (mobileMenu) {
+          mobileMenu.classList.add('hidden');
+          mobileMenu.style.display = 'none';
+        }
 
-      if (mobileMenuButton && mobileMenu) {
-        mobileMenuButton.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        if (mobileMenuButton && mobileMenu) {
+          mobileMenuButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
 
-          const isHidden = mobileMenu.classList.contains('hidden');
-          console.log('Menu clicked, isHidden:', isHidden);
+            const isHidden = mobileMenu.classList.contains('hidden');
+            console.log('Menu clicked, isHidden:', isHidden);
 
-          if (isHidden) {
-            mobileMenu.classList.remove('hidden');
-            mobileMenu.style.display = 'block';
-            // Change icon to close
-            const icon = mobileMenuButton.querySelector('i');
-            if (icon && typeof lucide !== 'undefined') {
-              icon.setAttribute('data-lucide', 'x');
-              lucide.createIcons();
-            }
-          } else {
-            mobileMenu.classList.add('hidden');
-            mobileMenu.style.display = 'none';
-            // Change icon back to menu
-            const icon = mobileMenuButton.querySelector('i');
-            if (icon && typeof lucide !== 'undefined') {
-              icon.setAttribute('data-lucide', 'menu');
-              lucide.createIcons();
-            }
-          }
-        });
-
-        // Close mobile menu when clicking on a link
-        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
-        mobileMenuLinks.forEach(link => {
-          link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-            mobileMenu.style.display = 'none';
-            const icon = mobileMenuButton.querySelector('i');
-            if (icon && typeof lucide !== 'undefined') {
-              icon.setAttribute('data-lucide', 'menu');
-              lucide.createIcons();
+            if (isHidden) {
+              mobileMenu.classList.remove('hidden');
+              mobileMenu.style.display = 'block';
+              // Change icon to close
+              const icon = mobileMenuButton.querySelector('i');
+              if (icon && typeof lucide !== 'undefined') {
+                icon.setAttribute('data-lucide', 'x');
+                lucide.createIcons();
+              }
+            } else {
+              mobileMenu.classList.add('hidden');
+              mobileMenu.style.display = 'none';
+              // Change icon back to menu
+              const icon = mobileMenuButton.querySelector('i');
+              if (icon && typeof lucide !== 'undefined') {
+                icon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+              }
             }
           });
-        });
 
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-          if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
-            mobileMenu.classList.add('hidden');
-            mobileMenu.style.display = 'none';
-            const icon = mobileMenuButton.querySelector('i');
-            if (icon && typeof lucide !== 'undefined') {
-              icon.setAttribute('data-lucide', 'menu');
-              lucide.createIcons();
+          // Close mobile menu when clicking on a link
+          const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+          mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+              mobileMenu.classList.add('hidden');
+              mobileMenu.style.display = 'none';
+              const icon = mobileMenuButton.querySelector('i');
+              if (icon && typeof lucide !== 'undefined') {
+                icon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+              }
+            });
+          });
+
+          // Close mobile menu when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+              mobileMenu.classList.add('hidden');
+              mobileMenu.style.display = 'none';
+              const icon = mobileMenuButton.querySelector('i');
+              if (icon && typeof lucide !== 'undefined') {
+                icon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+              }
             }
-          }
-        });
-      } else {
-        console.error('Mobile menu elements not found!');
-      }
-    });
-  </script>
-</body>
+          });
+        } else {
+          console.error('Mobile menu elements not found!');
+        }
+      });
+    </script>
+  </body>
 </html>
