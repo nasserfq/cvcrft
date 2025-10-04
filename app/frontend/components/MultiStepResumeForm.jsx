@@ -117,27 +117,32 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    },
   ],
   skills: (() => {
-   console.log("=== Setting initial skills state ===");
-   console.log("Raw resume skills:", resume?.skills);
-   console.log("Resume skills type:", typeof resume?.skills);
-   console.log("Resume skills is array:", Array.isArray(resume?.skills));
-   console.log("Resume skills length:", resume?.skills?.length);
-
+   // BULLETPROOF INITIALIZATION - Never allow empty skill names
    let cleanedSkills;
+
    if (resume?.skills && resume.skills.length > 0) {
-    console.log("Using resume skills, cleaning them...");
-    cleanedSkills = cleanSkillsData(resume.skills);
+    // Clean existing skills and remove any empty names
+    cleanedSkills = resume.skills.map((skill) => ({
+     ...skill,
+     skill_names: (skill.skill_names || []).filter(
+      (name) =>
+       name &&
+       typeof name === "string" &&
+       name.trim() !== "" &&
+       name.trim() !== '""' &&
+       name.trim() !== "''"
+     ),
+    }));
    } else {
-    console.log("No resume skills or empty, using default");
+    // Default: one empty skill category with no skill names
     cleanedSkills = [
      {
       category: "",
-      skill_names: [],
+      skill_names: [], // ALWAYS empty array, never with empty strings
      },
     ];
    }
 
-   console.log("Final initial skills after cleaning:", cleanedSkills);
    return cleanedSkills;
   })(),
   certifications: resume?.certifications || [
@@ -163,27 +168,23 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const totalSteps = 8;
 
- // Effect to continuously clean skills data
+ // BULLETPROOF EFFECT - Continuously remove empty skill names
  React.useEffect(() => {
   setFormData((prev) => {
-   console.log("useEffect cleaning skills:", prev.skills);
-   const cleanedSkills = prev.skills.map((skill) => {
-    const cleanedNames = skill.skill_names.filter((name) => {
-     const isValid =
+   const cleanedSkills = prev.skills.map((skill) => ({
+    ...skill,
+    skill_names: (skill.skill_names || []).filter(
+     (name) =>
       name &&
       typeof name === "string" &&
       name.trim() !== "" &&
       name.trim() !== '""' &&
-      name.trim() !== "''";
-     console.log("Cleaning skill name:", name, "isValid:", isValid);
-     return isValid;
-    });
-    console.log("Cleaned skill:", skill.category, "names:", cleanedNames);
-    return {
-     ...skill,
-     skill_names: cleanedNames,
-    };
-   });
+      name.trim() !== "''" &&
+      name.trim() !== "null" &&
+      name.trim() !== "undefined"
+    ),
+   }));
+
    return {
     ...prev,
     skills: cleanedSkills,
@@ -329,7 +330,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     ...prev.skills,
     {
      category: "",
-     skill_names: [],
+     skill_names: [], // ALWAYS empty array, never with empty strings
     },
    ],
   }));
@@ -349,12 +350,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const handleNewSkillChange = (skillIndex, value) => {
-  if (value.trim() !== "") {
+  // Only add non-empty values
+  if (value && value.trim() !== "") {
    setFormData((prev) => ({
     ...prev,
     skills: prev.skills.map((skill, i) =>
      i === skillIndex
-      ? { ...skill, skill_names: [...skill.skill_names, value] }
+      ? { ...skill, skill_names: [...skill.skill_names, value.trim()] }
       : skill
     ),
    }));
@@ -363,12 +365,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const handleNewSkillBlur = (skillIndex, value) => {
-  if (value.trim() !== "") {
+  // Only add non-empty values
+  if (value && value.trim() !== "") {
    setFormData((prev) => ({
     ...prev,
     skills: prev.skills.map((skill, i) =>
      i === skillIndex
-      ? { ...skill, skill_names: [...skill.skill_names, value] }
+      ? { ...skill, skill_names: [...skill.skill_names, value.trim()] }
       : skill
     ),
    }));
@@ -509,6 +512,279 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
  };
 
+ // Robust resume saving function
+ const saveResumeToDatabase = async () => {
+  console.log("=== SAVING RESUME TO DATABASE ===");
+  console.log("Form data:", formData);
+
+  // Validate required fields
+  if (!formData.complete_name?.trim()) {
+   throw new Error("الاسم الكامل مطلوب");
+  }
+  if (!formData.email?.trim()) {
+   throw new Error("البريد الإلكتروني مطلوب");
+  }
+
+  const csrfToken = document
+   .querySelector('meta[name="csrf-token"]')
+   ?.getAttribute("content");
+  if (!csrfToken) {
+   throw new Error("رمز الأمان غير موجود");
+  }
+
+  // Prepare resume data with all fields
+  const resumeData = {
+   resume: {
+    complete_name: formData.complete_name.trim(),
+    email: formData.email.trim(),
+    phone_number: formData.phone_number?.trim() || "",
+    city: formData.city?.trim() || "",
+    country: formData.country?.trim() || "",
+    professional_summary: formData.professional_summary?.trim() || "",
+    professional_summary_english:
+     formData.professional_summary_english?.trim() || "",
+    // Always include nested attributes, even if empty
+    educations_attributes: formData.education
+     .filter(
+      (edu) =>
+       edu.degree?.trim() && edu.institution?.trim() && edu.start_date?.trim()
+     )
+     .map((edu, index) => ({
+      degree: edu.degree.trim(),
+      institution: edu.institution.trim(),
+      start_date: edu.start_date.trim(),
+      end_date: edu.end_date?.trim() || "",
+      gpa: edu.gpa?.trim() || "",
+      is_current: edu.is_current || false,
+     })),
+    work_experiences_attributes: formData.work_experience
+     .filter(
+      (work) =>
+       work.job_title?.trim() && work.company?.trim() && work.start_date?.trim()
+     )
+     .map((work, index) => ({
+      job_title: work.job_title.trim(),
+      company: work.company.trim(),
+      start_date: work.start_date.trim(),
+      end_date: work.end_date?.trim() || "",
+      is_current: work.is_current || false,
+      responsibilities:
+       work.responsibilities?.filter((resp) => resp?.trim()) || [],
+     })),
+    skills_attributes: formData.skills
+     .filter((skill) => skill.category?.trim() && skill.skill_names?.length > 0)
+     .map((skill, index) => ({
+      category: skill.category.trim(),
+      skill_names: skill.skill_names.filter((name) => name?.trim()),
+     })),
+    certifications_attributes: formData.certifications
+     .filter(
+      (cert) =>
+       cert.name?.trim() && cert.organization?.trim() && cert.date?.trim()
+     )
+     .map((cert, index) => ({
+      name: cert.name.trim(),
+      organization: cert.organization.trim(),
+      date: cert.date.trim(),
+     })),
+    languages_attributes: formData.languages
+     .filter((lang) => lang.language?.trim() && lang.proficiency?.trim())
+     .map((lang, index) => ({
+      language: lang.language.trim(),
+      proficiency: lang.proficiency.trim(),
+     })),
+   },
+  };
+
+  console.log("Prepared resume data:", resumeData);
+
+  // First try: JSON POST request
+  try {
+   console.log("Attempting JSON POST to /resumes...");
+   const response = await fetch("/resumes", {
+    method: "POST",
+    headers: {
+     "Content-Type": "application/json",
+     "X-CSRF-Token": csrfToken,
+     Accept: "application/json",
+     "Cache-Control": "no-cache",
+    },
+    credentials: "same-origin",
+    body: JSON.stringify(resumeData),
+   });
+
+   console.log("JSON POST response status:", response.status);
+
+   if (response.ok) {
+    const savedResume = await response.json();
+    console.log("✅ JSON POST successful. Resume ID:", savedResume.id);
+    return savedResume.id;
+   } else {
+    const errorText = await response.text();
+    console.log("❌ JSON POST failed:", response.status, errorText);
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+   }
+  } catch (jsonError) {
+   console.log("❌ JSON POST error:", jsonError);
+
+   // Second try: Form submission with FormData
+   try {
+    console.log("Attempting FormData POST to /resumes...");
+    const formDataToSubmit = new FormData();
+
+    // Add CSRF token
+    formDataToSubmit.append("authenticity_token", csrfToken);
+
+    // Add main resume fields
+    formDataToSubmit.append(
+     "resume[complete_name]",
+     formData.complete_name.trim()
+    );
+    formDataToSubmit.append("resume[email]", formData.email.trim());
+    formDataToSubmit.append(
+     "resume[phone_number]",
+     formData.phone_number?.trim() || ""
+    );
+    formDataToSubmit.append("resume[city]", formData.city?.trim() || "");
+    formDataToSubmit.append("resume[country]", formData.country?.trim() || "");
+    formDataToSubmit.append(
+     "resume[professional_summary]",
+     formData.professional_summary?.trim() || ""
+    );
+    formDataToSubmit.append(
+     "resume[professional_summary_english]",
+     formData.professional_summary_english?.trim() || ""
+    );
+
+    // Add nested attributes
+    resumeData.resume.educations_attributes.forEach((edu, index) => {
+     formDataToSubmit.append(
+      `resume[educations_attributes][${index}][degree]`,
+      edu.degree
+     );
+     formDataToSubmit.append(
+      `resume[educations_attributes][${index}][institution]`,
+      edu.institution
+     );
+     formDataToSubmit.append(
+      `resume[educations_attributes][${index}][start_date]`,
+      edu.start_date
+     );
+     if (edu.end_date)
+      formDataToSubmit.append(
+       `resume[educations_attributes][${index}][end_date]`,
+       edu.end_date
+      );
+     if (edu.gpa)
+      formDataToSubmit.append(
+       `resume[educations_attributes][${index}][gpa]`,
+       edu.gpa
+      );
+     formDataToSubmit.append(
+      `resume[educations_attributes][${index}][is_current]`,
+      edu.is_current
+     );
+    });
+
+    resumeData.resume.work_experiences_attributes.forEach((work, index) => {
+     formDataToSubmit.append(
+      `resume[work_experiences_attributes][${index}][job_title]`,
+      work.job_title
+     );
+     formDataToSubmit.append(
+      `resume[work_experiences_attributes][${index}][company]`,
+      work.company
+     );
+     formDataToSubmit.append(
+      `resume[work_experiences_attributes][${index}][start_date]`,
+      work.start_date
+     );
+     if (work.end_date)
+      formDataToSubmit.append(
+       `resume[work_experiences_attributes][${index}][end_date]`,
+       work.end_date
+      );
+     formDataToSubmit.append(
+      `resume[work_experiences_attributes][${index}][is_current]`,
+      work.is_current || false
+     );
+     work.responsibilities.forEach((resp, respIndex) => {
+      formDataToSubmit.append(
+       `resume[work_experiences_attributes][${index}][responsibilities][]`,
+       resp
+      );
+     });
+    });
+
+    resumeData.resume.skills_attributes.forEach((skill, index) => {
+     formDataToSubmit.append(
+      `resume[skills_attributes][${index}][category]`,
+      skill.category
+     );
+     skill.skill_names.forEach((skillName, skillIndex) => {
+      formDataToSubmit.append(
+       `resume[skills_attributes][${index}][skill_names][]`,
+       skillName
+      );
+     });
+    });
+
+    resumeData.resume.certifications_attributes.forEach((cert, index) => {
+     formDataToSubmit.append(
+      `resume[certifications_attributes][${index}][name]`,
+      cert.name
+     );
+     formDataToSubmit.append(
+      `resume[certifications_attributes][${index}][organization]`,
+      cert.organization
+     );
+     formDataToSubmit.append(
+      `resume[certifications_attributes][${index}][date]`,
+      cert.date
+     );
+    });
+
+    resumeData.resume.languages_attributes.forEach((lang, index) => {
+     formDataToSubmit.append(
+      `resume[languages_attributes][${index}][language]`,
+      lang.language
+     );
+     formDataToSubmit.append(
+      `resume[languages_attributes][${index}][proficiency]`,
+      lang.proficiency
+     );
+    });
+
+    const response = await fetch("/resumes", {
+     method: "POST",
+     body: formDataToSubmit,
+     headers: {
+      "X-CSRF-Token": csrfToken,
+      Accept: "application/json",
+     },
+     credentials: "same-origin",
+    });
+
+    console.log("FormData POST response status:", response.status);
+
+    if (response.ok) {
+     const result = await response.json();
+     console.log("✅ FormData POST successful. Resume ID:", result.id);
+     return result.id;
+    } else {
+     const errorText = await response.text();
+     console.log("❌ FormData POST failed:", response.status, errorText);
+     throw new Error(`FormData HTTP ${response.status}: ${errorText}`);
+    }
+   } catch (formError) {
+    console.log("❌ FormData POST error:", formError);
+    throw new Error(
+     `Both JSON and FormData submissions failed. Last error: ${formError.message}`
+    );
+   }
+  }
+ };
+
  const exportToPDF = async () => {
   console.log("PDF export button clicked! Current step:", currentStep);
   setIsExporting(true);
@@ -519,104 +795,29 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
    let resumeId = null;
 
-   // Try to save the resume to the database first
+   // Step 1: Always save the resume to database first
    try {
-    const saveResponse = await fetch("/resumes", {
-     method: "POST",
-     headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": document
-       .querySelector('meta[name="csrf-token"]')
-       ?.getAttribute("content"),
-     },
-     body: JSON.stringify({
-      resume: {
-       complete_name: formData.complete_name,
-       email: formData.email,
-       phone_number: formData.phone_number,
-       city: formData.city,
-       country: formData.country,
-       professional_summary: formData.professional_summary,
-       professional_summary_english: formData.professional_summary_english,
-       educations_attributes: formData.education
-        .filter(
-         (edu) =>
-          edu.degree.trim() !== "" &&
-          edu.institution.trim() !== "" &&
-          edu.start_date.trim() !== ""
-        )
-        .map((edu) => ({
-         degree: edu.degree,
-         institution: edu.institution,
-         start_date: edu.start_date,
-         end_date: edu.end_date,
-         gpa: edu.gpa,
-         is_current: edu.is_current,
-        })),
-       work_experiences_attributes: formData.work_experience
-        .filter(
-         (work) =>
-          work.job_title.trim() !== "" &&
-          work.company.trim() !== "" &&
-          work.start_date.trim() !== ""
-        )
-        .map((work) => ({
-         job_title: work.job_title,
-         company: work.company,
-         start_date: work.start_date,
-         end_date: work.end_date,
-         is_current: work.is_current,
-         responsibilities: work.responsibilities.filter(
-          (resp) => resp.trim() !== ""
-         ),
-        })),
-       skills_attributes: formData.skills
-        .filter(
-         (skill) =>
-          skill.category.trim() !== "" &&
-          skill.skill_names.some((name) => name.trim() !== "")
-        )
-        .map((skill) => ({
-         category: skill.category,
-         skill_names: skill.skill_names.filter((name) => name.trim() !== ""),
-        })),
-       certifications_attributes: formData.certifications
-        .filter(
-         (cert) =>
-          cert.name.trim() !== "" &&
-          cert.organization.trim() !== "" &&
-          cert.date.trim() !== ""
-        )
-        .map((cert) => ({
-         name: cert.name,
-         organization: cert.organization,
-         date: cert.date,
-        })),
-       languages_attributes: formData.languages
-        .filter(
-         (lang) => lang.language.trim() !== "" && lang.proficiency.trim() !== ""
-        )
-        .map((lang) => ({
-         language: lang.language,
-         proficiency: lang.proficiency,
-        })),
-      },
-     }),
-    });
+    console.log("Step 1: Saving resume to database...");
+    resumeId = await saveResumeToDatabase();
+    console.log("✅ Resume saved successfully with ID:", resumeId);
 
-    if (saveResponse.ok) {
-     const savedResume = await saveResponse.json();
-     resumeId = savedResume.id;
-     console.log("Resume saved with ID:", resumeId);
-    } else {
-     console.log("Resume save failed, will export PDF directly from form data");
-    }
-   } catch (saveError) {
+    // Show success message in console (less intrusive than alert)
+    setTranslationError(""); // Clear any errors
     console.log(
-     "Resume save error:",
-     saveError,
-     "Will export PDF directly from form data"
+     "🎉 تم حفظ السيرة الذاتية بنجاح! يمكنك الآن استخدامها لإنشاء سير ذاتية مخصصة."
     );
+   } catch (saveError) {
+    console.log("❌ Resume save failed:", saveError.message);
+
+    // Validate required fields for PDF generation even if save fails
+    if (!formData.complete_name?.trim() || !formData.email?.trim()) {
+     alert("يرجى ملء الاسم الكامل والبريد الإلكتروني قبل التصدير");
+     setIsExporting(false);
+     return;
+    }
+
+    // Still try to export PDF even if save fails
+    console.log("Continuing with PDF export from form data...");
    }
 
    // Export the PDF - either with saved resume ID or directly from form data
@@ -1757,23 +1958,25 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          </label>
          <div className="space-y-3">
           {(() => {
-           console.log("Skill names for index", index, ":", skill.skill_names);
-           const filteredNames = skill.skill_names.filter((skillName) => {
-            const isValid =
+           // AGGRESSIVE FILTERING - Only render non-empty skill names
+           const validSkillNames = skill.skill_names.filter((skillName) => {
+            return (
              skillName &&
              typeof skillName === "string" &&
              skillName.trim() !== "" &&
              skillName.trim() !== '""' &&
-             skillName.trim() !== "''";
-            console.log("Skill name:", skillName, "isValid:", isValid);
-            return isValid;
+             skillName.trim() !== "''" &&
+             skillName.trim() !== "null" &&
+             skillName.trim() !== "undefined"
+            );
            });
-           console.log("Filtered names:", filteredNames);
-           if (filteredNames.length === 0) {
-            console.log("No valid skill names, rendering nothing");
+
+           // If no valid skill names, render nothing
+           if (validSkillNames.length === 0) {
             return null;
            }
-           return filteredNames.map((skillName, nameIndex) => (
+
+           return validSkillNames.map((skillName, nameIndex) => (
             <div key={nameIndex} className="flex items-center gap-2">
              <span className="text-emerald-600 text-lg">•</span>
              <input

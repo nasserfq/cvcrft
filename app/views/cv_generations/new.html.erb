@@ -24,6 +24,20 @@
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
+
+        /* Mobile-friendly PDF modal */
+        @media (max-width: 768px) {
+          .pdf-modal {
+            padding: 1rem;
+          }
+          .pdf-modal .modal-content {
+            max-height: 90vh;
+            margin: 0;
+          }
+          .pdf-modal iframe {
+            min-height: 60vh;
+          }
+        }
       </style>
     </head>
     <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
@@ -88,6 +102,7 @@
           const [showPdfModal, setShowPdfModal] = useState(false);
           const [showResults, setShowResults] = useState(false);
           const [resumes, setResumes] = useState([]);
+
 
           // Load resumes and their CV generations on component mount
           useEffect(() => {
@@ -245,6 +260,7 @@
               alert('حدث خطأ أثناء تحميل الملف. يرجى المحاولة مرة أخرى.');
             }
           };
+
 
           // Handle form submission - Pure React approach without page refresh
           const handleSubmit = async (e) => {
@@ -523,17 +539,17 @@
 
                       {/* Show PDF buttons only if PDF was generated */}
                       {(cvData.metadata?.pdf_generated === true || cvData.metadata?.pdf_generated === 'true' || cvData.metadata?.pdf_generated === 1) ? (
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-3">
                           <button
                             onClick={() => setShowPdfModal(true)}
-                            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 flex items-center gap-2"
+                            className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
                           >
                             <i data-lucide="eye" className="w-4 h-4"></i>
                             معاينة PDF
                           </button>
                           <button
                             onClick={downloadPdf}
-                            className="bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 flex items-center gap-2"
+                            className="flex-1 bg-slate-600 text-white px-4 py-3 rounded-lg hover:bg-slate-700 flex items-center justify-center gap-2 font-medium"
                           >
                             <i data-lucide="download" className="w-4 h-4"></i>
                             تحميل PDF
@@ -560,28 +576,52 @@
                 </div>
               )}
 
-              {/* PDF Modal */}
+              {/* Simple PDF Modal - Mobile Friendly */}
               {showPdfModal && cvData && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] w-full mx-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pdf-modal">
+                  <div className="bg-white rounded-lg w-full max-w-4xl max-h-[95vh] flex flex-col modal-content">
+                    {/* Header */}
                     <div className="flex justify-between items-center p-4 border-b">
-                      <h3 className="text-lg font-semibold">معاينة السيرة الذاتية</h3>
+                      <h3 className="text-lg font-semibold text-slate-900">معاينة السيرة الذاتية</h3>
                       <button
                         onClick={() => setShowPdfModal(false)}
-                        className="text-slate-500 hover:text-slate-700"
+                        className="text-slate-500 hover:text-slate-700 text-xl font-bold"
                       >
                         ✕
                       </button>
                     </div>
-                    <div className="p-4">
+
+                    {/* PDF Content */}
+                    <div className="flex-1 overflow-hidden">
                       <iframe
                         src={`/cv_generations/${cvData.id}/view_pdf`}
-                        className="w-full h-[70vh] border-0"
+                        className="w-full h-full border-0"
+                        title="CV Preview"
                       />
+                    </div>
+
+                    {/* Mobile-friendly action buttons */}
+                    <div className="p-4 border-t bg-slate-50">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={downloadPdf}
+                          className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
+                        >
+                          <i data-lucide="download" className="w-4 h-4"></i>
+                          تحميل PDF
+                        </button>
+                        <button
+                          onClick={() => setShowPdfModal(false)}
+                          className="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium"
+                        >
+                          إغلاق
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
+
             </div>
           );
         }

@@ -182,11 +182,13 @@ class CvGenerationsController < ApplicationController
     end
   end
 
+
   private
 
   def set_cv_generation
     @cv_generation = current_user.cv_generations.find(params[:id])
   end
+
 
   def cv_generation_params
     params.require(:cv_generation).permit(
@@ -198,9 +200,11 @@ class CvGenerationsController < ApplicationController
   def ensure_user_has_resume
     return unless current_user.resumes.empty?
     
+    Rails.logger.info "User #{current_user.email} has no resumes, redirecting to resume creation"
+    
     respond_to do |format|
-      format.html { redirect_to new_resume_path, alert: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة.' }
-      format.json { render json: { error: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة.' }, status: :unprocessable_entity }
+      format.html { redirect_to resumes_path, alert: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة. انقر على "إنشاء سيرة ذاتية جديدة" في الصفحة التالية.' }
+      format.json { render json: { error: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة.', redirect_url: resumes_path }, status: :unprocessable_entity }
     end
   end
 end
