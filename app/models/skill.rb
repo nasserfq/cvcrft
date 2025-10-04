@@ -1,6 +1,9 @@
 class Skill < ApplicationRecord
   belongs_to :resume
 
+  # Serialize skill_names as JSON array
+  serialize :skill_names, coder: JSON
+
   # New validations for updated structure
   validates :category, presence: true
   validates :skill_names, presence: true

@@ -1,10 +1,89 @@
 import React, { useState } from "react";
 
 const MultiStepResumeForm = ({ resume, onSubmit }) => {
- console.log("MultiStepResumeForm component rendered with props:", {
-  resume,
-  onSubmit,
- });
+ console.log("=== MultiStepResumeForm component rendered ===");
+ console.log("Resume prop:", resume);
+ console.log("Resume skills:", resume?.skills);
+ console.log(
+  "Resume skills detailed:",
+  resume?.skills?.map((s) => ({
+   category: s.category,
+   skill_names: s.skill_names,
+   types: s.skill_names?.map((name) => ({
+    value: name,
+    type: typeof name,
+    length: name?.length,
+   })),
+  }))
+ );
+ console.log("Resume skills length:", resume?.skills?.length);
+ console.log("Resume skills is array:", Array.isArray(resume?.skills));
+
+ // Clean skills data to remove empty skill names
+ const cleanSkillsData = (skills) => {
+  console.log("=== cleanSkillsData called with:", skills);
+  if (!skills || !Array.isArray(skills)) {
+   console.log("No skills or not array, returning default");
+   return [
+    {
+     category: "",
+     skill_names: [],
+    },
+   ];
+  }
+
+  console.log("Processing", skills.length, "skills");
+  return skills.map((skill, skillIndex) => {
+   console.log(`--- Processing skill ${skillIndex}:`, {
+    category: skill.category,
+    skill_names: skill.skill_names,
+   });
+   let skillNames = skill.skill_names;
+
+   // Handle case where skill_names might be a JSON string
+   if (typeof skillNames === "string") {
+    console.log("Skill names is string, parsing JSON:", skillNames);
+    try {
+     skillNames = JSON.parse(skillNames);
+     console.log("Parsed skill_names:", skillNames);
+    } catch (e) {
+     console.log("JSON parse failed, setting to empty array:", e);
+     skillNames = [];
+    }
+   }
+
+   // Ensure skillNames is an array
+   if (!Array.isArray(skillNames)) {
+    console.log(
+     "Skill names is not array, setting to empty array:",
+     typeof skillNames,
+     skillNames
+    );
+    skillNames = [];
+   }
+
+   console.log("Skill names before filtering:", skillNames);
+
+   // Filter out empty, null, undefined, or whitespace-only names
+   const cleanedNames = skillNames.filter((name) => {
+    const isValid =
+     name != null &&
+     typeof name === "string" &&
+     name.trim() !== "" &&
+     name.trim() !== '""' &&
+     name.trim() !== "''";
+    console.log(`Filtering skill name: "${name}" -> isValid: ${isValid}`);
+    return isValid;
+   });
+
+   console.log(`Cleaned names for skill ${skillIndex}:`, cleanedNames);
+
+   return {
+    ...skill,
+    skill_names: cleanedNames,
+   };
+  });
+ };
 
  const [currentStep, setCurrentStep] = useState(1);
  const [formData, setFormData] = useState({
@@ -37,12 +116,30 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     responsibilities: [""],
    },
   ],
-  skills: resume?.skills || [
-   {
-    category: "",
-    skill_names: [""],
-   },
-  ],
+  skills: (() => {
+   console.log("=== Setting initial skills state ===");
+   console.log("Raw resume skills:", resume?.skills);
+   console.log("Resume skills type:", typeof resume?.skills);
+   console.log("Resume skills is array:", Array.isArray(resume?.skills));
+   console.log("Resume skills length:", resume?.skills?.length);
+
+   let cleanedSkills;
+   if (resume?.skills && resume.skills.length > 0) {
+    console.log("Using resume skills, cleaning them...");
+    cleanedSkills = cleanSkillsData(resume.skills);
+   } else {
+    console.log("No resume skills or empty, using default");
+    cleanedSkills = [
+     {
+      category: "",
+      skill_names: [],
+     },
+    ];
+   }
+
+   console.log("Final initial skills after cleaning:", cleanedSkills);
+   return cleanedSkills;
+  })(),
   certifications: resume?.certifications || [
    {
     name: "",
@@ -62,8 +159,37 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [isTranslating, setIsTranslating] = useState(false);
  const [translationError, setTranslationError] = useState("");
  const [isExporting, setIsExporting] = useState(false);
+ const [addingSkillTo, setAddingSkillTo] = useState(null);
 
  const totalSteps = 8;
+
+ // Effect to continuously clean skills data
+ React.useEffect(() => {
+  setFormData((prev) => {
+   console.log("useEffect cleaning skills:", prev.skills);
+   const cleanedSkills = prev.skills.map((skill) => {
+    const cleanedNames = skill.skill_names.filter((name) => {
+     const isValid =
+      name &&
+      typeof name === "string" &&
+      name.trim() !== "" &&
+      name.trim() !== '""' &&
+      name.trim() !== "''";
+     console.log("Cleaning skill name:", name, "isValid:", isValid);
+     return isValid;
+    });
+    console.log("Cleaned skill:", skill.category, "names:", cleanedNames);
+    return {
+     ...skill,
+     skill_names: cleanedNames,
+    };
+   });
+   return {
+    ...prev,
+    skills: cleanedSkills,
+   };
+  });
+ }, []);
 
  const handleInputChange = (field, value) => {
   setFormData((prev) => ({
@@ -203,7 +329,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     ...prev.skills,
     {
      category: "",
-     skill_names: [""],
+     skill_names: [],
     },
    ],
   }));
@@ -219,14 +345,35 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const addSkillName = (skillIndex) => {
-  setFormData((prev) => ({
-   ...prev,
-   skills: prev.skills.map((skill, i) =>
-    i === skillIndex
-     ? { ...skill, skill_names: [...skill.skill_names, ""] }
-     : skill
-   ),
-  }));
+  setAddingSkillTo(skillIndex);
+ };
+
+ const handleNewSkillChange = (skillIndex, value) => {
+  if (value.trim() !== "") {
+   setFormData((prev) => ({
+    ...prev,
+    skills: prev.skills.map((skill, i) =>
+     i === skillIndex
+      ? { ...skill, skill_names: [...skill.skill_names, value] }
+      : skill
+    ),
+   }));
+   setAddingSkillTo(null);
+  }
+ };
+
+ const handleNewSkillBlur = (skillIndex, value) => {
+  if (value.trim() !== "") {
+   setFormData((prev) => ({
+    ...prev,
+    skills: prev.skills.map((skill, i) =>
+     i === skillIndex
+      ? { ...skill, skill_names: [...skill.skill_names, value] }
+      : skill
+    ),
+   }));
+  }
+  setAddingSkillTo(null);
  };
 
  const removeSkillName = (skillIndex, nameIndex) => {
@@ -254,6 +401,22 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         ...skill,
         skill_names: skill.skill_names.map((name, j) =>
          j === nameIndex ? value : name
+        ),
+       }
+     : skill
+   ),
+  }));
+ };
+
+ const handleSkillNameBlur = (skillIndex, nameIndex) => {
+  setFormData((prev) => ({
+   ...prev,
+   skills: prev.skills.map((skill, i) =>
+    i === skillIndex
+     ? {
+        ...skill,
+        skill_names: skill.skill_names.filter(
+         (name, j) => j !== nameIndex || (name && name.trim() !== "")
         ),
        }
      : skill
@@ -1514,115 +1677,27 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   </div>
  );
 
- const renderStep5 = () => (
-  <div className="space-y-6">
-   <div className="text-center mb-6">
-    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
-     <svg
-      className="w-8 h-8"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-     >
-      <path
-       strokeLinecap="round"
-       strokeLinejoin="round"
-       strokeWidth={2}
-       d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-      />
-     </svg>
-    </div>
-    <h2 className="text-xl font-semibold text-slate-900">المهارات</h2>
-    <p className="text-slate-600 mt-2">أضف مهاراتك التقنية والشخصية</p>
-   </div>
+ const renderStep5 = () => {
+  console.log("=== RENDER STEP 5 (SKILLS) ===");
+  console.log("Current formData.skills:", formData.skills);
+  console.log(
+   "formData.skills detailed:",
+   formData.skills.map((s) => ({
+    category: s.category,
+    skill_names: s.skill_names,
+    skill_names_types: s.skill_names?.map((name) => ({
+     value: name,
+     type: typeof name,
+    })),
+   }))
+  );
 
+  return (
    <div className="space-y-6">
-    {formData.skills.map((skill, index) => (
-     <div
-      key={index}
-      className="p-6 border border-slate-200/60 rounded-lg bg-slate-50/50"
-     >
-      <div className="flex items-center justify-between mb-4">
-       <h3 className="text-lg font-semibold text-slate-900">
-        {index === 0 ? "فئة المهارات الأساسية" : `فئة المهارات ${index + 1}`}
-       </h3>
-       {formData.skills.length > 1 && (
-        <button
-         type="button"
-         onClick={() => removeSkills(index)}
-         className="text-red-500 hover:text-red-700 text-sm font-medium"
-        >
-         حذف
-        </button>
-       )}
-      </div>
-
-      <div className="grid gap-4">
-       <div>
-        <label className="block text-sm font-semibold text-slate-900 mb-2">
-         فئة المهارات
-        </label>
-        <input
-         type="text"
-         value={skill.category}
-         onChange={(e) => handleSkillsChange(index, "category", e.target.value)}
-         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
-         placeholder="مثال: Product Management & AI"
-        />
-       </div>
-
-       <div>
-        <label className="block text-sm font-semibold text-slate-900 mb-2">
-         المهارات
-        </label>
-        <div className="space-y-3">
-         {skill.skill_names.map((skillName, nameIndex) => (
-          <div key={nameIndex} className="flex items-center gap-2">
-           <span className="text-emerald-600 text-lg">•</span>
-           <input
-            type="text"
-            value={skillName}
-            onChange={(e) =>
-             handleSkillNameChange(index, nameIndex, e.target.value)
-            }
-            className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-4 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
-            placeholder="اكتب اسم المهارة..."
-           />
-           {skill.skill_names.length > 1 && (
-            <button
-             type="button"
-             onClick={() => removeSkillName(index, nameIndex)}
-             className="text-red-500 hover:text-red-700 text-sm font-medium"
-            >
-             حذف
-            </button>
-           )}
-          </div>
-         ))}
-         <button
-          type="button"
-          onClick={() => addSkillName(index)}
-          className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
-         >
-          + إضافة مهارة أخرى
-         </button>
-        </div>
-        <p className="mt-2 text-xs text-slate-500">
-         اكتب المهارات مفصولة بفواصل أو أضف كل مهارة في سطر منفصل
-        </p>
-       </div>
-      </div>
-     </div>
-    ))}
-
-    <div className="text-center">
-     <button
-      type="button"
-      onClick={addSkills}
-      className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 text-emerald-700 px-6 py-3 text-sm font-medium hover:bg-emerald-200 transition-all"
-     >
+    <div className="text-center mb-6">
+     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
       <svg
-       className="w-4 h-4"
+       className="w-8 h-8"
        fill="none"
        stroke="currentColor"
        viewBox="0 0 24 24"
@@ -1631,42 +1706,187 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
        />
       </svg>
-      إضافة فئة مهارات أخرى
-     </button>
+     </div>
+     <h2 className="text-xl font-semibold text-slate-900">المهارات</h2>
+     <p className="text-slate-600 mt-2">أضف مهاراتك التقنية والشخصية</p>
     </div>
 
-    <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
-     <h3 className="text-sm font-medium text-slate-900 mb-2">
-      أمثلة على فئات المهارات:
-     </h3>
-     <ul className="text-xs text-slate-600 space-y-1">
-      <li>
-       • <strong>Product Management & AI:</strong> Product Management, AI,
-       Strategic Planning, Business Analysis
-      </li>
-      <li>
-       • <strong>Technical Development:</strong> Ruby on Rails, PostgreSQL,
-       Power BI, Data Modeling
-      </li>
-      <li>
-       • <strong>Project Management:</strong> Project Management, Agile
-       Methodologies, Technical Leadership
-      </li>
-      <li>
-       • <strong>Data Science:</strong> Data Science, Python, R, SQL
-      </li>
-      <li>
-       • <strong>Soft Skills:</strong> Innovation, Team Collaboration, Customer
-       Reach
-      </li>
-     </ul>
+    <div className="space-y-6">
+     {formData.skills.map((skill, index) => (
+      <div
+       key={index}
+       className="p-6 border border-slate-200/60 rounded-lg bg-slate-50/50"
+      >
+       <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-slate-900">
+         {index === 0 ? "فئة المهارات الأساسية" : `فئة المهارات ${index + 1}`}
+        </h3>
+        {formData.skills.length > 1 && (
+         <button
+          type="button"
+          onClick={() => removeSkills(index)}
+          className="text-red-500 hover:text-red-700 text-sm font-medium"
+         >
+          حذف
+         </button>
+        )}
+       </div>
+
+       <div className="grid gap-4">
+        <div>
+         <label className="block text-sm font-semibold text-slate-900 mb-2">
+          فئة المهارات
+         </label>
+         <input
+          type="text"
+          value={skill.category}
+          onChange={(e) =>
+           handleSkillsChange(index, "category", e.target.value)
+          }
+          className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+          placeholder="مثال: Product Management & AI"
+         />
+        </div>
+
+        <div>
+         <label className="block text-sm font-semibold text-slate-900 mb-2">
+          المهارات
+         </label>
+         <div className="space-y-3">
+          {(() => {
+           console.log("Skill names for index", index, ":", skill.skill_names);
+           const filteredNames = skill.skill_names.filter((skillName) => {
+            const isValid =
+             skillName &&
+             typeof skillName === "string" &&
+             skillName.trim() !== "" &&
+             skillName.trim() !== '""' &&
+             skillName.trim() !== "''";
+            console.log("Skill name:", skillName, "isValid:", isValid);
+            return isValid;
+           });
+           console.log("Filtered names:", filteredNames);
+           if (filteredNames.length === 0) {
+            console.log("No valid skill names, rendering nothing");
+            return null;
+           }
+           return filteredNames.map((skillName, nameIndex) => (
+            <div key={nameIndex} className="flex items-center gap-2">
+             <span className="text-emerald-600 text-lg">•</span>
+             <input
+              type="text"
+              value={skillName}
+              onChange={(e) =>
+               handleSkillNameChange(index, nameIndex, e.target.value)
+              }
+              onBlur={() => handleSkillNameBlur(index, nameIndex)}
+              className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-4 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+              placeholder="اكتب اسم المهارة..."
+             />
+             {skill.skill_names.filter((name) => name && name.trim() !== "")
+              .length > 1 && (
+              <button
+               type="button"
+               onClick={() => removeSkillName(index, nameIndex)}
+               className="text-red-500 hover:text-red-700 text-sm font-medium"
+              >
+               حذف
+              </button>
+             )}
+            </div>
+           ));
+          })()}
+          {addingSkillTo === index ? (
+           <div className="flex items-center gap-2">
+            <span className="text-emerald-600 text-lg">•</span>
+            <input
+             type="text"
+             autoFocus
+             onChange={(e) => handleNewSkillChange(index, e.target.value)}
+             onBlur={(e) => handleNewSkillBlur(index, e.target.value)}
+             onKeyPress={(e) => {
+              if (e.key === "Enter") {
+               handleNewSkillChange(index, e.target.value);
+              }
+             }}
+             className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-4 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+             placeholder="اكتب اسم المهارة..."
+            />
+           </div>
+          ) : (
+           <button
+            type="button"
+            onClick={() => addSkillName(index)}
+            className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+           >
+            + إضافة مهارة أخرى
+           </button>
+          )}
+         </div>
+         <p className="mt-2 text-xs text-slate-500">
+          اكتب المهارات مفصولة بفواصل أو أضف كل مهارة في سطر منفصل
+         </p>
+        </div>
+       </div>
+      </div>
+     ))}
+
+     <div className="text-center">
+      <button
+       type="button"
+       onClick={addSkills}
+       className="inline-flex items-center gap-2 rounded-lg bg-emerald-100 text-emerald-700 px-6 py-3 text-sm font-medium hover:bg-emerald-200 transition-all"
+      >
+       <svg
+        className="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+       >
+        <path
+         strokeLinecap="round"
+         strokeLinejoin="round"
+         strokeWidth={2}
+         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+        />
+       </svg>
+       إضافة فئة مهارات أخرى
+      </button>
+     </div>
+
+     <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
+      <h3 className="text-sm font-medium text-slate-900 mb-2">
+       أمثلة على فئات المهارات:
+      </h3>
+      <ul className="text-xs text-slate-600 space-y-1">
+       <li>
+        • <strong>Product Management & AI:</strong> Product Management, AI,
+        Strategic Planning, Business Analysis
+       </li>
+       <li>
+        • <strong>Technical Development:</strong> Ruby on Rails, PostgreSQL,
+        Power BI, Data Modeling
+       </li>
+       <li>
+        • <strong>Project Management:</strong> Project Management, Agile
+        Methodologies, Technical Leadership
+       </li>
+       <li>
+        • <strong>Data Science:</strong> Data Science, Python, R, SQL
+       </li>
+       <li>
+        • <strong>Soft Skills:</strong> Innovation, Team Collaboration, Customer
+        Reach
+       </li>
+      </ul>
+     </div>
     </div>
    </div>
-  </div>
- );
+  );
+ };
 
  const renderStep6 = () => (
   <div className="space-y-6">

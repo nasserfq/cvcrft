@@ -34,6 +34,13 @@
 <script>
   // Pass resume data to JavaScript
   window.resumeData = <%= raw @resume.to_json(only: [:complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :education, :work_experience, :skills, :certifications, :languages]) %>;
-  console.log('Resume data set:', window.resumeData);
+  console.log('=== RAILS: Resume data set ===');
+  console.log('Resume data:', window.resumeData);
+  console.log('Resume skills:', window.resumeData.skills);
+  console.log('Resume skills detailed:', window.resumeData.skills?.map(s => ({ 
+    category: s.category, 
+    skill_names: s.skill_names,
+    skill_names_types: s.skill_names?.map(name => ({ value: name, type: typeof name }))
+  })));
 </script>
 <% end %>
