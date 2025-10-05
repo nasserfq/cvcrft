@@ -165,6 +165,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [translationError, setTranslationError] = useState("");
  const [isExporting, setIsExporting] = useState(false);
  const [addingSkillTo, setAddingSkillTo] = useState(null);
+ const [translationCount, setTranslationCount] = useState(0);
+ const [maxTranslations] = useState(5);
 
  const totalSteps = 8;
 
@@ -474,6 +476,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
+  // Check translation limit
+  if (translationCount >= maxTranslations) {
+   setTranslationError(
+    `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}). يرجى المحاولة لاحقاً.`
+   );
+   return;
+  }
+
   setIsTranslating(true);
   setTranslationError("");
 
@@ -496,6 +506,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    if (response.ok) {
     const result = await response.json();
     if (result.status === "queued" && result.job_id) {
+     // Increment translation count
+     setTranslationCount((prev) => prev + 1);
      // Poll for completion
      pollTranslationStatus(result.job_id);
     } else {
@@ -1397,7 +1409,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      <button
       type="button"
       onClick={translateProfessionalSummary}
-      disabled={isTranslating || !formData.professional_summary.trim()}
+      disabled={
+       isTranslating ||
+       !formData.professional_summary.trim() ||
+       translationCount >= maxTranslations
+      }
       className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-6 py-3 text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
      >
       {isTranslating ? (
@@ -1439,10 +1455,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
          />
         </svg>
-        ترجم وأنشئ ملخص مهني
+        ترجم وأنشئ ملخص مهني ({maxTranslations - translationCount} متبقي)
        </>
       )}
      </button>
+
+     {/* Translation limit info */}
+     <div className="mt-2 text-xs text-slate-500">
+      الترجمات المستخدمة: {translationCount} من {maxTranslations}
+     </div>
     </div>
 
     {/* Translation Error */}
