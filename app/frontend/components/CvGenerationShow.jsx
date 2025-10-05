@@ -6,9 +6,12 @@ const CvGenerationShow = ({ cvGenerationId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [userCvCount, setUserCvCount] = useState(0);
+  const [maxCvGenerations] = useState(15);
 
   useEffect(() => {
     fetchCvGeneration();
+    fetchUserCvCount();
     
     // Auto-refresh every 3 seconds if status is processing
     const interval = setInterval(() => {
@@ -40,6 +43,18 @@ const CvGenerationShow = ({ cvGenerationId }) => {
       setRefreshing(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserCvCount = async () => {
+    try {
+      const response = await fetch('/cv_generations/count.json');
+      if (response.ok) {
+        const data = await response.json();
+        setUserCvCount(data.count || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching user CV count:', err);
     }
   };
 
@@ -157,6 +172,36 @@ const CvGenerationShow = ({ cvGenerationId }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">AI Model</label>
                   <p className="text-sm text-gray-600">{cvGeneration.ai_model}</p>
+                </div>
+                
+                {/* CV Generation Limit */}
+                <div className="border-t pt-4">
+                  <label className="block text-sm font-medium text-gray-700">CV Generations</label>
+                  <div className="mt-2">
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Used: {userCvCount}</span>
+                      <span>Limit: {maxCvGenerations}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          userCvCount >= maxCvGenerations ? 'bg-red-500' : 
+                          userCvCount >= maxCvGenerations * 0.8 ? 'bg-yellow-500' : 'bg-green-500'
+                        }`}
+                        style={{ width: `${Math.min((userCvCount / maxCvGenerations) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    {userCvCount >= maxCvGenerations && (
+                      <p className="text-xs text-red-600 mt-1">
+                        ⚠️ You've reached the maximum CV generations limit
+                      </p>
+                    )}
+                    {userCvCount >= maxCvGenerations * 0.8 && userCvCount < maxCvGenerations && (
+                      <p className="text-xs text-yellow-600 mt-1">
+                        ⚠️ You're approaching the CV generations limit
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

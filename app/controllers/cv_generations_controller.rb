@@ -64,6 +64,19 @@ class CvGenerationsController < ApplicationController
       return
     end
     
+    # Check CV generation limit (15 per user)
+    max_cv_generations = 15
+    current_cv_count = current_user.cv_generations.count
+    
+    if current_cv_count >= max_cv_generations
+      Rails.logger.warn "User #{current_user.email} has reached CV generation limit (#{current_cv_count}/#{max_cv_generations})"
+      respond_to do |format|
+        format.html { redirect_to cv_generations_path, alert: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً." }
+        format.json { render json: { error: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً.", limit_reached: true }, status: :unprocessable_entity }
+      end
+      return
+    end
+    
     user_id = current_user.id
     Rails.logger.info "Using user_id: #{user_id} for CV generation"
 
@@ -155,6 +168,14 @@ class CvGenerationsController < ApplicationController
     respond_to do |format|
       format.html
       format.json { render json: @stats }
+    end
+  end
+
+  def count
+    cv_count = current_user.cv_generations.count
+    
+    respond_to do |format|
+      format.json { render json: { count: cv_count } }
     end
   end
 

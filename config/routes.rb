@@ -44,6 +44,7 @@ Rails.application.routes.draw do
     end
     collection do
       get :stats
+      get :count
     end
   end
 

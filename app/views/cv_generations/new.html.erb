@@ -103,6 +103,10 @@
           const [showResults, setShowResults] = useState(false);
           const [resumes, setResumes] = useState([]);
 
+          // CV Generation limit state
+          const [userCvCount, setUserCvCount] = useState(0);
+          const [maxCvGenerations] = useState(15);
+
           // Download handler function
           const handleDownload = async (url, filename) => {
             try {
@@ -123,6 +127,19 @@
             } catch (error) {
               console.error('Download error:', error);
               alert('فشل في تحميل الملف. يرجى المحاولة مرة أخرى.');
+            }
+          };
+
+          // Fetch user CV count
+          const fetchUserCvCount = async () => {
+            try {
+              const response = await fetch('/cv_generations/count.json');
+              if (response.ok) {
+                const data = await response.json();
+                setUserCvCount(data.count || 0);
+              }
+            } catch (err) {
+              console.error('Error fetching user CV count:', err);
             }
           };
 
@@ -199,6 +216,7 @@
           };
 
             loadResumesWithGenerations();
+            fetchUserCvCount();
           }, []);
 
           // Check for CV generation ID in URL on page load (for direct links)
@@ -320,6 +338,12 @@
 
             if (!selectedResumeId || !jobDescription.trim()) {
               alert('Please select a resume and enter a job description');
+              return;
+            }
+
+            // Check CV generation limit
+            if (userCvCount >= maxCvGenerations) {
+              alert(`لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (${maxCvGenerations}). يرجى المحاولة لاحقاً.`);
               return;
             }
 
@@ -596,15 +620,49 @@
                 </div>
               </div>
 
+              {/* CV Generation Limit Display */}
+              <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-slate-700">حد إنشاء السير الذاتية</h3>
+                  <span className="text-sm text-slate-600">{userCvCount} من {maxCvGenerations}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      userCvCount >= maxCvGenerations ? 'bg-red-500' :
+                      userCvCount >= maxCvGenerations * 0.8 ? 'bg-yellow-500' : 'bg-emerald-500'
+                    }`}
+                    style={{ width: `${Math.min((userCvCount / maxCvGenerations) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                {userCvCount >= maxCvGenerations && (
+                  <p className="text-xs text-red-600">
+                    ⚠️ لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية
+                  </p>
+                )}
+                {userCvCount >= maxCvGenerations * 0.8 && userCvCount < maxCvGenerations && (
+                  <p className="text-xs text-yellow-600">
+                    ⚠️ أنت تقترب من الحد الأقصى لإنشاء السير الذاتية
+                  </p>
+                )}
+                {userCvCount < maxCvGenerations * 0.8 && (
+                  <p className="text-xs text-emerald-600">
+                    ✓ يمكنك إنشاء المزيد من السير الذاتية
+                  </p>
+                )}
+              </div>
+
               {/* Generate Button */}
               <div className="mb-8">
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={isGenerating || !selectedResumeId || !jobDescription.trim()}
+                  disabled={isGenerating || !selectedResumeId || !jobDescription.trim() || userCvCount >= maxCvGenerations}
                   className="w-full bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isGenerating ? 'جاري الإنشاء...' : 'إنشاء السيرة الذاتية'}
+                  {isGenerating ? 'جاري الإنشاء...' :
+                   userCvCount >= maxCvGenerations ? `وصلت للحد الأقصى (${maxCvGenerations})` :
+                   'إنشاء السيرة الذاتية'}
                 </button>
               </div>
 
