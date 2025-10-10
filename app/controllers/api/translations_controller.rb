@@ -148,22 +148,22 @@ class Api::TranslationsController < ApplicationController
       Rails.logger.info "Professional Summary: #{professional_summary&.truncate(100)}"
       Rails.logger.info "Professional Summary English: #{resume.professional_summary_english&.truncate(100)}"
 
+      # Generate PDF using WickedPDF with improved padding and spacing
+      Rails.logger.info "About to generate PDF with WickedPDF"
       pdf_service = ResumePdfService.new(resume, professional_summary)
       html_content = pdf_service.generate
 
       Rails.logger.info "Generated HTML length: #{html_content.length}"
 
-      # Generate PDF using WickedPDF with ATS-friendly options
-      Rails.logger.info "About to generate PDF with WickedPDF"
       pdf = WickedPdf.new.pdf_from_string(
         html_content,
         page_size: "A4",
         orientation: "Portrait",
         margin: {
-          top: 1.0,
-          bottom: 0.5,
-          left: 0.5,
-          right: 0.5
+          top: 2.0,
+          bottom: 1.0,
+          left: 0.75,
+          right: 0.75
         },
         encoding: "UTF-8",
         print_media_type: true,

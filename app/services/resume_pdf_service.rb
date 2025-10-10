@@ -42,7 +42,7 @@ class ResumePdfService
           /* ATS-Friendly Styling */
           body {#{' '}
             font-family: Arial, sans-serif;#{' '}
-            margin: 1in 0.5in 0.5in 0.5in;#{' '}
+            margin: 2in 0.75in 1in 0.75in;#{' '}
             line-height: 1.3;#{' '}
             color: #000000;#{' '}
             font-size: 11pt;#{' '}
@@ -53,26 +53,28 @@ class ResumePdfService
           .header {#{' '}
             text-align: center;#{' '}
             margin-top: 0;#{' '}
-            margin-bottom: 20pt;#{' '}
-            padding-top: 0;#{' '}
+            margin-bottom: 10pt;#{' '}
+            padding-top: 10pt;#{' '}
             border-bottom: 1pt solid #000000;
-            padding-bottom: 8pt;
+            padding-bottom: 6pt;
           }
           .header h1 {#{' '}
             font-size: 18pt;#{' '}
             font-weight: bold;#{' '}
-            margin: 0 0 6pt 0;#{' '}
+            margin: 0 0 4pt 0;#{' '}
             color: #000000;#{' '}
             text-transform: none;
+            letter-spacing: 0.5pt;
           }
           .contact-info {#{' '}
             font-size: 11pt;#{' '}
             color: #000000;#{' '}
             margin-bottom: 0;#{' '}
             font-weight: normal;
+            line-height: 1.3;
           }
           .section {#{' '}
-            margin-top: 15pt;#{' '}
+            margin-top: 12pt;#{' '}
             margin-bottom: 15pt;#{' '}
             page-break-inside: avoid;
           }
@@ -81,13 +83,13 @@ class ResumePdfService
             font-weight: bold;#{' '}
             color: #000000;#{' '}
             border-bottom: 1pt solid #000000;#{' '}
-            margin-bottom: 8pt;#{' '}
-            padding-bottom: 2pt;
-            text-transform: none;
-            letter-spacing: normal;
+            margin-bottom: 4pt;#{' '}
+            padding-bottom: 1pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
           }
           .experience-item {#{' '}
-            margin-bottom: 12pt;#{' '}
+            margin-bottom: 8pt;#{' '}
             page-break-inside: avoid;#{' '}
             word-wrap: break-word;#{' '}
             overflow-wrap: break-word;#{' '}
@@ -108,7 +110,7 @@ class ResumePdfService
           .company {#{' '}
             font-size: 10pt;#{' '}
             color: #000000;#{' '}
-            margin: 0 0 2pt 0;#{' '}
+            margin: 0 0 3pt 0;#{' '}
             font-style: normal;#{' '}
             float: left;#{' '}
             clear: left;#{' '}
@@ -123,23 +125,15 @@ class ResumePdfService
             text-align: right;
           }
           .description {#{' '}
-            margin-top: 3pt;#{' '}
+            margin-top: 2pt;#{' '}
             clear: both;#{' '}
             word-wrap: break-word;#{' '}
             overflow-wrap: break-word;#{' '}
             float: left;#{' '}
             width: 100%;
           }
-          .description ul {#{' '}
-            margin: 2pt 0;#{' '}
-            padding-left: 15pt;#{' '}
-            list-style-type: disc;#{' '}
-            word-wrap: break-word;#{' '}
-            overflow-wrap: break-word;#{' '}
-            clear: both;
-          }
-          .description li {#{' '}
-            margin-bottom: 2pt;#{' '}
+          .bullet-point {#{' '}
+            margin-bottom: 3pt;#{' '}
             font-size: 10pt;#{' '}
             line-height: 1.2;#{' '}
             word-wrap: break-word;#{' '}
@@ -147,9 +141,13 @@ class ResumePdfService
             hyphens: auto;#{' '}
             max-width: 100%;#{' '}
             clear: both;
+            text-align: justify;
+            padding-left: 0pt;#{' '}
+            margin-left: 0pt;#{' '}
+            text-indent: 0pt;
           }
           .education-item {#{' '}
-            margin-bottom: 8pt;#{' '}
+            margin-bottom: 6pt;#{' '}
             page-break-inside: avoid;#{' '}
             clear: both;#{' '}
             overflow: hidden;
@@ -164,7 +162,7 @@ class ResumePdfService
           .education-institution {#{' '}
             font-size: 10pt;#{' '}
             color: #000000;#{' '}
-            margin: 0 0 2pt 0;#{' '}
+            margin: 0 0 3pt 0;#{' '}
             font-style: normal;#{' '}
             float: left;#{' '}
             clear: left;#{' '}
@@ -179,18 +177,20 @@ class ResumePdfService
             text-align: right;
           }
           .skills {#{' '}
-            margin-bottom: 6pt;#{' '}
+            margin-bottom: 4pt;#{' '}
           }
           .skill-category {#{' '}
             font-weight: bold;#{' '}
             font-size: 10pt;#{' '}
             color: #000000;#{' '}
             display: inline;
+            margin-bottom: 1pt;
           }
           .skill-items {#{' '}
             font-size: 10pt;#{' '}
             color: #000000;#{' '}
             display: inline;
+            line-height: 1.1;
           }
           .certification-item {#{' '}
             margin-bottom: 3pt;#{' '}
@@ -232,28 +232,28 @@ class ResumePdfService
           }
           /* Enhanced multi-page styling */
           @page {
-            margin: 1in 0.5in 0.5in 0.5in;
+            margin: 1.5in 0.75in 0.75in 0.75in;
             size: A4;
             @top-center { content: ""; }
             @bottom-center { content: ""; }
           }
           @page :first {
-            margin-top: 1in;
-            margin-bottom: 0.5in;
-            margin-left: 0.5in;
-            margin-right: 0.5in;
+            margin-top: 1.5in;
+            margin-bottom: 0.75in;
+            margin-left: 0.75in;
+            margin-right: 0.75in;
           }
           @page :left {
-            margin-left: 0.5in;
-            margin-right: 0.5in;
-            margin-top: 1in;
-            margin-bottom: 0.5in;
+            margin-left: 0.75in;
+            margin-right: 0.75in;
+            margin-top: 1.5in;
+            margin-bottom: 0.75in;
           }
           @page :right {
-            margin-left: 0.5in;
-            margin-right: 0.5in;
-            margin-top: 1in;
-            margin-bottom: 0.5in;
+            margin-left: 0.75in;
+            margin-right: 0.75in;
+            margin-top: 1.5in;
+            margin-bottom: 0.75in;
           }
           /* Better page break control for multi-page resumes */
           .page-break-before {
@@ -405,14 +405,14 @@ class ResumePdfService
           [ exp.responsibilities.to_s ]
         end
 
-        # Format as bullet points (remove duplicates for cleaner CV)
+        # Format as bullet points using manual bullets (no HTML lists to avoid duplicates)
         responsibilities_to_display = responsibilities_list.compact.reject(&:blank?).uniq
         if responsibilities_to_display.any?
-          responsibilities_html = "<ul class='description'>"
+          responsibilities_html = "<div class='description'>"
           responsibilities_to_display.each do |resp|
-            responsibilities_html += "<li>#{resp}</li>"
+            responsibilities_html += "<div class='bullet-point'>• #{resp}</div>"
           end
-          responsibilities_html += "</ul>"
+          responsibilities_html += "</div>"
         end
       end
 

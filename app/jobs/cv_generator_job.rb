@@ -485,24 +485,23 @@ class CvGeneratorJob
 
       # Use the generated content from CV generation instead of resume data
       Rails.logger.info "Using generated content for PDF: #{@cv_generation.generated_content&.truncate(100)}"
-      
-      # Generate PDF using the existing service but with generated content
+
+      # Generate PDF using WickedPDF with improved padding and spacing
+      Rails.logger.info "About to generate PDF with WickedPDF..."
       pdf_service = ResumePdfService.new(resume, @cv_generation.generated_content)
       html_content = pdf_service.generate
 
       Rails.logger.info "Generated HTML content length: #{html_content.length} characters"
 
-      # Generate PDF using WickedPDF
-      Rails.logger.info "About to generate PDF with WickedPDF..."
       pdf = WickedPdf.new.pdf_from_string(
         html_content,
         page_size: "A4",
         orientation: "Portrait",
         margin: {
-          top: 1.0,
-          bottom: 0.5,
-          left: 0.5,
-          right: 0.5
+          top: 2.0,
+          bottom: 1.0,
+          left: 0.75,
+          right: 0.75
         },
         encoding: "UTF-8",
         print_media_type: true,

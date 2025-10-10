@@ -88,22 +88,22 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [currentStep, setCurrentStep] = useState(() => {
   // Check if we have a step parameter from URL or draft data
   const urlParams = new URLSearchParams(window.location.search);
-  const stepParam = urlParams.get('step');
+  const stepParam = urlParams.get("step");
   if (stepParam) {
-    return parseInt(stepParam, 10);
+   return parseInt(stepParam, 10);
   }
-  
+
   // Check if resume has draft data with current step
   if (resume?.draft_data?.current_step) {
-    return parseInt(resume.draft_data.current_step, 10);
+   return parseInt(resume.draft_data.current_step, 10);
   }
-  
+
   return 1;
  });
  const [formData, setFormData] = useState(() => {
   // Load draft data if available
   const draftData = resume?.draft_data;
-  
+
   if (draftData) {
    return {
     complete_name: draftData.complete_name || resume?.complete_name || "",
@@ -111,50 +111,70 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     phone_number: draftData.phone_number || resume?.phone_number || "",
     city: draftData.city || resume?.city || "",
     country: draftData.country || resume?.country || "",
-    professional_summary: draftData.professional_summary || resume?.professional_summary || "",
-    professional_summary_english: draftData.professional_summary_english || resume?.professional_summary_english || "",
+    professional_summary:
+     draftData.professional_summary || resume?.professional_summary || "",
+    professional_summary_english:
+     draftData.professional_summary_english ||
+     resume?.professional_summary_english ||
+     "",
     skills_extracted: resume?.skills_extracted || [],
     translation_notes: resume?.translation_notes || "",
     education: (() => {
      try {
-      return draftData.education ? JSON.parse(draftData.education) : (resume?.education || [{
-       degree: "",
-       institution: "",
-       start_date: "",
-       end_date: "",
-       gpa: "",
-       is_current: false,
-      }]);
+      return draftData.education
+       ? JSON.parse(draftData.education)
+       : resume?.education || [
+          {
+           degree: "",
+           institution: "",
+           start_date: "",
+           end_date: "",
+           gpa: "",
+           is_current: false,
+          },
+         ];
      } catch {
-      return resume?.education || [{
-       degree: "",
-       institution: "",
-       start_date: "",
-       end_date: "",
-       gpa: "",
-       is_current: false,
-      }];
+      return (
+       resume?.education || [
+        {
+         degree: "",
+         institution: "",
+         start_date: "",
+         end_date: "",
+         gpa: "",
+         is_current: false,
+        },
+       ]
+      );
      }
     })(),
     work_experience: (() => {
      try {
-      return draftData.work_experience ? JSON.parse(draftData.work_experience) : (resume?.work_experience || [{
-       job_title: "",
-       company: "",
-       start_date: "",
-       end_date: "",
-       is_current: false,
-       responsibilities: [""],
-      }]);
+      return draftData.work_experience
+       ? JSON.parse(draftData.work_experience)
+       : resume?.work_experience || [
+          {
+           job_title: "",
+           company: "",
+           start_date: "",
+           end_date: "",
+           is_current: false,
+           responsibilities: [""],
+          },
+         ];
      } catch {
-      return resume?.work_experience || [{
-       job_title: "",
-       company: "",
-       start_date: "",
-       end_date: "",
-       is_current: false,
-       responsibilities: [""],
-      }];
+      return (
+       resume?.work_experience || [
+        {
+         job_title: "",
+         company: "",
+         start_date: "",
+         end_date: "",
+         is_current: false,
+         responsibilities: [""],
+        },
+       ]
+      );
      }
     })(),
     skills: (() => {
@@ -165,7 +185,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      } catch {
       // Fall through to default logic
      }
-     
+
      // Default logic for skills
      if (resume?.skills && resume.skills.length > 0) {
       return resume.skills.map((skill) => ({
@@ -190,101 +210,117 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     })(),
     certifications: (() => {
      try {
-      return draftData.certifications ? JSON.parse(draftData.certifications) : (resume?.certifications || [{
-       name: "",
-       organization: "",
-       date: "",
-      }]);
+      return draftData.certifications
+       ? JSON.parse(draftData.certifications)
+       : resume?.certifications || [
+          {
+           name: "",
+           organization: "",
+           date: "",
+          },
+         ];
      } catch {
-      return resume?.certifications || [{
-       name: "",
-       organization: "",
-       date: "",
-      }];
+      return (
+       resume?.certifications || [
+        {
+         name: "",
+         organization: "",
+         date: "",
+        },
+       ]
+      );
      }
     })(),
     languages: (() => {
      try {
-      return draftData.languages ? JSON.parse(draftData.languages) : (resume?.languages || [{
-       language: "",
-       proficiency: "",
-      }]);
+      return draftData.languages
+       ? JSON.parse(draftData.languages)
+       : resume?.languages || [
+          {
+           language: "",
+           proficiency: "",
+          },
+         ];
      } catch {
-      return resume?.languages || [{
-       language: "",
-       proficiency: "",
-      }];
+      return (
+       resume?.languages || [
+        {
+         language: "",
+         proficiency: "",
+        },
+       ]
+      );
      }
     })(),
    };
   }
-  
+
   // Default initialization if no draft data
   return {
-  complete_name: resume?.complete_name || "",
-  email: resume?.email || "",
-  phone_number: resume?.phone_number || "",
-  city: resume?.city || "",
-  country: resume?.country || "",
-  professional_summary: resume?.professional_summary || "",
-  professional_summary_english: resume?.professional_summary_english || "",
-  skills_extracted: resume?.skills_extracted || [],
-  translation_notes: resume?.translation_notes || "",
-  education: resume?.education || [
-   {
-    degree: "",
-    institution: "",
-    start_date: "",
-    end_date: "",
-    gpa: "",
-    is_current: false,
-   },
-  ],
-  work_experience: resume?.work_experience || [
-   {
-    job_title: "",
-    company: "",
-    start_date: "",
-    end_date: "",
-    is_current: false,
-    responsibilities: [""],
-   },
-  ],
-  skills: (() => {
-   if (resume?.skills && resume.skills.length > 0) {
+   complete_name: resume?.complete_name || "",
+   email: resume?.email || "",
+   phone_number: resume?.phone_number || "",
+   city: resume?.city || "",
+   country: resume?.country || "",
+   professional_summary: resume?.professional_summary || "",
+   professional_summary_english: resume?.professional_summary_english || "",
+   skills_extracted: resume?.skills_extracted || [],
+   translation_notes: resume?.translation_notes || "",
+   education: resume?.education || [
+    {
+     degree: "",
+     institution: "",
+     start_date: "",
+     end_date: "",
+     gpa: "",
+     is_current: false,
+    },
+   ],
+   work_experience: resume?.work_experience || [
+    {
+     job_title: "",
+     company: "",
+     start_date: "",
+     end_date: "",
+     is_current: false,
+     responsibilities: [""],
+    },
+   ],
+   skills: (() => {
+    if (resume?.skills && resume.skills.length > 0) {
      return resume.skills.map((skill) => ({
-     ...skill,
-     skill_names: (skill.skill_names || []).filter(
-      (name) =>
-       name &&
-       typeof name === "string" &&
-       name.trim() !== "" &&
-       name.trim() !== '""' &&
-       name.trim() !== "''"
-     ),
-    }));
-   } else {
+      ...skill,
+      skill_names: (skill.skill_names || []).filter(
+       (name) =>
+        name &&
+        typeof name === "string" &&
+        name.trim() !== "" &&
+        name.trim() !== '""' &&
+        name.trim() !== "''"
+      ),
+     }));
+    } else {
      return [
-     {
-      category: "",
+      {
+       category: "",
        skill_names: [],
-     },
-    ];
-   }
-  })(),
-  certifications: resume?.certifications || [
-   {
-    name: "",
-    organization: "",
-    date: "",
-   },
-  ],
-  languages: resume?.languages || [
-   {
-    language: "",
-    proficiency: "",
-   },
-  ],
+      },
+     ];
+    }
+   })(),
+   certifications: resume?.certifications || [
+    {
+     name: "",
+     organization: "",
+     date: "",
+    },
+   ],
+   languages: resume?.languages || [
+    {
+     language: "",
+     proficiency: "",
+    },
+   ],
   };
  });
 
@@ -298,22 +334,22 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const totalSteps = 8;
 
-// Handle browser back/forward navigation to keep step in sync
-useEffect(() => {
+ // Handle browser back/forward navigation to keep step in sync
+ useEffect(() => {
   const handlePopState = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stepParam = urlParams.get('step');
-    if (stepParam) {
-      const newStep = parseInt(stepParam, 10);
-      if (newStep !== currentStep && newStep >= 1 && newStep <= totalSteps) {
-        setCurrentStep(newStep);
-      }
+   const urlParams = new URLSearchParams(window.location.search);
+   const stepParam = urlParams.get("step");
+   if (stepParam) {
+    const newStep = parseInt(stepParam, 10);
+    if (newStep !== currentStep && newStep >= 1 && newStep <= totalSteps) {
+     setCurrentStep(newStep);
     }
+   }
   };
 
-  window.addEventListener('popstate', handlePopState);
-  return () => window.removeEventListener('popstate', handlePopState);
-}, [currentStep, totalSteps]);
+  window.addEventListener("popstate", handlePopState);
+  return () => window.removeEventListener("popstate", handlePopState);
+ }, [currentStep, totalSteps]);
 
  // BULLETPROOF EFFECT - Continuously remove empty skill names
  React.useEffect(() => {
@@ -1135,25 +1171,27 @@ useEffect(() => {
     certifications: JSON.stringify(formData.certifications),
     languages: JSON.stringify(formData.languages),
     current_step: stepNumber,
-    saved_at: new Date().toISOString()
+    saved_at: new Date().toISOString(),
    };
 
-   const response = await fetch(`/resumes/${resume?.id || 'new'}/save_draft`, {
+   const response = await fetch(`/resumes/${resume?.id || "new"}/save_draft`, {
     method: "POST",
     headers: {
      "Content-Type": "application/x-www-form-urlencoded",
      "X-CSRF-Token": document
       .querySelector('meta[name="csrf-token"]')
       .getAttribute("content"),
-     "Accept": "application/json"
+     Accept: "application/json",
     },
-    body: new URLSearchParams(draftData)
+    body: new URLSearchParams(draftData),
    });
 
    if (response.ok) {
     const result = await response.json();
     console.log("✅ Draft saved successfully at step:", stepNumber, result);
-    alert(`تم حفظ المسودة بنجاح في الخطوة ${stepNumber}! يمكنك العودة إليها لاحقاً.`);
+    alert(
+     `تم حفظ المسودة بنجاح في الخطوة ${stepNumber}! يمكنك العودة إليها لاحقاً.`
+    );
    } else {
     console.error("❌ Failed to save draft");
     alert("حدث خطأ أثناء حفظ المسودة");
@@ -1346,29 +1384,29 @@ useEffect(() => {
   }
  };
 
-const nextStep = () => {
+ const nextStep = () => {
   if (currentStep < totalSteps) {
    const newStep = currentStep + 1;
    setCurrentStep(newStep);
-   
+
    // Update URL with new step parameter
    const url = new URL(window.location);
-   url.searchParams.set('step', newStep);
-   window.history.pushState({}, '', url);
+   url.searchParams.set("step", newStep);
+   window.history.pushState({}, "", url);
   }
-};
+ };
 
-const prevStep = () => {
+ const prevStep = () => {
   if (currentStep > 1) {
    const newStep = currentStep - 1;
    setCurrentStep(newStep);
-   
+
    // Update URL with new step parameter
    const url = new URL(window.location);
-   url.searchParams.set('step', newStep);
-   window.history.pushState({}, '', url);
+   url.searchParams.set("step", newStep);
+   window.history.pushState({}, "", url);
   }
-};
+ };
 
  const handleSubmit = (e) => {
   e.preventDefault();
@@ -2377,8 +2415,8 @@ const prevStep = () => {
      </div>
     </div>
 
-   {renderSaveDraftButton(5)}
-  </div>
+    {renderSaveDraftButton(5)}
+   </div>
   );
  };
 
@@ -2673,14 +2711,21 @@ const prevStep = () => {
    <div
     className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 max-w-4xl mx-auto"
     dir="ltr"
-    style={{ fontFamily: 'Arial, sans-serif', fontSize: '11pt', lineHeight: '1.3' }}
+    style={{
+     fontFamily: "Arial, sans-serif",
+     fontSize: "11pt",
+     lineHeight: "1.3",
+    }}
    >
     {/* Header */}
-    <div className="text-center mb-8 pb-4 border-b border-gray-900">
-     <h1 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontSize: '18pt' }}>
+    <div className="text-center mb-4 pb-2 border-b border-gray-900">
+     <h1
+      className="text-2xl font-bold text-gray-900 mb-1"
+      style={{ fontSize: "18pt" }}
+     >
       {formData.complete_name || "Your Name"}
      </h1>
-     <div className="text-gray-600" style={{ fontSize: '11pt' }}>
+     <div className="text-gray-600" style={{ fontSize: "11pt" }}>
       {formData.email && `${formData.email}`}
       {formData.phone_number && ` | ${formData.phone_number}`}
       {formData.city &&
@@ -2692,11 +2737,17 @@ const prevStep = () => {
     {/* Professional Summary */}
     {(formData.professional_summary_english ||
      formData.professional_summary) && (
-     <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-2 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
+     <div className="mb-4">
+      <h2
+       className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
+       style={{ fontSize: "12pt" }}
+      >
        Professional Summary
       </h2>
-      <p className="text-gray-700 leading-relaxed text-left" style={{ fontSize: '11pt' }}>
+      <p
+       className="text-gray-700 leading-relaxed text-left"
+       style={{ fontSize: "11pt" }}
+      >
        {formData.professional_summary_english || formData.professional_summary}
       </p>
      </div>
@@ -2704,21 +2755,34 @@ const prevStep = () => {
 
     {/* Education */}
     {formData.education.some((edu) => edu.degree && edu.institution) && (
-     <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
+     <div className="mb-4">
+      <h2
+       className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
+       style={{ fontSize: "12pt" }}
+      >
        Education
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-2">
        {formData.education.map(
         (edu, index) =>
          edu.degree &&
          edu.institution && (
           <div key={index} className="flex justify-between items-start">
            <div className="text-left">
-            <div className="font-semibold text-gray-900" style={{ fontSize: '11pt' }}>{edu.degree}</div>
-            <div className="text-gray-600" style={{ fontSize: '10pt' }}>{edu.institution}</div>
+            <div
+             className="font-semibold text-gray-900"
+             style={{ fontSize: "11pt" }}
+            >
+             {edu.degree}
+            </div>
+            <div className="text-gray-600" style={{ fontSize: "10pt" }}>
+             {edu.institution}
+            </div>
            </div>
-           <div className="text-right text-gray-500" style={{ fontSize: '10pt' }}>
+           <div
+            className="text-right text-gray-500"
+            style={{ fontSize: "10pt" }}
+           >
             {edu.start_date && (
              <>
               {edu.start_date}
@@ -2739,60 +2803,98 @@ const prevStep = () => {
     {formData.work_experience.some(
      (work) => work.job_title && work.company
     ) && (
-     <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
+     <div className="mb-4">
+      <h2
+       className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
+       style={{ fontSize: "12pt" }}
+      >
        Work Experience
       </h2>
-      <div className="space-y-4">
+      <div className="space-y-2">
        {formData.work_experience
-        .filter(work => work.job_title && work.company)
+        .filter((work) => work.job_title && work.company)
         .sort((a, b) => {
-          // Sort by start_date in descending order (newest first)
-          // But prioritize current jobs (is_current or end_date is blank) at the top
-          if (!a.start_date && !b.start_date) return 0;
-          if (!a.start_date) return 1;
-          if (!b.start_date) return -1;
-          
-          // Check if jobs are current (Present)
-          const aIsCurrent = a.is_current || !a.end_date;
-          const bIsCurrent = b.is_current || !b.end_date;
-          
-          // If one is current and the other isn't, current job goes first
-          if (aIsCurrent && !bIsCurrent) return -1;
-          if (!aIsCurrent && bIsCurrent) return 1;
-          
-          // If both are current or both are not current, sort by start_date
-          return new Date(b.start_date) - new Date(a.start_date);
+         // Sort by start_date in descending order (newest first)
+         // But prioritize current jobs (is_current or end_date is blank) at the top
+         if (!a.start_date && !b.start_date) return 0;
+         if (!a.start_date) return 1;
+         if (!b.start_date) return -1;
+
+         // Check if jobs are current (Present)
+         const aIsCurrent = a.is_current || !a.end_date;
+         const bIsCurrent = b.is_current || !b.end_date;
+
+         // If one is current and the other isn't, current job goes first
+         if (aIsCurrent && !bIsCurrent) return -1;
+         if (!aIsCurrent && bIsCurrent) return 1;
+
+         // If both are current or both are not current, sort by start_date
+         return new Date(b.start_date) - new Date(a.start_date);
         })
         .map((work, index) => (
-          <div key={index} className="mb-4">
-           <div className="flex justify-between items-start mb-2">
-            <div className="text-left font-semibold text-gray-900" style={{ fontSize: '11pt' }}>
-             {work.job_title}
-            </div>
-            <div className="text-right text-gray-500" style={{ fontSize: '10pt' }}>
-             {work.start_date && (
-              <>
-               {work.start_date}
-               {work.end_date && !work.is_current && ` - ${work.end_date}`}
-               {work.is_current && " - Present"}
-              </>
-             )}
-            </div>
+         <div key={index} className="mb-2">
+          <div className="flex justify-between items-start mb-1">
+           <div
+            className="text-left font-semibold text-gray-900"
+            style={{ fontSize: "11pt" }}
+           >
+            {work.job_title}
            </div>
-           <div className="text-left text-gray-600 mb-2" style={{ fontSize: '10pt' }}>
-            {work.company}
+           <div
+            className="text-right text-gray-500"
+            style={{ fontSize: "10pt" }}
+           >
+            {work.start_date && (
+             <>
+              {work.start_date}
+              {work.end_date && !work.is_current && ` - ${work.end_date}`}
+              {work.is_current && " - Present"}
+             </>
+            )}
            </div>
-           {work.responsibilities.some((resp) => resp.trim()) && (
-            <ul className="list-disc list-inside text-gray-700 space-y-1 text-left" style={{ fontSize: '10pt', paddingLeft: '15pt' }}>
-             {work.responsibilities
-              .filter((resp) => resp.trim())
-              .map((resp, respIndex) => (
-               <li key={respIndex}>{resp}</li>
-              ))}
-            </ul>
-           )}
           </div>
+          <div
+           className="text-left text-gray-600 mb-1"
+           style={{ fontSize: "10pt" }}
+          >
+           {work.company}
+          </div>
+          {work.responsibilities.some((resp) => resp.trim()) && (
+           <div
+            className="text-gray-700 text-left"
+            style={{
+             fontSize: "10pt",
+             lineHeight: "1.1",
+             margin: "1pt 0",
+            }}
+           >
+            {work.responsibilities
+             .filter((resp) => resp.trim())
+             .map((resp, respIndex) => (
+              <div
+               key={respIndex}
+               className="bullet-point"
+               style={{
+                marginBottom: "1pt",
+                fontSize: "10pt",
+                lineHeight: "1.1",
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+                maxWidth: "100%",
+                clear: "both",
+                textAlign: "justify",
+                paddingLeft: "0pt",
+                marginLeft: "0pt",
+                textIndent: "0pt",
+               }}
+              >
+               • {resp}
+              </div>
+             ))}
+           </div>
+          )}
+         </div>
         ))}
       </div>
      </div>
@@ -2802,20 +2904,29 @@ const prevStep = () => {
     {formData.skills.some(
      (skill) => skill.category && skill.skill_names.some((name) => name.trim())
     ) && (
-     <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
+     <div className="mb-4">
+      <h2
+       className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
+       style={{ fontSize: "12pt" }}
+      >
        Skills
       </h2>
-      <div className="space-y-2">
+      <div className="space-y-1">
        {formData.skills.map(
         (skill, index) =>
          skill.category &&
          skill.skill_names.some((name) => name.trim()) && (
-          <div key={index} className="mb-2 text-left">
-           <span className="font-semibold text-gray-900" style={{ fontSize: '10pt' }}>
+          <div key={index} className="mb-1 text-left">
+           <span
+            className="font-semibold text-gray-900"
+            style={{ fontSize: "10pt" }}
+           >
             {skill.category}:
            </span>
-           <span className="text-gray-700 ml-2" style={{ fontSize: '10pt' }}>
+           <span
+            className="text-gray-700 ml-2"
+            style={{ fontSize: "10pt", lineHeight: "1.2" }}
+           >
             {skill.skill_names.filter((name) => name.trim()).join(", ")}
            </span>
           </div>
@@ -2827,21 +2938,36 @@ const prevStep = () => {
 
     {/* Certificates */}
     {formData.certifications.some((cert) => cert.name && cert.organization) && (
-     <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
+     <div className="mb-4">
+      <h2
+       className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
+       style={{ fontSize: "12pt" }}
+      >
        Certificates
       </h2>
-      <div className="space-y-2">
+      <div className="space-y-1">
        {formData.certifications.map(
         (cert, index) =>
          cert.name &&
          cert.organization && (
           <div key={index} className="flex justify-between items-start">
            <div className="text-left">
-            <span className="font-semibold text-gray-900" style={{ fontSize: '11pt' }}>{cert.name}</span>
-            <span className="text-gray-600 ml-2" style={{ fontSize: '10pt' }}>{cert.organization}</span>
+            <span
+             className="font-semibold text-gray-900"
+             style={{ fontSize: "11pt" }}
+            >
+             {cert.name}
+            </span>
+            <span className="text-gray-600 ml-2" style={{ fontSize: "10pt" }}>
+             {cert.organization}
+            </span>
            </div>
-           <span className="text-right text-gray-500" style={{ fontSize: '10pt' }}>{cert.date}</span>
+           <span
+            className="text-right text-gray-500"
+            style={{ fontSize: "10pt" }}
+           >
+            {cert.date}
+           </span>
           </div>
          )
        )}
@@ -2851,20 +2977,29 @@ const prevStep = () => {
 
     {/* Languages */}
     {formData.languages.some((lang) => lang.language && lang.proficiency) && (
-     <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
+     <div className="mb-4">
+      <h2
+       className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
+       style={{ fontSize: "12pt" }}
+      >
        Languages
       </h2>
-      <div className="space-y-2">
+      <div className="space-y-1">
        {formData.languages.map(
         (lang, index) =>
          lang.language &&
          lang.proficiency && (
           <div key={index} className="flex justify-between items-start">
-           <span className="text-left font-semibold text-gray-900" style={{ fontSize: '10pt' }}>
+           <span
+            className="text-left font-semibold text-gray-900"
+            style={{ fontSize: "10pt" }}
+           >
             {lang.language}
            </span>
-           <span className="text-right text-gray-500" style={{ fontSize: '10pt' }}>
+           <span
+            className="text-right text-gray-500"
+            style={{ fontSize: "10pt" }}
+           >
             {lang.proficiency}
            </span>
           </div>
@@ -2979,7 +3114,6 @@ const prevStep = () => {
       </svg>
       إلغاء
      </a>
-
 
      {currentStep < totalSteps ? (
       <button
