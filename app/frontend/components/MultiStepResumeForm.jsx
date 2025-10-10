@@ -2673,13 +2673,14 @@ const prevStep = () => {
    <div
     className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 max-w-4xl mx-auto"
     dir="ltr"
+    style={{ fontFamily: 'Arial, sans-serif', fontSize: '11pt', lineHeight: '1.3' }}
    >
     {/* Header */}
-    <div className="text-center mb-8 pb-4 border-b-2 border-blue-300">
-     <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="text-center mb-8 pb-4 border-b border-gray-900">
+     <h1 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontSize: '18pt' }}>
       {formData.complete_name || "Your Name"}
      </h1>
-     <div className="text-gray-600 text-sm">
+     <div className="text-gray-600" style={{ fontSize: '11pt' }}>
       {formData.email && `${formData.email}`}
       {formData.phone_number && ` | ${formData.phone_number}`}
       {formData.city &&
@@ -2692,10 +2693,10 @@ const prevStep = () => {
     {(formData.professional_summary_english ||
      formData.professional_summary) && (
      <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-2 pb-1 border-b border-blue-300 text-left">
+      <h2 className="text-lg font-bold text-gray-900 mb-2 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
        Professional Summary
       </h2>
-      <p className="text-gray-700 leading-relaxed text-left">
+      <p className="text-gray-700 leading-relaxed text-left" style={{ fontSize: '11pt' }}>
        {formData.professional_summary_english || formData.professional_summary}
       </p>
      </div>
@@ -2704,7 +2705,7 @@ const prevStep = () => {
     {/* Education */}
     {formData.education.some((edu) => edu.degree && edu.institution) && (
      <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
        Education
       </h2>
       <div className="space-y-3">
@@ -2714,10 +2715,10 @@ const prevStep = () => {
          edu.institution && (
           <div key={index} className="flex justify-between items-start">
            <div className="text-left">
-            <div className="font-semibold text-gray-900">{edu.degree}</div>
-            <div className="text-gray-600 text-sm">{edu.institution}</div>
+            <div className="font-semibold text-gray-900" style={{ fontSize: '11pt' }}>{edu.degree}</div>
+            <div className="text-gray-600" style={{ fontSize: '10pt' }}>{edu.institution}</div>
            </div>
-           <div className="text-right text-gray-500 text-sm">
+           <div className="text-right text-gray-500" style={{ fontSize: '10pt' }}>
             {edu.start_date && (
              <>
               {edu.start_date}
@@ -2739,7 +2740,7 @@ const prevStep = () => {
      (work) => work.job_title && work.company
     ) && (
      <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
        Work Experience
       </h2>
       <div className="space-y-4">
@@ -2766,10 +2767,10 @@ const prevStep = () => {
         .map((work, index) => (
           <div key={index} className="mb-4">
            <div className="flex justify-between items-start mb-2">
-            <div className="text-left font-semibold text-gray-900">
+            <div className="text-left font-semibold text-gray-900" style={{ fontSize: '11pt' }}>
              {work.job_title}
             </div>
-            <div className="text-right text-gray-500 text-sm">
+            <div className="text-right text-gray-500" style={{ fontSize: '10pt' }}>
              {work.start_date && (
               <>
                {work.start_date}
@@ -2779,11 +2780,11 @@ const prevStep = () => {
              )}
             </div>
            </div>
-           <div className="text-left text-gray-600 text-sm mb-2">
+           <div className="text-left text-gray-600 mb-2" style={{ fontSize: '10pt' }}>
             {work.company}
            </div>
            {work.responsibilities.some((resp) => resp.trim()) && (
-            <ul className="list-disc list-inside text-gray-700 text-sm space-y-1 text-left">
+            <ul className="list-disc list-inside text-gray-700 space-y-1 text-left" style={{ fontSize: '10pt', paddingLeft: '15pt' }}>
              {work.responsibilities
               .filter((resp) => resp.trim())
               .map((resp, respIndex) => (
@@ -2802,7 +2803,7 @@ const prevStep = () => {
      (skill) => skill.category && skill.skill_names.some((name) => name.trim())
     ) && (
      <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
        Skills
       </h2>
       <div className="space-y-2">
@@ -2811,10 +2812,10 @@ const prevStep = () => {
          skill.category &&
          skill.skill_names.some((name) => name.trim()) && (
           <div key={index} className="mb-2 text-left">
-           <span className="font-semibold text-gray-900">
+           <span className="font-semibold text-gray-900" style={{ fontSize: '10pt' }}>
             {skill.category}:
            </span>
-           <span className="text-gray-700 ml-2">
+           <span className="text-gray-700 ml-2" style={{ fontSize: '10pt' }}>
             {skill.skill_names.filter((name) => name.trim()).join(", ")}
            </span>
           </div>
@@ -2827,7 +2828,7 @@ const prevStep = () => {
     {/* Certificates */}
     {formData.certifications.some((cert) => cert.name && cert.organization) && (
      <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
        Certificates
       </h2>
       <div className="space-y-2">
@@ -2837,10 +2838,10 @@ const prevStep = () => {
          cert.organization && (
           <div key={index} className="flex justify-between items-start">
            <div className="text-left">
-            <span className="font-semibold text-gray-900">{cert.name}</span>
-            <span className="text-gray-600 ml-2">{cert.organization}</span>
+            <span className="font-semibold text-gray-900" style={{ fontSize: '11pt' }}>{cert.name}</span>
+            <span className="text-gray-600 ml-2" style={{ fontSize: '10pt' }}>{cert.organization}</span>
            </div>
-           <span className="text-right text-gray-500 text-sm">{cert.date}</span>
+           <span className="text-right text-gray-500" style={{ fontSize: '10pt' }}>{cert.date}</span>
           </div>
          )
        )}
@@ -2851,7 +2852,7 @@ const prevStep = () => {
     {/* Languages */}
     {formData.languages.some((lang) => lang.language && lang.proficiency) && (
      <div className="mb-6">
-      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-blue-300 text-left">
+      <h2 className="text-lg font-bold text-gray-900 mb-3 pb-1 border-b border-gray-900 text-left" style={{ fontSize: '12pt' }}>
        Languages
       </h2>
       <div className="space-y-2">
@@ -2860,10 +2861,10 @@ const prevStep = () => {
          lang.language &&
          lang.proficiency && (
           <div key={index} className="flex justify-between items-start">
-           <span className="text-left font-semibold text-gray-900">
+           <span className="text-left font-semibold text-gray-900" style={{ fontSize: '10pt' }}>
             {lang.language}
            </span>
-           <span className="text-right text-gray-500 text-sm">
+           <span className="text-right text-gray-500" style={{ fontSize: '10pt' }}>
             {lang.proficiency}
            </span>
           </div>

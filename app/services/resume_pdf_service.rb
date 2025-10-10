@@ -42,8 +42,8 @@ class ResumePdfService
           /* ATS-Friendly Styling */
           body {#{' '}
             font-family: Arial, sans-serif;#{' '}
-            margin: 0.5in;#{' '}
-            line-height: 1.15;#{' '}
+            margin: 1in 0.5in 0.5in 0.5in;#{' '}
+            line-height: 1.3;#{' '}
             color: #000000;#{' '}
             font-size: 11pt;#{' '}
             background: white;#{' '}
@@ -52,26 +52,28 @@ class ResumePdfService
           }
           .header {#{' '}
             text-align: center;#{' '}
-            margin-bottom: 15pt;#{' '}
-            border-bottom: 2pt solid #000000;
+            margin-top: 0;#{' '}
+            margin-bottom: 20pt;#{' '}
+            padding-top: 0;#{' '}
+            border-bottom: 1pt solid #000000;
             padding-bottom: 8pt;
           }
           .header h1 {#{' '}
-            font-size: 16pt;#{' '}
+            font-size: 18pt;#{' '}
             font-weight: bold;#{' '}
-            margin: 0 0 4pt 0;#{' '}
+            margin: 0 0 6pt 0;#{' '}
             color: #000000;#{' '}
-            text-transform: uppercase;
-            letter-spacing: 1pt;
+            text-transform: none;
           }
           .contact-info {#{' '}
-            font-size: 10pt;#{' '}
+            font-size: 11pt;#{' '}
             color: #000000;#{' '}
-            margin-bottom: 8pt;#{' '}
+            margin-bottom: 0;#{' '}
             font-weight: normal;
           }
           .section {#{' '}
-            margin-bottom: 12pt;#{' '}
+            margin-top: 15pt;#{' '}
+            margin-bottom: 15pt;#{' '}
             page-break-inside: avoid;
           }
           .section-title {#{' '}
@@ -79,50 +81,62 @@ class ResumePdfService
             font-weight: bold;#{' '}
             color: #000000;#{' '}
             border-bottom: 1pt solid #000000;#{' '}
-            margin-bottom: 6pt;#{' '}
+            margin-bottom: 8pt;#{' '}
             padding-bottom: 2pt;
-            text-transform: uppercase;
-            letter-spacing: 0.5pt;
+            text-transform: none;
+            letter-spacing: normal;
           }
           .experience-item {#{' '}
             margin-bottom: 12pt;#{' '}
             page-break-inside: avoid;#{' '}
             word-wrap: break-word;#{' '}
-            overflow-wrap: break-word;
+            overflow-wrap: break-word;#{' '}
+            clear: both;
           }
           .experience-header {#{' '}
             margin-bottom: 2pt;#{' '}
+            clear: both;#{' '}
+            overflow: hidden;
           }
           .position {#{' '}
             font-weight: bold;#{' '}
             font-size: 11pt;#{' '}
             color: #000000;#{' '}
-            display: inline;
+            float: left;#{' '}
+            width: 70%;
           }
           .company {#{' '}
             font-size: 10pt;#{' '}
             color: #000000;#{' '}
             margin: 0 0 2pt 0;#{' '}
-            font-style: italic;
+            font-style: normal;#{' '}
+            float: left;#{' '}
+            clear: left;#{' '}
+            width: 70%;
           }
           .dates {#{' '}
             color: #000000;#{' '}
             font-size: 10pt;#{' '}
-            float: right;
-            font-weight: normal;
+            float: right;#{' '}
+            font-weight: normal;#{' '}
+            width: 25%;#{' '}
+            text-align: right;
           }
           .description {#{' '}
             margin-top: 3pt;#{' '}
             clear: both;#{' '}
             word-wrap: break-word;#{' '}
-            overflow-wrap: break-word;
+            overflow-wrap: break-word;#{' '}
+            float: left;#{' '}
+            width: 100%;
           }
           .description ul {#{' '}
             margin: 2pt 0;#{' '}
             padding-left: 15pt;#{' '}
             list-style-type: disc;#{' '}
             word-wrap: break-word;#{' '}
-            overflow-wrap: break-word;
+            overflow-wrap: break-word;#{' '}
+            clear: both;
           }
           .description li {#{' '}
             margin-bottom: 2pt;#{' '}
@@ -131,29 +145,38 @@ class ResumePdfService
             word-wrap: break-word;#{' '}
             overflow-wrap: break-word;#{' '}
             hyphens: auto;#{' '}
-            max-width: 100%;
+            max-width: 100%;#{' '}
+            clear: both;
           }
           .education-item {#{' '}
             margin-bottom: 8pt;#{' '}
-            page-break-inside: avoid;
+            page-break-inside: avoid;#{' '}
+            clear: both;#{' '}
+            overflow: hidden;
           }
           .education-degree {#{' '}
             font-weight: bold;#{' '}
             font-size: 11pt;#{' '}
             color: #000000;#{' '}
-            display: inline;
+            float: left;#{' '}
+            width: 70%;
           }
           .education-institution {#{' '}
             font-size: 10pt;#{' '}
             color: #000000;#{' '}
             margin: 0 0 2pt 0;#{' '}
-            font-style: italic;
+            font-style: normal;#{' '}
+            float: left;#{' '}
+            clear: left;#{' '}
+            width: 70%;
           }
           .education-dates {#{' '}
             color: #000000;#{' '}
             font-size: 10pt;#{' '}
-            float: right;
-            font-weight: normal;
+            float: right;#{' '}
+            font-weight: normal;#{' '}
+            width: 25%;#{' '}
+            text-align: right;
           }
           .skills {#{' '}
             margin-bottom: 6pt;#{' '}
@@ -172,20 +195,27 @@ class ResumePdfService
           .certification-item {#{' '}
             margin-bottom: 3pt;#{' '}
             font-size: 10pt;#{' '}
+            clear: both;#{' '}
+            overflow: hidden;
           }
           .cert-name {#{' '}
             font-weight: bold;#{' '}
-            display: inline;
+            float: left;#{' '}
+            width: 70%;
           }
           .cert-org {#{' '}
             font-weight: normal;#{' '}
-            display: inline;
+            float: left;#{' '}
+            clear: left;#{' '}
+            width: 70%;
           }
           .cert-date {#{' '}
             color: #000000;#{' '}
             font-size: 10pt;#{' '}
-            float: right;
-            font-weight: normal;
+            float: right;#{' '}
+            font-weight: normal;#{' '}
+            width: 25%;#{' '}
+            text-align: right;
           }
           .language-item {#{' '}
             margin-bottom: 2pt;#{' '}
@@ -202,13 +232,13 @@ class ResumePdfService
           }
           /* Enhanced multi-page styling */
           @page {
-            margin: 0.5in;
+            margin: 1in 0.5in 0.5in 0.5in;
             size: A4;
             @top-center { content: ""; }
             @bottom-center { content: ""; }
           }
           @page :first {
-            margin-top: 0.5in;
+            margin-top: 1in;
             margin-bottom: 0.5in;
             margin-left: 0.5in;
             margin-right: 0.5in;
@@ -216,13 +246,13 @@ class ResumePdfService
           @page :left {
             margin-left: 0.5in;
             margin-right: 0.5in;
-            margin-top: 0.5in;
+            margin-top: 1in;
             margin-bottom: 0.5in;
           }
           @page :right {
             margin-left: 0.5in;
             margin-right: 0.5in;
-            margin-top: 0.5in;
+            margin-top: 1in;
             margin-bottom: 0.5in;
           }
           /* Better page break control for multi-page resumes */
@@ -243,7 +273,8 @@ class ResumePdfService
           }
           /* Better spacing for multi-page content */
           .section {
-            margin-bottom: 12pt;
+            margin-top: 15pt;
+            margin-bottom: 15pt;
             page-break-inside: avoid;
             orphans: 2;
             widows: 2;
@@ -329,7 +360,7 @@ class ResumePdfService
       # Check if jobs are current (Present)
       a_is_current = a.is_current || a.end_date.blank?
       b_is_current = b.is_current || b.end_date.blank?
-      
+
       # If one is current and the other isn't, current job goes first
       if a_is_current && !b_is_current
         -1

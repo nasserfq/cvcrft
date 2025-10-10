@@ -160,7 +160,7 @@ class Api::TranslationsController < ApplicationController
         page_size: "A4",
         orientation: "Portrait",
         margin: {
-          top: 0.5,
+          top: 1.0,
           bottom: 0.5,
           left: 0.5,
           right: 0.5
