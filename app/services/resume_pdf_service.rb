@@ -42,11 +42,13 @@ class ResumePdfService
           /* ATS-Friendly Styling */
           body {#{' '}
             font-family: Arial, sans-serif;#{' '}
-            margin: 0.75in;#{' '}
+            margin: 0.5in;#{' '}
             line-height: 1.15;#{' '}
             color: #000000;#{' '}
-            font-size: 11pt;
-            background: white;
+            font-size: 11pt;#{' '}
+            background: white;#{' '}
+            word-wrap: break-word;#{' '}
+            overflow-wrap: break-word;
           }
           .header {#{' '}
             text-align: center;#{' '}
@@ -83,8 +85,10 @@ class ResumePdfService
             letter-spacing: 0.5pt;
           }
           .experience-item {#{' '}
-            margin-bottom: 8pt;#{' '}
-            page-break-inside: avoid;
+            margin-bottom: 12pt;#{' '}
+            page-break-inside: avoid;#{' '}
+            word-wrap: break-word;#{' '}
+            overflow-wrap: break-word;
           }
           .experience-header {#{' '}
             margin-bottom: 2pt;#{' '}
@@ -109,17 +113,25 @@ class ResumePdfService
           }
           .description {#{' '}
             margin-top: 3pt;#{' '}
-            clear: both;
+            clear: both;#{' '}
+            word-wrap: break-word;#{' '}
+            overflow-wrap: break-word;
           }
           .description ul {#{' '}
             margin: 2pt 0;#{' '}
             padding-left: 15pt;#{' '}
-            list-style-type: disc;
+            list-style-type: disc;#{' '}
+            word-wrap: break-word;#{' '}
+            overflow-wrap: break-word;
           }
           .description li {#{' '}
-            margin-bottom: 1pt;#{' '}
+            margin-bottom: 2pt;#{' '}
             font-size: 10pt;#{' '}
-            line-height: 1.1;
+            line-height: 1.2;#{' '}
+            word-wrap: break-word;#{' '}
+            overflow-wrap: break-word;#{' '}
+            hyphens: auto;#{' '}
+            max-width: 100%;
           }
           .education-item {#{' '}
             margin-bottom: 8pt;#{' '}
@@ -188,6 +200,71 @@ class ResumePdfService
             float: right;
             font-weight: normal;
           }
+          /* Enhanced multi-page styling */
+          @page {
+            margin: 0.5in;
+            size: A4;
+            @top-center { content: ""; }
+            @bottom-center { content: ""; }
+          }
+          @page :first {
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+            margin-left: 0.5in;
+            margin-right: 0.5in;
+          }
+          @page :left {
+            margin-left: 0.5in;
+            margin-right: 0.5in;
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+          }
+          @page :right {
+            margin-left: 0.5in;
+            margin-right: 0.5in;
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+          }
+          /* Better page break control for multi-page resumes */
+          .page-break-before {
+            page-break-before: always;
+          }
+          .page-break-after {
+            page-break-after: always;
+          }
+          .page-break-inside-avoid {
+            page-break-inside: avoid;
+          }
+          /* Prevent orphaned section titles */
+          .section-title {
+            page-break-after: avoid;
+            orphans: 2;
+            widows: 2;
+          }
+          /* Better spacing for multi-page content */
+          .section {
+            margin-bottom: 12pt;
+            page-break-inside: avoid;
+            orphans: 2;
+            widows: 2;
+          }
+          /* Ensure consistent spacing on all pages */
+          .experience-item {
+            margin-bottom: 8pt;
+            page-break-inside: avoid;
+            orphans: 2;
+            widows: 2;
+          }
+          .education-item {
+            margin-bottom: 8pt;
+            page-break-inside: avoid;
+            orphans: 2;
+            widows: 2;
+          }
+          /* Multi-page content flow */
+          .multi-page-content {
+            page-break-inside: auto;
+          }
           /* ATS-specific overrides */
           .clearfix::after {
             content: "";
@@ -243,9 +320,34 @@ class ResumePdfService
   end
 
   def generate_work_experience_html
+    # Order work experiences: current jobs first, then by start_date descending (newest first)
     # Remove duplicate work experiences based on job_title, company, and dates
     unique_experiences = @resume.work_experiences.uniq do |exp|
       "#{exp.job_title}-#{exp.company}-#{exp.start_date}-#{exp.end_date}"
+    end.sort do |a, b|
+      Rails.logger.info "Sorting work experiences: #{a.job_title} (#{a.start_date}) vs #{b.job_title} (#{b.start_date})"
+      # Check if jobs are current (Present)
+      a_is_current = a.is_current || a.end_date.blank?
+      b_is_current = b.is_current || b.end_date.blank?
+      
+      # If one is current and the other isn't, current job goes first
+      if a_is_current && !b_is_current
+        -1
+      elsif !a_is_current && b_is_current
+        1
+      else
+        # If both are current or both are not current, sort by start_date descending
+        if a.start_date.present? && b.start_date.present?
+          begin
+            Date.parse(b.start_date) <=> Date.parse(a.start_date)
+          rescue ArgumentError, TypeError
+            # If date parsing fails, compare as strings
+            b.start_date <=> a.start_date
+          end
+        else
+          0
+        end
+      end
     end
 
     unique_experiences.map do |exp|

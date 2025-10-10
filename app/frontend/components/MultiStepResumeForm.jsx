@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const MultiStepResumeForm = ({ resume, onSubmit }) => {
  console.log("=== MultiStepResumeForm component rendered ===");
@@ -297,6 +297,23 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [maxTranslations] = useState(5);
 
  const totalSteps = 8;
+
+// Handle browser back/forward navigation to keep step in sync
+useEffect(() => {
+  const handlePopState = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stepParam = urlParams.get('step');
+    if (stepParam) {
+      const newStep = parseInt(stepParam, 10);
+      if (newStep !== currentStep && newStep >= 1 && newStep <= totalSteps) {
+        setCurrentStep(newStep);
+      }
+    }
+  };
+
+  window.addEventListener('popstate', handlePopState);
+  return () => window.removeEventListener('popstate', handlePopState);
+}, [currentStep, totalSteps]);
 
  // BULLETPROOF EFFECT - Continuously remove empty skill names
  React.useEffect(() => {
@@ -1329,17 +1346,29 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
  };
 
- const nextStep = () => {
+const nextStep = () => {
   if (currentStep < totalSteps) {
-   setCurrentStep(currentStep + 1);
+   const newStep = currentStep + 1;
+   setCurrentStep(newStep);
+   
+   // Update URL with new step parameter
+   const url = new URL(window.location);
+   url.searchParams.set('step', newStep);
+   window.history.pushState({}, '', url);
   }
- };
+};
 
- const prevStep = () => {
+const prevStep = () => {
   if (currentStep > 1) {
-   setCurrentStep(currentStep - 1);
+   const newStep = currentStep - 1;
+   setCurrentStep(newStep);
+   
+   // Update URL with new step parameter
+   const url = new URL(window.location);
+   url.searchParams.set('step', newStep);
+   window.history.pushState({}, '', url);
   }
- };
+};
 
  const handleSubmit = (e) => {
   e.preventDefault();
@@ -2714,10 +2743,27 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        Work Experience
       </h2>
       <div className="space-y-4">
-       {formData.work_experience.map(
-        (work, index) =>
-         work.job_title &&
-         work.company && (
+       {formData.work_experience
+        .filter(work => work.job_title && work.company)
+        .sort((a, b) => {
+          // Sort by start_date in descending order (newest first)
+          // But prioritize current jobs (is_current or end_date is blank) at the top
+          if (!a.start_date && !b.start_date) return 0;
+          if (!a.start_date) return 1;
+          if (!b.start_date) return -1;
+          
+          // Check if jobs are current (Present)
+          const aIsCurrent = a.is_current || !a.end_date;
+          const bIsCurrent = b.is_current || !b.end_date;
+          
+          // If one is current and the other isn't, current job goes first
+          if (aIsCurrent && !bIsCurrent) return -1;
+          if (!aIsCurrent && bIsCurrent) return 1;
+          
+          // If both are current or both are not current, sort by start_date
+          return new Date(b.start_date) - new Date(a.start_date);
+        })
+        .map((work, index) => (
           <div key={index} className="mb-4">
            <div className="flex justify-between items-start mb-2">
             <div className="text-left font-semibold text-gray-900">
@@ -2746,8 +2792,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
             </ul>
            )}
           </div>
-         )
-       )}
+        ))}
       </div>
      </div>
     )}

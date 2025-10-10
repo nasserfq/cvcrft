@@ -36,7 +36,7 @@ class ResumesController < ApplicationController
   end
 
   def show
-    @work_experiences = @resume.work_experiences.chronological
+    @work_experiences = @resume.work_experiences.order(start_date: :asc)
     @skills = @resume.skills.group_by(&:category)
     @ai_translations = @resume.ai_translations.recent
 

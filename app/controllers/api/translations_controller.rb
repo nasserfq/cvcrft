@@ -160,10 +160,10 @@ class Api::TranslationsController < ApplicationController
         page_size: "A4",
         orientation: "Portrait",
         margin: {
-          top: 0.75,
-          bottom: 0.75,
-          left: 0.75,
-          right: 0.75
+          top: 0.5,
+          bottom: 0.5,
+          left: 0.5,
+          right: 0.5
         },
         encoding: "UTF-8",
         print_media_type: true,
@@ -171,7 +171,14 @@ class Api::TranslationsController < ApplicationController
         no_stop_slow_scripts: true,
         enable_forms: false,
         disable_external_links: true,
-        disable_internal_links: true
+        disable_internal_links: true,
+        page_offset: 0,
+        book: false,
+        default_header: false,
+        default_footer: false,
+        dpi: 300,
+        image_quality: 100,
+        zoom: 1.0
       )
 
       Rails.logger.info "Generated PDF size: #{pdf.bytesize}"
