@@ -33,11 +33,35 @@
 <script type="module" src="<%= vite_asset_path('entrypoints/resume_form.jsx') %>?v=<%= Time.current.to_i %>"></script>
 <script>
   // Pass resume data to JavaScript
-  window.resumeData = <%= raw @resume.to_json(only: [:complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :education, :work_experience, :skills, :certifications, :languages]) %>;
+  <% if @resume.present? %>
+    // For existing resumes (including drafts), pass the resume data
+    window.resumeData = <%= raw @resume.to_json(only: [:id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :is_draft, :draft_data]) %>;
+    
+    // Add association data if it exists
+    <% if @resume.work_experiences.any? %>
+      window.resumeData.work_experience = <%= raw @resume.work_experiences.to_json %>;
+    <% end %>
+    <% if @resume.skills.any? %>
+      window.resumeData.skills = <%= raw @resume.skills.to_json %>;
+    <% end %>
+    <% if @resume.educations.any? %>
+      window.resumeData.education = <%= raw @resume.educations.to_json %>;
+    <% end %>
+    <% if @resume.certifications.any? %>
+      window.resumeData.certifications = <%= raw @resume.certifications.to_json %>;
+    <% end %>
+    <% if @resume.languages.any? %>
+      window.resumeData.languages = <%= raw @resume.languages.to_json %>;
+    <% end %>
+  <% else %>
+    // For new resumes, pass null
+    window.resumeData = null;
+  <% end %>
+  
   console.log('=== RAILS: Resume data set ===');
   console.log('Resume data:', window.resumeData);
-  console.log('Resume skills:', window.resumeData.skills);
-  console.log('Resume skills detailed:', window.resumeData.skills?.map(s => ({ 
+  console.log('Resume skills:', window.resumeData?.skills);
+  console.log('Resume skills detailed:', window.resumeData?.skills?.map(s => ({ 
     category: s.category, 
     skill_names: s.skill_names,
     skill_names_types: s.skill_names?.map(name => ({ value: name, type: typeof name }))

@@ -85,8 +85,142 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   });
  };
 
- const [currentStep, setCurrentStep] = useState(1);
- const [formData, setFormData] = useState({
+ const [currentStep, setCurrentStep] = useState(() => {
+  // Check if we have a step parameter from URL or draft data
+  const urlParams = new URLSearchParams(window.location.search);
+  const stepParam = urlParams.get('step');
+  if (stepParam) {
+    return parseInt(stepParam, 10);
+  }
+  
+  // Check if resume has draft data with current step
+  if (resume?.draft_data?.current_step) {
+    return parseInt(resume.draft_data.current_step, 10);
+  }
+  
+  return 1;
+ });
+ const [formData, setFormData] = useState(() => {
+  // Load draft data if available
+  const draftData = resume?.draft_data;
+  
+  if (draftData) {
+   return {
+    complete_name: draftData.complete_name || resume?.complete_name || "",
+    email: draftData.email || resume?.email || "",
+    phone_number: draftData.phone_number || resume?.phone_number || "",
+    city: draftData.city || resume?.city || "",
+    country: draftData.country || resume?.country || "",
+    professional_summary: draftData.professional_summary || resume?.professional_summary || "",
+    professional_summary_english: draftData.professional_summary_english || resume?.professional_summary_english || "",
+    skills_extracted: resume?.skills_extracted || [],
+    translation_notes: resume?.translation_notes || "",
+    education: (() => {
+     try {
+      return draftData.education ? JSON.parse(draftData.education) : (resume?.education || [{
+       degree: "",
+       institution: "",
+       start_date: "",
+       end_date: "",
+       gpa: "",
+       is_current: false,
+      }]);
+     } catch {
+      return resume?.education || [{
+       degree: "",
+       institution: "",
+       start_date: "",
+       end_date: "",
+       gpa: "",
+       is_current: false,
+      }];
+     }
+    })(),
+    work_experience: (() => {
+     try {
+      return draftData.work_experience ? JSON.parse(draftData.work_experience) : (resume?.work_experience || [{
+       job_title: "",
+       company: "",
+       start_date: "",
+       end_date: "",
+       is_current: false,
+       responsibilities: [""],
+      }]);
+     } catch {
+      return resume?.work_experience || [{
+       job_title: "",
+       company: "",
+       start_date: "",
+       end_date: "",
+       is_current: false,
+       responsibilities: [""],
+      }];
+     }
+    })(),
+    skills: (() => {
+     try {
+      if (draftData.skills) {
+       return JSON.parse(draftData.skills);
+      }
+     } catch {
+      // Fall through to default logic
+     }
+     
+     // Default logic for skills
+     if (resume?.skills && resume.skills.length > 0) {
+      return resume.skills.map((skill) => ({
+       ...skill,
+       skill_names: (skill.skill_names || []).filter(
+        (name) =>
+         name &&
+         typeof name === "string" &&
+         name.trim() !== "" &&
+         name.trim() !== '""' &&
+         name.trim() !== "''"
+       ),
+      }));
+     } else {
+      return [
+       {
+        category: "",
+        skill_names: [],
+       },
+      ];
+     }
+    })(),
+    certifications: (() => {
+     try {
+      return draftData.certifications ? JSON.parse(draftData.certifications) : (resume?.certifications || [{
+       name: "",
+       organization: "",
+       date: "",
+      }]);
+     } catch {
+      return resume?.certifications || [{
+       name: "",
+       organization: "",
+       date: "",
+      }];
+     }
+    })(),
+    languages: (() => {
+     try {
+      return draftData.languages ? JSON.parse(draftData.languages) : (resume?.languages || [{
+       language: "",
+       proficiency: "",
+      }]);
+     } catch {
+      return resume?.languages || [{
+       language: "",
+       proficiency: "",
+      }];
+     }
+    })(),
+   };
+  }
+  
+  // Default initialization if no draft data
+  return {
   complete_name: resume?.complete_name || "",
   email: resume?.email || "",
   phone_number: resume?.phone_number || "",
@@ -117,12 +251,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    },
   ],
   skills: (() => {
-   // BULLETPROOF INITIALIZATION - Never allow empty skill names
-   let cleanedSkills;
-
    if (resume?.skills && resume.skills.length > 0) {
-    // Clean existing skills and remove any empty names
-    cleanedSkills = resume.skills.map((skill) => ({
+     return resume.skills.map((skill) => ({
      ...skill,
      skill_names: (skill.skill_names || []).filter(
       (name) =>
@@ -134,16 +264,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      ),
     }));
    } else {
-    // Default: one empty skill category with no skill names
-    cleanedSkills = [
+     return [
      {
       category: "",
-      skill_names: [], // ALWAYS empty array, never with empty strings
+       skill_names: [],
      },
     ];
    }
-
-   return cleanedSkills;
   })(),
   certifications: resume?.certifications || [
    {
@@ -158,12 +285,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     proficiency: "",
    },
   ],
-  // Add more fields as needed
+  };
  });
 
  const [isTranslating, setIsTranslating] = useState(false);
  const [translationError, setTranslationError] = useState("");
  const [isExporting, setIsExporting] = useState(false);
+ const [isSavingDraft, setIsSavingDraft] = useState(false);
  const [addingSkillTo, setAddingSkillTo] = useState(null);
  const [translationCount, setTranslationCount] = useState(0);
  const [maxTranslations] = useState(5);
@@ -973,6 +1101,109 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
  };
 
+ const saveDraft = async (stepNumber = currentStep) => {
+  setIsSavingDraft(true);
+  try {
+   const draftData = {
+    complete_name: formData.complete_name,
+    email: formData.email,
+    phone_number: formData.phone_number,
+    city: formData.city,
+    country: formData.country,
+    professional_summary: formData.professional_summary,
+    professional_summary_english: formData.professional_summary_english,
+    education: JSON.stringify(formData.education),
+    work_experience: JSON.stringify(formData.work_experience),
+    skills: JSON.stringify(formData.skills),
+    certifications: JSON.stringify(formData.certifications),
+    languages: JSON.stringify(formData.languages),
+    current_step: stepNumber,
+    saved_at: new Date().toISOString()
+   };
+
+   const response = await fetch(`/resumes/${resume?.id || 'new'}/save_draft`, {
+    method: "POST",
+    headers: {
+     "Content-Type": "application/x-www-form-urlencoded",
+     "X-CSRF-Token": document
+      .querySelector('meta[name="csrf-token"]')
+      .getAttribute("content"),
+     "Accept": "application/json"
+    },
+    body: new URLSearchParams(draftData)
+   });
+
+   if (response.ok) {
+    const result = await response.json();
+    console.log("✅ Draft saved successfully at step:", stepNumber, result);
+    alert(`تم حفظ المسودة بنجاح في الخطوة ${stepNumber}! يمكنك العودة إليها لاحقاً.`);
+   } else {
+    console.error("❌ Failed to save draft");
+    alert("حدث خطأ أثناء حفظ المسودة");
+   }
+  } catch (error) {
+   console.error("❌ Error saving draft:", error);
+   alert("حدث خطأ أثناء حفظ المسودة: " + error.message);
+  } finally {
+   setIsSavingDraft(false);
+  }
+ };
+
+ // Helper function to render save draft button
+ const renderSaveDraftButton = (stepNumber) => (
+  <div className="mt-6 pt-4 border-t border-slate-200/60">
+   <button
+    type="button"
+    onClick={() => saveDraft(stepNumber)}
+    disabled={isSavingDraft}
+    className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-slate-600 px-4 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-slate-700 hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
+   >
+    {isSavingDraft ? (
+     <>
+      <svg
+       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+       xmlns="http://www.w3.org/2000/svg"
+       fill="none"
+       viewBox="0 0 24 24"
+      >
+       <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+       ></circle>
+       <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+       ></path>
+      </svg>
+      جاري الحفظ...
+     </>
+    ) : (
+     <>
+      <svg
+       className="w-4 h-4"
+       fill="none"
+       stroke="currentColor"
+       viewBox="0 0 24 24"
+      >
+       <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"
+       />
+      </svg>
+      حفظ المسودة - الخطوة {stepNumber}
+     </>
+    )}
+   </button>
+  </div>
+ );
+
  const pollTranslationStatus = async (jobId) => {
   const maxAttempts = 30; // 30 seconds max
   let attempts = 0;
@@ -1354,6 +1585,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </div>
     </div>
    </div>
+
+   {renderSaveDraftButton(1)}
   </div>
  );
 
@@ -1533,6 +1766,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </ul>
     </div>
    </div>
+
+   {renderSaveDraftButton(2)}
   </div>
  );
 
@@ -1710,6 +1945,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </button>
     </div>
    </div>
+
+   {renderSaveDraftButton(3)}
   </div>
  );
 
@@ -1896,6 +2133,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </button>
     </div>
    </div>
+
+   {renderSaveDraftButton(4)}
   </div>
  );
 
@@ -2108,7 +2347,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       </ul>
      </div>
     </div>
-   </div>
+
+   {renderSaveDraftButton(5)}
+  </div>
   );
  };
 
@@ -2244,6 +2485,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </ul>
     </div>
    </div>
+
+   {renderSaveDraftButton(6)}
   </div>
  );
 
@@ -2381,6 +2624,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </ul>
     </div>
    </div>
+
+   {renderSaveDraftButton(7)}
   </div>
  );
 
@@ -2583,6 +2828,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </div>
     )}
    </div>
+
+   {renderSaveDraftButton(8)}
   </div>
  );
 
@@ -2686,6 +2933,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       </svg>
       إلغاء
      </a>
+
 
      {currentStep < totalSteps ? (
       <button

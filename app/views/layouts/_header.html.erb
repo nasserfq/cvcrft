@@ -17,6 +17,12 @@
       </div>
       <!-- Nav -->
       <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
+        <% if user_signed_in? %>
+          <%= link_to resumes_path, class: "hover:text-emerald-600 transition-colors" do %>
+            <i data-lucide="file-text" class="w-4 h-4 inline mr-1"></i>
+            سيرتي الذاتية
+          <% end %>
+        <% end %>
         <a href="#features" class="hover:text-emerald-600 transition-colors">الميزات</a>
         <a href="#how" class="hover:text-emerald-600 transition-colors">كيف يعمل</a>
         <a href="#pricing" class="hover:text-emerald-600 transition-colors">الأسعار</a>
@@ -55,6 +61,12 @@
     <!-- Mobile menu -->
     <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200/60" style="display: none;">
       <div class="py-4 space-y-3">
+        <% if user_signed_in? %>
+          <%= link_to resumes_path, class: "block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" do %>
+            <i data-lucide="file-text" class="w-4 h-4 inline mr-2"></i>
+            سيرتي الذاتية
+          <% end %>
+        <% end %>
         <a href="#features" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الميزات</a>
         <a href="#how" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">كيف يعمل</a>
         <a href="#pricing" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الأسعار</a>

@@ -37,8 +37,52 @@ class Resume < ApplicationRecord
   # Scopes
   scope :recent, -> { order(created_at: :desc) }
   scope :by_ats_score, -> { order(ats_score: :desc) }
+  scope :drafts, -> { where(is_draft: true) }
+  scope :not_drafts, -> { where(is_draft: false) }
 
   # Methods
+  def draft?
+    is_draft?
+  end
+
+  def can_be_resumed?
+    draft? || (created_at > 1.hour.ago && complete_name.blank?)
+  end
+
+  def resume_data
+    draft_data || {}
+  end
+
+  def load_draft_data
+    return {} unless draft_data.present?
+
+    data = draft_data.dup
+    # Parse JSON strings back to objects
+    %w[education work_experience skills certifications languages].each do |field|
+      if data[field].is_a?(String)
+        begin
+          data[field] = JSON.parse(data[field])
+        rescue JSON::ParserError
+          data[field] = []
+        end
+      end
+    end
+    data
+  end
+
+  def save_draft(form_data)
+    update!(
+      is_draft: true,
+      draft_data: form_data,
+      updated_at: Time.current
+    )
+  end
+
+  def complete_draft
+    update!(
+      is_draft: false
+    )
+  end
   def calculate_ats_score
     # Placeholder for ATS score calculation logic
     # This will be implemented in the AtsOptimizationService

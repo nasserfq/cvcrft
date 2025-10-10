@@ -209,12 +209,17 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     resume = Resume.find(@resume_id)
 
     skills_data.each do |skill_data|
-      # Check if skill already exists
-      existing_skill = resume.skills.find_by(name: skill_data[:name])
+      # Skip if skill name is blank
+      next if skill_data[:name].blank?
+
+      # Check if skill already exists (check both name and skill_names)
+      existing_skill = resume.skills.find_by(name: skill_data[:name]) ||
+                      resume.skills.find_by(skill_names: [skill_data[:name]])
 
       unless existing_skill
         resume.skills.create!(
-          name: skill_data[:name],
+          name: skill_data[:name], # Keep legacy field for backward compatibility
+          skill_names: [skill_data[:name]], # New field structure
           level: skill_data[:level] || "intermediate",
           category: skill_data[:category] || "technical"
         )

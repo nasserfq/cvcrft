@@ -1,7 +1,7 @@
 class CvGenerationsController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_user_has_resume, only: [:index, :new, :create, :stats]
-  before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf ]
+  before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :save_draft, :resume_draft ]
   
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [:create], if: -> { request.format.json? }
@@ -202,6 +202,89 @@ class CvGenerationsController < ApplicationController
         disposition: "inline"
     else
       redirect_to @cv_generation, alert: "PDF not available for this CV generation"
+    end
+  end
+
+  def save_draft
+    Rails.logger.info "=== SAVE DRAFT ==="
+    Rails.logger.info "CV Generation ID: #{@cv_generation.id}"
+    Rails.logger.info "Draft data: #{params[:draft_data]}"
+
+    begin
+      # Save form data as draft
+      draft_data = {
+        job_description: params[:job_description],
+        resume_id: params[:resume_id],
+        complete_name: params[:complete_name],
+        email: params[:email],
+        temperature: params[:temperature],
+        max_tokens: params[:max_tokens],
+        saved_at: Time.current.iso8601
+      }
+
+      @cv_generation.save_draft(draft_data)
+
+      respond_to do |format|
+        format.html { redirect_to cv_generations_path, notice: "تم حفظ المسودة بنجاح. يمكنك العودة إليها لاحقاً." }
+        format.json { render json: { 
+          success: true, 
+          message: "تم حفظ المسودة بنجاح",
+          cv_generation_id: @cv_generation.id,
+          draft_data: @cv_generation.draft_data
+        } }
+      end
+    rescue => e
+      Rails.logger.error "Error saving draft: #{e.message}"
+      respond_to do |format|
+        format.html { redirect_to cv_generations_path, alert: "حدث خطأ أثناء حفظ المسودة." }
+        format.json { render json: { 
+          success: false, 
+          error: "حدث خطأ أثناء حفظ المسودة: #{e.message}" 
+        }, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def resume_draft
+    Rails.logger.info "=== RESUME DRAFT ==="
+    Rails.logger.info "CV Generation ID: #{@cv_generation.id}"
+
+    if @cv_generation.can_be_resumed?
+      # Complete the draft and start processing
+      @cv_generation.complete_draft
+
+      # Start the CV generation job
+      user_id = @cv_generation.user_id
+      service = AzureOpenaiService.new(user_id, @cv_generation.resume_id)
+
+      draft_data = @cv_generation.resume_data
+      service.generate_cv(
+        draft_data['job_description'],
+        {
+          complete_name: draft_data['complete_name'],
+          email: draft_data['email'],
+          temperature: draft_data['temperature'] || 0.7,
+          max_tokens: draft_data['max_tokens'] || 15000
+        }
+      )
+
+      respond_to do |format|
+        format.html { redirect_to new_cv_generation_path(cv_generation_id: @cv_generation.id), notice: "تم استئناف إنشاء السيرة الذاتية بنجاح!" }
+        format.json { render json: { 
+          success: true, 
+          message: "تم استئناف إنشاء السيرة الذاتية بنجاح",
+          cv_generation_id: @cv_generation.id,
+          redirect_url: new_cv_generation_path(cv_generation_id: @cv_generation.id)
+        } }
+      end
+    else
+      respond_to do |format|
+        format.html { redirect_to cv_generations_path, alert: "لا يمكن استئناف هذه المسودة." }
+        format.json { render json: { 
+          success: false, 
+          error: "لا يمكن استئناف هذه المسودة" 
+        }, status: :unprocessable_entity }
+      end
     end
   end
 

@@ -1,12 +1,13 @@
 class ResumesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_resume, only: [ :show, :edit, :update, :destroy, :generate_pdf, :optimize_ats ]
+  before_action :set_resume, only: [ :show, :edit, :update, :destroy, :generate_pdf, :optimize_ats, :resume_draft ]
 
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
 
   def index
-    @resumes = current_user.resumes.recent
+    @resumes = current_user.resumes.not_drafts.recent
+    @drafts = current_user.resumes.drafts.recent
     @cv_generations = current_user.cv_generations.where(status: "completed").recent
 
     respond_to do |format|
@@ -94,6 +95,9 @@ class ResumesController < ApplicationController
   end
 
   def edit
+    # For editing resumes, we'll render the same form as new.html.erb
+    # The React component will handle loading draft data from the resume object
+    render :new
   end
 
   def update
@@ -122,6 +126,116 @@ class ResumesController < ApplicationController
       redirect_to @resume, notice: "ATS optimization completed!"
     else
       redirect_to @resume, alert: "ATS optimization failed: " + result[:error]
+    end
+  end
+
+  def save_draft
+    Rails.logger.info "=== SAVE RESUME DRAFT ==="
+    Rails.logger.info "Resume ID: #{params[:id]}"
+    Rails.logger.info "Draft data: #{params[:draft_data]}"
+
+    begin
+      # If this is a new resume (id="new"), create it first
+      if params[:id] == "new"
+        @resume = current_user.resumes.build(
+          complete_name: params[:complete_name],
+          email: params[:email],
+          phone_number: params[:phone_number],
+          city: params[:city],
+          country: params[:country],
+          professional_summary: params[:professional_summary],
+          professional_summary_english: params[:professional_summary_english]
+        )
+        
+        # Save the resume first
+        if @resume.save
+          Rails.logger.info "✅ New resume created with ID: #{@resume.id}"
+        else
+          Rails.logger.error "❌ Failed to create resume: #{@resume.errors.full_messages}"
+          respond_to do |format|
+            format.json { render json: {
+              success: false,
+              error: "فشل في إنشاء السيرة الذاتية: #{@resume.errors.full_messages.join(', ')}"
+            }, status: :unprocessable_entity }
+          end
+          return
+        end
+      else
+        # For existing resumes, find the resume
+        @resume = current_user.resumes.find(params[:id])
+        Rails.logger.info "✅ Found existing resume with ID: #{@resume.id}"
+      end
+
+      # Save form data as draft
+      draft_data = {
+        complete_name: params[:complete_name],
+        email: params[:email],
+        phone_number: params[:phone_number],
+        city: params[:city],
+        country: params[:country],
+        professional_summary: params[:professional_summary],
+        professional_summary_english: params[:professional_summary_english],
+        education: params[:education],
+        work_experience: params[:work_experience],
+        skills: params[:skills],
+        certifications: params[:certifications],
+        languages: params[:languages],
+        current_step: params[:current_step],
+        saved_at: Time.current.iso8601
+      }
+
+      @resume.save_draft(draft_data)
+
+      respond_to do |format|
+        format.html { redirect_to resumes_path, notice: "تم حفظ المسودة بنجاح. يمكنك العودة إليها لاحقاً." }
+        format.json { render json: {
+          success: true,
+          message: "تم حفظ المسودة بنجاح",
+          resume_id: @resume.id,
+          draft_data: @resume.draft_data
+        } }
+      end
+    rescue => e
+      Rails.logger.error "Error saving resume draft: #{e.message}"
+      respond_to do |format|
+        format.html { redirect_to resumes_path, alert: "حدث خطأ أثناء حفظ المسودة." }
+        format.json { render json: {
+          success: false,
+          error: "حدث خطأ أثناء حفظ المسودة: #{e.message}"
+        }, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def resume_draft
+    Rails.logger.info "=== RESUME DRAFT ==="
+    Rails.logger.info "Resume ID: #{@resume.id}"
+
+    if @resume.can_be_resumed?
+      # Complete the draft
+      @resume.complete_draft
+
+      # Get the step number from draft data
+      step_number = @resume.draft_data&.dig("current_step") || 1
+
+      respond_to do |format|
+        format.html { redirect_to edit_resume_path(@resume, step: step_number), notice: "تم استئناف المسودة بنجاح! تم العودة للخطوة #{step_number}." }
+        format.json { render json: {
+          success: true,
+          message: "تم استئناف المسودة بنجاح",
+          resume_id: @resume.id,
+          step_number: step_number,
+          redirect_url: edit_resume_path(@resume, step: step_number)
+        } }
+      end
+    else
+      respond_to do |format|
+        format.html { redirect_to resumes_path, alert: "لا يمكن استئناف هذه المسودة." }
+        format.json { render json: {
+          success: false,
+          error: "لا يمكن استئناف هذه المسودة"
+        }, status: :unprocessable_entity }
+      end
     end
   end
 

@@ -20,6 +20,8 @@ Rails.application.routes.draw do
     member do
       get :generate_pdf
       post :optimize_ats
+      post :save_draft
+      post :resume_draft
     end
 
     # Test endpoint
@@ -41,6 +43,8 @@ Rails.application.routes.draw do
       post :cancel
       get :download_pdf
       get :view_pdf
+      post :save_draft
+      post :resume_draft
     end
     collection do
       get :stats

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_04_103104) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_10_110744) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,7 +52,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_103104) do
     t.json "metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_draft", default: false, null: false
+    t.json "draft_data", default: {}
+    t.index ["is_draft"], name: "index_cv_generations_on_is_draft"
     t.index ["resume_id"], name: "index_cv_generations_on_resume_id"
+    t.index ["user_id", "is_draft"], name: "index_cv_generations_on_user_id_and_is_draft"
     t.index ["user_id"], name: "index_cv_generations_on_user_id"
   end
 
@@ -106,6 +110,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_103104) do
     t.string "city"
     t.string "country"
     t.text "professional_summary_english"
+    t.boolean "is_draft", default: false, null: false
+    t.json "draft_data", default: {}
+    t.index ["is_draft"], name: "index_resumes_on_is_draft"
+    t.index ["user_id", "is_draft"], name: "index_resumes_on_user_id_and_is_draft"
     t.index ["user_id"], name: "index_resumes_on_user_id"
   end
 
