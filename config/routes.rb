@@ -48,6 +48,7 @@ Rails.application.routes.draw do
     end
     collection do
       get :stats
+      post :regenerate_all_pdfs # Admin-only action to regenerate all PDFs
       get :count
     end
   end
@@ -108,7 +109,8 @@ Rails.application.routes.draw do
     # Translation API routes
     post "translate_professional_summary", to: "translations#translate_professional_summary"
     get "translation_status/:id", to: "translations#translation_status"
-    get "export_pdf", to: "translations#export_pdf"
-    post "export_pdf", to: "translations#export_pdf"
+    get "export_pdf", to: "translations#export_pdf", as: :export_pdf_translations
+    post "export_pdf", to: "translations#export_pdf", as: :export_pdf_post_translations
+    get "pdf_status", to: "translations#pdf_status", as: :pdf_status_translations
   end
 end

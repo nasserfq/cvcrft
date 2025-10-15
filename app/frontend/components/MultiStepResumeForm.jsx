@@ -516,6 +516,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [isTranslating, setIsTranslating] = useState(false);
  const [translationError, setTranslationError] = useState("");
  const [isExporting, setIsExporting] = useState(false);
+ const [exportStatus, setExportStatus] = useState("idle"); // idle, processing, completed, failed, timeout
  const [isSavingDraft, setIsSavingDraft] = useState(false);
  const [addingSkillTo, setAddingSkillTo] = useState(null);
  const [translationCount, setTranslationCount] = useState(0);
@@ -1168,12 +1169,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const exportToPDF = async () => {
-  console.log("PDF export button clicked! Current step:", currentStep);
+  console.log(
+   "ATS-compliant PDF export button clicked! Current step:",
+   currentStep
+  );
   setIsExporting(true);
   setTranslationError("");
 
   try {
-   console.log("Starting PDF export process...");
+   console.log("Starting ATS-compliant PDF export process...");
 
    let resumeId = null;
 
@@ -1203,19 +1207,79 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    }
 
    // Export the PDF - either with saved resume ID or directly from form data
-   console.log("Making PDF export request...");
+   console.log("Making PDF export request (background job)...");
    let response;
 
    if (resumeId) {
-    // Use saved resume
-    response = await fetch(`/api/export_pdf?resume_id=${resumeId}&user_id=1`, {
-     method: "GET",
-     headers: {
-      "X-CSRF-Token": document
-       .querySelector('meta[name="csrf-token"]')
-       ?.getAttribute("content"),
-     },
-    });
+    // Use saved resume - attempt direct download first
+    try {
+     // Create a download link and trigger it directly - most reliable method
+     const downloadUrl = `/api/export_pdf?resume_id=${resumeId}&direct_download=true&t=${Date.now()}`;
+
+     // Use fetch + Blob approach which is more reliable for binary data
+     const response = await fetch(downloadUrl);
+     if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+     }
+
+     // Create a Blob from the binary PDF data
+     const blob = await response.blob();
+
+     // Create a download link with the Blob URL
+     const blobUrl = URL.createObjectURL(blob);
+     const link = document.createElement("a");
+     link.href = blobUrl;
+     link.download = `resume_${resumeId}.pdf`;
+     document.body.appendChild(link);
+     link.click();
+
+     // Clean up the Blob URL after download starts
+     setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+     // Clean up
+     setTimeout(() => {
+      document.body.removeChild(link);
+      setExportStatus("completed");
+      setIsExporting(false);
+     }, 2000);
+
+     // Return early as the download should be initiated
+     return;
+    } catch (e) {
+     console.error("Direct download failed, falling back to JSON response:", e);
+     // Fall back to the fetch + Blob approach which is more reliable in modern browsers
+     response = await fetch(
+      `/api/export_pdf?resume_id=${resumeId}&direct_download=true`,
+      {
+       method: "GET",
+       headers: {
+        "X-CSRF-Token": document
+         .querySelector('meta[name="csrf-token"]')
+         ?.getAttribute("content"),
+       },
+      }
+     );
+
+     // If we got binary data back, use Blob to trigger download
+     if (response.ok) {
+      try {
+       const blob = await response.blob();
+       const url = window.URL.createObjectURL(blob);
+       const link = document.createElement("a");
+       link.href = url;
+       link.setAttribute("download", `resume_${resumeId}.pdf`);
+       document.body.appendChild(link);
+       link.click();
+       link.parentNode.removeChild(link);
+       window.URL.revokeObjectURL(url);
+       setExportStatus("completed");
+       setIsExporting(false);
+       return;
+      } catch (blobError) {
+       console.error("Blob download failed:", blobError);
+      }
+     }
+    }
    } else {
     // Export directly from form data
     response = await fetch("/api/export_pdf", {
@@ -1301,34 +1365,101 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      }),
     });
    }
-   console.log("PDF export response status:", response.status);
+   console.log("Background job response status:", response.status);
 
    if (response.ok) {
-    // Check if response is actually a PDF
-    const contentType = response.headers.get("content-type");
-    console.log("Response content type:", contentType);
+    // Parse the JSON response containing job information
+    const jobInfo = await response.json();
+    console.log("PDF generation job started:", jobInfo);
 
-    if (contentType && contentType.includes("application/pdf")) {
-     // Get the PDF blob
-     const pdfBlob = await response.blob();
-     console.log("PDF blob size:", pdfBlob.size);
+    if (jobInfo.job_id && jobInfo.token) {
+     // Poll for job completion
+     setExportStatus("processing");
 
-     // Create a download link
-     console.log("Creating download link...");
-     const url = window.URL.createObjectURL(pdfBlob);
-     const link = document.createElement("a");
-     link.href = url;
-     link.download = `resume_${resumeId}.pdf`;
-     document.body.appendChild(link);
-     link.click();
-     document.body.removeChild(link);
-     window.URL.revokeObjectURL(url);
-     console.log("PDF download triggered successfully!");
+     // Set up polling interval
+     const pollingInterval = setInterval(async () => {
+      try {
+       const statusUrl = `/api/pdf_status?job_id=${jobInfo.job_id}&token=${jobInfo.token}`;
+       console.log("Checking PDF status at:", statusUrl);
+
+       const statusResponse = await fetch(statusUrl, {
+        headers: {
+         "X-CSRF-Token": document
+          .querySelector('meta[name="csrf-token"]')
+          ?.getAttribute("content"),
+        },
+       });
+
+       if (statusResponse.ok) {
+        const statusInfo = await statusResponse.json();
+        console.log("PDF job status response:", statusInfo);
+
+        if (statusInfo.status === "completed") {
+         // Job is complete, download the PDF
+         clearInterval(pollingInterval);
+
+         console.log(
+          "PDF is ready for download, URL:",
+          statusInfo.download_url
+         );
+
+         // Trigger the download using a hidden iframe to avoid page navigation
+         const downloadFrame = document.createElement("iframe");
+         downloadFrame.style.display = "none";
+         document.body.appendChild(downloadFrame);
+
+         // Add event listener to clean up after download starts
+         downloadFrame.onload = () => {
+          // Give browser time to process the download
+          setTimeout(() => {
+           document.body.removeChild(downloadFrame);
+          }, 2000);
+         };
+
+         // Make sure we use the complete URL as returned from the server
+         // Check if the download URL is relative (starts with /) or absolute
+         const downloadUrl = statusInfo.download_url.startsWith("/")
+          ? `${window.location.origin}${statusInfo.download_url}`
+          : statusInfo.download_url;
+
+         console.log("Setting iframe src to:", downloadUrl);
+         downloadFrame.src = downloadUrl;
+         setExportStatus("completed");
+         setIsExporting(false);
+        } else if (statusInfo.status === "failed") {
+         // Job failed
+         clearInterval(pollingInterval);
+         setExportStatus("failed");
+         setTranslationError(
+          "فشل إنشاء ملف PDF. يرجى المحاولة مرة أخرى لاحقًا."
+         );
+         setIsExporting(false);
+        }
+        // Otherwise continue polling
+       } else {
+        console.error(
+         "Error checking job status:",
+         await statusResponse.text()
+        );
+       }
+      } catch (error) {
+       console.error("Error during status polling:", error);
+      }
+     }, 2000); // Check every 2 seconds
+
+     // Set timeout to stop polling after 2 minutes
+     setTimeout(() => {
+      clearInterval(pollingInterval);
+      if (setExportStatus === "processing") {
+       setExportStatus("timeout");
+       setTranslationError(
+        "انتهت مهلة إنشاء ملف PDF. يرجى المحاولة مرة أخرى لاحقًا."
+       );
+       setIsExporting(false);
+      }
+     }, 120000);
     } else {
-     // If not PDF, try to get as text to see what we got
-     const text = await response.text();
-     console.log("Non-PDF response:", text);
-     throw new Error("Response is not a PDF");
+     throw new Error("Job information missing from response");
     }
    } else {
     const errorText = await response.text();

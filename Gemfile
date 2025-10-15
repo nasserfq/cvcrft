@@ -55,13 +55,15 @@ gem "administrate"
 # Background job processing
 gem "sidekiq"
 
+# Redis for caching, Sidekiq, and session storage
+gem "redis", "~> 5.0"
+
 # Parallel processing for load testing
 gem "parallel"
 
 # PDF generation
-gem "wicked_pdf"
-gem "wkhtmltopdf-binary"
-gem "grover"
+gem "prawn"
+gem "prawn-table"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

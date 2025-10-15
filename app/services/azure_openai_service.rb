@@ -172,6 +172,9 @@ class AzureOpenaiService
     )
 
     # Enqueue the CV generation job
+    # Add cache control option if not present
+    json_options["force_pdf_regeneration"] = true unless json_options.key?("force_pdf_regeneration")
+
     CvGeneratorJob.perform_async(
       job_description,
       @user_id,

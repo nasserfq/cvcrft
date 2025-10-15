@@ -8,6 +8,30 @@ class Resume < ApplicationRecord
   has_many :ai_translations, dependent: :destroy
   has_many :cv_generations, dependent: :destroy
 
+  # Generate PDF after saving a resume - queue it for background processing
+  after_create :queue_pdf_generation
+  after_update :queue_pdf_generation
+
+  # Add a flag to allow skipping validations for PDF generation only
+  attr_accessor :skip_validations_for_pdf
+
+  # Queue PDF generation in the background
+  def queue_pdf_generation
+    # Only queue if the resume has been persisted
+    if persisted? && !is_draft
+      Rails.logger.info "Queueing PDF generation for Resume ##{id}"
+      CvBuilderPdfJob.schedule_pdf_generation(
+        user_id,
+        id, # resume_id
+        false, # view in browser
+        nil # no resume_params needed as we're using an existing resume
+      )
+    end
+  rescue => e
+    Rails.logger.error "Error queueing PDF generation: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+  end
+
   # Accept nested attributes
   accepts_nested_attributes_for :work_experiences, allow_destroy: true
   accepts_nested_attributes_for :skills, allow_destroy: true
@@ -15,10 +39,10 @@ class Resume < ApplicationRecord
   accepts_nested_attributes_for :certifications, allow_destroy: true, reject_if: :all_blank
   accepts_nested_attributes_for :languages, allow_destroy: true, reject_if: :all_blank
 
-  # Validations for new fields
-  validates :user_id, presence: true
-  validates :complete_name, presence: true, length: { minimum: 2, maximum: 100 }
-  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  # Validations for new fields - with conditional bypass for PDF generation
+  validates :user_id, presence: true, unless: :skip_validations_for_pdf
+  validates :complete_name, presence: true, length: { minimum: 2, maximum: 100 }, unless: :skip_validations_for_pdf
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }, unless: :skip_validations_for_pdf
   validates :phone_number, length: { maximum: 50 }, allow_blank: true
   validates :city, length: { maximum: 100 }, allow_blank: true
   validates :country, length: { maximum: 100 }, allow_blank: true

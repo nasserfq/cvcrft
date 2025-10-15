@@ -1,10 +1,10 @@
 class CvGenerationsController < ApplicationController
   before_action :authenticate_user!
-  before_action :ensure_user_has_resume, only: [:index, :new, :create, :stats]
+  before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
   before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :save_draft, :resume_draft ]
-  
+
   # Skip CSRF protection for JSON requests from frontend
-  skip_before_action :verify_authenticity_token, only: [:create], if: -> { request.format.json? }
+  skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
 
   def index
     if params[:recent_with_pdf] == "true"
@@ -54,20 +54,20 @@ class CvGenerationsController < ApplicationController
     Rails.logger.info "=== CV GENERATION CREATE ==="
     Rails.logger.info "Current user: #{current_user&.email} (ID: #{current_user&.id})"
     Rails.logger.info "User signed in: #{user_signed_in?}"
-    
+
     if current_user.nil?
       Rails.logger.error "No current user found for CV generation!"
       respond_to do |format|
-        format.html { redirect_to new_user_session_path, alert: 'Please sign in to generate a CV.' }
-        format.json { render json: { error: 'Authentication required' }, status: :unauthorized }
+        format.html { redirect_to new_user_session_path, alert: "Please sign in to generate a CV." }
+        format.json { render json: { error: "Authentication required" }, status: :unauthorized }
       end
       return
     end
-    
+
     # Check CV generation limit (15 per user)
     max_cv_generations = 15
     current_cv_count = current_user.cv_generations.count
-    
+
     if current_cv_count >= max_cv_generations
       Rails.logger.warn "User #{current_user.email} has reached CV generation limit (#{current_cv_count}/#{max_cv_generations})"
       respond_to do |format|
@@ -76,7 +76,7 @@ class CvGenerationsController < ApplicationController
       end
       return
     end
-    
+
     user_id = current_user.id
     Rails.logger.info "Using user_id: #{user_id} for CV generation"
 
@@ -90,7 +90,8 @@ class CvGenerationsController < ApplicationController
         complete_name: cv_generation_params[:complete_name],
         email: cv_generation_params[:email],
         temperature: cv_generation_params[:temperature] || 0.7,
-        max_tokens: cv_generation_params[:max_tokens] || 15000
+        max_tokens: cv_generation_params[:max_tokens] || 15000,
+        force_pdf_regeneration: true  # Always regenerate PDF when user creates a new CV
       }
     )
 
@@ -173,13 +174,43 @@ class CvGenerationsController < ApplicationController
 
   def count
     cv_count = current_user.cv_generations.count
-    
+
     respond_to do |format|
       format.json { render json: { count: cv_count } }
     end
   end
 
   def download_pdf
+    # Check if we need to force regenerate the PDF
+    if params[:regenerate] == "true"
+      # Call the CV generator job synchronously to regenerate the PDF
+      begin
+        job_description = @cv_generation.job_description
+        resume_id = @cv_generation.resume_id
+        user_id = current_user.id
+
+        # Get options from existing metadata
+        options = @cv_generation.metadata.slice(
+          "complete_name", "email", "temperature", "max_tokens"
+        ).merge({
+          "force_pdf_regeneration" => true,
+          "pdf_cache_hours" => 0  # Bypass cache completely
+        })
+
+        # Run the job synchronously
+        job = CvGeneratorJob.new
+        job.perform(job_description, user_id, resume_id, options)
+
+        # Refresh the CV generation object
+        @cv_generation.reload
+      rescue => e
+        Rails.logger.error "Error regenerating PDF: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        return redirect_to @cv_generation, alert: "Failed to regenerate PDF: #{e.message}"
+      end
+    end
+
+    # Now attempt to send the PDF (original or regenerated)
     if @cv_generation.metadata&.dig("pdf_generated") && @cv_generation.metadata&.dig("pdf_data")
       pdf_data = Base64.decode64(@cv_generation.metadata["pdf_data"])
       filename = @cv_generation.metadata["pdf_filename"] || "generated_cv.pdf"
@@ -194,6 +225,33 @@ class CvGenerationsController < ApplicationController
   end
 
   def view_pdf
+    # Check if we need to force regenerate the PDF
+    if params[:regenerate] == "true"
+      # Use the same regeneration logic as in download_pdf
+      begin
+        job_description = @cv_generation.job_description
+        resume_id = @cv_generation.resume_id
+        user_id = current_user.id
+
+        # Get options from existing metadata
+        options = @cv_generation.metadata.slice(
+          "complete_name", "email", "temperature", "max_tokens"
+        ).merge({
+          "force_pdf_regeneration" => true,
+          "pdf_cache_hours" => 0  # Bypass cache completely
+        })
+
+        job = CvGeneratorJob.new
+        job.perform(job_description, user_id, resume_id, options)
+
+        @cv_generation.reload
+      rescue => e
+        Rails.logger.error "Error regenerating PDF for view: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        return redirect_to @cv_generation, alert: "Failed to regenerate PDF: #{e.message}"
+      end
+    end
+
     if @cv_generation.metadata&.dig("pdf_generated") && @cv_generation.metadata&.dig("pdf_data")
       pdf_data = Base64.decode64(@cv_generation.metadata["pdf_data"])
 
@@ -226,8 +284,8 @@ class CvGenerationsController < ApplicationController
 
       respond_to do |format|
         format.html { redirect_to cv_generations_path, notice: "تم حفظ المسودة بنجاح. يمكنك العودة إليها لاحقاً." }
-        format.json { render json: { 
-          success: true, 
+        format.json { render json: {
+          success: true,
           message: "تم حفظ المسودة بنجاح",
           cv_generation_id: @cv_generation.id,
           draft_data: @cv_generation.draft_data
@@ -237,9 +295,9 @@ class CvGenerationsController < ApplicationController
       Rails.logger.error "Error saving draft: #{e.message}"
       respond_to do |format|
         format.html { redirect_to cv_generations_path, alert: "حدث خطأ أثناء حفظ المسودة." }
-        format.json { render json: { 
-          success: false, 
-          error: "حدث خطأ أثناء حفظ المسودة: #{e.message}" 
+        format.json { render json: {
+          success: false,
+          error: "حدث خطأ أثناء حفظ المسودة: #{e.message}"
         }, status: :unprocessable_entity }
       end
     end
@@ -259,19 +317,19 @@ class CvGenerationsController < ApplicationController
 
       draft_data = @cv_generation.resume_data
       service.generate_cv(
-        draft_data['job_description'],
+        draft_data["job_description"],
         {
-          complete_name: draft_data['complete_name'],
-          email: draft_data['email'],
-          temperature: draft_data['temperature'] || 0.7,
-          max_tokens: draft_data['max_tokens'] || 15000
+          complete_name: draft_data["complete_name"],
+          email: draft_data["email"],
+          temperature: draft_data["temperature"] || 0.7,
+          max_tokens: draft_data["max_tokens"] || 15000
         }
       )
 
       respond_to do |format|
         format.html { redirect_to new_cv_generation_path(cv_generation_id: @cv_generation.id), notice: "تم استئناف إنشاء السيرة الذاتية بنجاح!" }
-        format.json { render json: { 
-          success: true, 
+        format.json { render json: {
+          success: true,
           message: "تم استئناف إنشاء السيرة الذاتية بنجاح",
           cv_generation_id: @cv_generation.id,
           redirect_url: new_cv_generation_path(cv_generation_id: @cv_generation.id)
@@ -280,14 +338,75 @@ class CvGenerationsController < ApplicationController
     else
       respond_to do |format|
         format.html { redirect_to cv_generations_path, alert: "لا يمكن استئناف هذه المسودة." }
-        format.json { render json: { 
-          success: false, 
-          error: "لا يمكن استئناف هذه المسودة" 
+        format.json { render json: {
+          success: false,
+          error: "لا يمكن استئناف هذه المسودة"
         }, status: :unprocessable_entity }
       end
     end
   end
 
+
+  # Admin action to regenerate all PDFs (restricted to admins)
+  def regenerate_all_pdfs
+    # Check if user is admin
+    unless current_user&.admin?
+      redirect_to cv_generations_path, alert: "Admin access required"
+      return
+    end
+
+    # Get all completed CV generations with metadata
+    cv_generations = CvGeneration.where(status: "completed")
+                                .where("metadata->>'pdf_generated' = 'true'")
+
+    # Count of PDFs to process
+    total = cv_generations.count
+    processed = 0
+    success = 0
+    failed = 0
+
+    cv_generations.find_each do |cv_gen|
+      begin
+        processed += 1
+
+        # Skip if no data available
+        unless cv_gen.job_description.present? && cv_gen.user_id.present?
+          failed += 1
+          next
+        end
+
+        # Get basic info
+        job_description = cv_gen.job_description
+        user_id = cv_gen.user_id
+        resume_id = cv_gen.resume_id
+
+        # Run the job with force regeneration
+        job = CvGeneratorJob.new
+        job.perform(
+          job_description,
+          user_id,
+          resume_id,
+          { force_pdf_regeneration: true }
+        )
+
+        success += 1
+
+        # Log progress every 5 items
+        if processed % 5 == 0
+          Rails.logger.info "PDF Regeneration: #{processed}/#{total} processed, #{success} successful, #{failed} failed"
+        end
+
+      rescue => e
+        failed += 1
+        Rails.logger.error "Failed to regenerate PDF for CV ##{cv_gen.id}: #{e.message}"
+      end
+    end
+
+    # Final stats
+    message = "PDF regeneration complete: #{success}/#{total} successful, #{failed} failed"
+    Rails.logger.info message
+    redirect_to cv_generations_path, notice: message
+  end
 
   private
 
@@ -305,12 +424,12 @@ class CvGenerationsController < ApplicationController
 
   def ensure_user_has_resume
     return unless current_user.resumes.empty?
-    
+
     Rails.logger.info "User #{current_user.email} has no resumes, redirecting to resume creation"
-    
+
     respond_to do |format|
       format.html { redirect_to resumes_path, alert: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة. انقر على "إنشاء سيرة ذاتية جديدة" في الصفحة التالية.' }
-      format.json { render json: { error: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة.', redirect_url: resumes_path }, status: :unprocessable_entity }
+      format.json { render json: { error: "\u064A\u062C\u0628 \u0639\u0644\u064A\u0643 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631\u0629 \u0630\u0627\u062A\u064A\u0629 \u0623\u0648\u0644\u0627\u064B \u0642\u0628\u0644 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631 \u0630\u0627\u062A\u064A\u0629 \u0645\u062E\u0635\u0635\u0629 \u0628\u0646\u0627\u0621\u064B \u0639\u0644\u0649 \u0648\u0635\u0641 \u0627\u0644\u0648\u0638\u064A\u0641\u0629.", redirect_url: resumes_path }, status: :unprocessable_entity }
     end
   end
 end

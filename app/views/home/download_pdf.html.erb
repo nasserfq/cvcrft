@@ -1,0 +1,12 @@
+<%# A simple form to directly download a PDF for a resume %>
+<h1>Download Resume PDF</h1>
+<form action="/api/download_pdf" method="get">
+  <div>
+    <label for="resume_id">Resume ID:</label>
+    <input type="number" name="resume_id" id="resume_id" required>
+  </div>
+  <br>
+  <div>
+    <button type="submit">Download PDF</button>
+  </div>
+</form>

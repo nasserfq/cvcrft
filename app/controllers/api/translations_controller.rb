@@ -81,129 +81,104 @@ class Api::TranslationsController < ApplicationController
 
   def export_pdf
     begin
-      resume_id = params[:resume_id]
+      Rails.logger.info "Export PDF request: params=#{params.inspect}, direct_download=#{params[:direct_download]}, token=#{params[:token]}"
 
-      resume = nil
-
-      if resume_id.present?
-        # GET request - use existing resume from database
-        resume = current_user.resumes.find(resume_id)
-        Rails.logger.info "Using existing resume with ID: #{resume_id}"
-      elsif request.post? && params[:resume].present?
-        # POST request - create temporary resume from form data
-        Rails.logger.info "Creating temporary resume from form data"
-
-        # Create a temporary resume object without saving to database
-        resume = Resume.new(resume_params)
-
-        # Build associated objects from form data
-        resume_data = if params[:resume].present?
-          params[:resume]
-        elsif params[:translation] && params[:translation][:resume].present?
-          params[:translation][:resume]
-        else
-          {}
-        end
-
-        if resume_data[:educations_attributes].present?
-          resume_data[:educations_attributes].each do |edu_attrs|
-            resume.educations.build(edu_attrs.permit(:degree, :institution, :start_date, :end_date, :gpa, :is_current))
-          end
-        end
-
-        if resume_data[:work_experiences_attributes].present?
-          resume_data[:work_experiences_attributes].each do |work_attrs|
-            resume.work_experiences.build(work_attrs.permit(:job_title, :company, :start_date, :end_date, :is_current, responsibilities: []))
-          end
-        end
-
-        if resume_data[:skills_attributes].present?
-          resume_data[:skills_attributes].each do |skill_attrs|
-            resume.skills.build(skill_attrs.permit(:category, skill_names: []))
-          end
-        end
-
-        if resume_data[:certifications_attributes].present?
-          resume_data[:certifications_attributes].each do |cert_attrs|
-            resume.certifications.build(cert_attrs.permit(:name, :organization, :date))
-          end
-        end
-
-        if resume_data[:languages_attributes].present?
-          resume_data[:languages_attributes].each do |lang_attrs|
-            resume.languages.build(lang_attrs.permit(:language, :proficiency))
-          end
-        end
-      else
-        render json: { error: "Resume ID or form data is required" }, status: :bad_request
-        return
+      # Ensure the user is authenticated
+      unless current_user
+        Rails.logger.error "No current user found for PDF export"
+        return render json: { error: "Authentication required" }, status: :unauthorized
       end
 
-      # Generate HTML content using the service
-      # For CV Builder, prioritize professional_summary_english (what preview shows)
-      professional_summary = resume.professional_summary_english.present? ? resume.professional_summary_english : resume.professional_summary
+      # Create the directory for storing PDFs if it doesn't exist
+      pdf_dir = Rails.root.join("tmp", "pdfs", "generated")
+      FileUtils.mkdir_p(pdf_dir) unless File.directory?(pdf_dir)
 
-      Rails.logger.info "=== CV BUILDER PDF EXPORT ==="
-      Rails.logger.info "Resume ID: #{resume.id rescue 'new'}"
-      Rails.logger.info "Professional Summary: #{professional_summary&.truncate(100)}"
-      Rails.logger.info "Professional Summary English: #{resume.professional_summary_english&.truncate(100)}"
+      # If resume_id is provided, perform the job immediately
+      if params[:resume_id].present?
+        Rails.logger.info "Performing PDF generation job immediately: user_id=#{current_user&.id}, resume_id=#{params[:resume_id]}"
 
-      # Generate PDF using WickedPDF with improved padding and spacing
-      Rails.logger.info "About to generate PDF with WickedPDF"
-      pdf_service = ResumePdfService.new(resume, professional_summary)
-      html_content = pdf_service.generate
+        options = {
+          "user_id" => current_user&.id,
+          "resume_id" => params[:resume_id],
+          "view_in_browser" => params[:view_in_browser] == "true",
+          "resume_params" => request.post? ? resume_params.as_json : nil,
+          "callback_url" => params[:callback_url]
+        }
 
-      Rails.logger.info "Generated HTML length: #{html_content.length}"
+        job = CvBuilderPdfJob.new
+        result = job.perform(options)
 
-      pdf = WickedPdf.new.pdf_from_string(
-        html_content,
-        page_size: "A4",
-        orientation: "Portrait",
-        margin: {
-          top: 2.0,
-          bottom: 1.0,
-          left: 0.75,
-          right: 0.75
-        },
-        encoding: "UTF-8",
-        print_media_type: true,
-        disable_smart_shrinking: true,
-        no_stop_slow_scripts: true,
-        enable_forms: false,
-        disable_external_links: true,
-        disable_internal_links: true,
-        page_offset: 0,
-        book: false,
-        default_header: false,
-        default_footer: false,
-        dpi: 300,
-        image_quality: 100,
-        zoom: 1.0
-      )
+        if result[:status] == "success" && result[:file_path].present? && File.exist?(result[:file_path])
+          Rails.logger.info "PDF generation complete, sending file from: #{result[:file_path]}"
+          return send_file result[:file_path],
+            filename: result[:filename] || "resume.pdf",
+            type: "application/pdf",
+            disposition: "attachment"
+        else
+          Rails.logger.error "PDF generation failed: #{result[:message]}"
+          return render json: { error: "PDF generation failed", message: result[:message] }, status: :internal_server_error
+        end
+      end
 
-      Rails.logger.info "Generated PDF size: #{pdf.bytesize}"
-      Rails.logger.info "PDF starts with: #{pdf[0..50]}"
+      # Handle direct download using token
+      if params[:direct_download] == "true" && params[:token].present?
+        Rails.logger.info "Processing direct download request with token: #{params[:token]}"
 
-      # Send the PDF as a download
-      filename = resume.complete_name.present? ? "#{resume.complete_name.parameterize}_resume.pdf" : "resume.pdf"
+        redis = Redis.new(url: ENV["REDIS_URL"] || "redis://localhost:6379/1")
+        redis_key = "cv_builder:pdf:#{current_user.id}:#{params[:token]}"
+        pdf_path = redis.get(redis_key)
 
-      # Set proper headers
-      response.headers["Content-Type"] = "application/pdf"
-      response.headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
+        if pdf_path.present? && File.exist?(pdf_path)
+          filename = File.basename(pdf_path)
+          return send_file pdf_path, filename: filename, type: "application/pdf", disposition: "attachment"
+        end
 
-      send_data pdf,
-        filename: filename,
-        type: "application/pdf",
-        disposition: "attachment"
+        Rails.logger.error "PDF file not found for token: #{params[:token]}"
+        return render json: { error: "PDF not found" }, status: :not_found
+      end
+
+      # If no valid parameters are provided, return an error
+      Rails.logger.error "Invalid parameters for PDF export"
+      render json: { error: "Invalid parameters" }, status: :bad_request
     rescue => e
-      Rails.logger.error "PDF export error: #{e.message}"
-      Rails.logger.error "Backtrace: #{e.backtrace.first(5).join("\n")}"
-      render json: { error: "Failed to export PDF", message: e.message }, status: :internal_server_error
+      Rails.logger.error "Error with PDF export: #{e.message}"
+      render json: { error: e.message }, status: :internal_server_error
     end
+  end
+
+  def pdf_status
+    job_id = params[:job_id]
+    token = params[:token]
+    resume_id = params[:resume_id]
+
+    Rails.logger.info "Checking PDF status for job_id=#{job_id}, token=#{token}, resume_id=#{resume_id}"
+
+    if job_id.blank? && token.blank? && resume_id.blank?
+      return render json: { error: "Either job_id, token, or resume_id is required" }, status: :bad_request
+    end
+
+    # Make sure we have a current user
+    unless current_user
+      Rails.logger.error "No current user found for PDF status check"
+      return render json: { error: "Authentication required" }, status: :unauthorized
+    end
+
+    # Let the job handle status checking
+    status_result = CvBuilderPdfJob.check_pdf_status(current_user.id, job_id, token, resume_id)
+
+    Rails.logger.info "PDF status check result: #{status_result.inspect}"
+
+    # Add more details to the response to help with debugging
+    if status_result[:status] == "completed"
+      Rails.logger.info "PDF is ready for download - download_url: #{status_result[:download_url]}"
+    end
+
+    render json: status_result
   end
 
   private
 
+  # Private method for resume params handling
   def resume_params
     # Handle both direct resume params and nested translation params
     resume_data = if params[:resume].present?

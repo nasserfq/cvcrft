@@ -81,9 +81,20 @@ class ResumesController < ApplicationController
 
     if @resume.save
       Rails.logger.info "Resume saved successfully with ID: #{@resume.id}, user_id: #{@resume.user_id}"
+
+      # Generate the PDF download URL
+      pdf_url = "/api/export_pdf?resume_id=#{@resume.id}"
+      view_url = "/api/export_pdf?resume_id=#{@resume.id}&view_in_browser=true"
+
       respond_to do |format|
         format.html { redirect_to @resume, notice: "Resume created successfully!" }
-        format.json { render json: @resume, status: :created }
+        format.json {
+          render json: @resume.as_json.merge({
+            download_url: pdf_url,
+            view_url: view_url,
+            pdf_available: true
+          }), status: :created
+        }
       end
     else
       Rails.logger.error "Resume save failed: #{@resume.errors.full_messages}"
@@ -146,7 +157,7 @@ class ResumesController < ApplicationController
           professional_summary: params[:professional_summary],
           professional_summary_english: params[:professional_summary_english]
         )
-        
+
         # Save the resume first
         if @resume.save
           Rails.logger.info "✅ New resume created with ID: #{@resume.id}"
