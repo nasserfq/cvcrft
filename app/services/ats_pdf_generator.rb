@@ -27,6 +27,7 @@ class AtsPdfGenerator
         pdf.move_down 10
         # Use the OpenAI enhanced/translated version if available, fallback to original
         summary = resume.professional_summary_english.presence ||
+                 resume.professional_summary.presence ||
                  data[:professional_summary].to_s.strip
         pdf.text summary, size: 10
         pdf.move_down 20

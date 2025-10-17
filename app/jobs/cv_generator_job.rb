@@ -30,10 +30,9 @@ require "active_support/core_ext/hash/keys" # Needed for deep_symbolize_keys
 
 
 class CvGeneratorJob
-  # NOTE: Replace 'include Sidekiq::Job' if not using Sidekiq
-  # include Sidekiq::Job
+  include Sidekiq::Job
 
-  # sidekiq_options retry: 3, backtrace: true
+  sidekiq_options retry: 3, backtrace: true
 
   # Version control for PDF generation - increment this when making layout changes
   PDF_VERSION = "2.1"  # Incrementing to force regeneration
@@ -193,12 +192,65 @@ class CvGeneratorJob
     PROMPT
   end
 
+  def build_existing_cv_context
+    return "" unless @existing_resume
+
+    # Use the formatted data
+    context = format_existing_resume_data
+
+    # Create a formatted string with the existing CV data
+    <<~EXISTING_CV
+      EXISTING CV DATA:
+      Please use the following existing CV data as a base and adapt it for the new job description.
+      Keep relevant experiences and skills exactly as they are, ONLY update the professional summary.
+
+      #{JSON.pretty_generate(context)}
+
+      INSTRUCTIONS:
+      1. Keep ALL existing experience data exactly as is - DO NOT modify any dates, companies, or responsibilities
+      2. Keep ALL existing skills, education, certifications, and languages exactly as is
+      3. ONLY rewrite the professional summary to target the new position
+      4. Ensure the new summary highlights the most relevant aspects of the existing experience
+      5. Focus on connecting past achievements to the new role requirements
+    EXISTING_CV
+  end
+
   def build_user_prompt
-    # ... (This remains the same)
     existing_cv_data = @existing_resume ? build_existing_cv_context : ""
+    base_requirements = []
+
+    if @existing_resume
+      # Focus only on updating the professional summary while preserving other sections
+      base_requirements += [
+        "IMPORTANT: Keep ALL existing work experience, skills, education, certifications, and languages exactly as they are",
+        "ONLY generate a new professional summary that aligns with the job description",
+        "Analyze the existing experience and skills to craft a targeted summary",
+        "Highlight the most relevant aspects of the existing experience for this specific role",
+        "Ensure the summary connects past achievements to the new role's requirements"
+      ]
+    else
+      base_requirements += [
+        "Generate a complete CV with all sections based on the job description",
+        "Create realistic and relevant content that demonstrates expertise in the required areas",
+        "Include quantifiable achievements and metrics where appropriate"
+      ]
+    end
+
+    # Common requirements for the professional summary
+    base_requirements += [
+      "Make the professional summary concise and impactful (3-4 sentences)",
+      "Include relevant keywords from the job description",
+      "Emphasize achievements and skills that match the role",
+      "Use strong action verbs and specific metrics"
+    ]
 
     <<~PROMPT
-      Please generate a complete, professional CV based on the following job description:
+      #{if @existing_resume
+          "Please update ONLY the professional summary of the existing CV to target the following job description.#{' '}
+           Keep all other sections (work experience, skills, education, etc.) EXACTLY as they are."
+        else
+          "Please generate a complete, professional CV for the following job description:"
+        end}
 
       JOB DESCRIPTION:
       "#{@job_description}"
@@ -206,38 +258,119 @@ class CvGeneratorJob
       #{existing_cv_data}
 
       REQUIREMENTS:
-      1. Generate a complete CV with professional summary, work experience, skills, education, certifications, and languages
-      2. Create realistic, professional content that matches the job requirements
-      // ... (other requirements)
+      #{base_requirements.map.with_index(1) { |req, i| "#{i}. #{req}" }.join("\n")}
 
-      Return the complete CV data in the JSON format specified in the system prompt.
+      #{if @existing_resume
+          "IMPORTANT: Return the existing CV data structure with ONLY the professional_summary field updated.#{' '}
+           DO NOT modify any other fields (work_experiences, skills, education, certifications, languages)."
+        end}
+
+      Return the data in the JSON format specified in the system prompt.
     PROMPT
   end
 
-  def build_existing_cv_context
-    # ... (This remains the same)
+  def format_existing_resume_data
+    return {} unless @existing_resume
+
+    # Return structured data of existing resume
+    {
+      professional_summary: @existing_resume.professional_summary,
+      work_experiences: @existing_resume.work_experiences.map { |exp|
+        # Handle responsibilities based on how they're stored
+        responsibilities = if exp.respond_to?(:responsibilities)
+          if exp.responsibilities.is_a?(Array)
+            exp.responsibilities
+          elsif exp.responsibilities.is_a?(String)
+            exp.responsibilities.split("\n").map(&:strip).reject(&:empty?)
+          else
+            []
+          end
+        elsif exp.respond_to?(:description)
+          exp.description.to_s.split("\n").map(&:strip).reject(&:empty?)
+        else
+          []
+        end
+
+        {
+          job_title: exp.job_title,
+          company: exp.company,
+          start_date: exp.start_date,
+          end_date: (exp.respond_to?(:is_current) && exp.is_current) ? "Present" : exp.end_date,
+          responsibilities: responsibilities
+        }
+      },
+      skills: @existing_resume.skills.group_by(&:category).map { |category, skills|
+        {
+          category: category || "Technical Skills",
+          names: skills.map { |s| s.respond_to?(:name) ? s.name : s.to_s }
+        }
+      },
+      educations: @existing_resume.educations.map { |edu|
+        education_data = {
+          degree: edu.degree,
+          institution: edu.institution,
+          start_date: edu.start_date,
+          end_date: edu.end_date
+        }
+        education_data[:gpa] = edu.gpa if edu.respond_to?(:gpa) && edu.gpa.present?
+        education_data
+      },
+      certifications: @existing_resume.certifications.map { |cert|
+        {
+          name: cert.name,
+          organization: cert.organization,
+          date: cert.date
+        }
+      },
+      languages: @existing_resume.languages.map { |lang|
+        {
+          language: lang.language,
+          proficiency: lang.proficiency
+        }
+      }
+    }
   end
 
   def parse_openai_response(response)
-    # ... (This remains the same, but ensures all keys are handled)
     content = response["choices"][0]["message"]["content"]
     tokens_used = response["usage"]["total_tokens"]
 
     begin
       parsed_content = JSON.parse(content)
 
-      result = {
-        professional_summary: parsed_content["professional_summary"],
-        work_experiences: parsed_content["work_experiences"] || [],
-        skills: parsed_content["skills"] || [],
-        educations: parsed_content["educations"] || [],
-        certifications: parsed_content["certifications"] || [],
-        languages: parsed_content["languages"] || [],
-        ats_optimization_notes: parsed_content["ats_optimization_notes"],
-        generation_notes: parsed_content["generation_notes"],
-        tokens_used: tokens_used,
-        raw_response: content
-      }
+      if @existing_resume
+        # When we have an existing resume, only update the professional summary
+        existing_data = format_existing_resume_data
+        result = {
+          # Take only the new professional summary
+          professional_summary: parsed_content["professional_summary"],
+          # Keep all other sections from the existing resume
+          work_experiences: existing_data[:work_experiences],
+          skills: existing_data[:skills],
+          educations: existing_data[:educations],
+          certifications: existing_data[:certifications],
+          languages: existing_data[:languages],
+          # Include the optimization notes
+          ats_optimization_notes: parsed_content["ats_optimization_notes"],
+          generation_notes: "Updated professional summary for new role while preserving existing experience",
+          tokens_used: tokens_used,
+          raw_response: content
+        }
+      else
+        # For new resumes, use all generated content
+        result = {
+          professional_summary: parsed_content["professional_summary"],
+          work_experiences: parsed_content["work_experiences"] || [],
+          skills: parsed_content["skills"] || [],
+          educations: parsed_content["educations"] || [],
+          certifications: parsed_content["certifications"] || [],
+          languages: parsed_content["languages"] || [],
+          ats_optimization_notes: parsed_content["ats_optimization_notes"],
+          generation_notes: parsed_content["generation_notes"],
+          tokens_used: tokens_used,
+          raw_response: content
+        }
+      end
       result
     rescue JSON::ParserError
       # Fallback: if not JSON, use the raw content as the summary
@@ -334,29 +467,88 @@ class CvGeneratorJob
   # The populate_xxx methods are left as placeholders but are assumed to correctly save the data
   # The original file's implementation of these methods looked correct for data saving.
   def populate_work_experiences(resume, work_experiences_data)
-    # ... (omitted)
+    return unless work_experiences_data.present?
+
+    work_experiences_data.each do |exp_data|
+      experience = resume.work_experiences.find_or_initialize_by(
+        company: exp_data[:company],
+        job_title: exp_data[:job_title],
+        start_date: exp_data[:start_date]
+      )
+
+      experience.update!(
+        end_date: exp_data[:end_date],
+        responsibilities: Array(exp_data[:responsibilities])
+      )
+    end
   end
 
   def populate_skills(resume, skills_data)
-    # ... (omitted)
+    return unless skills_data.present?
+
+    skills_data.each do |skill_group|
+      category = skill_group[:category]
+      names = skill_group[:names] || skill_group[:details]&.split(", ")
+
+      next unless names.present?
+
+      names.compact.each do |name|
+        next if name.blank?
+        resume.skills.find_or_create_by!(
+          category: category,
+          name: name.strip
+        )
+      end
+    end
   end
 
   def populate_educations(resume, educations_data)
-    # ... (omitted)
+    return unless educations_data.present?
+
+    educations_data.each do |edu_data|
+      education = resume.educations.find_or_initialize_by(
+        degree: edu_data[:degree],
+        institution: edu_data[:institution]
+      )
+
+      education.update!(
+        start_date: edu_data[:start_date],
+        end_date: edu_data[:end_date],
+        gpa: edu_data[:gpa]
+      )
+    end
   end
 
   def populate_certifications(resume, certifications_data)
-    # ... (omitted)
+    return unless certifications_data.present?
+
+    certifications_data.each do |cert_data|
+      certification = resume.certifications.find_or_initialize_by(
+        name: cert_data[:name],
+        organization: cert_data[:organization]
+      )
+
+      certification.update!(
+        date: cert_data[:date]
+      )
+    end
   end
 
   def populate_languages(resume, languages_data)
-    # ... (omitted)
+    return unless languages_data.present?
+
+    languages_data.each do |lang_data|
+      language = resume.languages.find_or_initialize_by(
+        language: lang_data[:language]
+      )
+
+      language.update!(
+        proficiency: lang_data[:proficiency]
+      )
+    end
   end
 
-  # The empty update_xxx methods are removed as they are no longer used.
-
   # --- PDF Generation (Rewritten for ATS compliance) ---
-
   def generate_pdf_for_resume
     Rails.logger.info "=== GENERATING PDF FOR RESUME WITH PRAWN ==="
 
@@ -428,8 +620,10 @@ class CvGeneratorJob
 
       # Always regenerate on first run or when needed
       if first_generation || should_regenerate
-        pdf = generate_prawn_pdf(resume, generated_data)
-        filename = "#{resume.complete_name.parameterize}_generated_cv.pdf"
+        # Use the AtsPdfGenerator service for better ATS compliance
+        result = AtsPdfGenerator.generate_pdf(resume, generated_data)
+        pdf = File.read(result[:path])
+        filename = result[:filename]
 
         # Store PDF with version information and timestamp
         @cv_generation.update!(
@@ -671,97 +865,49 @@ class CvGeneratorJob
         "#{lang[:language]} (#{lang[:proficiency]})"
       end
       pdf.text language_parts.join(" | "), size: 10
-    end
+    end # Closing if data[:languages].present?
 
     # Remove any empty pages at the end
-    while pdf.page_count > 1 && pdf.page.empty?
+    while pdf.page_count > 1
       pdf.go_to_page(pdf.page_count)
-      pdf.start_new_page
+      # Check if the current page has any content by looking at its length
+      if pdf.page.dictionary.data[:Contents].nil? ||
+         (pdf.page.dictionary.data[:Contents].is_a?(Array) && pdf.page.dictionary.data[:Contents].empty?)
+        pdf.delete_page
+      else
+        break
+      end
       pdf.go_to_page(pdf.page_count - 1)
     end
 
     Rails.logger.info "PDF generation completed with #{pdf.page_count} pages"
 
     pdf.render
-  end
+  end # Closing generate_prawn_pdf method
 
   def handle_cv_generation_error(e)
-    # ... (omitted)
+    @cv_generation.update!(
+      status: "failed",
+      metadata: @cv_generation.metadata.merge({
+        error: e.message,
+        error_backtrace: e.backtrace
+      })
+    )
   end
 
-  # Cache handling methods
-
-  # Determine if the PDF needs to be regenerated based on version changes or data changes
-  def pdf_regeneration_needed?
-    # Always regenerate if:
-    # 1. No PDF exists yet
-    # 2. Version has changed
-    # 3. Resume data has been updated after PDF was generated
-    # 4. Force regeneration option is set
-    # 5. When generating a new CV (status is processing)
-
-    # Force regeneration via options always takes precedence
-    return true if @options[:force_pdf_regeneration]
-
-    metadata = @cv_generation.metadata
-
-    # No PDF data exists
-    return true if metadata["pdf_data"].blank?
-
-    # Version mismatch (template has been updated) - MOST IMPORTANT CHECK
-    stored_version = metadata["pdf_version"].to_s
-    current_version = PDF_VERSION.to_s
-    if stored_version != current_version
-      Rails.logger.info "PDF version mismatch: stored=#{stored_version}, current=#{current_version}"
-      return true
-    end    # PDF is older than resume updates
-    return true if pdf_cache_expired?
-
-    # Check if data has changed by comparing cache keys
-    current_cache_key = generate_pdf_cache_key(@cv_generation.resume, metadata["generated_data"])
-    return true if current_cache_key != metadata["pdf_cache_key"]
-
-    # No regeneration needed
-    false
+  def pdf_cache_expired?
+    return true unless @cv_generation.metadata["pdf_generated_at"]
+    pdf_age_hours = (Time.now.to_i - @cv_generation.metadata["pdf_generated_at"].to_i) / 3600.0
+    pdf_age_hours > (@options[:pdf_cache_hours] || 24)
   end
 
-  # Generate a cache key based on the content to detect changes
   def generate_pdf_cache_key(resume, data)
-    # Create a digest of the critical fields that would affect the PDF output
-    key_parts = []
-
-    # Resume info
-    key_parts << resume.complete_name.to_s
-    key_parts << resume.updated_at.to_i if resume.respond_to?(:updated_at)
-
-    # Data info - serialize and hash the key structures
-    if data.present?
-      data_hash = data.is_a?(Hash) ? data : data.to_h
-      # Include only fields that affect layout
-      %w[professional_summary work_experiences skills educations certifications languages].each do |key|
-        key_parts << Digest::MD5.hexdigest(data_hash[key].to_s) if data_hash[key].present?
-      end
-    end
-
-    # Include PDF version in the cache key
-    key_parts << PDF_VERSION
-
-    # Create final cache key
+    key_parts = [
+      resume.complete_name.to_s,
+      resume.updated_at.to_i,
+      PDF_VERSION,
+      Digest::MD5.hexdigest(data.to_json)
+    ]
     Digest::MD5.hexdigest(key_parts.join("|"))
   end
-
-  # Check if the PDF was generated too long ago
-  def pdf_cache_expired?
-    metadata = @cv_generation.metadata
-
-    # If no timestamp, consider expired
-    return true unless metadata["pdf_generated_at"]
-
-    # Calculate age of PDF in hours
-    pdf_age_hours = (Time.now.to_i - metadata["pdf_generated_at"].to_i) / 3600.0
-
-    # Expire after 24 hours or as configured
-    max_age_hours = @options[:pdf_cache_hours] || 24
-    pdf_age_hours > max_age_hours
-  end
-end
+end # Closing CvGeneratorJob class
