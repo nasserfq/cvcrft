@@ -14,7 +14,8 @@ class ResumesController < ApplicationController
       format.html
       format.json {
         render json: @resumes.as_json(
-          only: [ :id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :created_at, :updated_at ]
+          only: [ :id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :created_at, :updated_at ],
+          methods: [ :pdf_url ]
         )
       }
     end
@@ -121,13 +122,45 @@ class ResumesController < ApplicationController
 
   def destroy
     @resume.destroy
-    redirect_to resumes_path, notice: "Resume deleted successfully!"
+    respond_to do |format|
+      format.html { redirect_to resumes_path, notice: "Resume deleted successfully!" }
+      format.json { head :no_content }
+    end
   end
 
   def generate_pdf
-    # Generate ATS-optimized PDF
-    pdf = ResumePdfService.new(@resume).generate
-    send_data pdf, filename: "#{@resume.title}_CV.pdf", type: "application/pdf"
+    begin
+      # Generate ATS-optimized PDF
+      pdf_result = ResumePdfService.generate_pdf(@resume)
+
+      # Preview vs download
+      disposition = params[:preview] == "true" ? "inline" : "attachment"
+      filename  = "#{@resume.complete_name || @resume.title || 'resume'}_CV.pdf"
+
+      # Prefer sending raw bytes to avoid partial-content issues in some browsers
+      if pdf_result.is_a?(Hash) && pdf_result[:path].present? && File.exist?(pdf_result[:path].to_s)
+        file_path = pdf_result[:path].to_s
+        Rails.logger.info "Reading PDF bytes from: #{file_path} (disposition=#{disposition})"
+        bytes = File.binread(file_path)
+        send_data bytes,
+                  filename: filename,
+                  type: "application/pdf",
+                  disposition: disposition
+      else
+        Rails.logger.info "Sending PDF bytes (#{pdf_result&.bytesize || 0} bytes, disposition=#{disposition})"
+        send_data pdf_result,
+                  filename: filename,
+                  type: "application/pdf",
+                  disposition: disposition
+      end
+    rescue => e
+      Rails.logger.error "Failed to generate/send resume PDF: #{e.class} - #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      respond_to do |format|
+        format.html { render plain: "Failed to load PDF document.", status: :internal_server_error }
+        format.any  { head :internal_server_error }
+      end
+    end
   end
 
   def optimize_ats

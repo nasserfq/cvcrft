@@ -281,12 +281,12 @@ class CvGeneratorJob
           if exp.responsibilities.is_a?(Array)
             exp.responsibilities
           elsif exp.responsibilities.is_a?(String)
-            exp.responsibilities.split("\n").map(&:strip).reject(&:empty?)
+            exp.responsibilities.split("\n").reject(&:empty?)
           else
             []
           end
         elsif exp.respond_to?(:description)
-          exp.description.to_s.split("\n").map(&:strip).reject(&:empty?)
+          exp.description.split("\n").map(&:strip).reject(&:empty?)
         else
           []
         end
@@ -299,10 +299,15 @@ class CvGeneratorJob
           responsibilities: responsibilities
         }
       },
-      skills: @existing_resume.skills.group_by(&:category).map { |category, skills|
+      skills: @existing_resume.skills.map { |skill|
         {
-          category: category || "Technical Skills",
-          names: skills.map { |s| s.respond_to?(:name) ? s.name : s.to_s }
+          category: skill.category || "Technical Skills",
+          names: [ skill.name ].compact.reject(&:blank?)
+        }
+      }.group_by { |s| s[:category] }.map { |category, skills|
+        {
+          category: category,
+          names: skills.flat_map { |s| s[:names] }
         }
       },
       educations: @existing_resume.educations.map { |edu|
@@ -339,22 +344,23 @@ class CvGeneratorJob
       parsed_content = JSON.parse(content)
 
       if @existing_resume
-        # When we have an existing resume, only update the professional summary
+        # When we have an existing resume, preserve ALL existing data
         existing_data = format_existing_resume_data
         result = {
           # Take only the new professional summary
           professional_summary: parsed_content["professional_summary"],
-          # Keep all other sections from the existing resume
-          work_experiences: existing_data[:work_experiences],
-          skills: existing_data[:skills],
-          educations: existing_data[:educations],
-          certifications: existing_data[:certifications],
-          languages: existing_data[:languages],
+          # Explicitly preserve all existing data
+          work_experiences: existing_data[:work_experiences] || [],
+          skills: existing_data[:skills] || [],
+          educations: existing_data[:educations] || [],
+          certifications: existing_data[:certifications] || [],
+          languages: existing_data[:languages] || [],
           # Include the optimization notes
-          ats_optimization_notes: parsed_content["ats_optimization_notes"],
-          generation_notes: "Updated professional summary for new role while preserving existing experience",
+          ats_optimization_notes: "Preserved all existing resume data",
+          generation_notes: "Updated only professional summary while preserving all existing data",
           tokens_used: tokens_used,
-          raw_response: content
+          raw_response: content,
+          using_existing_data: true
         }
       else
         # For new resumes, use all generated content
@@ -412,22 +418,35 @@ class CvGeneratorJob
   # --- Resume Creation/Update (Remains largely the same, ensuring full population) ---
 
   def create_or_update_resume(result)
-    # NOTE: Logic to find or create the resume object (@resume) is needed here
-    # Assuming the logic in the original file correctly sets/updates the resume object
     resume = if @resume_id
       Resume.find(@resume_id)
     else
       create_new_resume(result)
     end
 
-    # Update professional summary
+    # Always update the professional summary
     resume.update!(
       professional_summary: result[:professional_summary],
       summary: result[:professional_summary]
     )
 
-    # Populate all sections with generated content
-    populate_resume_sections(result)
+    # For new resumes only, populate sections
+    if !@resume_id
+      populate_resume_sections(result)
+    else
+      # For existing resumes, ensure we preserve all existing data
+      Rails.logger.info "Preserving existing resume data for resume #{@resume_id}"
+      # No need to populate sections as we're keeping existing data
+    end
+
+    # Ensure we're not losing any existing data
+    Rails.logger.info "Skills count: #{resume.skills.count}"
+    Rails.logger.info "Languages count: #{resume.languages.count}"
+    Rails.logger.info "Certifications count: #{resume.certifications.count}"
+
+    # Reload to ensure we have the latest data
+    resume.reload
+    resume
   end
 
   def update_existing_resume(result)
@@ -457,11 +476,28 @@ class CvGeneratorJob
   def populate_resume_sections(result)
     resume = @resume_id ? Resume.find(@resume_id) : @cv_generation.resume
 
-    populate_work_experiences(resume, result[:work_experiences]) if result[:work_experiences].present?
-    populate_skills(resume, result[:skills]) if result[:skills].present?
-    populate_educations(resume, result[:educations]) if result[:educations].present?
-    populate_certifications(resume, result[:certifications]) if result[:certifications].present?
-    populate_languages(resume, result[:languages]) if result[:languages].present?
+    # Only populate sections for new resumes or when explicitly requested
+    return if @resume_id && !@options[:force_update_sections]
+
+    # Store the original data for existing resumes
+    original_data = format_existing_resume_data if @resume_id
+
+    # For each section, either use the generated data or preserve existing data
+    if @resume_id
+      # For existing resumes, only update if the section is empty
+      populate_work_experiences(resume, original_data[:work_experiences]) if original_data[:work_experiences].present?
+      populate_skills(resume, original_data[:skills]) if original_data[:skills].present?
+      populate_educations(resume, original_data[:educations]) if original_data[:educations].present?
+      populate_certifications(resume, original_data[:certifications]) if original_data[:certifications].present?
+      populate_languages(resume, original_data[:languages]) if original_data[:languages].present?
+    else
+      # For new resumes, use the generated data
+      populate_work_experiences(resume, result[:work_experiences]) if result[:work_experiences].present?
+      populate_skills(resume, result[:skills]) if result[:skills].present?
+      populate_educations(resume, result[:educations]) if result[:educations].present?
+      populate_certifications(resume, result[:certifications]) if result[:certifications].present?
+      populate_languages(resume, result[:languages]) if result[:languages].present?
+    end
   end
 
   # The populate_xxx methods are left as placeholders but are assumed to correctly save the data
@@ -486,18 +522,22 @@ class CvGeneratorJob
   def populate_skills(resume, skills_data)
     return unless skills_data.present?
 
+    # Don't destroy existing skills, just add new ones if needed
     skills_data.each do |skill_group|
       category = skill_group[:category]
-      names = skill_group[:names] || skill_group[:details]&.split(", ")
+      names = if skill_group[:names].is_a?(Array)
+        skill_group[:names]
+      else
+        skill_group[:names].to_s.split(",").map(&:strip)
+      end
 
       next unless names.present?
 
       names.compact.each do |name|
         next if name.blank?
-        resume.skills.find_or_create_by!(
-          category: category,
-          name: name.strip
-        )
+        # Use find_or_create_by to avoid duplicates
+        existing_skill = resume.skills.find_by(category: category, name: name.strip)
+        resume.skills.create!(category: category, name: name.strip) unless existing_skill
       end
     end
   end
@@ -578,11 +618,15 @@ class CvGeneratorJob
           professional_summary: resume.professional_summary,
           work_experiences: work_experiences_data,
           skills: resume.skills.group_by(&:category).map { |c, s|
-            { category: c, details: s.map(&:name).join(", ") }
+            { category: c, names: s.map(&:name) }
           },
           educations: resume.educations.map(&:attributes),
-          certifications: resume.certifications.map(&:attributes),
-          languages: resume.languages.map(&:attributes)
+          certifications: resume.certifications.map { |cert|
+            { name: cert.name, organization: cert.organization, date: cert.date }
+          },
+          languages: resume.languages.map { |lang|
+            { language: lang.language, proficiency: lang.proficiency }
+          }
         }.deep_symbolize_keys
       else
         generated_data = generated_data.deep_symbolize_keys
@@ -665,15 +709,218 @@ class CvGeneratorJob
 
   def generate_prawn_pdf(resume, data)
     Rails.logger.info "Starting PDF generation for #{resume.complete_name}"
+    pdf_content = StringIO.new
 
-    # Log sections to be included
-    sections = []
-    sections << "Professional Summary" if data[:professional_summary].present?
-    sections << "Work Experience" if data[:work_experiences].present? && data[:work_experiences].any?
-    sections << "Skills" if data[:skills].present? && data[:skills].any?
-    sections << "Education" if data[:educations].present? && data[:educations].any?
-    sections << "Certifications" if data[:certifications].present? && data[:certifications].any?
-    sections << "Languages" if data[:languages].present? && data[:languages].any?
+    Prawn::Document.new(force_encoding: true, margin: 36) do |pdf|
+      # Use core PDF font with encoding set
+      pdf.font "Helvetica", enable_smart_quotes: false do
+        # Header Section
+        pdf.text resume.complete_name.to_s.strip, size: 20, style: :bold, align: :center
+        pdf.text "#{resume.email} | #{resume.phone_number} | #{[ resume.city, resume.country ].compact.join(', ')}", size: 10, align: :center
+        pdf.move_down 20
+
+        # Professional Summary
+        if data[:professional_summary].present?
+          pdf.text "PROFESSIONAL SUMMARY", size: 13, style: :bold
+          pdf.stroke_horizontal_rule
+          pdf.move_down 10
+          summary = resume.professional_summary_english.presence ||
+                   resume.professional_summary.presence ||
+                   data[:professional_summary].to_s.strip
+          pdf.text summary, size: 10
+          pdf.move_down 20
+        end
+
+        # Education Section
+        if data[:educations].present? && data[:educations].any?
+          pdf.text "EDUCATION", size: 13, style: :bold
+          pdf.stroke_horizontal_rule
+          pdf.move_down 10
+          Array(data[:educations]).each do |education|
+            # Draw degree and date on the same line
+            degree = education[:degree].to_s.strip
+            date_text = "#{education[:start_date]} - #{education[:end_date]}"
+
+            pdf.float do
+              pdf.text date_text, size: 10, align: :right
+            end
+            pdf.text degree, size: 11, style: :bold
+
+            # Institution on next line
+            pdf.text education[:institution].to_s.strip, size: 10
+            pdf.move_down 5
+          end
+          pdf.move_down 15
+        end
+
+        # Work Experience Section
+        if data[:work_experiences].present? && data[:work_experiences].any?
+          pdf.text "WORK EXPERIENCE", size: 13, style: :bold
+          pdf.stroke_horizontal_rule
+          pdf.move_down 10
+
+          # Sort experiences by start_date in reverse chronological order
+          sorted_experiences = Array(resume.work_experiences).sort_by do |exp|
+            begin
+              # Handle current position
+              if exp.is_current
+                Time.current.to_i
+              else
+                # Parse date in YYYY-MM format
+                date_str = exp.start_date.to_s
+                if date_str =~ /^\d{4}-\d{2}$/
+                  Date.strptime(date_str, "%Y-%m").to_time.to_i
+                else
+                  # Default to oldest date if invalid format
+                  Date.new(1900, 1, 1).to_time.to_i
+                end
+              end
+            rescue
+              # Default to oldest date if parsing fails
+              Date.new(1900, 1, 1).to_time.to_i
+            end
+          end.reverse  # Reverse to get descending order
+
+          sorted_experiences.each do |experience|
+            # Display date in top right corner
+            date_text = "#{experience.start_date} - #{experience.is_current ? 'Present' : experience.end_date}"
+            pdf.float do
+              pdf.text date_text, size: 10, align: :right
+            end
+
+            # Display job title in bold with proper spacing - preserve original case
+            pdf.text experience.job_title.to_s.strip, size: 11, style: :bold
+            pdf.move_down 2  # Reduced space between title and company
+            # Display company name under job title - preserve original case
+            pdf.text experience.company.to_s.strip, size: 10
+            pdf.move_down 4  # Space between company and responsibilities
+
+            # Get responsibilities from the work experience
+            raw_responsibilities = experience.responsibilities.presence || []
+
+            # Ensure we have an array of responsibilities
+            responsibilities = if raw_responsibilities.is_a?(String)
+              # If it's a string, it might be a JSON array string, try to parse it
+              begin
+                JSON.parse(raw_responsibilities)
+              rescue
+                [ raw_responsibilities ] # If parsing fails, treat it as a single responsibility
+              end
+            else
+              Array(raw_responsibilities)
+            end
+
+            # Add bullet points to each responsibility
+            pdf.move_down 5  # Space before responsibilities
+            responsibilities.each do |responsibility|
+              next if responsibility.blank?
+
+              pdf.indent(6) do  # Indent for bullet points
+                pdf.formatted_text([
+                  { text: "• ", size: 10 },
+                  { text: responsibility.to_s.strip, size: 10 }  # Clean up and use exactly as entered
+                ])
+              end
+              pdf.move_down 4  # Space between bullet points
+            end
+
+            pdf.move_down 12  # Space between different work experiences
+          end
+          pdf.move_down 15
+        end
+
+        # Skills Section
+        if data[:skills].present? && data[:skills].any?
+          pdf.text "SKILLS", size: 13, style: :bold
+          pdf.stroke_horizontal_rule
+          pdf.move_down 8
+
+          Array(data[:skills]).each do |skill|
+            category = skill[:category].to_s.strip
+            details = skill[:details].to_s.strip
+
+            unless category.empty? && details.empty?
+              # Draw the category name in bold with a colon
+              pdf.font("Helvetica-Bold") do
+                pdf.text "#{category}:", size: 10, align: :left
+              end
+
+              # Add details on the next line with proper indentation
+              pdf.move_down 2
+              pdf.indent(15) do
+                pdf.text details,
+                        size: 10,
+                        align: :left,
+                        leading: 2
+              end
+
+              # Add space between skill categories
+              pdf.move_down 6
+            end
+          end
+          pdf.move_down 15
+        end
+
+        # Certifications Section
+        if data[:certifications].present? && data[:certifications].any?
+          pdf.text "CERTIFICATIONS", size: 13, style: :bold
+          pdf.stroke_horizontal_rule
+          pdf.move_down 8
+
+          Array(data[:certifications]).each do |certification|
+            name = certification[:name].to_s.strip
+            org = certification[:organization].to_s.strip
+            date = certification[:date].to_s.strip
+
+            unless name.empty?
+              # Create a bounding box for each certification entry
+              pdf.bounding_box([ 0, pdf.cursor ], width: pdf.bounds.width, height: 20) do
+                # Date on the right
+                if date.present?
+                  pdf.bounding_box([ pdf.bounds.width - 80, pdf.bounds.top ], width: 80) do
+                    pdf.text date, size: 10, align: :right
+                  end
+                end
+
+                # Name and organization on the left
+                pdf.bounding_box([ 0, pdf.bounds.top ], width: pdf.bounds.width - 90) do
+                  pdf.font("Helvetica-Bold") { pdf.text "#{name}     ", size: 10 }
+                  pdf.move_up 11.5
+                  pdf.indent(pdf.width_of("#{name}     ", size: 10)) do
+                    pdf.font("Helvetica") { pdf.text org.to_s, size: 10 }
+                  end
+                end
+              end
+              pdf.move_down 4
+            end
+          end
+          pdf.move_down 15
+        end
+
+        # Languages Section
+        if data[:languages].present? && data[:languages].any?
+          pdf.text "LANGUAGES", size: 13, style: :bold
+          pdf.stroke_horizontal_rule
+          pdf.move_down 8
+          Array(data[:languages]).each do |language|
+            lang = language[:language].to_s.strip
+            prof = language[:proficiency].to_s.strip
+            unless lang.empty? && prof.empty?
+              # Add proficiency level aligned to the right
+              pdf.float do
+                pdf.text prof, size: 10, align: :right
+              end
+              # Add language name in bold
+              pdf.font("Helvetica-Bold") { pdf.text lang, size: 10 }
+            end
+            pdf.move_down 2  # Small space between languages
+          end
+        end
+      end
+    end
+
+    # Return the generated PDF content
+    pdf_content.string
 
     Rails.logger.info "Including sections: #{sections.join(', ')}"
 
@@ -701,7 +948,10 @@ class CvGeneratorJob
 
     pdf.font "Arial"
     pdf.font_size 10.5  # Slightly smaller to fit more content
-    pdf.default_leading 2  # Reduced spacing between lines    # Ensure we start at the top of the page
+    pdf.default_leading 2  # Reduced spacing between lines    # Create a sections array to track what's included
+    sections = []
+
+    # Ensure we start at the top of the page
     pdf.go_to_page(1)
     pdf.move_cursor_to(pdf.bounds.top)
 
@@ -817,20 +1067,31 @@ class CvGeneratorJob
     if data[:skills].present?
       generate_section_title(pdf, "Skills")
 
-      data[:skills].each do |skill|
-        # Use category: details format for each skill group
-        pdf.text "#{skill[:category]}:", size: 10, style: :bold
+      # Group skills by category for better organization
+      data[:skills].each do |skill_group|
+        next unless skill_group[:category].present?
 
-        if skill[:details].present?
-          # If details is a string, add it directly
-          pdf.text skill[:details].to_s.strip, size: 10
-        elsif skill[:names].present?
-          # If names is an array, format as comma-separated list
-          pdf.text skill[:names].join(", "), size: 10
+        # Category header
+        pdf.text skill_group[:category].to_s, size: 11, style: :bold
+
+        # Get skills list from either format
+        skill_list = if skill_group[:names].is_a?(Array)
+          skill_group[:names]
+        elsif skill_group[:names].is_a?(String)
+          skill_group[:names].split(",").map(&:strip)
+        elsif skill_group[:details].present?
+          skill_group[:details].split(",").map(&:strip)
+        else
+          []
         end
-        pdf.move_down 3
+
+        # Format and display skills
+        if skill_list.any?
+          pdf.text skill_list.join(" • "), size: 10
+          pdf.move_down 5
+        end
       end
-      pdf.move_down 3
+      pdf.move_down 10
     end
 
     # Certifications - ATS friendly format with compact layout

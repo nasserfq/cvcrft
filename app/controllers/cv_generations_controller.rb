@@ -64,8 +64,8 @@ class CvGenerationsController < ApplicationController
       return
     end
 
-    # Check CV generation limit (15 per user)
-    max_cv_generations = 15
+    # Check CV generation limit (150 per user)
+    max_cv_generations = 150
     current_cv_count = current_user.cv_generations.count
 
     if current_cv_count >= max_cv_generations
@@ -118,7 +118,10 @@ class CvGenerationsController < ApplicationController
 
   def destroy
     @cv_generation.destroy
-    redirect_to cv_generations_path, notice: "CV generation deleted successfully!"
+    respond_to do |format|
+      format.html { redirect_to cv_generations_path, notice: "CV generation deleted successfully!" }
+      format.json { head :no_content }
+    end
   end
 
   def retry
@@ -174,9 +177,10 @@ class CvGenerationsController < ApplicationController
 
   def count
     cv_count = current_user.cv_generations.count
+    max_cv_generations = 150  # Keep consistent with create action
 
     respond_to do |format|
-      format.json { render json: { count: cv_count } }
+      format.json { render json: { count: cv_count, limit: max_cv_generations } }
     end
   end
 
@@ -224,6 +228,46 @@ class CvGenerationsController < ApplicationController
     end
   end
 
+  def preview
+    # Use view_pdf for preview functionality
+    view_pdf
+  end
+
+  def preview_resume
+    @resume = Resume.find(params[:id])
+
+    # Generate PDF for preview if needed
+    unless @resume.metadata&.dig("pdf_data")
+      begin
+        CvGeneratorJob.new.perform_resume_preview(@resume.id, current_user.id)
+        @resume.reload
+      rescue => e
+        Rails.logger.error "Error generating resume preview: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        return redirect_to cv_generations_path, alert: "Failed to generate preview: #{e.message}"
+      end
+    end
+
+    if @resume.metadata&.dig("pdf_data")
+      pdf_data = Base64.decode64(@resume.metadata["pdf_data"])
+
+      # Set proper headers for PDF display
+      response.headers["Content-Type"] = "application/pdf"
+      response.headers["Content-Disposition"] = "inline"
+      response.headers["Content-Length"] = pdf_data.bytesize.to_s
+      response.headers["Accept-Ranges"] = "bytes"
+
+      send_data pdf_data,
+        filename: "#{@resume.complete_name || 'resume'}_preview.pdf",
+        type: "application/pdf",
+        disposition: "inline",
+        stream: true,
+        buffer_size: 4096
+    else
+      redirect_to cv_generations_path, alert: "Preview not available for this resume"
+    end
+  end
+
   def view_pdf
     # Check if we need to force regenerate the PDF
     if params[:regenerate] == "true"
@@ -255,9 +299,18 @@ class CvGenerationsController < ApplicationController
     if @cv_generation.metadata&.dig("pdf_generated") && @cv_generation.metadata&.dig("pdf_data")
       pdf_data = Base64.decode64(@cv_generation.metadata["pdf_data"])
 
+      # Set proper headers for PDF display
+      response.headers["Content-Type"] = "application/pdf"
+      response.headers["Content-Disposition"] = "inline"
+      response.headers["Content-Length"] = pdf_data.bytesize.to_s
+      response.headers["Accept-Ranges"] = "bytes"
+
       send_data pdf_data,
+        filename: "cv_preview_#{@cv_generation.id}.pdf",
         type: "application/pdf",
-        disposition: "inline"
+        disposition: "inline",
+        stream: true,
+        buffer_size: 4096
     else
       redirect_to @cv_generation, alert: "PDF not available for this CV generation"
     end

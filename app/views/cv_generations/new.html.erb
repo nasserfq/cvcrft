@@ -12,6 +12,9 @@
       <meta name="description" content="أنشئ سيرة ذاتية احترافية خلال دقائق باستخدام الذكاء الاصطناعي. قوالب حديثة، تحسين تلقائي للنقاط، وتصدير PDF بجودة عالية." />
       <meta name="theme-color" content="#10b981" />
       <meta name="csrf-token" content="<%= form_authenticity_token %>" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+      <meta name="format-detection" content="telephone=no" />
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -22,6 +25,21 @@
           display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        /* PDF viewer styles */
+        .pdf-viewer {
+          width: 100%;
+          height: 100%;
+          border: none;
+          background: #f8f9fa;
+        }
+
+        .pdf-container {
+          position: relative;
+          width: 100%;
+          height: 100vh;
           overflow: hidden;
         }
 
@@ -37,6 +55,23 @@
           .pdf-modal iframe {
             min-height: 60vh;
           }
+        }
+
+        /* PDF preview window styles */
+        .pdf-preview-window {
+          width: 100%;
+          height: 100vh;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+        }
+
+        .pdf-preview-frame {
+          width: 100%;
+          height: 100%;
+          border: none;
+          margin: 0;
+          padding: 0;
         }
       </style>
     </head>
@@ -84,17 +119,65 @@
         </div>
       </div>
       <!-- React Libraries -->
-      <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-      <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+      <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+      <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
       <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
       <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function CvGeneratorApp() {
+          // NOTE: Inline Babel cannot import local modules. Avoid imports here.
+
+        // Error Boundary Component
+        class ErrorBoundary extends React.Component {
+          constructor(props) {
+            super(props);
+            this.state = { hasError: false, error: null };
+          }
+
+          static getDerivedStateFromError(error) {
+            return { hasError: true, error };
+          }
+
+          componentDidCatch(error, errorInfo) {
+            console.error('🔴 React Error:', error);
+            console.error('Error Info:', errorInfo);
+          }
+
+          render() {
+            if (this.state.hasError) {
+              return (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h2 className="text-red-800 font-medium">عذراً، حدث خطأ ما</h2>
+                  <p className="text-red-600 text-sm mt-2">{this.state.error?.message || 'خطأ غير معروف'}</p>
+                </div>
+              );
+            }
+            return this.props.children;
+          }
+        }
+
+        const DebugWrapper = ({ children }) => {
+          try {
+            return children;
+          } catch (error) {
+            console.error('🔴 Render Error:', error);
+            return (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h2 className="text-red-800 font-medium">عذراً، حدث خطأ في العرض</h2>
+                <p className="text-red-600 text-sm mt-2">{error.message}</p>
+              </div>
+            );
+          }
+        };
+
+        const CvGeneratorApp = () => {
+          console.log('🔄 CvGeneratorApp component rendering...');
+
           // Form state
           const [jobDescription, setJobDescription] = useState('');
           const [selectedResumeId, setSelectedResumeId] = useState('');
           const [isGenerating, setIsGenerating] = useState(false);
+          const [isLoading, setIsLoading] = useState(true);
 
           // Results state
           const [cvData, setCvData] = useState(null);
@@ -103,9 +186,25 @@
           const [showResults, setShowResults] = useState(false);
           const [resumes, setResumes] = useState([]);
 
+          // Preview Modal state
+          const [showPreviewModal, setShowPreviewModal] = useState(false);
+          const [previewPdfUrl, setPreviewPdfUrl] = useState('');
+          const [previewTitle, setPreviewTitle] = useState('');
+
+          // Safe access helper
+          const safeGet = (obj, path, fallback = '') => {
+            try {
+              return path.split('.').reduce((acc, key) => acc[key], obj) || fallback;
+            } catch (e) {
+              return fallback;
+            }
+          };
+            // Helper to get unique id for resume or CV
+            const getResumeId = (resume) => resume.id || resume.cv_gen_id || resume.cv_generation_id || resume._id || '';
+
           // CV Generation limit state
           const [userCvCount, setUserCvCount] = useState(0);
-          const [maxCvGenerations] = useState(15);
+          const [maxCvGenerations, setMaxCvGenerations] = useState(150);
 
           // Download handler function
           const handleDownload = async (url, filename) => {
@@ -137,19 +236,29 @@
               if (response.ok) {
                 const data = await response.json();
                 setUserCvCount(data.count || 0);
+                setMaxCvGenerations(data.limit || 150);
               }
-            } catch (err) {
-              console.error('Error fetching user CV count:', err);
+            } catch (error) {
+              console.error('Error fetching CV count:', error);
+              setUserCvCount(0);
             }
           };
 
-          // Load resumes and CV generations on component mount
-          useEffect(() => {
+          // Load resumes and CV generations (moved outside useEffect so it can be called by delete handlers)
           const loadResumesWithGenerations = async () => {
+            setIsLoading(true);
             try {
-              // Load resumes
-              const resumesResponse = await fetch('/resumes.json');
-              const resumesData = await resumesResponse.json();
+              console.log('📊 Fetching CV count...');
+              await fetchUserCvCount();
+
+                console.log('📝 Loading resumes...');
+                const resumesResponse = await fetch('/resumes.json');
+                if (!resumesResponse.ok) {
+                  throw new Error(`Failed to fetch resumes: ${resumesResponse.status}`);
+                }
+                const resumesData = await resumesResponse.json();
+                console.log('📝 Loaded resumes:', resumesData);
+                console.log('📄 First resume PDF URL:', resumesData[0]?.pdf_url);
 
               // Load CV generations for each resume (optional - for display purposes)
               const resumesWithGenerations = await Promise.all(
@@ -209,15 +318,23 @@
               allCvs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
               console.log('📋 Final Combined CVs:', allCvs);
-              setResumes(allCvs);
+              console.log('📋 Setting resumes:', allCvs);
+              setResumes(allCvs || []); // Ensure we always set an array
             } catch (err) {
-              console.error('Error loading resumes:', err);
+              console.error('❌ Error loading resumes:', err);
+              setResumes([]); // Set empty array on error
+              setError('Failed to load resumes: ' + err.message);
+            } finally {
+              setIsLoading(false);
+              console.log('✅ Initial data loading complete');
             }
           };
 
+          // Load resumes and CV generations on component mount
+          useEffect(() => {
+            console.log('🔄 Initial data loading effect running...');
             loadResumesWithGenerations();
-            fetchUserCvCount();
-          }, []);
+          }, []); // Empty dependency array means this effect runs once on mount
 
           // Check for CV generation ID in URL on page load (for direct links)
           useEffect(() => {
@@ -237,6 +354,9 @@
 
                   if (data && data.status === 'completed') {
                     console.log('✅ CV already completed, loading data');
+                    console.log('📄 CV Data:', data);
+                    console.log('📄 PDF Metadata:', data.metadata);
+                    console.log('📄 PDF Path:', data.metadata?.pdf_path);
                     setCvData(data);
                     setIsGenerating(false);
 
@@ -291,17 +411,9 @@
 
               loadExistingCv();
             }
-          }, []);
+          }, []); // Empty dependency array means this effect runs once on mount
 
-          // Auto-show PDF modal when CV data is loaded with PDF
-          useEffect(() => {
-            if (cvData && !isGenerating && (cvData.metadata?.pdf_generated === true || cvData.metadata?.pdf_generated === 'true')) {
-              console.log('🔄 Auto-showing PDF modal for loaded CV data');
-              setShowPdfModal(true);
-            }
-          }, [cvData, isGenerating]);
-
-          // Download PDF function
+          // PDF download handler
           const downloadPdf = async () => {
             if (!cvData || !cvData.id) {
               console.error('No CV data available for download');
@@ -309,30 +421,72 @@
             }
 
             try {
-              const response = await fetch(`/cv_generations/${cvData.id}/view_pdf`);
-              if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `cv_${cvData.id}_${new Date().toISOString().split('T')[0]}.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                console.log('✅ PDF downloaded successfully');
-              } else {
-                console.error('❌ Failed to download PDF:', response.status);
-                alert('فشل في تحميل الملف. يرجى المحاولة مرة أخرى.');
-              }
+              await handleDownload(
+                `/cv_generations/${cvData.id}/download_pdf`,
+                `cv_generated_${cvData.id}.pdf`
+              );
             } catch (error) {
-              console.error('❌ Error downloading PDF:', error);
-              alert('حدث خطأ أثناء تحميل الملف. يرجى المحاولة مرة أخرى.');
+              console.error('Error downloading PDF:', error);
+              alert('فشل في تحميل الملف. يرجى المحاولة مرة أخرى.');
+            }
+          };
+
+          // Delete handlers
+          const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+          const deleteResume = async (resumeId) => {
+            if (!resumeId) return;
+            if (!confirm('هل تريد حذف هذه السيرة الذاتية؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+            try {
+              const res = await fetch(`/resumes/${resumeId}`, {
+                method: 'DELETE',
+                headers: {
+                  'X-CSRF-Token': getCsrfToken() || '',
+                  'Accept': 'application/json'
+                }
+              });
+              if (res.ok || res.status === 204 || res.status === 404) {
+                // Remove the deleted resume from state without reloading
+                setResumes(prevResumes => prevResumes.filter(r => r.id !== resumeId));
+              } else {
+                const txt = await res.text();
+                console.error('Failed to delete resume:', res.status, txt);
+                alert('فشل حذف السيرة الذاتية.');
+              }
+            } catch (e) {
+              console.error('Error deleting resume:', e);
+              alert('حدث خطأ أثناء حذف السيرة الذاتية.');
+            }
+          };
+
+          const deleteCvGeneration = async (cvGenId) => {
+            if (!cvGenId) return;
+            if (!confirm('هل تريد حذف هذه السيرة الذاتية المُولدة؟')) return;
+            try {
+              const res = await fetch(`/cv_generations/${cvGenId}`, {
+                method: 'DELETE',
+                headers: {
+                  'X-CSRF-Token': getCsrfToken() || '',
+                  'Accept': 'application/json'
+                }
+              });
+              if (res.ok || res.status === 204 || res.status === 404) {
+                // Remove the deleted CV generation from state without reloading
+                // CV generations have IDs like 'cv_gen_123'
+                setResumes(prevResumes => prevResumes.filter(r => r.id !== `cv_gen_${cvGenId}`));
+              } else {
+                const txt = await res.text();
+                console.error('Failed to delete CV generation:', res.status, txt);
+                alert('فشل حذف السيرة الذاتية المبنية.');
+              }
+            } catch (e) {
+              console.error('Error deleting CV generation:', e);
+              alert('حدث خطأ أثناء حذف السيرة الذاتية المبنية.');
             }
           };
 
 
-          // Handle form submission - Pure React approach without page refresh
+          // Form submission handler
           const handleSubmit = async (e) => {
             e.preventDefault();
 
@@ -447,8 +601,23 @@
           };
 
 
+          if (isLoading) {
+            return (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+                <p className="mt-4 text-slate-600">جاري تحميل البيانات...</p>
+              </div>
+            );
+          }
+
           return (
-            <div>
+            <div className="cv-generator-app">
+              {error && (
+                <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-800">{error}</p>
+                </div>
+              )}
+
               {/* Job Description Section */}
               <div className="mb-8">
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -469,16 +638,18 @@
                   اختيار السيرة الذاتية
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {resumes.map((resume) => (
-                    <div
-                      key={resume.id}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedResumeId === resume.id.toString()
-                          ? 'border-emerald-500 bg-emerald-50'
-                          : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                      onClick={() => setSelectedResumeId(resume.id.toString())}
-                    >
+                  {resumes && resumes.length > 0 ? resumes.map(resume => {
+                    const resumeId = resume.id || resume.cv_gen_id;
+                    return (
+                      <div
+                        key={resumeId}
+                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                          selectedResumeId === resumeId.toString()
+                            ? 'border-emerald-500 bg-emerald-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                        onClick={() => setSelectedResumeId(resumeId.toString())}
+                      >
                       {/* Header */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
@@ -518,14 +689,13 @@
                           </p>
                         </div>
                       )}
-
                       {/* CV Generation Info */}
                       {resume.latest_cv_generation ? (
                         <div className="mb-3 p-2 bg-slate-50 rounded border">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium text-slate-700">آخر إنشاء:</span>
                             <span className="text-xs text-slate-600">
-                              {resume.last_generated ? resume.last_generated.toLocaleDateString('en-GB') : 'غير محدد'}
+                              {resume.last_generated ? new Date(resume.last_generated).toLocaleDateString('en-GB') : 'غير محدد'}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -562,7 +732,7 @@
                             <span className="text-xs text-blue-600">جاهزة للتحسين</span>
                           </div>
                           <div className="text-xs text-blue-600 mt-1">
-                            تم إنشاؤها: {new Date(resume.created_at).toLocaleDateString('en-GB')}
+                            تم إنشاؤها: {resume.created_at ? new Date(resume.created_at).toLocaleDateString('en-GB') : 'غير محدد'}
                           </div>
                         </div>
                       ) : (
@@ -575,86 +745,95 @@
                           </div>
                         </div>
                       )}
-
                       {/* Contact Info */}
                       <div className="text-xs text-slate-500">
                         {resume.phone_number && <div>📞 {resume.phone_number}</div>}
                         {resume.city && resume.country && <div>📍 {resume.city}, {resume.country}</div>}
                       </div>
-
-                      {/* Download Actions */}
-                      <div className="mt-3">
-                        {/* Download PDF for AI Generated CVs */}
+                      {/* CV Actions */}
+                      <div className="mt-3 space-y-2">
+                        {/* Actions for AI Generated CVs */}
                         {resume.is_ai_generated && resume.latest_cv_generation?.metadata?.pdf_generated && (
-                          <button
-                            onClick={() => handleDownload(`/cv_generations/${resume.latest_cv_generation.id}/download_pdf`, `cv_generated_${resume.latest_cv_generation.id}.pdf`)}
-                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
-                          >
-                            <i data-lucide="download" className="w-3 h-3"></i>
-                            تحميل PDF
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setPreviewPdfUrl(`/cv_generations/${resume.latest_cv_generation.id}/view_pdf`);
+                                setPreviewTitle(resume.complete_name);
+                                setShowPreviewModal(true);
+                              }}
+                              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                            >
+                              <i data-lucide="eye" class="w-3 h-3"></i>
+                              معاينة
+                            </button>
+                            <button
+                              onClick={() => handleDownload(`/cv_generations/${resume.latest_cv_generation.id}/download_pdf`, `cv_generated_${resume.latest_cv_generation.id}.pdf`)}
+                              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                            >
+                              <i data-lucide="download" class="w-3 h-3"></i>
+                              تحميل PDF
+                            </button>
+                            <button
+                              onClick={() => deleteCvGeneration(resume.latest_cv_generation.id)}
+                              className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                            >
+                              <i data-lucide="trash" class="w-3 h-3"></i>
+                              حذف
+                            </button>
+                          </div>
                         )}
-
-                        {/* Download PDF for CV Builder Resumes */}
+                        {/* Actions for CV Builder Resumes */}
                         {resume.is_cv_builder && (
-                          <button
-                            onClick={() => handleDownload(`/resumes/${resume.id}/generate_pdf`, `${resume.complete_name || 'resume'}_${resume.id}.pdf`)}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
-                          >
-                            <i data-lucide="download" className="w-3 h-3"></i>
-                            تحميل PDF
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                console.log('🔍 Opening CV Builder preview for resume:', resume);
+                                console.log('📄 PDF URL from database:', resume.pdf_url);
+                                 const pdfUrl = resume.pdf_url ? `${resume.pdf_url}?preview=true` : `/resumes/${resume.id}/generate_pdf?preview=true`;
+                                 console.log('📄 Final PDF URL with preview param:', pdfUrl);
+                                 setPreviewPdfUrl(pdfUrl);
+                                setPreviewTitle(resume.complete_name);
+                                setShowPreviewModal(true);
+                              }}
+                              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                            >
+                              <i data-lucide="eye" class="w-3 h-3"></i>
+                              معاينة
+                            </button>
+                            <button
+                              onClick={() => handleDownload(`/resumes/${resume.id}/generate_pdf`, `${resume.complete_name || 'resume'}_${resume.id}.pdf`)}
+                              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                            >
+                              <i data-lucide="download" class="w-3 h-3"></i>
+                              تحميل PDF
+                            </button>
+                            <button
+                              onClick={() => deleteResume(resume.id)}
+                              className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                            >
+                              <i data-lucide="trash" class="w-3 h-3"></i>
+                              حذف
+                            </button>
+                          </div>
                         )}
                       </div>
-
                       {/* Selection Indicator */}
-                      {selectedResumeId === resume.id.toString() && (
+                      {selectedResumeId === resumeId.toString() && (
                         <div className="mt-3 flex items-center justify-center">
                           <div className="flex items-center gap-2 text-emerald-600">
-                            <i data-lucide="check-circle" className="w-4 h-4"></i>
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
                             <span className="text-sm font-medium">محدد</span>
                           </div>
                         </div>
                       )}
+                      </div>
+                    );
+                  }) : (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-slate-600">لا توجد سير ذاتية متاحة</p>
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-
-              {/* CV Generation Limit Display */}
-              <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-slate-700">حد إنشاء السير الذاتية</h3>
-                  <span className="text-sm text-slate-600">{userCvCount} من {maxCvGenerations}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      userCvCount >= maxCvGenerations ? 'bg-red-500' :
-                      userCvCount >= maxCvGenerations * 0.8 ? 'bg-yellow-500' : 'bg-emerald-500'
-                    }`}
-                    style={{ width: `${Math.min((userCvCount / maxCvGenerations) * 100, 100)}%` }}
-                  ></div>
-                </div>
-                {userCvCount >= maxCvGenerations && (
-                  <p className="text-xs text-red-600">
-                    ⚠️ لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية
-                  </p>
-                )}
-                {userCvCount >= maxCvGenerations * 0.8 && userCvCount < maxCvGenerations && (
-                  <p className="text-xs text-yellow-600">
-                    ⚠️ أنت تقترب من الحد الأقصى لإنشاء السير الذاتية
-                  </p>
-                )}
-                {userCvCount < maxCvGenerations * 0.8 && (
-                  <p className="text-xs text-emerald-600">
-                    ✓ يمكنك إنشاء المزيد من السير الذاتية
-                  </p>
-                )}
-              </div>
-
-              {/* Generate Button */}
-              <div className="mb-8">
                 <button
                   type="button"
                   onClick={handleSubmit}
@@ -669,138 +848,220 @@
 
               {/* Results Section */}
               {showResults && (
-                <div className="mt-8">
-                  {isGenerating && (
-                    <div className="text-center py-8">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-                      <p className="mt-4 text-slate-600">جاري إنشاء السيرة الذاتية...</p>
-                      <p className="text-sm text-slate-500">يرجى الانتظار بينما نقوم بإنشاء سيرتك الذاتية...</p>
-                    </div>
-                  )}
+        <div className="mt-8">
+          {isGenerating && (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+              <p className="mt-4 text-slate-600">جاري إنشاء السيرة الذاتية...</p>
+              <p className="text-sm text-slate-500">يرجى الانتظار بينما نقوم بإنشاء سيرتك الذاتية...</p>
+            </div>
+          )}
 
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-red-800">{error}</p>
-                    </div>
-                  )}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800">{error}</p>
+            </div>
+          )}
 
-                  {cvData && !isGenerating && (
-                    <div className="bg-white border border-slate-200 rounded-lg p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-slate-900">تم إنشاء السيرة الذاتية بنجاح!</h3>
-                        <div className="flex items-center gap-2 text-emerald-600">
-                          <i data-lucide="file-text" className="w-5 h-5"></i>
-                          <span className="text-sm font-medium">PDF جاهز</span>
-                        </div>
-                      </div>
+          {cvData && !isGenerating && (
+            <div className="bg-white border border-slate-200 rounded-lg p-6">
+              {/* CV Actions Integration */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-slate-900">تم إنشاء السيرة الذاتية بنجاح!</h3>
+                <div className="flex items-center gap-2 text-emerald-600">
+                  <i data-lucide="file-text" class="w-5 h-5"></i>
+                  <span className="text-sm font-medium">PDF جاهز</span>
+                </div>
+              </div>
 
-                      <div className="mb-4">
-                        <h4 className="font-medium text-slate-700 mb-2">الملخص المهني الجديد:</h4>
-                        <p className="text-slate-600 leading-relaxed">{cvData.generated_content}</p>
-
-                      </div>
-
-
-                      {/* Show PDF buttons only if PDF was generated */}
-                      {(cvData.metadata?.pdf_generated === true || cvData.metadata?.pdf_generated === 'true' || cvData.metadata?.pdf_generated === 1) ? (
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <button
-                            onClick={() => setShowPdfModal(true)}
-                            className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
-                          >
-                            <i data-lucide="eye" className="w-4 h-4"></i>
-                            معاينة PDF
-                          </button>
-                          <button
-                            onClick={downloadPdf}
-                            className="flex-1 bg-slate-600 text-white px-4 py-3 rounded-lg hover:bg-slate-700 flex items-center justify-center gap-2 font-medium"
-                          >
-                            <i data-lucide="download" className="w-4 h-4"></i>
-                            تحميل PDF
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <div className="flex items-center gap-2 text-yellow-800">
-                            <i data-lucide="alert-circle" className="w-5 h-5"></i>
-                            <span className="font-medium">PDF غير متوفر</span>
-                          </div>
-                          <p className="text-sm text-yellow-700 mt-1">
-                            لم يتم إنشاء PDF لهذه السيرة الذاتية. يرجى المحاولة مرة أخرى.
-                          </p>
-                          {cvData.metadata?.pdf_error && (
-                            <p className="text-xs text-yellow-600 mt-2">
-                              خطأ: {cvData.metadata.pdf_error}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                <div className="mb-4">
+                  <h4 className="font-medium text-slate-700 mb-2">الملخص المهني الجديد:</h4>
+                  <p className="text-slate-600 leading-relaxed">{cvData.generated_content}</p>
+                </div>
+              {/* Show PDF buttons only if PDF was generated */}
+              {(cvData.metadata?.pdf_generated === true || cvData.metadata?.pdf_generated === 'true' || cvData.metadata?.pdf_generated === 1) ? (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => setShowPdfModal(true)}
+                    className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
+                  >
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                    معاينة PDF
+                  </button>
+                  <button
+                    onClick={downloadPdf}
+                    className="flex-1 bg-slate-600 text-white px-4 py-3 rounded-lg hover:bg-slate-700 flex items-center justify-center gap-2 font-medium"
+                  >
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    تحميل PDF
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-yellow-800">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <span className="font-medium">PDF غير متوفر</span>
+                  </div>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    لم يتم إنشاء PDF لهذه السيرة الذاتية. يرجى المحاولة مرة أخرى.
+                  </p>
+                  {cvData.metadata?.pdf_error && (
+                    <p className="text-xs text-yellow-600 mt-2">
+                      خطأ: {cvData.metadata.pdf_error}
+                    </p>
                   )}
                 </div>
               )}
+              </div>
+          </div>
+        )}
+        </div>
+              )}
 
-              {/* Simple PDF Modal - Mobile Friendly */}
+        {/* PDF Preview Integration */}
               {showPdfModal && cvData && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 pdf-modal">
-                  <div className="bg-white rounded-lg w-full max-w-4xl max-h-[95vh] flex flex-col modal-content">
-                    {/* Header */}
-                    <div className="flex justify-between items-center p-4 border-b">
-                      <h3 className="text-lg font-semibold text-slate-900">معاينة السيرة الذاتية</h3>
+                <div className="fixed inset-0 z-50 flex flex-col bg-white">
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <h3 className="text-lg font-semibold text-slate-900">معاينة السيرة الذاتية</h3>
+                    <button
+                      onClick={() => setShowPdfModal(false)}
+                      className="text-slate-500 hover:text-slate-700 text-xl font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* PDF Content */}
+                  <div className="flex-1 overflow-hidden">
+                    <iframe
+                      src={cvData.metadata?.pdf_path ? `/${cvData.metadata.pdf_path}` : `/cv_generations/${cvData.id}/download_pdf`}
+                      title="CV Preview"
+                      className="w-full h-full pdf-viewer"
+                      onLoad={() => console.log('✅ PDF iframe loaded successfully')}
+                      onError={() => console.error('❌ PDF iframe failed to load')}
+                    />
+                  </div>
+                  {/* Mobile-friendly action buttons */}
+                  <div className="p-4 border-t bg-slate-50">
+                    <div className="flex gap-3">
+                      <button
+                        onClick={downloadPdf}
+                        className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
+                      >
+                        <i data-lucide="download" className="w-4 h-4"></i>
+                        تحميل PDF
+                      </button>
                       <button
                         onClick={() => setShowPdfModal(false)}
-                        className="text-slate-500 hover:text-slate-700 text-xl font-bold"
+                        className="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium"
                       >
-                        ✕
+                        إغلاق
                       </button>
-                    </div>
-
-                    {/* PDF Content */}
-                    <div className="flex-1 overflow-hidden">
-                      <iframe
-                        src={`/cv_generations/${cvData.id}/view_pdf`}
-                        className="w-full h-full border-0"
-                        title="CV Preview"
-                      />
-                    </div>
-
-                    {/* Mobile-friendly action buttons */}
-                    <div className="p-4 border-t bg-slate-50">
-                      <div className="flex gap-3">
-                        <button
-                          onClick={downloadPdf}
-                          className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
-                        >
-                          <i data-lucide="download" className="w-4 h-4"></i>
-                          تحميل PDF
-                        </button>
-                        <button
-                          onClick={() => setShowPdfModal(false)}
-                          className="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium"
-                        >
-                          إغلاق
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
+              {/* PDF Preview Modal */}
+              {showPreviewModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+                    {/* Modal Header */}
+                    <div className="flex justify-between items-center p-4 border-b">
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        {previewTitle || 'معاينة السيرة الذاتية'}
+                      </h3>
+                      <button
+                        onClick={() => setShowPreviewModal(false)}
+                        className="text-slate-400 hover:text-slate-500"
+                      >
+                        <i data-lucide="x" className="w-5 h-5"></i>
+                      </button>
+                    </div>
+
+                    {/* PDF Content */}
+                    <div className="flex-1 min-h-[500px] overflow-hidden bg-slate-100">
+                      <iframe
+                        src={previewPdfUrl}
+                        title="CV Preview"
+                        className="w-full h-full border-0"
+                        onLoad={() => console.log('✅ Preview PDF iframe loaded:', previewPdfUrl)}
+                        onError={(e) => console.error('❌ Preview PDF iframe error:', e, previewPdfUrl)}
+                      />
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="p-4 border-t bg-slate-50 flex justify-end gap-3">
+                      <button
+                        onClick={() => setShowPreviewModal(false)}
+                        className="px-4 py-2 text-sm text-slate-600 hover:text-slate-700 rounded-lg border border-slate-300 hover:bg-slate-50"
+                      >
+                        إغلاق
+                      </button>
+                      <a
+                        href={previewPdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-lg inline-flex items-center gap-2"
+                      >
+                        <i data-lucide="external-link" className="w-4 h-4"></i>
+                        فتح في نافذة جديدة
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           );
-        }
+        }; // CLOSE CvGeneratorApp function
 
-        // Render the component
-        const root = ReactDOM.createRoot(document.getElementById('cv-generation-results'));
-        root.render(<CvGeneratorApp />);
+        // Wait for DOM to be ready
+        const startApp = () => {
+          try {
+            console.log('🚀 Starting React application...');
+            const container = document.getElementById('cv-generation-results');
+            if (!container) {
+              console.error('❌ Could not find root container element!');
+              return;
+            }
+
+            console.log('📦 Creating React root...');
+            const root = ReactDOM.createRoot(container);
+            console.log('🎨 Rendering app...');
+
+            root.render(
+              <ErrorBoundary>
+                <DebugWrapper>
+                  <React.StrictMode>
+                    <CvGeneratorApp />
+                  </React.StrictMode>
+                </DebugWrapper>
+              </ErrorBoundary>
+            );
+
+            console.log('✅ React app mounted successfully');
+          } catch (error) {
+            console.error('🔴 Error starting React app:', error);
+          }
+        };
+
+        // Initialize the app when the document is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', startApp);
+        } else {
+          startApp();
+        }
       </script>
       <script>
         // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons({
-            attrs: { 'stroke-width': 1.5 }
-          });
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons({
+              attrs: { 'stroke-width': 1.5 }
+            });
+          }
+        });
       </script>
     </body>
   </html>

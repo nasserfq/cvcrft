@@ -43,6 +43,8 @@ Rails.application.routes.draw do
       post :cancel
       get :download_pdf
       get :view_pdf
+      get :preview
+      get :preview_resume
       post :save_draft
       post :resume_draft
     end

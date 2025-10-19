@@ -119,4 +119,9 @@ class Resume < ApplicationRecord
   def has_skills?
     skills.any?
   end
+
+  # Method to get the PDF URL for this resume
+  def pdf_url
+    "/resumes/#{id}/generate_pdf"
+  end
 end
