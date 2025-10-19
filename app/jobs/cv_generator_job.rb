@@ -58,6 +58,9 @@ class CvGeneratorJob
       # Load existing resume data
       if @resume_id
         @existing_resume = Resume.find(@resume_id)
+        Rails.logger.info "📋 Loaded existing resume ID: #{@existing_resume.id}"
+        Rails.logger.info "📋 Resume has #{@existing_resume.skills.count} skills"
+        Rails.logger.info "📋 First skill: #{@existing_resume.skills.first&.attributes&.inspect}"
       end
 
       # Process the CV generation using Azure OpenAI
@@ -300,14 +303,26 @@ class CvGeneratorJob
         }
       },
       skills: @existing_resume.skills.map { |skill|
+        # Use skill_names array if available, otherwise fall back to name
+        skill_list = if skill.skill_names.present?
+          skill.skill_names
+        elsif skill.name.present?
+          [ skill.name ]
+        else
+          []
+        end
+
         {
           category: skill.category || "Technical Skills",
-          names: [ skill.name ].compact.reject(&:blank?)
+          names: skill_list,
+          details: skill_list.join(", ")  # Add details string for PDF generator
         }
       }.group_by { |s| s[:category] }.map { |category, skills|
+        all_names = skills.flat_map { |s| s[:names] }.compact.reject(&:blank?)
         {
           category: category,
-          names: skills.flat_map { |s| s[:names] }
+          names: all_names,
+          details: all_names.join(", ")  # Convert array to comma-separated string
         }
       },
       educations: @existing_resume.educations.map { |edu|
@@ -395,19 +410,45 @@ class CvGeneratorJob
 
   def update_cv_generation_success(result)
     # Store only the professional summary in the main field, but the FULL structure in metadata
+
+    # If we have an existing resume, use its data instead of AI-generated incomplete data
+    if @existing_resume
+      Rails.logger.info "Using existing resume data for skills, experience, etc."
+
+      existing_data = format_existing_resume_data
+      Rails.logger.info "📊 Existing resume skills count: #{@existing_resume.skills.count}"
+      Rails.logger.info "📊 Formatted skills: #{existing_data[:skills].inspect}"
+
+      generated_data = {
+        professional_summary: result[:professional_summary], # Only use AI-generated summary
+        work_experiences: existing_data[:work_experiences],
+        skills: existing_data[:skills],
+        educations: existing_data[:educations],
+        certifications: existing_data[:certifications],
+        languages: existing_data[:languages]
+      }
+
+      Rails.logger.info "📦 Generated data skills to be stored: #{generated_data[:skills].inspect}"
+    else
+      # For new CVs, use all AI-generated data
+      Rails.logger.info "Using AI-generated data for new CV"
+
+      generated_data = {
+        professional_summary: result[:professional_summary],
+        work_experiences: result[:work_experiences],
+        skills: result[:skills],
+        educations: result[:educations],
+        certifications: result[:certifications],
+        languages: result[:languages]
+      }
+    end
+
     @cv_generation.update!(
       generated_content: result[:professional_summary],
       status: "processing",
       tokens_used: result[:tokens_used],
       metadata: @cv_generation.metadata.merge({
-        generated_data: {
-          professional_summary: result[:professional_summary],
-          work_experiences: result[:work_experiences],
-          skills: result[:skills],
-          educations: result[:educations],
-          certifications: result[:certifications],
-          languages: result[:languages]
-        },
+        generated_data: generated_data,
         ats_optimization_notes: result[:ats_optimization_notes],
         generation_notes: result[:generation_notes],
         raw_response: result[:raw_response]
@@ -598,6 +639,9 @@ class CvGeneratorJob
       # Get the full generated data from the CV generation metadata
       generated_data = @cv_generation.metadata["generated_data"]
 
+      Rails.logger.info "📦 Raw metadata generated_data: #{generated_data.inspect}"
+      Rails.logger.info "📦 Skills in metadata: #{generated_data&.dig('skills').inspect}"
+
       if generated_data.blank?
         Rails.logger.warn "No generated CV data found in metadata. Using resume data as fallback."
         # Create a fallback structure if AI data is missing
@@ -618,7 +662,21 @@ class CvGeneratorJob
           professional_summary: resume.professional_summary,
           work_experiences: work_experiences_data,
           skills: resume.skills.group_by(&:category).map { |c, s|
-            { category: c, names: s.map(&:name) }
+            skill_names = s.flat_map { |skill|
+              if skill.skill_names.present?
+                skill.skill_names
+              elsif skill.name.present?
+                [ skill.name ]
+              else
+                []
+              end
+            }.compact.reject(&:blank?)
+
+            {
+              category: c,
+              names: skill_names,
+              details: skill_names.join(", ")  # Add details for PDF generator
+            }
           },
           educations: resume.educations.map(&:attributes),
           certifications: resume.certifications.map { |cert|
