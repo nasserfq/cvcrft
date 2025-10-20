@@ -80,9 +80,12 @@ class CvBuilderPdfJob
   def generate_pdf(resume, job_token)
     Rails.logger.info "Generating PDF for resume ID: #{resume.id}"
 
+    # Fetch the professional summary directly from the resume record
+    summary_to_use = resume.professional_summary_english.presence || resume.professional_summary
+
     # Use AtsPdfGenerator for consistent PDF generation
     data = {
-      professional_summary: resume.professional_summary,
+      professional_summary: summary_to_use,
       educations: resume.educations.map { |e| { degree: e.degree, institution: e.institution, start_date: e.start_date, end_date: e.end_date, gpa: e.gpa } },
       work_experiences: resume.work_experiences.map { |we| { job_title: we.job_title, company: we.company, start_date: we.start_date, end_date: we.end_date, responsibilities: we.responsibilities } },
       skills: resume.skills.map { |s| { category: s.category, details: s.skill_names.join(", ") } },

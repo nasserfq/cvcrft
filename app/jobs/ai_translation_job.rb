@@ -185,20 +185,20 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
 
     resume = Resume.find(@resume_id)
 
+    # Always update professional summary with AI-generated/translated result
+    if result[:english_text].present?
+      resume.update!(
+        professional_summary: result[:english_text],
+        summary: result[:english_text]
+      )
+    end
+
     # Update work experience if this is a work experience translation
     if @options["work_experience_id"]
       work_exp = resume.work_experiences.find(@options["work_experience_id"])
       work_exp.update!(
         english_description: result[:english_text],
         ats_keywords: result[:skills_extracted].map { |s| s[:name] }
-      )
-    end
-
-    # Update professional summary if this is a summary translation
-    if @options["professional_summary"]
-      resume.update!(
-        professional_summary: result[:english_text],
-        summary: result[:english_text] # Also update the main summary field
       )
     end
   end
@@ -214,12 +214,12 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
 
       # Check if skill already exists (check both name and skill_names)
       existing_skill = resume.skills.find_by(name: skill_data[:name]) ||
-                      resume.skills.find_by(skill_names: [skill_data[:name]])
+                      resume.skills.find_by(skill_names: [ skill_data[:name] ])
 
       unless existing_skill
         resume.skills.create!(
           name: skill_data[:name], # Keep legacy field for backward compatibility
-          skill_names: [skill_data[:name]], # New field structure
+          skill_names: [ skill_data[:name] ], # New field structure
           level: skill_data[:level] || "intermediate",
           category: skill_data[:category] || "technical"
         )

@@ -6,18 +6,21 @@ class Api::TranslationsController < ApplicationController
 
   def translate_professional_summary
     begin
-      # Log the incoming parameters for debugging
-      Rails.logger.info "Translation request params: #{params.inspect}"
+      # Always enqueue a new AI translation job for every request
+      Rails.logger.info "[AI Translate] Request params: #{params.inspect}"
 
-      # Get user_id from params or use a default for now
       user_id = params[:user_id] || 1
       resume_id = params[:resume_id]
+      arabic_text = params[:arabic_text]
 
-      Rails.logger.info "Using user_id: #{user_id}, resume_id: #{resume_id}"
+      # Validate input
+      if arabic_text.blank?
+        render json: { error: "Arabic text is required" }, status: :unprocessable_entity
+        return
+      end
 
-      # Enqueue the translation job instead of calling the service directly
       job = AiTranslationJob.perform_async(
-        params[:arabic_text],
+        arabic_text,
         user_id,
         resume_id,
         {
@@ -27,16 +30,14 @@ class Api::TranslationsController < ApplicationController
         }
       )
 
-      Rails.logger.info "Translation job enqueued: #{job}"
-
-      # Return job information for polling
+      Rails.logger.info "[AI Translate] Job enqueued: #{job}"
       render json: {
         job_id: job,
         status: "queued",
         message: "Translation job has been queued. Please poll for status."
       }
     rescue => e
-      Rails.logger.error "Translation API error: #{e.message}"
+      Rails.logger.error "[AI Translate] Error: #{e.message}"
       Rails.logger.error "Backtrace: #{e.backtrace.first(5).join("\n")}"
       render json: { error: "Translation failed", message: e.message }, status: :internal_server_error
     end

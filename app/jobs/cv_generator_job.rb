@@ -51,10 +51,26 @@ class CvGeneratorJob
     @options[:force_pdf_regeneration] ||= false
     @options[:pdf_cache_hours] ||= 24
 
+    # Find or create the CvGeneration record for this run
     @cv_generation = find_cv_generation_record
-    # NOTE: In a real environment, you'd raise an error if @cv_generation is nil
+    if @cv_generation.nil?
+      Rails.logger.info "Creating CvGeneration record for processing state"
+      @cv_generation = CvGeneration.create!(
+        user_id: @user_id,
+        resume_id: @resume_id,
+        job_description: @job_description,
+        generated_content: nil,
+        ai_model: "gpt-4.1-mini",
+        status: "processing",
+        tokens_used: nil,
+        metadata: (@options || {})
+      )
+    end
 
-    begin
+    # For existing resumes, do NOT update any fields or sections. Only use the AI summary in the generated CV metadata/PDF.
+    if @resume_id
+      Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
+    end
       # Load existing resume data
       if @resume_id
         @existing_resume = Resume.find(@resume_id)
@@ -66,8 +82,8 @@ class CvGeneratorJob
       # Process the CV generation using Azure OpenAI
       result = call_azure_openai_api
 
-      # Update the CV generation record with success (full structure stored in metadata)
-      update_cv_generation_success(result)
+  # Update the CV generation record with success (full structure stored in metadata)
+  update_cv_generation_success(result)
 
       # Create or update resume with generated content
       # This logic now correctly creates/updates all associated models (WorkExperience, Skill, etc.)
@@ -76,8 +92,8 @@ class CvGeneratorJob
       # Generate PDF using the full structured data from metadata
       generate_pdf_for_resume
 
-      # Now mark as completed after PDF is generated
-      @cv_generation.update!(status: "completed")
+  # Now mark as completed after PDF is generated
+  @cv_generation.update!(status: "completed")
       Rails.logger.info "=== CV GENERATION COMPLETED SUCCESSFULLY ==="
 
     rescue => e
@@ -86,9 +102,8 @@ class CvGeneratorJob
       handle_cv_generation_error(e)
       raise e
     end
-  end
 
-  private
+    private
 
   # --- Data Fetching and AI Communication (Minimal changes, mostly logging) ---
 
@@ -443,11 +458,12 @@ class CvGeneratorJob
       }
     end
 
+    safe_meta = (@cv_generation.metadata || {})
     @cv_generation.update!(
       generated_content: result[:professional_summary],
       status: "processing",
       tokens_used: result[:tokens_used],
-      metadata: @cv_generation.metadata.merge({
+      metadata: safe_meta.merge({
         generated_data: generated_data,
         ats_optimization_notes: result[:ats_optimization_notes],
         generation_notes: result[:generation_notes],
@@ -459,31 +475,22 @@ class CvGeneratorJob
   # --- Resume Creation/Update (Remains largely the same, ensuring full population) ---
 
   def create_or_update_resume(result)
-    resume = if @resume_id
-      Resume.find(@resume_id)
+    # For existing resumes, do NOT update any fields or sections. Only use the AI summary in the generated CV metadata/PDF.
+    if @resume_id
+      resume = Resume.find(@resume_id)
+      Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
+      # Do NOT update professional_summary or any sections for existing resumes.
     else
-      create_new_resume(result)
-    end
-
-    # Always update the professional summary
-    resume.update!(
-      professional_summary: result[:professional_summary],
-      summary: result[:professional_summary]
-    )
-
-    # For new resumes only, populate sections
-    if !@resume_id
+      # For brand new, AI-only CVs, create a new Resume record and populate sections
+      resume = create_new_resume(result)
+      # Populate sections for new resumes only (not for existing builder CVs)
       populate_resume_sections(result)
-    else
-      # For existing resumes, ensure we preserve all existing data
-      Rails.logger.info "Preserving existing resume data for resume #{@resume_id}"
-      # No need to populate sections as we're keeping existing data
     end
 
-    # Ensure we're not losing any existing data
-    Rails.logger.info "Skills count: #{resume.skills.count}"
-    Rails.logger.info "Languages count: #{resume.languages.count}"
-    Rails.logger.info "Certifications count: #{resume.certifications.count}"
+    # Ensure we're not losing any existing data (debug logging)
+    Rails.logger.info "Skills count (source resume): #{resume.skills.count}"
+    Rails.logger.info "Languages count (source resume): #{resume.languages.count}"
+    Rails.logger.info "Certifications count (source resume): #{resume.certifications.count}"
 
     # Reload to ensure we have the latest data
     resume.reload
@@ -493,12 +500,8 @@ class CvGeneratorJob
   def update_existing_resume(result)
     # NOTE: This method is now merged/replaced by the logic in create_or_update_resume
     # but the original code structure might require it to remain for clarity.
-    resume = Resume.find(@resume_id)
-    resume.update!(
-      professional_summary: result[:professional_summary],
-      summary: result[:professional_summary]
-    )
-    resume.reload
+    Rails.logger.info "update_existing_resume is deprecated; no mutation performed."
+    Resume.find(@resume_id)
   end
 
   def create_new_resume(result)
@@ -1005,9 +1008,10 @@ class CvGeneratorJob
     })
 
     pdf.font "Arial"
-    pdf.font_size 10.5  # Slightly smaller to fit more content
-    pdf.default_leading 2  # Reduced spacing between lines    # Create a sections array to track what's included
-    sections = []
+  pdf.font_size 10.5  # Slightly smaller to fit more content
+  pdf.default_leading 2  # Reduced spacing between lines
+  # Create a sections array to track what's included
+  sections = []
 
     # Ensure we start at the top of the page
     pdf.go_to_page(1)
@@ -1205,13 +1209,21 @@ class CvGeneratorJob
   end # Closing generate_prawn_pdf method
 
   def handle_cv_generation_error(e)
-    @cv_generation.update!(
-      status: "failed",
-      metadata: @cv_generation.metadata.merge({
-        error: e.message,
-        error_backtrace: e.backtrace
-      })
-    )
+    if @cv_generation.nil?
+      @cv_generation = find_cv_generation_record
+    end
+    if @cv_generation
+      safe_meta = (@cv_generation.metadata || {})
+      @cv_generation.update!(
+        status: "failed",
+        metadata: safe_meta.merge({
+          error: e.message,
+          error_backtrace: e.backtrace
+        })
+      )
+    else
+      Rails.logger.error "No CvGeneration record available to update error metadata"
+    end
   end
 
   def pdf_cache_expired?

@@ -25,10 +25,11 @@ class AtsPdfGenerator
         pdf.text "PROFESSIONAL SUMMARY", size: 13, style: :bold
         pdf.stroke_horizontal_rule
         pdf.move_down 10
-        # Use the OpenAI enhanced/translated version if available, fallback to original
-        summary = resume.professional_summary_english.presence ||
+        # Use the AI-generated summary first (from data), then fallback to stored resume
+        summary = data[:professional_summary].to_s.strip.presence ||
+                 resume.professional_summary_english.presence ||
                  resume.professional_summary.presence ||
-                 data[:professional_summary].to_s.strip
+                 "No professional summary available"
         pdf.text summary, size: 10
         pdf.move_down 20
 
