@@ -251,74 +251,56 @@
               console.log('📊 Fetching CV count...');
               await fetchUserCvCount();
 
-                console.log('📝 Loading resumes...');
-                // Fetch only built CVs
-                const cvGenerationsResponse = await fetch('/cv_generations.json');
-                const cvGenerationsData = await cvGenerationsResponse.json();
-
-                // Fetch raw resumes (CV Builder) and generated CVs
-                let rawResumes = [];
-                try {
-                  const rawResumesResponse = await fetch('/resumes.json');
-                  if (rawResumesResponse.ok) {
-                    const rawResumesData = await rawResumesResponse.json();
-                    // For each raw resume, find the latest completed CV generation for that resume
-                    rawResumes = rawResumesData.map(resume => {
-                      // Find latest completed CV generation for this resume
-                      let latestCvGen = null;
-                      if (cvGenerationsData && Array.isArray(cvGenerationsData)) {
-                        const relatedCvGens = cvGenerationsData.filter(cv => cv.status === 'completed' && cv.resume_id == resume.id);
-                        if (relatedCvGens.length > 0) {
-                          // Sort by created_at descending
-                          relatedCvGens.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                          latestCvGen = relatedCvGens[0];
-                        }
-                      }
-                      return {
-                        id: resume.id,
-                        complete_name: resume.complete_name || `سيرة ذاتية #${resume.id}`,
-                        email: resume.email || 'غير محدد',
-                        professional_summary: latestCvGen ? (latestCvGen.generated_content || '') : (resume.professional_summary || ''),
-                        professional_summary_english: latestCvGen ? (latestCvGen.generated_content || '') : (resume.professional_summary_english || ''),
-                        latest_cv_generation: latestCvGen,
-                        last_generated: latestCvGen ? new Date(latestCvGen.created_at) : (resume.updated_at ? new Date(resume.updated_at) : null),
-                        pdf_url: latestCvGen && latestCvGen.metadata?.pdf_generated ? `/cv_generations/${latestCvGen.id}/view_pdf` : `/resumes/${resume.id}/generate_pdf`,
-                        pdf_metadata: latestCvGen ? latestCvGen.metadata : {},
-                        is_cv_builder: true,
-                        is_ai_generated: !!latestCvGen,
-                        job_description: latestCvGen ? latestCvGen.job_description : '',
-                        created_at: resume.created_at
-                      };
-                    });
-                  }
-                } catch (e) {
-                  console.error('Error loading raw resumes:', e);
-                }
-
-                // Only show completed generated CVs
-                const allCvGenerations = cvGenerationsData
-                  .filter(cv => cv.status === 'completed')
-                  .map(cv => ({
-                    id: `cv_gen_${cv.id}`,
-                    complete_name: cv.metadata?.complete_name || `سيرة ذاتية مبنية #${cv.id}`,
-                    email: cv.metadata?.email || 'غير محدد',
-                    professional_summary: cv.generated_content || 'محتوى مبنية بالذكاء الاصطناعي',
-                    professional_summary_english: cv.generated_content || 'AI Generated Content',
-                    latest_cv_generation: cv,
-                    last_generated: new Date(cv.created_at),
-                    pdf_url: cv.metadata?.pdf_generated ? `/cv_generations/${cv.id}/view_pdf` : null,
-                    pdf_metadata: cv.metadata,
-                    is_cv_builder: false,
-                    is_ai_generated: true,
-                    job_description: cv.job_description,
-                    created_at: cv.created_at
+              // Fetch CV Builder resumes only
+              console.log('📝 Loading CV Builder resumes...');
+              let builderResumes = [];
+              try {
+                const rawResumesResponse = await fetch('/resumes.json');
+                if (rawResumesResponse.ok) {
+                  const rawResumesData = await rawResumesResponse.json();
+                  builderResumes = rawResumesData.map(resume => ({
+                    ...resume,
+                    is_cv_builder: true
                   }));
+                }
+              } catch (e) {
+                console.error('Error loading CV Builder resumes:', e);
+              }
 
-                // Merge both lists
-                const mergedResumes = [...rawResumes, ...allCvGenerations];
-                // Sort by creation date (newest first)
-                mergedResumes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                setResumes(mergedResumes || []);
+              // Fetch generated CVs only
+              console.log('📝 Loading generated CVs...');
+              let generatedCVs = [];
+              try {
+                const cvGenerationsResponse = await fetch('/cv_generations.json');
+                if (cvGenerationsResponse.ok) {
+                  const cvGenerationsData = await cvGenerationsResponse.json();
+                  generatedCVs = cvGenerationsData
+                    .filter(cv => cv.status === 'completed')
+                    .map(cv => ({
+                      id: `cv_gen_${cv.id}`,
+                      complete_name: cv.metadata?.complete_name || `سيرة ذاتية مبنية #${cv.id}`,
+                      email: cv.metadata?.email || 'غير محدد',
+                      professional_summary: cv.generated_content || 'محتوى مبنية بالذكاء الاصطناعي',
+                      professional_summary_english: cv.generated_content || 'AI Generated Content',
+                      latest_cv_generation: cv,
+                      last_generated: new Date(cv.created_at),
+                      pdf_url: cv.metadata?.pdf_generated ? `/cv_generations/${cv.id}/view_pdf` : null,
+                      pdf_metadata: cv.metadata,
+                      is_cv_builder: false,
+                      is_ai_generated: true,
+                      job_description: cv.job_description,
+                      created_at: cv.created_at
+                    }));
+                }
+              } catch (e) {
+                console.error('Error loading generated CVs:', e);
+              }
+
+              // Combine both lists, but do NOT merge or overwrite
+              const allResumes = [...builderResumes, ...generatedCVs];
+              // Sort by creation date (newest first)
+              allResumes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+              setResumes(allResumes || []);
             } catch (err) {
               setResumes([]);
               setError('Failed to load CVs: ' + err.message);
@@ -641,15 +623,14 @@
                     // Always show AI-generated summary for raw CVs if available, otherwise fallback
                     let displaySummary = '';
                     let summarySource = '';
-                    if (resume.is_cv_builder && resume.latest_cv_generation && resume.latest_cv_generation.generated_content) {
-                      displaySummary = resume.latest_cv_generation.generated_content;
-                      summarySource = 'AI_GENERATED';
-                    } else if (resume.professional_summary_english) {
-                      displaySummary = resume.professional_summary_english;
-                      summarySource = 'ORIGINAL_ENGLISH';
+                    if (resume.is_cv_builder) {
+                      // CV Builder resume
+                      displaySummary = resume.professional_summary || '';
+                      summarySource = 'CV_BUILDER';
                     } else {
-                      displaySummary = '';
-                      summarySource = 'NONE';
+                      // Generated CV (from /cv_generations.json)
+                      displaySummary = resume.professional_summary_english || resume.professional_summary || '';
+                      summarySource = 'AI_GENERATED';
                     }
                     // Debug log for summary source
                     console.log(`CV Card [${resumeId}] summary source: ${summarySource}`, displaySummary);
@@ -682,15 +663,7 @@
                       </div>
 
                       {/* Professional Summary Preview */}
-                      {displaySummary && (
-                        <div className="mb-3">
-                          <p className="text-xs text-slate-500 font-medium mb-1">الملخص المهني:</p>
-                          <p className="text-xs text-slate-700 line-clamp-3 leading-relaxed">
-                            {displaySummary.substring(0, 120)}
-                            {displaySummary.length > 120 ? '...' : ''}
-                          </p>
-                        </div>
-                      )}
+                      {/* Remove the original professional summary preview for CV Builder resumes */}
 
                       {/* Job Description for AI Generated CVs */}
                       {resume.is_ai_generated && resume.job_description && (

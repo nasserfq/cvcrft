@@ -15,10 +15,10 @@ class ResumesController < ApplicationController
       format.json {
         render json: @resumes.map { |resume|
           resume.as_json(
-            only: [ :id, :complete_name, :email, :phone_number, :city, :country, :professional_summary_english, :created_at, :updated_at ],
+            only: [ :id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :created_at, :updated_at ],
             methods: [ :pdf_url ]
           ).merge({
-            professional_summary: resume.professional_summary_english
+            is_cv_builder: true
           })
         }
       }
