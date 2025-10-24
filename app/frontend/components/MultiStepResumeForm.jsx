@@ -2469,14 +2469,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
             •
            </span>
            <div className="flex-1 flex flex-col sm:flex-row gap-2">
-            <input
-             type="text"
+            <textarea
              value={resp}
              onChange={(e) =>
               handleResponsibilityChange(index, respIndex, e.target.value)
              }
-             className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 sm:px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all text-base"
+             rows={2}
+             className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 sm:px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all text-base resize-vertical min-h-[48px] max-h-[200px]"
              placeholder="اكتب مسؤولية أو إنجاز..."
+             style={{ overflow: "auto", resize: "vertical", fontSize: "16px" }}
             />
             {work.responsibilities.length > 1 && (
              <button
