@@ -508,8 +508,8 @@ class CvGeneratorJob
     resume_data = {
       complete_name: @options[:complete_name] || "Generated CV",
       email: @options[:email] || "user@example.com",
-      professional_summary: result[:professional_summary],
-      summary: result[:professional_summary]
+  professional_summary: result[:professional_summary],
+  summary: result[:professional_summary]
     }
     resume = Resume.create!(resume_data)
     @cv_generation.update!(resume_id: resume.id)

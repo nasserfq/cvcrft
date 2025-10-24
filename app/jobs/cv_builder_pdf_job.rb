@@ -80,8 +80,12 @@ class CvBuilderPdfJob
   def generate_pdf(resume, job_token)
     Rails.logger.info "Generating PDF for resume ID: #{resume.id}"
 
-    # Fetch the professional summary directly from the resume record
+    # Always use the latest AI summary for PDF generation and persist it
     summary_to_use = resume.professional_summary_english.presence || resume.professional_summary
+    if summary_to_use.present? && resume.respond_to?(:persisted?) && resume.persisted?
+      resume.update_column(:professional_summary_english, summary_to_use)
+      Rails.logger.info "Ensured resume##{resume.id} professional_summary_english is up-to-date for PDF preview"
+    end
 
     # Use AtsPdfGenerator for consistent PDF generation
     data = {

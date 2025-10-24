@@ -13,10 +13,14 @@ class ResumesController < ApplicationController
     respond_to do |format|
       format.html
       format.json {
-        render json: @resumes.as_json(
-          only: [ :id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :created_at, :updated_at ],
-          methods: [ :pdf_url ]
-        )
+        render json: @resumes.map { |resume|
+          resume.as_json(
+            only: [ :id, :complete_name, :email, :phone_number, :city, :country, :professional_summary_english, :created_at, :updated_at ],
+            methods: [ :pdf_url ]
+          ).merge({
+            professional_summary: resume.professional_summary_english
+          })
+        }
       }
     end
   end
@@ -187,7 +191,7 @@ class ResumesController < ApplicationController
           phone_number: params[:phone_number],
           city: params[:city],
           country: params[:country],
-          professional_summary: params[:professional_summary],
+          professional_summary: params[:professional_summary_english],
           professional_summary_english: params[:professional_summary_english]
         )
 
@@ -217,7 +221,7 @@ class ResumesController < ApplicationController
         phone_number: params[:phone_number],
         city: params[:city],
         country: params[:country],
-        professional_summary: params[:professional_summary],
+        professional_summary: params[:professional_summary_english],
         professional_summary_english: params[:professional_summary_english],
         education: params[:education],
         work_experience: params[:work_experience],
@@ -287,6 +291,10 @@ class ResumesController < ApplicationController
 
   def set_resume
     @resume = current_user.resumes.find(params[:id])
+    # Always use AI-generated summary for CV building and PDF generation
+    if @resume.professional_summary_english.present?
+      @resume.professional_summary = @resume.professional_summary_english
+    end
   end
 
   def resume_params

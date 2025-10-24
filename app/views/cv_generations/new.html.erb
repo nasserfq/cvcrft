@@ -252,78 +252,76 @@
               await fetchUserCvCount();
 
                 console.log('📝 Loading resumes...');
-                const resumesResponse = await fetch('/resumes.json');
-                if (!resumesResponse.ok) {
-                  throw new Error(`Failed to fetch resumes: ${resumesResponse.status}`);
-                }
-                const resumesData = await resumesResponse.json();
-                console.log('📝 Loaded resumes:', resumesData);
-                console.log('📄 First resume PDF URL:', resumesData[0]?.pdf_url);
+                // Fetch only built CVs
+                const cvGenerationsResponse = await fetch('/cv_generations.json');
+                const cvGenerationsData = await cvGenerationsResponse.json();
 
-              // Load CV generations for each resume (optional - for display purposes)
-              const resumesWithGenerations = await Promise.all(
-                resumesData.map(async (resume) => {
-                  try {
-                    const cvResponse = await fetch(`/cv_generations.json?resume_id=${resume.id}`);
-                    const cvData = await cvResponse.json();
-                    const latestCv = cvData.find(cv => cv.resume_id === resume.id && cv.status === 'completed');
-
-                    return {
-                      ...resume,
-                      latest_cv_generation: latestCv,
-                      last_generated: latestCv ? new Date(latestCv.created_at) : null,
-                      // Add a flag to indicate if this is a CV Builder resume (no CV generations)
-                      is_cv_builder: !latestCv && (resume.professional_summary || resume.professional_summary_english)
-                    };
-                  } catch (err) {
-                    console.error(`Error loading CV for resume ${resume.id}:`, err);
-                    return {
-                      ...resume,
-                      latest_cv_generation: null,
-                      last_generated: null,
-                      // Mark as CV Builder if it has professional summary but no CV generations
-                      is_cv_builder: !!(resume.professional_summary || resume.professional_summary_english)
-                    };
+                // Fetch raw resumes (CV Builder) and generated CVs
+                let rawResumes = [];
+                try {
+                  const rawResumesResponse = await fetch('/resumes.json');
+                  if (rawResumesResponse.ok) {
+                    const rawResumesData = await rawResumesResponse.json();
+                    // For each raw resume, find the latest completed CV generation for that resume
+                    rawResumes = rawResumesData.map(resume => {
+                      // Find latest completed CV generation for this resume
+                      let latestCvGen = null;
+                      if (cvGenerationsData && Array.isArray(cvGenerationsData)) {
+                        const relatedCvGens = cvGenerationsData.filter(cv => cv.status === 'completed' && cv.resume_id == resume.id);
+                        if (relatedCvGens.length > 0) {
+                          // Sort by created_at descending
+                          relatedCvGens.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                          latestCvGen = relatedCvGens[0];
+                        }
+                      }
+                      return {
+                        id: resume.id,
+                        complete_name: resume.complete_name || `سيرة ذاتية #${resume.id}`,
+                        email: resume.email || 'غير محدد',
+                        professional_summary: latestCvGen ? (latestCvGen.generated_content || '') : (resume.professional_summary || ''),
+                        professional_summary_english: latestCvGen ? (latestCvGen.generated_content || '') : (resume.professional_summary_english || ''),
+                        latest_cv_generation: latestCvGen,
+                        last_generated: latestCvGen ? new Date(latestCvGen.created_at) : (resume.updated_at ? new Date(resume.updated_at) : null),
+                        pdf_url: latestCvGen && latestCvGen.metadata?.pdf_generated ? `/cv_generations/${latestCvGen.id}/view_pdf` : `/resumes/${resume.id}/generate_pdf`,
+                        pdf_metadata: latestCvGen ? latestCvGen.metadata : {},
+                        is_cv_builder: true,
+                        is_ai_generated: !!latestCvGen,
+                        job_description: latestCvGen ? latestCvGen.job_description : '',
+                        created_at: resume.created_at
+                      };
+                    });
                   }
-                })
-              );
+                } catch (e) {
+                  console.error('Error loading raw resumes:', e);
+                }
 
-              // Load all CV generations (both standalone and tied to resumes)
-              const cvGenerationsResponse = await fetch('/cv_generations.json');
-              const cvGenerationsData = await cvGenerationsResponse.json();
-              console.log('🔍 CV Generations Data:', cvGenerationsData);
+                // Only show completed generated CVs
+                const allCvGenerations = cvGenerationsData
+                  .filter(cv => cv.status === 'completed')
+                  .map(cv => ({
+                    id: `cv_gen_${cv.id}`,
+                    complete_name: cv.metadata?.complete_name || `سيرة ذاتية مبنية #${cv.id}`,
+                    email: cv.metadata?.email || 'غير محدد',
+                    professional_summary: cv.generated_content || 'محتوى مبنية بالذكاء الاصطناعي',
+                    professional_summary_english: cv.generated_content || 'AI Generated Content',
+                    latest_cv_generation: cv,
+                    last_generated: new Date(cv.created_at),
+                    pdf_url: cv.metadata?.pdf_generated ? `/cv_generations/${cv.id}/view_pdf` : null,
+                    pdf_metadata: cv.metadata,
+                    is_cv_builder: false,
+                    is_ai_generated: true,
+                    job_description: cv.job_description,
+                    created_at: cv.created_at
+                  }));
 
-              const allCvGenerations = cvGenerationsData
-                .filter(cv => cv.status === 'completed' || cv.status === 'processing' || cv.status === 'failed')
-                .map(cv => ({
-                  id: `cv_gen_${cv.id}`,
-                  complete_name: `سيرة ذاتية مبنية #${cv.id}`,
-                  email: cv.metadata?.email || 'غير محدد',
-                  professional_summary: cv.generated_content || 'محتوى مبنية بالذكاء الاصطناعي',
-                  professional_summary_english: cv.generated_content || 'AI Generated Content',
-                  latest_cv_generation: cv,
-                  last_generated: new Date(cv.created_at),
-                  is_cv_builder: false,
-                  is_ai_generated: true,
-                  job_description: cv.job_description,
-                  created_at: cv.created_at
-                }));
-
-              console.log('🤖 AI Generated CVs:', allCvGenerations);
-
-              // Combine resumes and CV generations
-              const allCvs = [...resumesWithGenerations, ...allCvGenerations];
-
-              // Sort by creation date (newest first)
-              allCvs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-              console.log('📋 Final Combined CVs:', allCvs);
-              console.log('📋 Setting resumes:', allCvs);
-              setResumes(allCvs || []); // Ensure we always set an array
+                // Merge both lists
+                const mergedResumes = [...rawResumes, ...allCvGenerations];
+                // Sort by creation date (newest first)
+                mergedResumes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                setResumes(mergedResumes || []);
             } catch (err) {
-              console.error('❌ Error loading resumes:', err);
-              setResumes([]); // Set empty array on error
-              setError('Failed to load resumes: ' + err.message);
+              setResumes([]);
+              setError('Failed to load CVs: ' + err.message);
             } finally {
               setIsLoading(false);
               console.log('✅ Initial data loading complete');
@@ -640,6 +638,21 @@
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {resumes && resumes.length > 0 ? resumes.map(resume => {
                     const resumeId = resume.id || resume.cv_gen_id;
+                    // Always show AI-generated summary for raw CVs if available, otherwise fallback
+                    let displaySummary = '';
+                    let summarySource = '';
+                    if (resume.is_cv_builder && resume.latest_cv_generation && resume.latest_cv_generation.generated_content) {
+                      displaySummary = resume.latest_cv_generation.generated_content;
+                      summarySource = 'AI_GENERATED';
+                    } else if (resume.professional_summary_english) {
+                      displaySummary = resume.professional_summary_english;
+                      summarySource = 'ORIGINAL_ENGLISH';
+                    } else {
+                      displaySummary = '';
+                      summarySource = 'NONE';
+                    }
+                    // Debug log for summary source
+                    console.log(`CV Card [${resumeId}] summary source: ${summarySource}`, displaySummary);
                     return (
                       <div
                         key={resumeId}
@@ -669,12 +682,12 @@
                       </div>
 
                       {/* Professional Summary Preview */}
-                      {(resume.professional_summary_english || resume.professional_summary) && (
+                      {displaySummary && (
                         <div className="mb-3">
                           <p className="text-xs text-slate-500 font-medium mb-1">الملخص المهني:</p>
                           <p className="text-xs text-slate-700 line-clamp-3 leading-relaxed">
-                            {(resume.professional_summary_english || resume.professional_summary)?.substring(0, 120)}
-                            {(resume.professional_summary_english || resume.professional_summary)?.length > 120 ? '...' : ''}
+                            {displaySummary.substring(0, 120)}
+                            {displaySummary.length > 120 ? '...' : ''}
                           </p>
                         </div>
                       )}
@@ -721,6 +734,15 @@
                               </span>
                             )}
                           </div>
+                          {/* Show AI-generated summary for latest built CV */}
+                          {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary) && (
+                            <div className="text-xs text-emerald-700 mt-2">
+                              <span className="font-semibold">الملخص المهني:</span>
+                              <span> {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary).substring(0, 120)}
+                                {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary).length > 120 ? '...' : ''}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       ) : resume.is_cv_builder ? (
                         <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
@@ -734,6 +756,15 @@
                           <div className="text-xs text-blue-600 mt-1">
                             تم إنشاؤها: {resume.created_at ? new Date(resume.created_at).toLocaleDateString('en-GB') : 'غير محدد'}
                           </div>
+                          {/* Show fallback summary for CV Builder resumes if no latest CV */}
+                          {(resume.professional_summary_english || resume.professional_summary) && (
+                            <div className="text-xs text-blue-700 mt-2">
+                              <span className="font-semibold">الملخص المهني:</span>
+                              <span> {(resume.professional_summary_english || resume.professional_summary).substring(0, 120)}
+                                {(resume.professional_summary_english || resume.professional_summary).length > 120 ? '...' : ''}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="mb-3 p-2 bg-slate-50 rounded border">
@@ -967,47 +998,38 @@
               {showPreviewModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                   <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
-                    {/* Modal Header */}
-                    <div className="flex justify-between items-center p-4 border-b">
-                      <h3 className="text-lg font-semibold text-slate-900">
-                        {previewTitle || 'معاينة السيرة الذاتية'}
-                      </h3>
-                      <button
-                        onClick={() => setShowPreviewModal(false)}
-                        className="text-slate-400 hover:text-slate-500"
-                      >
-                        <i data-lucide="x" className="w-5 h-5"></i>
-                      </button>
+                    <div className="flex items-center justify-between p-4 border-b">
+                      <h2 className="text-lg font-bold text-slate-900">معاينة السيرة الذاتية</h2>
+                      <button onClick={() => setShowPreviewModal(false)} className="text-slate-600 hover:text-red-600 font-bold text-lg">×</button>
                     </div>
-
-                    {/* PDF Content */}
-                    <div className="flex-1 min-h-[500px] overflow-hidden bg-slate-100">
+                    <div className="flex-1 overflow-hidden relative">
+                      {/* PDF Loading Indicator */}
+                      <div id="pdf-loading" className="absolute inset-0 flex items-center justify-center bg-white z-10">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span className="ml-3 text-blue-700">جاري تحميل PDF...</span>
+                      </div>
+                      {/* PDF Preview Iframe */}
                       <iframe
+                        className="pdf-preview-frame"
                         src={previewPdfUrl}
-                        title="CV Preview"
-                        className="w-full h-full border-0"
-                        onLoad={() => console.log('✅ Preview PDF iframe loaded:', previewPdfUrl)}
-                        onError={(e) => console.error('❌ Preview PDF iframe error:', e, previewPdfUrl)}
-                      />
+                        style={{ width: '100%', height: '80vh', border: 'none', background: '#f8f9fa' }}
+                        onLoad={() => { const el = document.getElementById('pdf-loading'); if (el) el.style.display = 'none'; }}
+                      ></iframe>
                     </div>
-
-                    {/* Modal Footer */}
-                    <div className="p-4 border-t bg-slate-50 flex justify-end gap-3">
+                    <div className="flex justify-end gap-2 p-4 border-t bg-slate-50">
                       <button
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
+                        onClick={() => window.open(previewPdfUrl, '_blank')}
+                      >
+                        <span className="mr-2">👁️</span>
+                        فتح في نافذة جديدة
+                      </button>
+                      <button
+                        className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
                         onClick={() => setShowPreviewModal(false)}
-                        className="px-4 py-2 text-sm text-slate-600 hover:text-slate-700 rounded-lg border border-slate-300 hover:bg-slate-50"
                       >
                         إغلاق
                       </button>
-                      <a
-                        href={previewPdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-lg inline-flex items-center gap-2"
-                      >
-                        <i data-lucide="external-link" className="w-4 h-4"></i>
-                        فتح في نافذة جديدة
-                      </a>
                     </div>
                   </div>
                 </div>

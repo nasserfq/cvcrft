@@ -356,15 +356,19 @@ const CvGenerationShow = ({ cvGenerationId }) => {
        </div>
       </div>
 
-      {/* Generated Professional Summary */}
-      {cvGeneration.generated_content && (
+      {/* Generated Professional Summary (AI preferred) */}
+      {(cvGeneration.professional_summary_english ||
+       cvGeneration.generated_content ||
+       cvGeneration.professional_summary) && (
        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
          Generated Professional Summary
         </h2>
         <div className="bg-gray-50 p-4 rounded border">
          <p className="text-sm text-gray-700 whitespace-pre-wrap">
-          {cvGeneration.generated_content}
+          {cvGeneration.professional_summary_english ||
+           cvGeneration.generated_content ||
+           cvGeneration.professional_summary}
          </p>
         </div>
         {(cvGeneration.metadata?.pdf_generated === true ||
@@ -372,11 +376,11 @@ const CvGenerationShow = ({ cvGenerationId }) => {
          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
           <p className="text-sm text-green-700">
            <strong>✓ PDF Generated Successfully</strong> - Size:{" "}
-           {cvGeneration.metadata.pdf_size
-            ? `${(cvGeneration.metadata.pdf_size / 1024).toFixed(1)} KB`
+           {cvGeneration.metadata?.pdf_size
+            ? `${(cvGeneration.metadata?.pdf_size / 1024).toFixed(1)} KB`
             : "Unknown"}{" "}
            | Filename:{" "}
-           {cvGeneration.metadata.pdf_filename || "generated_cv.pdf"}
+           {cvGeneration.metadata?.pdf_filename || "generated_cv.pdf"}
           </p>
          </div>
         )}
