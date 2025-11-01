@@ -18,15 +18,15 @@
       <!-- Nav -->
       <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
         <% if user_signed_in? %>
-          <%= link_to resumes_path, class: "hover:text-emerald-600 transition-colors" do %>
+          <%= link_to resumes_path, class: "hover:text-emerald-600 transition-colors js-hover-target", data: { hoverable: true } do %>
             <i data-lucide="file-text" class="w-4 h-4 inline mr-1"></i>
             سيرتي الذاتية
           <% end %>
         <% end %>
-        <a href="#features" class="hover:text-emerald-600 transition-colors">الميزات</a>
-        <a href="#how" class="hover:text-emerald-600 transition-colors">كيف يعمل</a>
-        <a href="#pricing" class="hover:text-emerald-600 transition-colors">الأسعار</a>
-        <a href="#faq" class="hover:text-emerald-600 transition-colors">الأسئلة الشائعة</a>
+  <a href="#features" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">الميزات</a>
+  <a href="#how" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">كيف يعمل</a>
+  <a href="#pricing" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">الأسعار</a>
+  <a href="#faq" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">الأسئلة الشائعة</a>
       </nav>
       <!-- Actions -->
       <div class="flex items-center gap-3">
@@ -37,23 +37,23 @@
             <span>مرحباً، <%= current_user.email %></span>
           </span>
           <%= form_with url: "/auth/logout", method: :delete, class: "hidden sm:inline-flex" do |f| %>
-            <button type="submit" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-red-700 transition-colors">
+            <button type="submit" data-hoverable="true" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-red-700 transition-colors js-hover-target">
               <i data-lucide="log-out" class="w-4 h-4"></i>
               <span>تسجيل الخروج</span>
             </button>
           <% end %>
         <% else %>
-          <a href="/login" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors">
+          <a href="/login" data-hoverable="true" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors js-hover-target">
             <i data-lucide="log-in" class="w-4 h-4"></i>
             <span>تسجيل الدخول</span>
           </a>
         <% end %>
-        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:shadow transition-colors" do %>
+        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:shadow transition-colors js-hover-target", data: { hoverable: true } do %>
           <i data-lucide="wand-2" class="w-4 h-4"></i>
           <span>ابدأ الآن مجانًا</span>
         <% end %>
         <!-- Mobile menu button -->
-        <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">
+        <button id="mobile-menu-button" data-hoverable="true" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors js-hover-target">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
       </div>
@@ -62,15 +62,15 @@
     <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200/60" style="display: none;">
       <div class="py-4 space-y-3">
         <% if user_signed_in? %>
-          <%= link_to resumes_path, class: "block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" do %>
+          <%= link_to resumes_path, class: "block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target", data: { hoverable: true } do %>
             <i data-lucide="file-text" class="w-4 h-4 inline mr-2"></i>
             سيرتي الذاتية
           <% end %>
         <% end %>
-        <a href="#features" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الميزات</a>
-        <a href="#how" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">كيف يعمل</a>
-        <a href="#pricing" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الأسعار</a>
-        <a href="#faq" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors">الأسئلة الشائعة</a>
+  <a href="#features" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الميزات</a>
+  <a href="#how" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">كيف يعمل</a>
+  <a href="#pricing" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الأسعار</a>
+  <a href="#faq" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الأسئلة الشائعة</a>
         <div class="pt-3 border-t border-slate-200/60">
           <% if user_signed_in? %>
             <div class="px-3 py-2 text-sm text-slate-600">
@@ -78,13 +78,13 @@
               <span>مرحباً، <%= current_user.email %></span>
             </div>
             <%= form_with url: "/auth/logout", method: :delete, class: "block" do |f| %>
-              <button type="submit" class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors">
+              <button type="submit" data-hoverable="true" class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors js-hover-target">
                 <i data-lucide="log-out" class="w-4 h-4 inline mr-2"></i>
                 تسجيل الخروج
               </button>
             <% end %>
           <% else %>
-            <a href="/login" class="block px-3 py-2 text-sm text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors">
+            <a href="/login" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">
               <i data-lucide="log-in" class="w-4 h-4 inline mr-2"></i>
               تسجيل الدخول
             </a>

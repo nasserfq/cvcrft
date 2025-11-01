@@ -27,15 +27,16 @@ as well as a link to its edit page.
     <%= link_to(
       t("administrate.actions.edit_resource", name: page.page_title),
       [:edit, namespace, page.resource],
-      class: "button",
+      class: "button js-hover-target",
+      data: { hoverable: true },
     ) if accessible_action?(page.resource, :edit) %>
 
     <%= link_to(
       t("administrate.actions.destroy"),
       [namespace, page.resource],
-      class: "button button--danger",
+      class: "button button--danger js-hover-target",
       method: :delete,
-      data: { confirm: t("administrate.actions.confirm") }
+      data: { confirm: t("administrate.actions.confirm"), hoverable: true }
     ) if accessible_action?(page.resource, :destroy) %>
   </div>
 </header>

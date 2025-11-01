@@ -90,8 +90,8 @@ class CvBuilderPdfJob
     # Use AtsPdfGenerator for consistent PDF generation
     data = {
       professional_summary: summary_to_use,
-      educations: resume.educations.map { |e| { degree: e.degree, institution: e.institution, start_date: e.start_date, end_date: e.end_date, gpa: e.gpa } },
-      work_experiences: resume.work_experiences.map { |we| { job_title: we.job_title, company: we.company, start_date: we.start_date, end_date: we.end_date, responsibilities: we.responsibilities } },
+      educations: resume.educations.map { |e| { degree: e.degree, institution: e.institution, start_date: e.start_date, end_date: (e.respond_to?(:is_current) && e.is_current) ? "Present" : e.end_date, gpa: e.gpa } },
+      work_experiences: resume.work_experiences.map { |we| { job_title: we.job_title, company: we.company, start_date: we.start_date, end_date: (we.respond_to?(:is_current) && we.is_current) ? "Present" : we.end_date, responsibilities: we.responsibilities } },
       skills: resume.skills.map { |s| { category: s.category, details: s.skill_names.join(", ") } },
       certifications: resume.certifications.map { |c| { name: c.name, organization: c.organization, date: c.date } },
       languages: resume.languages.map { |l| { language: l.language, proficiency: l.proficiency } }

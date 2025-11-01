@@ -1,8 +1,8 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">CV Generations</h1>
-    <%= link_to "Generate New CV", new_cv_generation_path, 
-        class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
+  <h1 class="text-3xl font-bold text-gray-900">CV Generations</h1>
+  <%= link_to "Generate New CV", new_cv_generation_path, 
+    class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
   </div>
   <div class="grid gap-6">
     <% if @cv_generations.any? %>
@@ -53,37 +53,37 @@
             </div>
             <div class="flex space-x-2">
               <% if generation.draft? %>
-                <%= link_to "استئناف المسودة", resume_draft_cv_generation_path(generation), 
-                    method: :post,
-                    class: "bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded text-sm transition duration-200",
-                    data: { confirm: "هل تريد استئناف هذه المسودة؟" } %>
-                <%= link_to "عرض المسودة", cv_generation_path(generation), 
-                    class: "bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
+        <%= link_to "استئناف المسودة", resume_draft_cv_generation_path(generation), 
+          method: :post,
+          class: "bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target",
+          data: { confirm: "هل تريد استئناف هذه المسودة؟", hoverable: true } %>
+        <%= link_to "عرض المسودة", cv_generation_path(generation), 
+          class: "bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
               <% else %>
-                <%= link_to "View", cv_generation_path(generation), 
-                    class: "bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
+        <%= link_to "View", cv_generation_path(generation), 
+          class: "bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
               <% end %>
               <% if generation.metadata&.dig("pdf_generated") %>
-                <%= link_to "📄 View PDF", view_pdf_cv_generation_path(generation), 
-                    target: "_blank",
-                    class: "bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
-                <%= link_to "⬇️ Download", download_pdf_cv_generation_path(generation), 
-                    class: "bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
+        <%= link_to "📄 View PDF", view_pdf_cv_generation_path(generation), 
+          target: "_blank",
+          class: "bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
+        <%= link_to "⬇️ Download", download_pdf_cv_generation_path(generation), 
+          class: "bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
               <% end %>
               <% if generation.status == 'failed' %>
-                <%= link_to "Retry", retry_cv_generation_path(generation), 
-                    method: :post,
-                    class: "bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
+        <%= link_to "Retry", retry_cv_generation_path(generation), 
+          method: :post,
+          class: "bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
               <% end %>
               <% if generation.status == 'processing' %>
-                <%= link_to "Cancel", cancel_cv_generation_path(generation), 
-                    method: :post,
-                    class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
+        <%= link_to "Cancel", cancel_cv_generation_path(generation), 
+          method: :post,
+          class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
               <% end %>
-              <%= link_to "Delete", cv_generation_path(generation), 
-                  method: :delete,
-                  data: { confirm: "Are you sure?" },
-                  class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-200" %>
+        <%= link_to "Delete", cv_generation_path(generation), 
+          method: :delete,
+          data: { confirm: "Are you sure?", hoverable: true },
+          class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target" %>
             </div>
           </div>
           <div class="mb-4">
@@ -121,8 +121,8 @@
           <% if generation.resume_id %>
             <div class="text-sm text-gray-600 mb-2">
               <strong>Resume ID:</strong> <%= generation.resume_id %>
-              <%= link_to "View Resume", resume_path(generation.resume_id), 
-                  class: "text-blue-600 hover:text-blue-800 ml-2" %>
+        <%= link_to "View Resume", resume_path(generation.resume_id), 
+          class: "text-blue-600 hover:text-blue-800 ml-2 js-hover-target", data: { hoverable: true } %>
             </div>
           <% end %>
           <% if generation.metadata&.dig("pdf_generated") %>
@@ -139,9 +139,9 @@
                 <div class="flex space-x-2">
                   <%= link_to "Preview", view_pdf_cv_generation_path(generation), 
                       target: "_blank",
-                      class: "text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded" %>
-                  <%= link_to "Download", download_pdf_cv_generation_path(generation), 
-                      class: "text-xs bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded" %>
+                      class: "text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded js-hover-target", data: { hoverable: true } %>
+                    <%= link_to "Download", download_pdf_cv_generation_path(generation), 
+                      class: "text-xs bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded js-hover-target", data: { hoverable: true } %>
                 </div>
               </div>
             </div>
@@ -149,15 +149,15 @@
         </div>
       <% end %>
     <% else %>
-      <div class="text-center py-12">
+        <div class="text-center py-12">
         <div class="text-gray-500 text-lg mb-4">No CV generations found</div>
         <%= link_to "Generate Your First CV", new_cv_generation_path, 
-            class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
+            class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
       </div>
     <% end %>
   </div>
   <div class="mt-8 text-center">
     <%= link_to "View Statistics", stats_cv_generations_path, 
-        class: "text-blue-600 hover:text-blue-800 font-medium" %>
+        class: "text-blue-600 hover:text-blue-800 font-medium js-hover-target", data: { hoverable: true } %>
   </div>
 </div>

@@ -1,9 +1,9 @@
 <div class="container mx-auto px-4 py-8">
   <div class="max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">CV Generation Statistics</h1>
-      <%= link_to "Back to CV Generations", cv_generations_path, 
-          class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
+  <div class="flex justify-between items-center mb-8">
+  <h1 class="text-3xl font-bold text-gray-900">CV Generation Statistics</h1>
+  <%= link_to "Back to CV Generations", cv_generations_path, 
+      class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

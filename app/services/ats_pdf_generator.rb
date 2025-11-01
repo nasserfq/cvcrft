@@ -52,13 +52,14 @@ class AtsPdfGenerator
           pdf.move_down 5
         end
 
-        # Work Experience Section
-        pdf.text "WORK EXPERIENCE", size: 13, style: :bold
-        pdf.stroke_horizontal_rule
-        pdf.move_down 10
+        # Work Experience Section - Only show if there are work experiences
+        if resume.work_experiences.present? && resume.work_experiences.any?
+          pdf.text "WORK EXPERIENCE", size: 13, style: :bold
+          pdf.stroke_horizontal_rule
+          pdf.move_down 10
 
-        # Sort experiences by start_date in reverse chronological order
-        sorted_experiences = Array(resume.work_experiences).sort_by do |exp|
+          # Sort experiences by start_date in reverse chronological order
+          sorted_experiences = Array(resume.work_experiences).sort_by do |exp|
           begin
             # Handle current position
             if exp.is_current
@@ -124,6 +125,7 @@ class AtsPdfGenerator
 
           pdf.move_down 12  # Space between different work experiences
         end
+        end  # End of work experience section if statement
 
         # Skills Section
         pdf.move_down 15

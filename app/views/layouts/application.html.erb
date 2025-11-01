@@ -31,5 +31,78 @@
     <%= render 'layouts/header' %>
     <%= yield %>
     <%= render 'layouts/footer' %>
+    <!-- Global hover/touch animation for native buttons and anchor-buttons -->
+    <style>
+      /* subtle lift and shadow when active (hover or touch) */
+      .js-hover-active {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(2,6,23,0.08);
+        transition: transform 160ms ease, box-shadow 160ms ease;
+      }
+      /* ensure smooth transition when class is removed */
+      button, a[role="button"], a.button {
+        transition: transform 160ms ease, box-shadow 160ms ease;
+      }
+    </style>
+
+    <script>
+      (function () {
+        // Apply active class on hover/focus/touch for buttons and anchors that act like buttons.
+        // This is intentionally non-invasive: it only adds/removes a class that triggers
+        // an animation defined in the style above.
+        const selector = 'button, a[role="button"], a.button, a.btn, a[class*="button"], a[class*="btn"]';
+
+        function activate(el) {
+          el.classList.add('js-hover-active');
+        }
+
+        function deactivate(el) {
+          el.classList.remove('js-hover-active');
+        }
+
+        function addListeners(el) {
+          if (el.__hoverable_bound) return;
+          el.__hoverable_bound = true;
+          el.addEventListener('mouseenter', () => activate(el), { passive: true });
+          el.addEventListener('mouseleave', () => deactivate(el), { passive: true });
+          el.addEventListener('focus', () => activate(el), { passive: true });
+          el.addEventListener('blur', () => deactivate(el), { passive: true });
+
+          // Touch behavior: activate on touchstart and remove shortly after touchend
+          let touchTimer = null;
+          el.addEventListener('touchstart', (ev) => {
+            activate(el);
+            if (touchTimer) clearTimeout(touchTimer);
+          }, { passive: true });
+          el.addEventListener('touchend', (ev) => {
+            if (touchTimer) clearTimeout(touchTimer);
+            touchTimer = setTimeout(() => deactivate(el), 300);
+          }, { passive: true });
+        }
+
+        function scan() {
+          document.querySelectorAll(selector).forEach(addListeners);
+        }
+
+        // Run on load and after DOM changes (simple mutation observer)
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', scan);
+        } else {
+          scan();
+        }
+
+        const observer = new MutationObserver((mutations) => {
+          // quick scan when new nodes are added
+          for (const m of mutations) {
+            if (m.addedNodes && m.addedNodes.length) {
+              scan();
+              break;
+            }
+          }
+        });
+
+        observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      })();
+    </script>
   </body>
 </html>

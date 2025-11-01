@@ -1,4 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+
+// Hoverable wrapper: makes contained element interactive only while hovered, focused or touched.
+// - Desktop: becomes interactive on mouse hover
+// - Mobile: becomes interactive on touchstart (and for a short time after touchend)
+// - Keyboard: becomes interactive on focus (accessibility)
+// Visuals: small translateY and shadow applied while active.
+const Hoverable = ({ as = "button", className = "", children, style = {}, ...props }) => {
+  const [active, setActive] = useState(false);
+  const touchTimerRef = useRef(null);
+  const Tag = as;
+
+  const activate = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = null;
+    }
+    setActive(true);
+  };
+
+  const deactivate = (delay = 150) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    touchTimerRef.current = setTimeout(() => setActive(false), delay);
+  };
+
+  // merge styles: control transform and shadow while keeping pointer events normal
+  const mergedStyle = {
+    transition: "transform 160ms ease, box-shadow 160ms ease",
+    transform: active ? "translateY(-3px)" : "translateY(0)",
+    boxShadow: active ? "0 8px 20px rgba(2,6,23,0.08)" : "none",
+    ...style,
+  };
+
+  return (
+    <Tag
+      {...props}
+      className={className}
+      style={mergedStyle}
+      onMouseEnter={activate}
+      onMouseLeave={() => deactivate(50)}
+      onTouchStart={activate}
+      onTouchEnd={() => deactivate(300)}
+      onFocus={activate}
+      onBlur={() => deactivate(50)}
+    >
+      {children}
+    </Tag>
+  );
+};
 
 const MultiStepResumeForm = ({ resume, onSubmit }) => {
  console.log("MultiStepResumeForm component rendered with props:", {
@@ -245,93 +293,96 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    {/* Navigation Buttons */}
    <div className="flex items-center justify-between pt-6 border-t border-slate-200/60">
     <div className="flex items-center gap-3">
-     {currentStep > 1 && (
-      <button
-       type="button"
-       onClick={prevStep}
-       className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
-      >
-       <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-       >
-        <path
-         strokeLinecap="round"
-         strokeLinejoin="round"
-         strokeWidth={2}
-         d="M9 5l7 7-7 7"
-        />
-       </svg>
-       السابق
-      </button>
-     )}
+  {currentStep > 1 && (
+   <Hoverable
+    as="button"
+    type="button"
+    onClick={prevStep}
+    className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
+   >
+    <svg
+     className="w-4 h-4"
+     fill="none"
+     stroke="currentColor"
+     viewBox="0 0 24 24"
+    >
+     <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 5l7 7-7 7"
+     />
+    </svg>
+    السابق
+   </Hoverable>
+  )}
     </div>
 
     <div className="flex items-center gap-3">
-     <a
-      href="/resumes"
-      className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
-     >
-      <svg
-       className="w-4 h-4"
-       fill="none"
-       stroke="currentColor"
-       viewBox="0 0 24 24"
-      >
-       <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M6 18L18 6M6 6l12 12"
-       />
-      </svg>
-      إلغاء
-     </a>
+  <Hoverable
+   as="a"
+   href="/resumes"
+   className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
+  >
+   <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+   >
+    <path
+     strokeLinecap="round"
+     strokeLinejoin="round"
+     strokeWidth={2}
+     d="M6 18L18 6M6 6l12 12"
+    />
+   </svg>
+   إلغاء
+  </Hoverable>
 
      {currentStep < totalSteps ? (
-      <button
-       type="button"
-       onClick={nextStep}
-       className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
-      >
-       التالي
-       <svg
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-       >
-        <path
-         strokeLinecap="round"
-         strokeLinejoin="round"
-         strokeWidth={2}
-         d="M15 19l-7-7 7-7"
-        />
-       </svg>
-      </button>
+  <Hoverable
+   as="button"
+   type="button"
+   onClick={nextStep}
+   className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
+  >
+   التالي
+   <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+   >
+    <path
+     strokeLinecap="round"
+     strokeLinejoin="round"
+     strokeWidth={2}
+     d="M15 19l-7-7 7-7"
+    />
+   </svg>
+  </Hoverable>
      ) : (
-      <button
-       type="submit"
-       className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
-      >
-       إنشاء السيرة الذاتية
-       <svg i
-       
-        className="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-       >
-        <path
-         strokeLinecap="round"
-         strokeLinejoin="round"
-         strokeWidth={2}
-         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-        />
-       </svg>
-      </button>
+  <Hoverable
+   as="button"
+   type="submit"
+   className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
+  >
+   إنشاء السيرة الذاتية
+   <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+   >
+    <path
+     strokeLinecap="round"
+     strokeLinejoin="round"
+     strokeWidth={2}
+     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+    />
+   </svg>
+  </Hoverable>
      )}
     </div>
    </div>

@@ -1,10 +1,7 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-bold text-gray-900">سيرتي الذاتية</h1>
-    <div class="flex gap-3">
-      <%= link_to 'إنشاء سيرة ذاتية جديدة', new_resume_path, class: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
-      <%= link_to 'توليد بالذكاء الاصطناعي', new_cv_generation_path, class: 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded' %>
-    </div>
+    <%# top CTAs annotated below - removed accidental per-resume action links that referenced undefined `resume` variable %>
   </div>
   <!-- Quick Action for Drafts -->
   <% if @drafts.any? %>
@@ -103,7 +100,7 @@
             <% end %>
             <div class="flex gap-2">
               <%= link_to "استكمال البناء", edit_resume_path(resume, step: resume.draft_data&.dig('current_step') || 1),
-                  class: "w-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded text-sm transition duration-200 text-center font-medium" %>
+                  class: "w-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded text-sm transition duration-200 text-center font-medium js-hover-target", data: { hoverable: true } %>
             </div>
             <!-- Additional Info -->
             <div class="mt-3 pt-3 border-t border-blue-100">
@@ -133,8 +130,8 @@
               </span>
             </div>
             <div class="flex space-x-2">
-              <%= link_to 'عرض', resume_path(resume), class: 'text-blue-600 hover:text-blue-800 text-sm' %>
-              <%= link_to 'تعديل', edit_resume_path(resume), class: 'text-green-600 hover:text-green-800 text-sm' %>
+              <%= link_to 'عرض', resume_path(resume), class: 'text-blue-600 hover:text-blue-800 text-sm js-hover-target', data: { hoverable: true } %>
+              <%= link_to 'تعديل', edit_resume_path(resume), class: 'text-green-600 hover:text-green-800 text-sm js-hover-target', data: { hoverable: true } %>
             </div>
           </div>
           <h2 class="text-xl font-semibold text-gray-900 mb-2"><%= resume.complete_name || "سيرة ذاتية بدون اسم" %></h2>
@@ -152,10 +149,11 @@
             <span><%= pluralize(resume.work_experiences.count, 'خبرة') %></span>
             <span><%= pluralize(resume.skills.count, 'مهارة') %></span>
           </div>
-          <div class="flex space-x-2">
-            <%= link_to 'تصدير PDF', generate_pdf_resume_path(resume), class: 'bg-green-600 hover:bg-green-700 text-white text-sm py-1 px-3 rounded' %>
-            <%= link_to 'تحسين ATS', optimize_ats_resume_path(resume), method: :post, class: 'bg-purple-600 hover:bg-purple-700 text-white text-sm py-1 px-3 rounded' %>
-          </div>
+          <%# export/optimize annotated below %>
+            <div class="flex space-x-2">
+              <%= link_to 'تصدير PDF', generate_pdf_resume_path(resume), class: 'bg-green-600 hover:bg-green-700 text-white text-sm py-1 px-3 rounded js-hover-target', data: { hoverable: true } %>
+              <%= link_to 'تحسين ATS', optimize_ats_resume_path(resume), method: :post, class: 'bg-purple-600 hover:bg-purple-700 text-white text-sm py-1 px-3 rounded js-hover-target', data: { hoverable: true } %>
+            </div>
           <div class="mt-3 text-xs text-gray-500">
             تم الإنشاء: <%= resume.created_at.strftime("%d/%m/%Y") %>
           </div>
@@ -173,10 +171,11 @@
               </span>
             </div>
             <div class="flex space-x-2">
-              <%= link_to 'عرض', cv_generation_path(generation), class: 'text-blue-600 hover:text-blue-800 text-sm' %>
-              <% if generation.metadata&.dig("pdf_generated") %>
-                <%= link_to 'PDF', view_pdf_cv_generation_path(generation), target: "_blank", class: 'text-green-600 hover:text-green-800 text-sm' %>
-              <% end %>
+              <%# annotated links below; original unannotated links removed %>
+                <%= link_to 'عرض', cv_generation_path(generation), class: 'text-blue-600 hover:text-blue-800 text-sm js-hover-target', data: { hoverable: true } %>
+                <% if generation.metadata&.dig("pdf_generated") %>
+                  <%= link_to 'PDF', view_pdf_cv_generation_path(generation), target: "_blank", class: 'text-green-600 hover:text-green-800 text-sm js-hover-target', data: { hoverable: true } %>
+                <% end %>
             </div>
           </div>
           <h2 class="text-xl font-semibold text-gray-900 mb-2">
@@ -206,8 +205,9 @@
               <div class="flex items-center justify-between">
                 <span class="text-green-600 text-sm">📄 PDF جاهز</span>
                 <div class="flex space-x-1">
-                  <%= link_to 'عرض', view_pdf_cv_generation_path(generation), target: "_blank", class: 'text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded' %>
-                  <%= link_to 'تحميل', download_pdf_cv_generation_path(generation), class: 'text-xs bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded' %>
+                  <%# annotated download/view links below; originals removed %>
+                    <%= link_to 'عرض', view_pdf_cv_generation_path(generation), target: "_blank", class: 'text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded js-hover-target', data: { hoverable: true } %>
+                    <%= link_to 'تحميل', download_pdf_cv_generation_path(generation), class: 'text-xs bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded js-hover-target', data: { hoverable: true } %>
                 </div>
               </div>
             </div>
@@ -228,8 +228,8 @@
       <h3 class="text-lg font-medium text-gray-900 mb-2">لا توجد سير ذاتية بعد</h3>
       <p class="text-gray-500 mb-6">ابدأ بإنشاء سيرتك الذاتية الأولى أو استخدم الذكاء الاصطناعي لتوليدها.</p>
       <div class="flex gap-3 justify-center">
-        <%= link_to 'إنشاء سيرة ذاتية', new_resume_path, class: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' %>
-        <%= link_to 'توليد بالذكاء الاصطناعي', new_cv_generation_path, class: 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded' %>
+        <%= link_to 'إنشاء سيرة ذاتية', new_resume_path, class: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded js-hover-target', data: { hoverable: true } %>
+        <%= link_to 'توليد بالذكاء الاصطناعي', new_cv_generation_path, class: 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded js-hover-target', data: { hoverable: true } %>
       </div>
     </div>
   <% end %>

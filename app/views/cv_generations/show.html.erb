@@ -6,11 +6,11 @@
   <!-- Fallback HTML content while React loads -->
   <div class="container mx-auto px-4 py-8">
     <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
+        <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900">CV Generation #<%= @cv_generation.id %></h1>
         <div class="flex space-x-2">
           <%= link_to "Back to List", cv_generations_path, 
-              class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
+              class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
         </div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -56,9 +56,9 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-700">Resume ID</label>
                   <p class="text-sm text-gray-600">
-                    <%= @cv_generation.resume_id %>
-                    <%= link_to "View Resume", resume_path(@cv_generation.resume_id), 
-                        class: "text-blue-600 hover:text-blue-800 ml-2" %>
+          <%= @cv_generation.resume_id %>
+          <%= link_to "View Resume", resume_path(@cv_generation.resume_id), 
+            class: "text-blue-600 hover:text-blue-800 ml-2 js-hover-target", data: { hoverable: true } %>
                   </p>
                 </div>
               <% end %>
@@ -99,18 +99,18 @@
                     <p class="text-sm text-blue-700 mt-2">
                       <strong>السيرة الذاتية المختارة:</strong> ID <%= @cv_generation.draft_data['resume_id'] %>
                       <%= link_to "عرض السيرة الذاتية", resume_path(@cv_generation.draft_data['resume_id']), 
-                          class: "text-blue-600 hover:text-blue-800 ml-2" %>
+                          class: "text-blue-600 hover:text-blue-800 ml-2 js-hover-target", data: { hoverable: true } %>
                     </p>
                   <% end %>
                 </div>
-                <div class="flex space-x-3">
-                  <%= link_to "استئناف المسودة", resume_draft_cv_generation_path(@cv_generation), 
-                      method: :post,
-                      class: "bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200",
-                      data: { confirm: "هل تريد استئناف هذه المسودة؟" } %>
-                  <%= link_to "العودة للقائمة", cv_generations_path, 
-                      class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
-                </div>
+          <div class="flex space-x-3">
+          <%= link_to "استئناف المسودة", resume_draft_cv_generation_path(@cv_generation), 
+            method: :post,
+            class: "bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target",
+            data: { confirm: "هل تريد استئناف هذه المسودة؟", hoverable: true } %>
+          <%= link_to "العودة للقائمة", cv_generations_path, 
+            class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
+        </div>
               </div>
             </div>
           <% elsif @cv_generation.generated_content.present? %>
@@ -127,13 +127,13 @@
                     Filename: <%= @cv_generation.metadata["pdf_filename"] %>
                   </p>
                   <div class="mt-2">
-                    <%= link_to "Download PDF", download_pdf_cv_generation_path(@cv_generation), 
-                        class: "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 mr-2" %>
-                    <%= link_to "View PDF", view_pdf_cv_generation_path(@cv_generation), 
-                        target: "_blank",
-                        class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
-                    <%= link_to "Regenerate PDF", download_pdf_cv_generation_path(@cv_generation, regenerate: true), 
-                        class: "mt-2 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200" %>
+          <%= link_to "Download PDF", download_pdf_cv_generation_path(@cv_generation), 
+            class: "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 mr-2 js-hover-target", data: { hoverable: true } %>
+          <%= link_to "View PDF", view_pdf_cv_generation_path(@cv_generation), 
+            target: "_blank",
+            class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
+          <%= link_to "Regenerate PDF", download_pdf_cv_generation_path(@cv_generation, regenerate: true), 
+            class: "mt-2 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
                     <div class="text-xs text-gray-500 mt-1">PDF Version: <%= @cv_generation.metadata["pdf_version"] || "Unknown" %></div>
                   </div>
                 </div>
@@ -151,8 +151,8 @@
                   height="800px" 
                   style="border: none;"
                   title="Generated CV PDF">
-                  <p>Your browser does not support PDFs. 
-                    <%= link_to "Download the PDF instead", download_pdf_cv_generation_path(@cv_generation) %>.
+                    <p>Your browser does not support PDFs. 
+                    <%= link_to "Download the PDF instead", download_pdf_cv_generation_path(@cv_generation), class: "js-hover-target", data: { hoverable: true } %>.
                   </p>
                 </iframe>
               </div>
@@ -477,7 +477,8 @@
                         {cvGeneration.resume_id}
                         <a
                           href={`/resumes/${cvGeneration.resume_id}`}
-                          className="text-blue-600 hover:text-blue-800 ml-2"
+                          className="text-blue-600 hover:text-blue-800 ml-2 js-hover-target"
+                          data-hoverable={true}
                         >
                           View Resume
                         </a>
