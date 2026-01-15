@@ -91,7 +91,7 @@ const MobileDatePicker = ({
    </button>
 
    {isOpen && (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/25">
      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-sm max-h-[80vh] overflow-hidden shadow-2xl">
       {/* Header */}
       <div className="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
@@ -117,23 +117,27 @@ const MobileDatePicker = ({
       </div>
 
       {/* Content */}
-      <div className="p-6 overflow-y-auto max-h-[60vh]">
+      <div className="p-4 sm:p-6 overflow-y-auto max-h-[65vh]" style={{ WebkitOverflowScrolling: 'touch' }}>
        {/* Year Selector */}
-       <div className="mb-6">
-        <label className="block text-sm font-semibold text-slate-900 mb-3">
-         السنة (1960-2050 - اسحب لرؤية المزيد)
+       <div className="mb-4 sm:mb-6">
+        <label className="block text-sm font-semibold text-slate-900 mb-2 sm:mb-3">
+         السنة (اسحب لرؤية المزيد)
         </label>
-        <div className="max-h-72 overflow-y-auto border border-slate-200 rounded-lg p-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
-         <div className="grid grid-cols-4 gap-2">
+        <div 
+         className="max-h-48 sm:max-h-72 overflow-y-auto border border-slate-200 rounded-lg p-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100"
+         style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {years.map((year) => (
            <button
             key={year}
             onClick={() => setSelectedYear(year)}
-            className={`py-3 px-2 rounded-lg text-sm font-medium transition-all ${
+            className={`py-3 sm:py-3 px-2 rounded-lg text-base sm:text-sm font-medium transition-all active:scale-95 ${
              selectedYear === year
-              ? "bg-emerald-600 text-white"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              ? "bg-emerald-600 text-white shadow-md"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300"
             }`}
+            style={{ minHeight: '44px' }}
            >
             {year}
            </button>
@@ -143,26 +147,25 @@ const MobileDatePicker = ({
        </div>
 
        {/* Month Selector */}
-       <div className="mb-6">
-        <label className="block text-sm font-semibold text-slate-900 mb-3">
-         الشهر (اسحب لرؤية المزيد)
+       <div className="mb-2 sm:mb-6">
+        <label className="block text-sm font-semibold text-slate-900 mb-2 sm:mb-3">
+         الشهر
         </label>
-        <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
-         <div className="grid grid-cols-3 gap-2">
-          {months.map((month) => (
-           <button
-            key={month.value}
-            onClick={() => setSelectedMonth(month.value)}
-            className={`py-3 px-2 rounded-lg text-sm font-medium transition-all ${
-             selectedMonth === month.value
-              ? "bg-emerald-600 text-white"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-           >
-            {month.label}
-           </button>
-          ))}
-         </div>
+        <div className="grid grid-cols-3 gap-2">
+         {months.map((month) => (
+          <button
+           key={month.value}
+           onClick={() => setSelectedMonth(month.value)}
+           className={`py-3 px-2 rounded-lg text-base sm:text-sm font-medium transition-all active:scale-95 ${
+            selectedMonth === month.value
+             ? "bg-emerald-600 text-white shadow-md"
+             : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300"
+           }`}
+           style={{ minHeight: '44px' }}
+          >
+           {month.label}
+          </button>
+         ))}
         </div>
        </div>
       </div>

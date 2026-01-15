@@ -4,6 +4,7 @@
   - [mailers, 2]
   - [ai_translations, 3]
   - [pdf_generation, 4]
+  - [cv_builder, 5]
 
 :max_retries: 3
 :retry_interval: 60
