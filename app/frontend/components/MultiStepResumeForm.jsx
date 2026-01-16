@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 // Mobile-friendly date picker component
 const MobileDatePicker = ({
@@ -59,23 +60,20 @@ const MobileDatePicker = ({
  };
 
  return (
-  <div className="relative">
+  <div className="relative w-full">
    <button
     type="button"
     onClick={() => !disabled && setIsOpen(true)}
     disabled={disabled}
-    className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all text-base text-right disabled:opacity-50 disabled:cursor-not-allowed"
+    className="w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
     style={{
      fontSize: "16px",
      minHeight: "48px",
     }}
    >
-    <div className="flex items-center justify-between">
-     <span className={value ? "text-slate-900" : "text-slate-400"}>
-      {formatDisplayValue(value)}
-     </span>
+    <div className="flex items-center justify-between gap-1">
      <svg
-      className="w-5 h-5 text-slate-400"
+      className="w-4 h-4 text-slate-400 flex-shrink-0"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -87,12 +85,18 @@ const MobileDatePicker = ({
        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
       />
      </svg>
+     <span className={`flex-1 text-sm truncate ${value ? "text-slate-900" : "text-slate-400"}`}>
+      {formatDisplayValue(value)}
+     </span>
     </div>
    </button>
 
-   {isOpen && (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/25">
-     <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-sm max-h-[80vh] overflow-hidden shadow-2xl">
+   {isOpen && createPortal(
+    <div 
+     className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/25 p-4"
+     onClick={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
+    >
+     <div className="bg-white rounded-2xl w-full max-w-sm max-h-[85vh] overflow-hidden shadow-2xl">
       {/* Header */}
       <div className="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
        <h3 className="text-lg font-semibold">اختر التاريخ</h3>
@@ -186,7 +190,8 @@ const MobileDatePicker = ({
        </button>
       </div>
      </div>
-    </div>
+    </div>,
+    document.body
    )}
   </div>
  );
@@ -524,8 +529,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [addingSkillTo, setAddingSkillTo] = useState(null);
  const [translationCount, setTranslationCount] = useState(0);
  const [maxTranslations] = useState(5);
+ const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
+ const [lastSavedAt, setLastSavedAt] = useState(null);
 
- const totalSteps = 8;
+ const totalSteps = 4;
 
  // Handle browser back/forward navigation to keep step in sync
  useEffect(() => {
@@ -1477,8 +1484,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
  };
 
- const saveDraft = async (stepNumber = currentStep) => {
-  setIsSavingDraft(true);
+ const saveDraft = async (stepNumber = currentStep, silent = false) => {
+  if (silent) {
+   setAutoSaveStatus("saving");
+  } else {
+   setIsSavingDraft(true);
+  }
   try {
    const draftData = {
     complete_name: formData.complete_name,
@@ -1512,72 +1523,64 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    if (response.ok) {
     const result = await response.json();
     console.log("✅ Draft saved successfully at step:", stepNumber, result);
-    alert(
-     `تم حفظ المسودة بنجاح في الخطوة ${stepNumber}! يمكنك العودة إليها لاحقاً.`
-    );
+    if (silent) {
+     setAutoSaveStatus("saved");
+     setLastSavedAt(new Date());
+     // Reset status after 3 seconds
+     setTimeout(() => setAutoSaveStatus("idle"), 3000);
+    } else {
+     alert(`تم حفظ المسودة بنجاح في الخطوة ${stepNumber}! يمكنك العودة إليها لاحقاً.`);
+    }
    } else {
     console.error("❌ Failed to save draft");
-    alert("حدث خطأ أثناء حفظ المسودة");
+    if (silent) {
+     setAutoSaveStatus("error");
+     setTimeout(() => setAutoSaveStatus("idle"), 3000);
+    } else {
+     alert("حدث خطأ أثناء حفظ المسودة");
+    }
    }
   } catch (error) {
    console.error("❌ Error saving draft:", error);
-   alert("حدث خطأ أثناء حفظ المسودة: " + error.message);
+   if (silent) {
+    setAutoSaveStatus("error");
+    setTimeout(() => setAutoSaveStatus("idle"), 3000);
+   } else {
+    alert("حدث خطأ أثناء حفظ المسودة: " + error.message);
+   }
   } finally {
    setIsSavingDraft(false);
   }
  };
 
- // Helper function to render save draft button
+ // Auto-save effect - triggers 2 seconds after form data changes
+ useEffect(() => {
+  // Skip auto-save if no resume ID (new unsaved resume)
+  if (!resume?.id) return;
+  
+  const autoSaveTimer = setTimeout(() => {
+   saveDraft(currentStep, true); // silent save
+  }, 2000);
+
+  return () => clearTimeout(autoSaveTimer);
+ }, [formData, currentStep]);
+
+ // Helper function to render save draft button (now a subtle manual backup option)
  const renderSaveDraftButton = (stepNumber) => (
-  <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200/60">
+  <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between">
+   <p className="text-xs text-slate-400 flex items-center gap-1">
+    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    يتم الحفظ تلقائياً
+   </p>
    <button
     type="button"
     onClick={() => saveDraft(stepNumber)}
     disabled={isSavingDraft}
-    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-slate-600 px-6 py-3 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-slate-700 hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
+    className="text-xs text-slate-500 hover:text-slate-700 underline disabled:opacity-50"
    >
-    {isSavingDraft ? (
-     <>
-      <svg
-       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-       xmlns="http://www.w3.org/2000/svg"
-       fill="none"
-       viewBox="0 0 24 24"
-      >
-       <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-       ></circle>
-       <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-       ></path>
-      </svg>
-      جاري الحفظ...
-     </>
-    ) : (
-     <>
-      <svg
-       className="w-4 h-4"
-       fill="none"
-       stroke="currentColor"
-       viewBox="0 0 24 24"
-      >
-       <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"
-       />
-      </svg>
-      حفظ المسودة - الخطوة {stepNumber}
-     </>
-    )}
+    {isSavingDraft ? "جاري الحفظ..." : "حفظ يدوي"}
    </button>
   </div>
  );
@@ -1716,6 +1719,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    const url = new URL(window.location);
    url.searchParams.set("step", newStep);
    window.history.pushState({}, "", url);
+   
+   // Scroll to center of viewport
+   setTimeout(() => {
+    const formCard = document.querySelector('[data-form-card]');
+    if (formCard) {
+     formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+   }, 100);
   }
  };
 
@@ -1728,6 +1739,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    const url = new URL(window.location);
    url.searchParams.set("step", newStep);
    window.history.pushState({}, "", url);
+   
+   // Scroll to center of viewport
+   setTimeout(() => {
+    const formCard = document.querySelector('[data-form-card]');
+    if (formCard) {
+     formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+   }, 100);
   }
  };
 
@@ -3350,43 +3369,492 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     )}
    </div>
 
-   {renderSaveDraftButton(8)}
+   {renderSaveDraftButton(4)}
+  </div>
+ );
+
+ // ========== COMBINED STEP 1: Personal Info + Professional Summary ==========
+ const renderCombinedStep1 = () => (
+  <div className="space-y-8">
+   {/* Section Header */}
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">المعلومات الشخصية والملخص المهني</h2>
+    <p className="text-slate-600 mt-2">ابدأ بإدخال معلوماتك الأساسية وملخصك المهني</p>
+   </div>
+
+   {/* Personal Info Section */}
+   <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+     <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
+     المعلومات الشخصية
+    </h3>
+    <div className="grid gap-4">
+     <div>
+      <label className="block text-sm font-semibold text-slate-900 mb-2">الاسم الكامل</label>
+      <input
+       type="text"
+       value={formData.complete_name}
+       onChange={(e) => handleInputChange("complete_name", e.target.value)}
+       className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+       placeholder="مثال: Ahmed Ali"
+      />
+     </div>
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+       <label className="block text-sm font-semibold text-slate-900 mb-2">البريد الإلكتروني</label>
+       <input
+        type="email"
+        value={formData.email}
+        onChange={(e) => handleInputChange("email", e.target.value)}
+        className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+        placeholder="ahmed@example.com"
+       />
+      </div>
+      <div>
+       <label className="block text-sm font-semibold text-slate-900 mb-2">رقم الهاتف</label>
+       <input
+        type="tel"
+        value={formData.phone_number}
+        onChange={(e) => handleInputChange("phone_number", e.target.value)}
+        className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+        placeholder="+966501234567"
+       />
+      </div>
+     </div>
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+       <label className="block text-sm font-semibold text-slate-900 mb-2">المدينة</label>
+       <input
+        type="text"
+        value={formData.city}
+        onChange={(e) => handleInputChange("city", e.target.value)}
+        className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+        placeholder="Riyadh"
+       />
+      </div>
+      <div>
+       <label className="block text-sm font-semibold text-slate-900 mb-2">الدولة</label>
+       <input
+        type="text"
+        value={formData.country}
+        onChange={(e) => handleInputChange("country", e.target.value)}
+        className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all"
+        placeholder="Saudi Arabia"
+       />
+      </div>
+     </div>
+    </div>
+   </div>
+
+   {/* Professional Summary Section */}
+   <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+     <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
+     الملخص المهني
+    </h3>
+    <div className="space-y-4">
+     <div>
+      <label className="block text-sm font-semibold text-slate-900 mb-2">الملخص المهني (بالعربية)</label>
+      <textarea
+       value={formData.professional_summary}
+       onChange={(e) => handleInputChange("professional_summary", e.target.value)}
+       rows={4}
+       className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all resize-none"
+       placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك..."
+      />
+      <p className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
+       💡 سيقوم النظام بترجمة النص العربي إلى الإنجليزية وإنشاء ملخص مهني محسن
+      </p>
+     </div>
+
+     {/* Translation Button */}
+     <div className="text-center">
+      <button
+       type="button"
+       onClick={translateProfessionalSummary}
+       disabled={isTranslating || !formData.professional_summary.trim() || translationCount >= maxTranslations}
+       className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-6 py-3 text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+       {isTranslating ? (
+        <>
+         <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+         </svg>
+         جاري الترجمة...
+        </>
+       ) : (
+        <>
+         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+         </svg>
+         ترجم وأنشئ ملخص مهني ({maxTranslations - translationCount} متبقي)
+        </>
+       )}
+      </button>
+     </div>
+
+     {translationError && (
+      <div className="p-3 border border-red-200 rounded-lg bg-red-50">
+       <p className="text-sm text-red-600 text-center">{translationError}</p>
+      </div>
+     )}
+
+     {formData.professional_summary_english && (
+      <div className="space-y-3">
+       <label className="block text-sm font-semibold text-slate-900 mb-2">الملخص المهني (بالإنجليزية)</label>
+       <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
+        <p className="text-slate-700 leading-relaxed text-left" dir="ltr">{formData.professional_summary_english}</p>
+       </div>
+      </div>
+     )}
+    </div>
+   </div>
+
+   {renderSaveDraftButton(1)}
+  </div>
+ );
+
+ // ========== COMBINED STEP 2: Education + Work Experience ==========
+ const renderCombinedStep2 = () => (
+  <div className="space-y-8">
+   {/* Section Header */}
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">التعليم والخبرات العملية</h2>
+    <p className="text-slate-600 mt-2">أضف معلوماتك التعليمية وخبراتك العملية</p>
+   </div>
+
+   {/* Education Section */}
+   <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+     <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
+     التعليم
+     <span className="text-xs text-slate-500 font-normal">(اختياري)</span>
+    </h3>
+    <div className="space-y-4">
+     {formData.education.map((edu, index) => (
+      <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50 overflow-hidden">
+       <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-slate-700">التعليم {index + 1}</span>
+        {formData.education.length > 1 && (
+         <button type="button" onClick={() => removeEducation(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+        )}
+       </div>
+       <div className="grid gap-3">
+        <input
+         type="text"
+         value={edu.degree}
+         onChange={(e) => handleEducationChange(index, "degree", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+         placeholder="الدرجة العلمية (Bachelor of...)"
+        />
+        <input
+         type="text"
+         value={edu.institution}
+         onChange={(e) => handleEducationChange(index, "institution", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+         placeholder="المؤسسة التعليمية"
+        />
+        <div className="grid grid-cols-2 gap-3">
+         <MobileDatePicker value={edu.start_date} onChange={(value) => handleEducationChange(index, "start_date", value)} placeholder="البداية" />
+         <MobileDatePicker value={edu.end_date} onChange={(value) => handleEducationChange(index, "end_date", value)} disabled={edu.is_current} placeholder="النهاية" />
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer">
+         <input type="checkbox" checked={edu.is_current} onChange={(e) => handleEducationChange(index, "is_current", e.target.checked)} className="w-4 h-4 text-emerald-600 rounded" />
+         <span className="text-xs text-slate-700">دراسة حالية</span>
+        </label>
+       </div>
+      </div>
+     ))}
+     <button type="button" onClick={addEducation} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+      + إضافة تعليم آخر
+     </button>
+    </div>
+   </div>
+
+   {/* Work Experience Section */}
+   <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+     <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
+     الخبرات العملية
+    </h3>
+    <div className="space-y-4">
+     {formData.work_experience.map((work, index) => (
+      <div key={index} className="p-3 sm:p-4 border border-slate-200/40 rounded-lg bg-white/50">
+       <div className="flex items-center justify-between mb-4">
+        <span className="text-sm font-medium text-slate-700">الخبرة {index + 1}</span>
+        {formData.work_experience.length > 1 && (
+         <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+        )}
+       </div>
+       <div className="space-y-3">
+        <input
+         type="text"
+         value={work.job_title}
+         onChange={(e) => handleWorkExperienceChange(index, "job_title", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base"
+         placeholder="المسمى الوظيفي"
+         style={{ fontSize: "16px" }}
+        />
+        <input
+         type="text"
+         value={work.company}
+         onChange={(e) => handleWorkExperienceChange(index, "company", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base"
+         placeholder="اسم الشركة"
+         style={{ fontSize: "16px" }}
+        />
+        <div className="flex gap-2">
+         <div className="flex-1">
+          <MobileDatePicker value={work.start_date} onChange={(value) => handleWorkExperienceChange(index, "start_date", value)} placeholder="البداية" />
+         </div>
+         <div className="flex-1">
+          <MobileDatePicker value={work.end_date} onChange={(value) => handleWorkExperienceChange(index, "end_date", value)} disabled={work.is_current} placeholder="النهاية" />
+         </div>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer py-1">
+         <input type="checkbox" checked={work.is_current} onChange={(e) => handleWorkExperienceChange(index, "is_current", e.target.checked)} className="w-5 h-5 text-emerald-600 rounded" />
+         <span className="text-sm text-slate-700">عمل حالي</span>
+        </label>
+        <div className="pt-2">
+         <label className="block text-sm font-medium text-slate-700 mb-2">المسؤوليات والإنجازات</label>
+         <div className="space-y-2">
+          {work.responsibilities.map((resp, respIndex) => (
+           <div key={respIndex} className="flex items-start gap-2">
+            <span className="text-emerald-600 mt-3 text-lg">•</span>
+            <textarea
+             value={resp}
+             onChange={(e) => handleResponsibilityChange(index, respIndex, e.target.value)}
+             rows={2}
+             className="flex-1 min-w-0 rounded-lg border border-slate-300/70 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none"
+             placeholder="اكتب مسؤولية أو إنجاز..."
+             style={{ fontSize: "16px" }}
+            />
+            {work.responsibilities.length > 1 && (
+             <button type="button" onClick={() => removeResponsibility(index, respIndex)} className="text-red-500 hover:text-red-700 text-lg mt-2 px-1">×</button>
+            )}
+           </div>
+          ))}
+          <button type="button" onClick={() => addResponsibility(index)} className="text-emerald-600 hover:text-emerald-700 text-sm font-medium py-1">+ إضافة مسؤولية</button>
+         </div>
+        </div>
+       </div>
+      </div>
+     ))}
+     <button type="button" onClick={addWorkExperience} className="w-full py-3 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+      + إضافة خبرة عمل أخرى
+     </button>
+    </div>
+   </div>
+
+   {renderSaveDraftButton(2)}
+  </div>
+ );
+
+ // ========== COMBINED STEP 3: Skills + Certifications + Languages ==========
+ const renderCombinedStep3 = () => (
+  <div className="space-y-8">
+   {/* Section Header */}
+   <div className="text-center mb-6">
+    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+     </svg>
+    </div>
+    <h2 className="text-xl font-semibold text-slate-900">المهارات والشهادات واللغات</h2>
+    <p className="text-slate-600 mt-2">أضف مهاراتك وشهاداتك واللغات التي تتحدثها</p>
+   </div>
+
+   {/* Skills Section */}
+   <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+     <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
+     المهارات
+    </h3>
+    <div className="space-y-4">
+     {formData.skills.map((skill, index) => (
+      <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
+       <div className="flex items-center justify-between mb-3">
+        <input
+         type="text"
+         value={skill.category}
+         onChange={(e) => handleSkillsChange(index, "category", e.target.value)}
+         className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm font-medium"
+         placeholder="فئة المهارات (مثال: Technical Skills)"
+        />
+        {formData.skills.length > 1 && (
+         <button type="button" onClick={() => removeSkills(index)} className="text-red-500 hover:text-red-700 text-xs mr-2">حذف</button>
+        )}
+       </div>
+       <div className="space-y-2">
+        {(() => {
+         const validSkillNames = skill.skill_names.filter((name) => name && typeof name === "string" && name.trim() !== "");
+         return validSkillNames.map((skillName, nameIndex) => (
+          <div key={nameIndex} className="flex items-center gap-2">
+           <span className="text-emerald-600">•</span>
+           <input
+            type="text"
+            value={skillName}
+            onChange={(e) => handleSkillNameChange(index, nameIndex, e.target.value)}
+            onBlur={() => handleSkillNameBlur(index, nameIndex)}
+            className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+            placeholder="اسم المهارة"
+           />
+           {validSkillNames.length > 1 && (
+            <button type="button" onClick={() => removeSkillName(index, nameIndex)} className="text-red-500 text-xs">×</button>
+           )}
+          </div>
+         ));
+        })()}
+        {addingSkillTo === index ? (
+         <div className="flex items-center gap-2">
+          <span className="text-emerald-600">•</span>
+          <input
+           type="text"
+           autoFocus
+           onChange={(e) => handleNewSkillChange(index, e.target.value)}
+           onBlur={(e) => handleNewSkillBlur(index, e.target.value)}
+           onKeyPress={(e) => { if (e.key === "Enter") handleNewSkillChange(index, e.target.value); }}
+           className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+           placeholder="اسم المهارة"
+          />
+         </div>
+        ) : (
+         <button type="button" onClick={() => addSkillName(index)} className="text-emerald-600 hover:text-emerald-700 text-xs font-medium">+ إضافة مهارة</button>
+        )}
+       </div>
+      </div>
+     ))}
+     <button type="button" onClick={addSkills} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+      + إضافة فئة مهارات أخرى
+     </button>
+    </div>
+   </div>
+
+   {/* Certifications Section */}
+   <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+     <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
+     الشهادات
+     <span className="text-xs text-slate-500 font-normal">(اختياري)</span>
+    </h3>
+    <div className="space-y-4">
+     {formData.certifications.map((cert, index) => (
+      <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
+       <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-slate-700">الشهادة {index + 1}</span>
+        {formData.certifications.length > 1 && (
+         <button type="button" onClick={() => removeCertification(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+        )}
+       </div>
+       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <input
+         type="text"
+         value={cert.name}
+         onChange={(e) => handleCertificationChange(index, "name", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+         placeholder="اسم الشهادة (PMP®)"
+        />
+        <input
+         type="text"
+         value={cert.organization}
+         onChange={(e) => handleCertificationChange(index, "organization", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+         placeholder="المؤسسة المانحة"
+        />
+        <MobileDatePicker value={cert.date} onChange={(value) => handleCertificationChange(index, "date", value)} placeholder="تاريخ الحصول" />
+       </div>
+      </div>
+     ))}
+     <button type="button" onClick={addCertification} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+      + إضافة شهادة أخرى
+     </button>
+    </div>
+   </div>
+
+   {/* Languages Section */}
+   <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+     <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">3</span>
+     اللغات
+    </h3>
+    <div className="space-y-4">
+     {formData.languages.map((lang, index) => (
+      <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
+       <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-slate-700">اللغة {index + 1}</span>
+        {formData.languages.length > 1 && (
+         <button type="button" onClick={() => removeLanguage(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+        )}
+       </div>
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <input
+         type="text"
+         value={lang.language}
+         onChange={(e) => handleLanguageChange(index, "language", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+         placeholder="اللغة (Arabic, English)"
+        />
+        <select
+         value={lang.proficiency}
+         onChange={(e) => handleLanguageChange(index, "proficiency", e.target.value)}
+         className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+        >
+         <option value="">اختر مستوى الإتقان</option>
+         <option value="Native">أمية (Native)</option>
+         <option value="Fluent">إتقان كامل (Fluent)</option>
+         <option value="Advanced">متقدم (Advanced)</option>
+         <option value="Intermediate">متوسط (Intermediate)</option>
+         <option value="Beginner">مبتدئ (Beginner)</option>
+        </select>
+       </div>
+      </div>
+     ))}
+     <button type="button" onClick={addLanguage} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+      + إضافة لغة أخرى
+     </button>
+    </div>
+   </div>
+
+   {renderSaveDraftButton(3)}
   </div>
  );
 
  const renderStepContent = () => {
   switch (currentStep) {
    case 1:
-    return renderStep1();
+    return renderCombinedStep1();
    case 2:
-    return renderStep2();
+    return renderCombinedStep2();
    case 3:
-    return renderStep3();
+    return renderCombinedStep3();
    case 4:
-    return renderStep4();
-   case 5:
-    return renderStep5();
-   case 6:
-    return renderStep6();
-   case 7:
-    return renderStep7();
-   case 8:
     return renderStep8();
    default:
-    return renderStep1();
+    return renderCombinedStep1();
   }
  };
 
  return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-2 sm:py-8">
-   <div className="max-w-4xl mx-auto px-2 sm:px-4">
-    <div className="bg-white rounded-lg sm:rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-2 sm:py-8 overflow-x-hidden w-full max-w-full">
+   <div className="max-w-4xl mx-auto px-2 sm:px-4 w-full">
+    <div data-form-card className="bg-white rounded-lg sm:rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden w-full">
      <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 sm:px-8 py-4 sm:py-6">
       <h1 className="text-xl sm:text-3xl font-bold text-white text-center">
        بناء السيرة الذاتية
       </h1>
       <p className="text-emerald-100 text-center mt-1 sm:mt-2 text-sm sm:text-base">
-       خطوة {currentStep} من 8
+       خطوة {currentStep} من 4
       </p>
      </div>
      {/* Progress Bar */}
@@ -3395,9 +3863,45 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        <h1 className="text-lg sm:text-2xl font-bold text-slate-900">
         إنشاء سيرة ذاتية جديدة
        </h1>
-       <span className="text-xs sm:text-sm text-slate-500">
-        الخطوة {currentStep} من {totalSteps}
-       </span>
+       <div className="flex items-center gap-3">
+        {/* Auto-save indicator */}
+        {autoSaveStatus !== "idle" && (
+         <span className={`text-xs flex items-center gap-1 ${
+          autoSaveStatus === "saving" ? "text-blue-600" :
+          autoSaveStatus === "saved" ? "text-emerald-600" :
+          "text-red-500"
+         }`}>
+          {autoSaveStatus === "saving" && (
+           <>
+            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            جاري الحفظ...
+           </>
+          )}
+          {autoSaveStatus === "saved" && (
+           <>
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            تم الحفظ تلقائياً
+           </>
+          )}
+          {autoSaveStatus === "error" && (
+           <>
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            خطأ في الحفظ
+           </>
+          )}
+         </span>
+        )}
+        <span className="text-xs sm:text-sm text-slate-500">
+         الخطوة {currentStep} من {totalSteps}
+        </span>
+       </div>
       </div>
       <div className="w-full bg-slate-200 rounded-full h-2">
        <div
@@ -3408,129 +3912,58 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </div>
 
      {/* Step Content */}
-     <div className="px-4 sm:px-8 pb-4">{renderStepContent()}</div>
+     <div className="px-4 sm:px-8 pb-4 overflow-x-hidden">{renderStepContent()}</div>
 
-     {/* Navigation Buttons */}
-     <div
-      className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-8 py-4 border-t border-slate-200/60 bg-slate-50/50"
-      dir="rtl"
-     >
-      <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 order-2 sm:order-1">
+     {/* Navigation Buttons - Mobile Optimized */}
+     <div className="px-4 sm:px-8 py-4 border-t border-slate-200/60 bg-slate-50/50" dir="rtl">
+      <div className="flex flex-col gap-3">
+       {/* Primary actions row */}
+       <div className="flex gap-2">
+        {currentStep < totalSteps ? (
+         <button
+          type="button"
+          onClick={nextStep}
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700"
+         >
+          التالي
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+         </button>
+        ) : (
+         <button
+          type="button"
+          onClick={exportToPDF}
+          disabled={isExporting}
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700 disabled:opacity-50"
+         >
+          {isExporting ? (
+           <>
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            جاري التصدير...
+           </>
+          ) : (
+           <>إنشاء وتحميل</>
+          )}
+         </button>
+        )}
+        <a href="/resumes" className="px-4 py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50">
+         إلغاء
+        </a>
+       </div>
        {currentStep > 1 && (
         <button
          type="button"
          onClick={prevStep}
-         className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
+         className="w-full py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50 flex items-center justify-center gap-2"
         >
-         <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-         >
-          <path
-           strokeLinecap="round"
-           strokeLinejoin="round"
-           strokeWidth={2}
-           d="M9 5l7 7-7 7"
-          />
+         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
          </svg>
          السابق
-        </button>
-       )}
-      </div>
-
-      <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 order-1 sm:order-2">
-       <a
-        href="/resumes"
-        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-slate-300/70 transition-all hover:bg-slate-50 hover:ring-slate-400/70"
-       >
-        <svg
-         className="w-4 h-4"
-         fill="none"
-         stroke="currentColor"
-         viewBox="0 0 24 24"
-        >
-         <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M6 18L18 6M6 6l12 12"
-         />
-        </svg>
-        إلغاء
-       </a>
-
-       {currentStep < totalSteps ? (
-        <button
-         type="button"
-         onClick={nextStep}
-         className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow"
-        >
-         التالي
-         <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-         >
-          <path
-           strokeLinecap="round"
-           strokeLinejoin="round"
-           strokeWidth={2}
-           d="M15 19l-7-7 7-7"
-          />
-         </svg>
-        </button>
-       ) : (
-        <button
-         type="button"
-         onClick={exportToPDF}
-         disabled={isExporting}
-         className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-medium text-white ring-1 ring-black/5 transition-all hover:bg-emerald-700 hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-         {isExporting ? (
-          <>
-           <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-           >
-            <circle
-             className="opacity-25"
-             cx="12"
-             cy="12"
-             r="10"
-             stroke="currentColor"
-             strokeWidth="4"
-            ></circle>
-            <path
-             className="opacity-75"
-             fill="currentColor"
-             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-           </svg>
-           جاري التصدير...
-          </>
-         ) : (
-          <>
-            إنشاء السيرة الذاتية و تحميلها
-           <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-           >
-            <path
-             strokeLinecap="round"
-             strokeLinejoin="round"
-             strokeWidth={2}
-             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-           </svg>
-          </>
-         )}
         </button>
        )}
       </div>
