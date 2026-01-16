@@ -454,6 +454,22 @@
           });
         }
 
+        // Mobile touch animation for buttons
+        const buttons = document.querySelectorAll('a[class*="bg-"], button[class*="bg-"]');
+        buttons.forEach(btn => {
+          btn.addEventListener('touchstart', () => {
+            btn.style.transform = 'scale(1.05)';
+          }, { passive: true });
+          btn.addEventListener('touchend', () => {
+            setTimeout(() => {
+              btn.style.transform = 'scale(1)';
+            }, 150);
+          }, { passive: true });
+          btn.addEventListener('touchcancel', () => {
+            btn.style.transform = 'scale(1)';
+          }, { passive: true });
+        });
+
               // Mobile menu functionality
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
