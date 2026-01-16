@@ -76,10 +76,12 @@
               <button 
                 type="submit" 
                 data-hoverable="true"
-                class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors js-hover-target"
+                data-loading-text="جاري الإرسال..."
+                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-3 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation"
               >
-                <i data-lucide="mail" class="w-4 h-4"></i>
-                إرسال رمز التحقق
+                <i data-lucide="mail" class="w-4 h-4 btn-icon"></i>
+                <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span class="btn-text">إرسال رمز التحقق</span>
               </button>
             </form>
           </div>
@@ -120,10 +122,12 @@
               <button 
                 type="submit" 
                 data-hoverable="true"
-                class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors js-hover-target"
+                data-loading-text="جاري التحقق..."
+                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-3 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation"
               >
-                <i data-lucide="log-in" class="w-4 h-4"></i>
-                تسجيل الدخول
+                <i data-lucide="log-in" class="w-4 h-4 btn-icon"></i>
+                <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span class="btn-text">تسجيل الدخول</span>
               </button>
             </form>
           </div>
@@ -149,6 +153,60 @@
           lucide.createIcons({
             attrs: { 'stroke-width': 1.5 }
           });
+        }
+
+        // Reset button loading state on page load (for back/forward navigation or errors)
+        document.querySelectorAll('.btn-loading').forEach(btn => {
+          btn.disabled = false;
+          btn.classList.remove('opacity-75', 'cursor-wait');
+          const icon = btn.querySelector('.btn-icon');
+          const spinner = btn.querySelector('.btn-spinner');
+          if (icon) icon.classList.remove('hidden');
+          if (spinner) spinner.classList.add('hidden');
+        });
+
+        // Button loading animation
+        document.querySelectorAll('.btn-loading').forEach(btn => {
+          const originalText = btn.querySelector('.btn-text')?.textContent;
+          btn.dataset.originalText = originalText;
+          
+          const form = btn.closest('form');
+          if (form) {
+            form.addEventListener('submit', function(e) {
+              // Show loading state after form starts submitting
+              setTimeout(() => {
+                btn.classList.add('opacity-75', 'cursor-wait');
+                
+                const icon = btn.querySelector('.btn-icon');
+                const spinner = btn.querySelector('.btn-spinner');
+                const text = btn.querySelector('.btn-text');
+                const loadingText = btn.dataset.loadingText;
+                
+                if (icon) icon.classList.add('hidden');
+                if (spinner) spinner.classList.remove('hidden');
+                if (text && loadingText) text.textContent = loadingText;
+              }, 0);
+            });
+          }
+        });
+      });
+
+      // Reset on pageshow (back/forward navigation)
+      window.addEventListener('pageshow', () => {
+        document.querySelectorAll('.btn-loading').forEach(btn => {
+          btn.disabled = false;
+          btn.classList.remove('opacity-75', 'cursor-wait');
+          const icon = btn.querySelector('.btn-icon');
+          const spinner = btn.querySelector('.btn-spinner');
+          const text = btn.querySelector('.btn-text');
+          if (icon) icon.classList.remove('hidden');
+          if (spinner) spinner.classList.add('hidden');
+          if (text && btn.dataset.originalText) text.textContent = btn.dataset.originalText;
+        });
+        
+        // Re-init icons
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
         }
       });
     </script>

@@ -12,6 +12,45 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
+    <!-- Skeleton Loading Overlay -->
+    <div id="page-loading-skeleton" class="fixed inset-0 z-50 bg-gradient-to-b from-white via-emerald-50 to-white hidden">
+      <div class="animate-pulse">
+        <!-- Header skeleton -->
+        <div class="bg-white/70 border-b border-slate-200/60 px-4 py-3">
+          <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-slate-200 rounded-lg"></div>
+              <div class="w-16 h-4 bg-slate-200 rounded"></div>
+            </div>
+            <div class="hidden md:flex items-center gap-6">
+              <div class="w-20 h-3 bg-slate-200 rounded"></div>
+              <div class="w-16 h-3 bg-slate-200 rounded"></div>
+              <div class="w-24 h-3 bg-slate-200 rounded"></div>
+            </div>
+            <div class="w-28 h-9 bg-emerald-200 rounded-md"></div>
+          </div>
+        </div>
+        <!-- Content skeleton -->
+        <div class="max-w-4xl mx-auto px-4 py-12">
+          <div class="bg-white/80 rounded-2xl border border-slate-200/80 p-8">
+            <div class="text-center mb-8">
+              <div class="w-64 h-8 bg-slate-200 rounded mx-auto mb-4"></div>
+              <div class="w-96 h-4 bg-slate-100 rounded mx-auto"></div>
+            </div>
+            <div class="space-y-6">
+              <div class="h-12 bg-slate-100 rounded-lg"></div>
+              <div class="h-12 bg-slate-100 rounded-lg"></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="h-12 bg-slate-100 rounded-lg"></div>
+                <div class="h-12 bg-slate-100 rounded-lg"></div>
+              </div>
+              <div class="h-32 bg-slate-100 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Background Accents -->
     <div class="pointer-events-none fixed inset-0 -z-10">
       <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
@@ -540,6 +579,40 @@
           });
         } else {
           console.error('Mobile menu elements not found!');
+        }
+
+        // Skeleton loading for page navigation
+        const skeleton = document.getElementById('page-loading-skeleton');
+        if (skeleton) {
+          document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href]');
+            if (!link) return;
+            
+            const href = link.getAttribute('href');
+            // Skip external links, anchors, and special links
+            if (!href || 
+                href.startsWith('#') || 
+                href.startsWith('http') || 
+                href.startsWith('mailto:') ||
+                href.startsWith('tel:') ||
+                link.target === '_blank') {
+              return;
+            }
+
+            // Show skeleton with fade in
+            skeleton.classList.remove('hidden');
+            skeleton.style.opacity = '0';
+            requestAnimationFrame(() => {
+              skeleton.style.transition = 'opacity 150ms ease-out';
+              skeleton.style.opacity = '1';
+            });
+          });
+
+          // Hide skeleton when page loads (for back/forward navigation)
+          window.addEventListener('pageshow', () => {
+            skeleton.classList.add('hidden');
+            skeleton.style.opacity = '0';
+          });
         }
       });
     </script>
