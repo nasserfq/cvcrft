@@ -93,7 +93,10 @@ const MobileDatePicker = ({
 
    {isOpen && createPortal(
     <div 
-     className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/25 p-4"
+     className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/25"
+     style={{ 
+      padding: 'max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))'
+     }}
      onClick={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
     >
      <div className="bg-white rounded-2xl w-full max-w-sm max-h-[85vh] overflow-hidden shadow-2xl">
@@ -3846,7 +3849,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-2 sm:py-8 overflow-x-hidden w-full max-w-full">
+  <div data-turbo="false" className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-2 sm:py-8 overflow-x-hidden w-full max-w-full">
    <div className="max-w-4xl mx-auto px-2 sm:px-4 w-full">
     <div data-form-card className="bg-white rounded-lg sm:rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden w-full">
      <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 sm:px-8 py-4 sm:py-6">
@@ -3914,8 +3917,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      {/* Step Content */}
      <div className="px-4 sm:px-8 pb-4 overflow-x-hidden">{renderStepContent()}</div>
 
-     {/* Navigation Buttons - Mobile Optimized */}
-     <div className="px-4 sm:px-8 py-4 border-t border-slate-200/60 bg-slate-50/50" dir="rtl">
+     {/* Navigation Buttons - Mobile Optimized with Safe Area */}
+     <div 
+      className="px-4 sm:px-8 py-4 border-t border-slate-200/60 bg-slate-50/50" 
+      dir="rtl"
+      style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+     >
       <div className="flex flex-col gap-3">
        {/* Primary actions row */}
        <div className="flex gap-2">
