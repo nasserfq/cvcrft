@@ -96,7 +96,7 @@
                       <span>تصدير PDF بجودة عالية</span>
                     </li>
                   </ul>
-                  <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full bg-blue-600 text-white py-3 rounded-lg text-center block hover:bg-blue-700 transition-colors font-medium js-hover-target", data: { hoverable: true } do %>
+                  <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full bg-blue-600 text-white py-3 rounded-lg text-center block hover:bg-blue-700 hover:scale-105 active:bg-blue-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation", data: { hoverable: true } do %>
                     <i data-lucide="edit-3" class="w-4 h-4 inline mr-2"></i>
                     ابدأ البناء الآن
                   <% end %>
@@ -122,7 +122,7 @@
                       <span>صياغة نقاط قوية ومؤثرة</span>
                     </li>
                   </ul>
-                  <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "w-full bg-emerald-600 text-white py-3 rounded-lg text-center block hover:bg-emerald-700 transition-colors font-medium js-hover-target", data: { hoverable: true } do %>
+                  <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "w-full bg-emerald-600 text-white py-3 rounded-lg text-center block hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation", data: { hoverable: true } do %>
                     <i data-lucide="sparkles" class="w-4 h-4 inline mr-2"></i>
                     ابدأ التوليد الآن
                   <% end %>
@@ -130,7 +130,7 @@
               </div>
               <!-- Additional CTA Options -->
               <div class="flex flex-col sm:flex-row gap-3 sm:items-center justify-center">
-                <a href="#demo" data-hoverable="true" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors js-hover-target">
+                <a href="#demo" data-hoverable="true" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 active:text-emerald-800 transition-all js-hover-target touch-manipulation py-2 px-3 rounded-lg active:bg-emerald-50">
                   <i data-lucide="play-circle" class="w-5 h-5"></i>
                   شاهد نموذج تفاعلي
                 </a>
@@ -247,7 +247,7 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div class="flex items-end justify-between mb-8">
             <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">كل ما تحتاجه لسيرة ذاتية تُقبل</h2>
-            <a href="#pricing" data-hoverable="true" class="hidden sm:inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 js-hover-target">
+            <a href="#pricing" data-hoverable="true" class="hidden sm:inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 active:text-emerald-900 js-hover-target transition-all touch-manipulation py-2 px-3 rounded-lg active:bg-emerald-50">
               الأسعار
               <i data-lucide="arrow-left" class="w-4 h-4"></i>
             </a>
@@ -289,11 +289,11 @@
                 أدخل وصف الوظيفة المطلوبة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة ومحسنة لـ ATS
               </p>
               <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors js-hover-target", data: { hoverable: true } do %>
+                <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation", data: { hoverable: true } do %>
                   <i data-lucide="wand-2" class="w-5 h-5"></i>
                   ابدأ الآن
                 <% end %>
-                <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 transition-colors js-hover-target", data: { hoverable: true } do %>
+                <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 hover:scale-105 active:bg-slate-100 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation", data: { hoverable: true } do %>
                   <i data-lucide="list" class="w-5 h-5"></i>
                   عرض السير المبنية
                 <% end %>
@@ -388,7 +388,7 @@
                 <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> قالب واحد</li>
                 <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i> تصدير PDF بدون علامة مائية</li>
               </ul>
-              <a href="#cta" data-hoverable="true" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors js-hover-target">ابدأ مجانًا</a>
+              <a href="#cta" data-hoverable="true" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation">ابدأ مجانًا</a>
             </div>
             <!-- Pro -->
             <div class="relative rounded-xl bg-gradient-to-b from-white to-emerald-50 ring-1 ring-emerald-200 p-6 shadow-sm hover:shadow-md hover:ring-emerald-300/70 transition-all">
@@ -407,7 +407,7 @@
                 <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تصدير PDF/Docx بدون علامة مائية</li>
                 <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مسارات خاصة وخصوصية معززة</li>
               </ul>
-              <a href="#cta" data-hoverable="true" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-800 transition-colors js-hover-target">البدء بالخطة الاحترافية</a>
+              <a href="#cta" data-hoverable="true" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-800 hover:scale-105 active:bg-emerald-900 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation">البدء بالخطة الاحترافية</a>
             </div>
           </div>
         </div>

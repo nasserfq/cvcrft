@@ -181,13 +181,13 @@ const MobileDatePicker = ({
       <div className="flex gap-3 p-6 bg-white border-t border-slate-200">
        <button
         onClick={handleClear}
-        className="flex-1 py-3 px-4 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition-all"
+        className="flex-1 py-3 px-4 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 active:bg-slate-300 active:scale-[0.98] transition-all touch-manipulation"
        >
         الغاء
        </button>
        <button
         onClick={handleConfirm}
-        className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-all"
+        className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] transition-all touch-manipulation"
        >
         تأكيد
        </button>
@@ -1581,7 +1581,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     type="button"
     onClick={() => saveDraft(stepNumber)}
     disabled={isSavingDraft}
-    className="text-xs text-slate-500 hover:text-slate-700 underline disabled:opacity-50"
+    className="text-xs text-slate-500 hover:text-slate-700 active:text-slate-800 underline disabled:opacity-50 py-1 px-2 rounded active:bg-slate-100 transition-all touch-manipulation"
    >
     {isSavingDraft ? "جاري الحفظ..." : "حفظ يدوي"}
    </button>
@@ -3550,7 +3550,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-slate-700">التعليم {index + 1}</span>
         {formData.education.length > 1 && (
-         <button type="button" onClick={() => removeEducation(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+         <button type="button" onClick={() => removeEducation(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
         )}
        </div>
        <div className="grid gap-3">
@@ -3579,7 +3579,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        </div>
       </div>
      ))}
-     <button type="button" onClick={addEducation} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+     <button type="button" onClick={addEducation} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
       + إضافة تعليم آخر
      </button>
     </div>
@@ -3597,7 +3597,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-medium text-slate-700">الخبرة {index + 1}</span>
         {formData.work_experience.length > 1 && (
-         <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+         <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
         )}
        </div>
        <div className="space-y-3">
@@ -3644,17 +3644,17 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
              style={{ fontSize: "16px" }}
             />
             {work.responsibilities.length > 1 && (
-             <button type="button" onClick={() => removeResponsibility(index, respIndex)} className="text-red-500 hover:text-red-700 text-lg mt-2 px-1">×</button>
+             <button type="button" onClick={() => removeResponsibility(index, respIndex)} className="text-red-500 hover:text-red-700 active:text-red-800 text-lg mt-2 px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">×</button>
             )}
            </div>
           ))}
-          <button type="button" onClick={() => addResponsibility(index)} className="text-emerald-600 hover:text-emerald-700 text-sm font-medium py-1">+ إضافة مسؤولية</button>
+          <button type="button" onClick={() => addResponsibility(index)} className="text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium py-2 px-3 rounded active:bg-emerald-50 transition-all touch-manipulation">+ إضافة مسؤولية</button>
          </div>
         </div>
        </div>
       </div>
      ))}
-     <button type="button" onClick={addWorkExperience} className="w-full py-3 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+     <button type="button" onClick={addWorkExperience} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
       + إضافة خبرة عمل أخرى
      </button>
     </div>
@@ -3696,7 +3696,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          placeholder="فئة المهارات (مثال: Technical Skills)"
         />
         {formData.skills.length > 1 && (
-         <button type="button" onClick={() => removeSkills(index)} className="text-red-500 hover:text-red-700 text-xs mr-2">حذف</button>
+         <button type="button" onClick={() => removeSkills(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 mr-2 transition-all touch-manipulation">حذف</button>
         )}
        </div>
        <div className="space-y-2">
@@ -3714,7 +3714,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
             placeholder="اسم المهارة"
            />
            {validSkillNames.length > 1 && (
-            <button type="button" onClick={() => removeSkillName(index, nameIndex)} className="text-red-500 text-xs">×</button>
+            <button type="button" onClick={() => removeSkillName(index, nameIndex)} className="text-red-500 hover:text-red-700 active:text-red-800 text-sm px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">×</button>
            )}
           </div>
          ));
@@ -3733,12 +3733,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           />
          </div>
         ) : (
-         <button type="button" onClick={() => addSkillName(index)} className="text-emerald-600 hover:text-emerald-700 text-xs font-medium">+ إضافة مهارة</button>
+         <button type="button" onClick={() => addSkillName(index)} className="text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium py-2 px-3 rounded active:bg-emerald-50 transition-all touch-manipulation">+ إضافة مهارة</button>
         )}
        </div>
       </div>
      ))}
-     <button type="button" onClick={addSkills} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+     <button type="button" onClick={addSkills} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
       + إضافة فئة مهارات أخرى
      </button>
     </div>
@@ -3757,7 +3757,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-slate-700">الشهادة {index + 1}</span>
         {formData.certifications.length > 1 && (
-         <button type="button" onClick={() => removeCertification(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+         <button type="button" onClick={() => removeCertification(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
         )}
        </div>
        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -3779,7 +3779,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        </div>
       </div>
      ))}
-     <button type="button" onClick={addCertification} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+     <button type="button" onClick={addCertification} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
       + إضافة شهادة أخرى
      </button>
     </div>
@@ -3797,7 +3797,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-slate-700">اللغة {index + 1}</span>
         {formData.languages.length > 1 && (
-         <button type="button" onClick={() => removeLanguage(index)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+         <button type="button" onClick={() => removeLanguage(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
         )}
        </div>
        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3823,7 +3823,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        </div>
       </div>
      ))}
-     <button type="button" onClick={addLanguage} className="w-full py-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+     <button type="button" onClick={addLanguage} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
       + إضافة لغة أخرى
      </button>
     </div>
@@ -3930,7 +3930,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          <button
           type="button"
           onClick={nextStep}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] touch-manipulation"
          >
           التالي
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3942,7 +3942,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           type="button"
           onClick={exportToPDF}
           disabled={isExporting}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700 disabled:opacity-50"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 touch-manipulation"
          >
           {isExporting ? (
            <>
@@ -3957,7 +3957,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           )}
          </button>
         )}
-        <a href="/resumes" className="px-4 py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50">
+        <a href="/resumes" className="px-4 py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50 active:bg-slate-100 active:scale-[0.98] transition-all touch-manipulation">
          إلغاء
         </a>
        </div>
@@ -3965,7 +3965,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         <button
          type="button"
          onClick={prevStep}
-         className="w-full py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50 flex items-center justify-center gap-2"
+         className="w-full py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50 active:bg-slate-100 active:scale-[0.98] flex items-center justify-center gap-2 transition-all touch-manipulation"
         >
          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

@@ -6,8 +6,11 @@ class ResumesController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
 
   def index
+    # Eager load associations to prevent N+1 queries and use counter cache
     @resumes = current_user.resumes.not_drafts.recent
+                           .includes(:work_experiences, :skills)
     @drafts = current_user.resumes.drafts.recent
+                          .includes(:work_experiences, :skills)
     @cv_generations = current_user.cv_generations.where(status: "completed").recent
 
     respond_to do |format|
