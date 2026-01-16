@@ -54,7 +54,7 @@ class AuthController < ApplicationController
       user = User.find_or_create_by(email: email) do |u|
         u.password = SecureRandom.hex(16) # Random password since we're using OTP
         u.password_confirmation = u.password
-        u.name = email.split('@').first # Use email prefix as name
+        u.name = email.split("@").first # Use email prefix as name
       end
 
       # Ensure user is saved
@@ -70,12 +70,12 @@ class AuthController < ApplicationController
         Rails.logger.info "Warden user key: #{session['warden.user.user.key']}"
 
         flash[:notice] = "تم تسجيل الدخول بنجاح!"
-        
-        # Redirect to the intended destination or root path
-        if return_to.present? && return_to.start_with?('/')
+
+        # Redirect to the intended destination or CV builder page
+        if return_to.present? && return_to.start_with?("/")
           redirect_to return_to
         else
-          redirect_to root_path
+          redirect_to new_resume_path
         end
       else
         flash[:alert] = "رمز التحقق غير صحيح"
@@ -90,7 +90,7 @@ class AuthController < ApplicationController
 
   def logout
     sign_out(current_user)
-    redirect_to root_path(signed_out: 'true')
+    redirect_to root_path(signed_out: "true")
   end
 
   def status

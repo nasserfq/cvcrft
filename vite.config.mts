@@ -1,9 +1,19 @@
 import { defineConfig } from "vite";
 import RubyPlugin from "vite-plugin-ruby";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
 
 export default defineConfig({
- plugins: [RubyPlugin(), react()],
+ plugins: [
+  RubyPlugin(),
+  react({
+   devTarget: "es2022",
+  }),
+ ],
+ server: {
+  port: 5173,
+  strictPort: true,
+  hmr: false, // Disable HMR to avoid preamble issues
+ },
  build: {
   rollupOptions: {
    input: {

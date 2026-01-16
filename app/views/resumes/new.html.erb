@@ -30,7 +30,7 @@
     </div>
   </div>
 </div>
-<script type="module" src="<%= vite_asset_path('entrypoints/resume_form.jsx') %>?v=<%= Time.current.to_i %>"></script>
+<%= vite_javascript_tag 'entrypoints/resume_form.jsx' %>
 <script>
   // Pass resume data to JavaScript
   <% if @resume.present? %>

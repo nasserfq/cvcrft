@@ -48,9 +48,18 @@
             <span>تسجيل الدخول</span>
           </a>
         <% end %>
-        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 hover:shadow active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation", data: { hoverable: true } do %>
-          <i data-lucide="wand-2" class="w-4 h-4"></i>
-          <span>ابدأ الآن مجانًا</span>
+        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 hover:shadow active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation js-loading-btn", data: { hoverable: true } do %>
+          <span class="js-btn-content inline-flex items-center gap-2">
+            <i data-lucide="wand-2" class="w-4 h-4"></i>
+            <span>ابدأ الآن مجانًا</span>
+          </span>
+          <span class="js-btn-spinner inline-flex items-center gap-2" style="display: none;">
+            <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>جاري التحميل...</span>
+          </span>
         <% end %>
         <!-- Mobile menu button -->
         <button id="mobile-menu-button" data-hoverable="true" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors js-hover-target">

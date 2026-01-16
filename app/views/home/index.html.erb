@@ -12,45 +12,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
-    <!-- Skeleton Loading Overlay -->
-    <div id="page-loading-skeleton" class="fixed inset-0 z-50 bg-gradient-to-b from-white via-emerald-50 to-white hidden">
-      <div class="animate-pulse">
-        <!-- Header skeleton -->
-        <div class="bg-white/70 border-b border-slate-200/60 px-4 py-3">
-          <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 bg-slate-200 rounded-lg"></div>
-              <div class="w-16 h-4 bg-slate-200 rounded"></div>
-            </div>
-            <div class="hidden md:flex items-center gap-6">
-              <div class="w-20 h-3 bg-slate-200 rounded"></div>
-              <div class="w-16 h-3 bg-slate-200 rounded"></div>
-              <div class="w-24 h-3 bg-slate-200 rounded"></div>
-            </div>
-            <div class="w-28 h-9 bg-emerald-200 rounded-md"></div>
-          </div>
-        </div>
-        <!-- Content skeleton -->
-        <div class="max-w-4xl mx-auto px-4 py-12">
-          <div class="bg-white/80 rounded-2xl border border-slate-200/80 p-8">
-            <div class="text-center mb-8">
-              <div class="w-64 h-8 bg-slate-200 rounded mx-auto mb-4"></div>
-              <div class="w-96 h-4 bg-slate-100 rounded mx-auto"></div>
-            </div>
-            <div class="space-y-6">
-              <div class="h-12 bg-slate-100 rounded-lg"></div>
-              <div class="h-12 bg-slate-100 rounded-lg"></div>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="h-12 bg-slate-100 rounded-lg"></div>
-                <div class="h-12 bg-slate-100 rounded-lg"></div>
-              </div>
-              <div class="h-32 bg-slate-100 rounded-lg"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Background Accents -->
     <div class="pointer-events-none fixed inset-0 -z-10">
       <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
@@ -135,9 +96,18 @@
                       <span>تصدير PDF بجودة عالية</span>
                     </li>
                   </ul>
-                  <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full bg-blue-600 text-white py-3 rounded-lg text-center block hover:bg-blue-700 hover:scale-105 active:bg-blue-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation", data: { hoverable: true } do %>
-                    <i data-lucide="edit-3" class="w-4 h-4 inline mr-2"></i>
-                    ابدأ البناء الآن
+                  <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full bg-blue-600 text-white py-3 rounded-lg text-center block hover:bg-blue-700 hover:scale-105 active:bg-blue-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation js-loading-btn", data: { hoverable: true } do %>
+                    <span class="js-btn-content inline-flex items-center justify-center gap-2">
+                      <i data-lucide="edit-3" class="w-4 h-4"></i>
+                      <span>ابدأ البناء الآن</span>
+                    </span>
+                    <span class="js-btn-spinner inline-flex items-center justify-center gap-2" style="display: none;">
+                      <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>جاري التحميل...</span>
+                    </span>
                   <% end %>
                 </div>
                 <!-- CV Generator -->
@@ -161,9 +131,18 @@
                       <span>صياغة نقاط قوية ومؤثرة</span>
                     </li>
                   </ul>
-                  <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "w-full bg-emerald-600 text-white py-3 rounded-lg text-center block hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation", data: { hoverable: true } do %>
-                    <i data-lucide="sparkles" class="w-4 h-4 inline mr-2"></i>
-                    ابدأ التوليد الآن
+                  <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "w-full bg-emerald-600 text-white py-3 rounded-lg text-center block hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation js-loading-btn", data: { hoverable: true } do %>
+                    <span class="js-btn-content inline-flex items-center justify-center gap-2">
+                      <i data-lucide="sparkles" class="w-4 h-4"></i>
+                      <span>ابدأ التوليد الآن</span>
+                    </span>
+                    <span class="js-btn-spinner inline-flex items-center justify-center gap-2" style="display: none;">
+                      <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>جاري التحميل...</span>
+                    </span>
                   <% end %>
                 </div>
               </div>
@@ -581,39 +560,43 @@
           console.error('Mobile menu elements not found!');
         }
 
-        // Skeleton loading for page navigation
-        const skeleton = document.getElementById('page-loading-skeleton');
-        if (skeleton) {
-          document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href]');
-            if (!link) return;
-            
-            const href = link.getAttribute('href');
-            // Skip external links, anchors, and special links
-            if (!href || 
-                href.startsWith('#') || 
-                href.startsWith('http') || 
-                href.startsWith('mailto:') ||
-                href.startsWith('tel:') ||
-                link.target === '_blank') {
-              return;
+        // Loading animation for js-loading-btn links
+        function resetLoadingBtns() {
+          document.querySelectorAll('.js-loading-btn').forEach(btn => {
+            const content = btn.querySelector('.js-btn-content');
+            const spinner = btn.querySelector('.js-btn-spinner');
+            if (content) {
+              content.style.display = '';
             }
-
-            // Show skeleton with fade in
-            skeleton.classList.remove('hidden');
-            skeleton.style.opacity = '0';
-            requestAnimationFrame(() => {
-              skeleton.style.transition = 'opacity 150ms ease-out';
-              skeleton.style.opacity = '1';
-            });
-          });
-
-          // Hide skeleton when page loads (for back/forward navigation)
-          window.addEventListener('pageshow', () => {
-            skeleton.classList.add('hidden');
-            skeleton.style.opacity = '0';
+            if (spinner) {
+              spinner.style.display = 'none';
+            }
+            btn.style.pointerEvents = '';
+            btn.style.opacity = '';
           });
         }
+
+        // Reset immediately
+        resetLoadingBtns();
+
+        // Reset on page events
+        window.addEventListener('pageshow', resetLoadingBtns);
+        window.addEventListener('load', resetLoadingBtns);
+
+        document.addEventListener('click', (e) => {
+          const btn = e.target.closest('.js-loading-btn');
+          if (!btn) return;
+
+          const content = btn.querySelector('.js-btn-content');
+          const spinner = btn.querySelector('.js-btn-spinner');
+          
+          if (content && spinner) {
+            content.style.display = 'none';
+            spinner.style.display = '';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.8';
+          }
+        });
       });
     </script>
   </body>
