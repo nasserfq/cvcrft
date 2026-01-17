@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy, memo } from "react";
 import { createPortal } from "react-dom";
 
-// Direct imports for faster initial load
-import CombinedStep1 from "./cv-builder/CombinedStep1";
-import CombinedStep2 from "./cv-builder/CombinedStep2";
-import CombinedStep3 from "./cv-builder/CombinedStep3";
-import ReviewStep from "./cv-builder/ReviewStep";
+// Lazy load step components for better initial load performance
+const CombinedStep1 = lazy(() => import("./cv-builder/CombinedStep1"));
+const CombinedStep2 = lazy(() => import("./cv-builder/CombinedStep2"));
+const CombinedStep3 = lazy(() => import("./cv-builder/CombinedStep3"));
+const ReviewStep = lazy(() => import("./cv-builder/ReviewStep"));
 
-// Skeleton loading for steps
-const StepLoadingSkeleton = () => (
+// Memoized skeleton loading for steps - prevents re-renders
+const StepLoadingSkeleton = memo(() => (
  <div className="animate-pulse space-y-6">
   <div className="text-center mb-6">
    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-200 mb-4" />
@@ -27,32 +27,14 @@ const StepLoadingSkeleton = () => (
    </div>
   </div>
  </div>
-);
+));
 
 const MultiStepResumeForm = ({ resume, onSubmit }) => {
- console.log("=== MultiStepResumeForm component rendered ===");
- console.log("Resume prop:", resume);
- console.log("Resume skills:", resume?.skills);
- console.log(
-  "Resume skills detailed:",
-  resume?.skills?.map((s) => ({
-   category: s.category,
-   skill_names: s.skill_names,
-   types: s.skill_names?.map((name) => ({
-    value: name,
-    type: typeof name,
-    length: name?.length,
-   })),
-  }))
- );
- console.log("Resume skills length:", resume?.skills?.length);
- console.log("Resume skills is array:", Array.isArray(resume?.skills));
+ // Clean skills data to remove empty skill names
 
  // Clean skills data to remove empty skill names
  const cleanSkillsData = (skills) => {
-  console.log("=== cleanSkillsData called with:", skills);
   if (!skills || !Array.isArray(skills)) {
-   console.log("No skills or not array, returning default");
    return [
     {
      category: "",
@@ -61,37 +43,23 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    ];
   }
 
-  console.log("Processing", skills.length, "skills");
   return skills.map((skill, skillIndex) => {
-   console.log(`--- Processing skill ${skillIndex}:`, {
-    category: skill.category,
-    skill_names: skill.skill_names,
-   });
    let skillNames = skill.skill_names;
 
    // Handle case where skill_names might be a JSON string
    if (typeof skillNames === "string") {
-    console.log("Skill names is string, parsing JSON:", skillNames);
     try {
      skillNames = JSON.parse(skillNames);
-     console.log("Parsed skill_names:", skillNames);
     } catch (e) {
-     console.log("JSON parse failed, setting to empty array:", e);
      skillNames = [];
     }
    }
 
    // Ensure skillNames is an array
    if (!Array.isArray(skillNames)) {
-    console.log(
-     "Skill names is not array, setting to empty array:",
-     typeof skillNames,
-     skillNames
-    );
     skillNames = [];
    }
 
-   console.log("Skill names before filtering:", skillNames);
 
    // Filter out empty, null, undefined, or whitespace-only names
    const cleanedNames = skillNames.filter((name) => {
@@ -101,11 +69,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      name.trim() !== "" &&
      name.trim() !== '""' &&
      name.trim() !== "''";
-    console.log(`Filtering skill name: "${name}" -> isValid: ${isValid}`);
     return isValid;
    });
 
-   console.log(`Cleaned names for skill ${skillIndex}:`, cleanedNames);
 
    return {
     ...skill,
@@ -864,8 +830,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  // Robust resume saving function
  const saveResumeToDatabase = async () => {
-  console.log("=== SAVING RESUME TO DATABASE ===");
-  console.log("Form data:", formData);
 
   // Validate required fields
   if (!formData.complete_name?.trim()) {
@@ -946,11 +910,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    },
   };
 
-  console.log("Prepared resume data:", resumeData);
 
   // First try: JSON POST request
   try {
-   console.log("Attempting JSON POST to /resumes...");
    const response = await fetch("/resumes", {
     method: "POST",
     headers: {
@@ -963,23 +925,18 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     body: JSON.stringify(resumeData),
    });
 
-   console.log("JSON POST response status:", response.status);
 
    if (response.ok) {
     const savedResume = await response.json();
-    console.log("✅ JSON POST successful. Resume ID:", savedResume.id);
     return savedResume.id;
    } else {
     const errorText = await response.text();
-    console.log("❌ JSON POST failed:", response.status, errorText);
     throw new Error(`HTTP ${response.status}: ${errorText}`);
    }
   } catch (jsonError) {
-   console.log("❌ JSON POST error:", jsonError);
 
    // Second try: Form submission with FormData
    try {
-    console.log("Attempting FormData POST to /resumes...");
     const formDataToSubmit = new FormData();
 
     // Add CSRF token
@@ -1115,19 +1072,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      credentials: "same-origin",
     });
 
-    console.log("FormData POST response status:", response.status);
 
     if (response.ok) {
      const result = await response.json();
-     console.log("✅ FormData POST successful. Resume ID:", result.id);
      return result.id;
     } else {
      const errorText = await response.text();
-     console.log("❌ FormData POST failed:", response.status, errorText);
      throw new Error(`FormData HTTP ${response.status}: ${errorText}`);
     }
    } catch (formError) {
-    console.log("❌ FormData POST error:", formError);
     throw new Error(
      `Both JSON and FormData submissions failed. Last error: ${formError.message}`
     );
@@ -1136,31 +1089,20 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const exportToPDF = async () => {
-  console.log(
-   "ATS-compliant PDF export button clicked! Current step:",
-   currentStep
-  );
   setIsExporting(true);
   setTranslationError("");
 
   try {
-   console.log("Starting ATS-compliant PDF export process...");
 
    let resumeId = null;
 
    // Step 1: Always save the resume to database first
    try {
-    console.log("Step 1: Saving resume to database...");
     resumeId = await saveResumeToDatabase();
-    console.log("✅ Resume saved successfully with ID:", resumeId);
 
     // Show success message in console (less intrusive than alert)
     setTranslationError(""); // Clear any errors
-    console.log(
-     "🎉 تم حفظ السيرة الذاتية بنجاح! يمكنك الآن استخدامها لإنشاء سير ذاتية مخصصة."
-    );
    } catch (saveError) {
-    console.log("❌ Resume save failed:", saveError.message);
 
     // Validate required fields for PDF generation even if save fails
     if (!formData.complete_name?.trim() || !formData.email?.trim()) {
@@ -1170,11 +1112,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     }
 
     // Still try to export PDF even if save fails
-    console.log("Continuing with PDF export from form data...");
    }
 
    // Export the PDF - either with saved resume ID or directly from form data
-   console.log("Making PDF export request (background job)...");
    let response;
 
    if (resumeId) {
@@ -1332,12 +1272,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      }),
     });
    }
-   console.log("Background job response status:", response.status);
 
    if (response.ok) {
     // Parse the JSON response containing job information
     const jobInfo = await response.json();
-    console.log("PDF generation job started:", jobInfo);
 
     if (jobInfo.job_id && jobInfo.token) {
      // Poll for job completion
@@ -1347,7 +1285,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      const pollingInterval = setInterval(async () => {
       try {
        const statusUrl = `/api/pdf_status?job_id=${jobInfo.job_id}&token=${jobInfo.token}`;
-       console.log("Checking PDF status at:", statusUrl);
 
        const statusResponse = await fetch(statusUrl, {
         headers: {
@@ -1359,16 +1296,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
        if (statusResponse.ok) {
         const statusInfo = await statusResponse.json();
-        console.log("PDF job status response:", statusInfo);
 
         if (statusInfo.status === "completed") {
          // Job is complete, download the PDF
          clearInterval(pollingInterval);
 
-         console.log(
-          "PDF is ready for download, URL:",
-          statusInfo.download_url
-         );
 
          // Trigger the download using a hidden iframe to avoid page navigation
          const downloadFrame = document.createElement("iframe");
@@ -1389,7 +1321,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           ? `${window.location.origin}${statusInfo.download_url}`
           : statusInfo.download_url;
 
-         console.log("Setting iframe src to:", downloadUrl);
          downloadFrame.src = downloadUrl;
          setExportStatus("completed");
          setIsExporting(false);
@@ -1430,7 +1361,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     }
    } else {
     const errorText = await response.text();
-    console.log("Error response:", errorText);
     throw new Error("PDF export failed");
    }
   } catch (error) {
@@ -1479,7 +1409,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
    if (response.ok) {
     const result = await response.json();
-    console.log("✅ Draft saved successfully at step:", stepNumber, result);
     if (silent) {
      setAutoSaveStatus("saved");
      setLastSavedAt(new Date());
@@ -1774,7 +1703,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
-  console.log("Form data before submission:", formData);
 
   if (onSubmit) {
    // Transform form data to Rails parameter format
@@ -1851,7 +1779,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      })),
    };
 
-   console.log("Rails form data:", railsFormData);
    onSubmit(railsFormData);
   }
  };
@@ -1898,28 +1825,28 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   };
 
   return (
-   <>
+   <Suspense fallback={<StepLoadingSkeleton />}>
     {currentStep === 1 && <CombinedStep1 {...stepProps} />}
     {currentStep === 2 && <CombinedStep2 {...stepProps} />}
     {currentStep === 3 && <CombinedStep3 {...stepProps} />}
     {currentStep === 4 && <ReviewStep {...stepProps} />}
-   </>
+   </Suspense>
   );
  };
 
- // Initial skeleton loading
+ // Initial skeleton loading - reduced to 300ms for faster perceived load
  useEffect(() => {
-  const timer = setTimeout(() => setIsLoading(false), 600);
+  const timer = setTimeout(() => setIsLoading(false), 300);
   return () => clearTimeout(timer);
  }, []);
 
- // Show skeleton when changing steps
+ // Show skeleton when changing steps - reduced to 200ms
  const handleStepChange = (step) => {
   setIsLoading(true);
   setTimeout(() => {
    setCurrentStep(step);
    setIsLoading(false);
-  }, 400);
+  }, 200);
  };
 
  return (
