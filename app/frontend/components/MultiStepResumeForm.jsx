@@ -1598,6 +1598,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const nextStep = () => {
   if (currentStep < totalSteps) {
+   // Auto-save current step before moving to next
+   if (resume?.id) {
+    saveDraft(currentStep, true);
+   }
+   
    const newStep = currentStep + 1;
    setCurrentStep(newStep);
 
@@ -1618,6 +1623,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const prevStep = () => {
   if (currentStep > 1) {
+   // Auto-save current step before moving back
+   if (resume?.id) {
+    saveDraft(currentStep, true);
+   }
+   
    const newStep = currentStep - 1;
    setCurrentStep(newStep);
 
