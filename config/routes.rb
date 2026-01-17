@@ -22,6 +22,12 @@ Rails.application.routes.draw do
       post :optimize_ats
       post :save_draft
       post :resume_draft
+      # Progressive loading endpoints
+      get :experiences
+      get :skills_section
+      get :educations
+      get :certifications_section
+      get :languages_section
     end
 
     # Test endpoint

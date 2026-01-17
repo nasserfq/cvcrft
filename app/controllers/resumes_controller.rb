@@ -1,6 +1,6 @@
 class ResumesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_resume, only: [ :show, :edit, :update, :destroy, :generate_pdf, :optimize_ats, :resume_draft ]
+  before_action :set_resume, only: [ :show, :edit, :update, :destroy, :generate_pdf, :optimize_ats, :resume_draft, :experiences, :skills_section, :educations, :certifications_section, :languages_section ]
 
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
@@ -43,25 +43,75 @@ class ResumesController < ApplicationController
     }
   end
 
+  # Progressive loading: show returns only header/minimal data for fast initial load
   def show
+    start = Time.now
     @work_experiences = @resume.work_experiences.order(start_date: :asc)
     @skills = @resume.skills.group_by(&:category)
     @ai_translations = @resume.ai_translations.recent
 
     respond_to do |format|
       format.html
-      format.json {
-        render json: @resume.as_json(
-          include: {
-            work_experiences: {},
-            skills: {},
-            educations: {},
-            certifications: {},
-            languages: {}
-          }
-        )
-      }
+      format.json do
+        # Return only header data for fast initial load
+        render json: @resume.as_json(only: [
+          :id, :complete_name, :email, :phone_number, :city, :country,
+          :professional_summary, :professional_summary_english, :created_at, :updated_at
+        ], methods: [ :pdf_url ])
+      end
     end
+    Rails.logger.info "CV show action took #{Time.now - start}s"
+  end
+
+  # Progressive section endpoints - each loads independently with caching
+  def experiences
+    start = Time.now
+    experiences = @resume.work_experiences.order(start_date: :asc)
+    data = Rails.cache.fetch([ "resume", @resume.id, "experiences" ], expires_in: 10.minutes) do
+      experiences.as_json
+    end
+    Rails.logger.info "CV experiences endpoint took #{Time.now - start}s"
+    render json: data
+  end
+
+  def skills_section
+    start = Time.now
+    skills = @resume.skills
+    data = Rails.cache.fetch([ "resume", @resume.id, "skills" ], expires_in: 10.minutes) do
+      skills.as_json
+    end
+    Rails.logger.info "CV skills endpoint took #{Time.now - start}s"
+    render json: data
+  end
+
+  def educations
+    start = Time.now
+    educations = @resume.educations
+    data = Rails.cache.fetch([ "resume", @resume.id, "educations" ], expires_in: 10.minutes) do
+      educations.as_json
+    end
+    Rails.logger.info "CV educations endpoint took #{Time.now - start}s"
+    render json: data
+  end
+
+  def certifications_section
+    start = Time.now
+    certifications = @resume.certifications
+    data = Rails.cache.fetch([ "resume", @resume.id, "certifications" ], expires_in: 10.minutes) do
+      certifications.as_json
+    end
+    Rails.logger.info "CV certifications endpoint took #{Time.now - start}s"
+    render json: data
+  end
+
+  def languages_section
+    start = Time.now
+    languages = @resume.languages
+    data = Rails.cache.fetch([ "resume", @resume.id, "languages" ], expires_in: 10.minutes) do
+      languages.as_json
+    end
+    Rails.logger.info "CV languages endpoint took #{Time.now - start}s"
+    render json: data
   end
 
   def new

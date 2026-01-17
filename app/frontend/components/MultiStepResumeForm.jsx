@@ -114,7 +114,61 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   });
  };
 
+ // Progressive loading state for each section
+ const [sectionsLoaded, setSectionsLoaded] = useState({
+  header: !!resume?.id,
+  experiences: false,
+  skills: false,
+  educations: false,
+  certifications: false,
+  languages: false,
+ });
+
  const [isLoading, setIsLoading] = useState(true);
+ 
+ // Progressive section data
+ const [loadedExperiences, setLoadedExperiences] = useState([]);
+ const [loadedSkills, setLoadedSkills] = useState([]);
+ const [loadedEducations, setLoadedEducations] = useState([]);
+ const [loadedCertifications, setLoadedCertifications] = useState([]);
+ const [loadedLanguages, setLoadedLanguages] = useState([]);
+
+ // Fetch sections in parallel on mount (progressive loading)
+ useEffect(() => {
+  const resumeId = resume?.id;
+  if (!resumeId) {
+   // New resume - no sections to load
+   setIsLoading(false);
+   return;
+  }
+
+  // Fetch all sections in parallel
+  const fetchSection = async (endpoint, setter, sectionName) => {
+   try {
+    const response = await fetch(`/resumes/${resumeId}/${endpoint}`);
+    if (response.ok) {
+     const data = await response.json();
+     setter(data);
+    }
+   } catch (e) {
+    console.error(`Failed to load ${sectionName}:`, e);
+   } finally {
+    setSectionsLoaded(prev => ({ ...prev, [sectionName]: true }));
+   }
+  };
+
+  // Fire all requests in parallel
+  Promise.all([
+   fetchSection('experiences', setLoadedExperiences, 'experiences'),
+   fetchSection('skills_section', setLoadedSkills, 'skills'),
+   fetchSection('educations', setLoadedEducations, 'educations'),
+   fetchSection('certifications_section', setLoadedCertifications, 'certifications'),
+   fetchSection('languages_section', setLoadedLanguages, 'languages'),
+  ]).then(() => {
+   setIsLoading(false);
+  });
+ }, [resume?.id]);
+
  const [currentStep, setCurrentStep] = useState(() => {
   // Check if we have a step parameter from URL or draft data
   const urlParams = new URLSearchParams(window.location.search);
@@ -366,6 +420,76 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [lastSavedAt, setLastSavedAt] = useState(null);
 
  const totalSteps = 4;
+
+ // Hydrate formData with progressively loaded sections
+ useEffect(() => {
+  if (loadedExperiences.length > 0) {
+   setFormData(prev => ({
+    ...prev,
+    work_experience: loadedExperiences.map(exp => ({
+     job_title: exp.job_title || "",
+     company: exp.company || "",
+     start_date: exp.start_date || "",
+     end_date: exp.end_date || "",
+     is_current: exp.is_current || false,
+     responsibilities: exp.responsibilities || [""],
+    })),
+   }));
+  }
+ }, [loadedExperiences]);
+
+ useEffect(() => {
+  if (loadedSkills.length > 0) {
+   setFormData(prev => ({
+    ...prev,
+    skills: loadedSkills.map(skill => ({
+     category: skill.category || "",
+     skill_names: (skill.skill_names || []).filter(n => n && n.trim() !== ""),
+    })),
+   }));
+  }
+ }, [loadedSkills]);
+
+ useEffect(() => {
+  if (loadedEducations.length > 0) {
+   setFormData(prev => ({
+    ...prev,
+    education: loadedEducations.map(edu => ({
+     degree: edu.degree || "",
+     institution: edu.institution || "",
+     start_date: edu.start_date || "",
+     end_date: edu.end_date || "",
+     gpa: edu.gpa || "",
+     is_current: edu.is_current || false,
+    })),
+   }));
+  }
+ }, [loadedEducations]);
+
+ useEffect(() => {
+  if (loadedCertifications.length > 0) {
+   setFormData(prev => ({
+    ...prev,
+    certifications: loadedCertifications.map(cert => ({
+     name: cert.name || "",
+     organization: cert.organization || "",
+     date: cert.date || "",
+    })),
+   }));
+  }
+ }, [loadedCertifications]);
+
+ useEffect(() => {
+  if (loadedLanguages.length > 0) {
+   setFormData(prev => ({
+    ...prev,
+    languages: loadedLanguages.map(lang => ({
+     language: lang.language || "",
+     proficiency: lang.proficiency || "",
+    })),
+   }));
+  }
+ }, [loadedLanguages]);
 
  // Handle browser back/forward navigation to keep step in sync
  useEffect(() => {

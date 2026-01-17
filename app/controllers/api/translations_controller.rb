@@ -138,6 +138,52 @@ class Api::TranslationsController < ApplicationController
         return render json: { error: "PDF not found" }, status: :not_found
       end
 
+      # If no valid parameters are provided, check for resume data in POST body
+      if request.post? && params[:resume].present?
+        Rails.logger.info "Processing PDF export from resume data in POST body"
+
+        # First save the resume, then generate PDF
+        resume_data = params[:resume]
+        @resume = current_user.resumes.build(
+          complete_name: resume_data[:complete_name],
+          email: resume_data[:email],
+          phone_number: resume_data[:phone_number],
+          city: resume_data[:city],
+          country: resume_data[:country],
+          professional_summary: resume_data[:professional_summary],
+          professional_summary_english: resume_data[:professional_summary_english]
+        )
+
+        if @resume.save
+          # Build nested attributes
+          build_nested_attributes(@resume, resume_data)
+
+          # Generate PDF
+          options = {
+            "user_id" => current_user.id,
+            "resume_id" => @resume.id,
+            "view_in_browser" => params[:view_in_browser] == "true"
+          }
+
+          job = CvBuilderPdfJob.new
+          result = job.perform(options)
+
+          if result[:status] == "success" && result[:file_path].present? && File.exist?(result[:file_path])
+            Rails.logger.info "PDF generation complete, sending file from: #{result[:file_path]}"
+            return send_file result[:file_path],
+              filename: result[:filename] || "resume.pdf",
+              type: "application/pdf",
+              disposition: "attachment"
+          else
+            Rails.logger.error "PDF generation failed: #{result[:message]}"
+            return render json: { error: "PDF generation failed", message: result[:message] }, status: :internal_server_error
+          end
+        else
+          Rails.logger.error "Resume save failed: #{@resume.errors.full_messages}"
+          return render json: { error: "Resume validation failed", errors: @resume.errors.full_messages }, status: :unprocessable_entity
+        end
+      end
+
       # If no valid parameters are provided, return an error
       Rails.logger.error "Invalid parameters for PDF export"
       render json: { error: "Invalid parameters" }, status: :bad_request
@@ -178,6 +224,73 @@ class Api::TranslationsController < ApplicationController
   end
 
   private
+
+  # Build nested attributes for resume from POST data
+  def build_nested_attributes(resume, resume_data)
+    # Educations
+    if resume_data[:educations_attributes].present?
+      resume_data[:educations_attributes].each do |edu|
+        edu = edu.is_a?(Array) ? edu.last : edu
+        resume.educations.create(
+          degree: edu[:degree],
+          institution: edu[:institution],
+          start_date: edu[:start_date],
+          end_date: edu[:end_date],
+          gpa: edu[:gpa],
+          is_current: edu[:is_current]
+        )
+      end
+    end
+
+    # Work experiences
+    if resume_data[:work_experiences_attributes].present?
+      resume_data[:work_experiences_attributes].each do |exp|
+        exp = exp.is_a?(Array) ? exp.last : exp
+        resume.work_experiences.create(
+          job_title: exp[:job_title],
+          company: exp[:company],
+          start_date: exp[:start_date],
+          end_date: exp[:end_date],
+          is_current: exp[:is_current],
+          responsibilities: exp[:responsibilities]
+        )
+      end
+    end
+
+    # Skills
+    if resume_data[:skills_attributes].present?
+      resume_data[:skills_attributes].each do |skill|
+        skill = skill.is_a?(Array) ? skill.last : skill
+        resume.skills.create(
+          category: skill[:category],
+          skill_names: skill[:skill_names]
+        )
+      end
+    end
+
+    # Certifications
+    if resume_data[:certifications_attributes].present?
+      resume_data[:certifications_attributes].each do |cert|
+        cert = cert.is_a?(Array) ? cert.last : cert
+        resume.certifications.create(
+          name: cert[:name],
+          organization: cert[:organization],
+          date: cert[:date]
+        )
+      end
+    end
+
+    # Languages
+    if resume_data[:languages_attributes].present?
+      resume_data[:languages_attributes].each do |lang|
+        lang = lang.is_a?(Array) ? lang.last : lang
+        resume.languages.create(
+          language: lang[:language],
+          proficiency: lang[:proficiency]
+        )
+      end
+    end
+  end
 
   # Private method for resume params handling
   def resume_params
