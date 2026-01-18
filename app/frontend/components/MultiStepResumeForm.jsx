@@ -135,6 +135,30 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   });
  }, [resume?.id]);
 
+ // Fetch translation limit on mount
+ useEffect(() => {
+  const fetchTranslationLimit = async () => {
+   try {
+    const response = await fetch("/api/translation_limit", {
+     headers: {
+      "X-CSRF-Token": document
+       .querySelector('meta[name="csrf-token"]')
+       ?.getAttribute("content"),
+     },
+    });
+    if (response.ok) {
+     const data = await response.json();
+     setRemainingTranslations(data.remaining);
+     setTranslationLimitLoaded(true);
+    }
+   } catch (e) {
+    console.error("Failed to fetch translation limit:", e);
+    setTranslationLimitLoaded(true); // Continue with default
+   }
+  };
+  fetchTranslationLimit();
+ }, []);
+
  const [currentStep, setCurrentStep] = useState(() => {
   // Check if we have a step parameter from URL or draft data
   const urlParams = new URLSearchParams(window.location.search);
@@ -383,8 +407,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [exportStatus, setExportStatus] = useState("idle"); // idle, processing, completed, failed, timeout
  const [isSavingDraft, setIsSavingDraft] = useState(false);
  const [addingSkillTo, setAddingSkillTo] = useState(null);
- const [translationCount, setTranslationCount] = useState(0);
+ const [remainingTranslations, setRemainingTranslations] = useState(5);
  const [maxTranslations] = useState(5);
+ const [translationLimitLoaded, setTranslationLimitLoaded] = useState(false);
  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
  const [lastSavedAt, setLastSavedAt] = useState(null);
  const [validationErrors, setValidationErrors] = useState({});
@@ -887,7 +912,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
 
   // Check translation limit
-  if (translationCount >= maxTranslations) {
+  if (remainingTranslations <= 0) {
    setTranslationError(
     `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}). يرجى المحاولة لاحقاً.`
    );
@@ -908,7 +933,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     },
     body: JSON.stringify({
      arabic_text: formData.professional_summary,
-     user_id: 1, // You might want to get this from props or context
      resume_id: resume?.id,
     }),
    });
@@ -916,14 +940,21 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    if (response.ok) {
     const result = await response.json();
     if (result.status === "queued" && result.job_id) {
-     // Increment translation count
-     setTranslationCount((prev) => prev + 1);
+     // Update remaining translations from server
+     if (result.remaining !== undefined) {
+      setRemainingTranslations(result.remaining);
+     }
      // Poll for completion
      pollTranslationStatus(result.job_id);
     } else {
      setTranslationError("Unexpected response format from translation API");
      setIsTranslating(false);
     }
+   } else if (response.status === 429) {
+    const result = await response.json();
+    setTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}).`);
+    setRemainingTranslations(0);
+    setIsTranslating(false);
    } else {
     throw new Error("Translation request failed");
    }
@@ -951,6 +982,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
+  // Check translation limit
+  if (remainingTranslations <= 0) {
+   setJobTranslationError(
+    `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}). يرجى المحاولة لاحقاً.`
+   );
+   return;
+  }
+
   setIsTranslatingJobs(true);
   setJobTranslationError("");
   setJobTranslationSuccess(false);
@@ -973,12 +1012,21 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    if (response.ok) {
     const result = await response.json();
     if (result.status === "queued" && result.job_id) {
+     // Update remaining translations from server
+     if (result.remaining !== undefined) {
+      setRemainingTranslations(result.remaining);
+     }
      // Poll for completion
      pollJobTranslationStatus(result.job_id, jobsWithResponsibilities);
     } else {
      setJobTranslationError("حدث خطأ غير متوقع في الترجمة");
      setIsTranslatingJobs(false);
     }
+   } else if (response.status === 429) {
+    const result = await response.json();
+    setJobTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}).`);
+    setRemainingTranslations(0);
+    setIsTranslatingJobs(false);
    } else {
     throw new Error("Translation request failed");
    }
@@ -2078,7 +2126,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    translateProfessionalSummary,
    isTranslating,
    translationError,
-   translationCount,
+   remainingTranslations,
    maxTranslations,
    renderSaveDraftButton,
    validationErrors,

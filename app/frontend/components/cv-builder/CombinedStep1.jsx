@@ -43,7 +43,7 @@ const CombinedStep1 = ({
   translateProfessionalSummary,
   isTranslating,
   translationError,
-  translationCount,
+  remainingTranslations,
   maxTranslations,
   renderSaveDraftButton,
   validationErrors = {},
@@ -155,7 +155,7 @@ const CombinedStep1 = ({
             <button
               type="button"
               onClick={translateProfessionalSummary}
-              disabled={isTranslating || !formData.professional_summary.trim() || translationCount >= maxTranslations}
+              disabled={isTranslating || !formData.professional_summary.trim() || remainingTranslations <= 0}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-6 py-3 text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isTranslating ? (
@@ -166,7 +166,7 @@ const CombinedStep1 = ({
               ) : (
                 <>
                   <TranslateIcon />
-                  ترجم وأنشئ ملخص مهني ({maxTranslations - translationCount} متبقي)
+                  ترجم وأنشئ ملخص مهني ({remainingTranslations} متبقي)
                 </>
               )}
             </button>

@@ -4,8 +4,22 @@ class Api::TranslationsController < ApplicationController
   # Skip CSRF protection for API endpoints
   skip_before_action :verify_authenticity_token
 
+  # Global limit per user for all AI translations
+  MAX_TRANSLATIONS_PER_USER = 5
+
   def translate_professional_summary
     begin
+      # Check translation limit
+      remaining = remaining_translations
+      if remaining <= 0
+        render json: {
+          error: "لقد استخدمت جميع الترجمات المتاحة (#{MAX_TRANSLATIONS_PER_USER})",
+          limit_reached: true,
+          remaining: 0
+        }, status: :too_many_requests
+        return
+      end
+
       # Always enqueue a new AI translation job for every request
       Rails.logger.info "[AI Translate] Request params: #{params.inspect}"
 
@@ -38,6 +52,7 @@ class Api::TranslationsController < ApplicationController
       render json: {
         job_id: job_id,
         status: "queued",
+        remaining: remaining - 1,
         message: "Translation job has been queued. Please poll for status."
       }
     rescue => e
@@ -49,6 +64,17 @@ class Api::TranslationsController < ApplicationController
 
   def translate_job_descriptions
     begin
+      # Check translation limit
+      remaining = remaining_translations
+      if remaining <= 0
+        render json: {
+          error: "لقد استخدمت جميع الترجمات المتاحة (#{MAX_TRANSLATIONS_PER_USER})",
+          limit_reached: true,
+          remaining: 0
+        }, status: :too_many_requests
+        return
+      end
+
       Rails.logger.info "[AI Translate Jobs] Request params: #{params.inspect}"
 
       user_id = current_user.id
@@ -97,6 +123,7 @@ class Api::TranslationsController < ApplicationController
         job_id: job_id,
         status: "queued",
         job_count: valid_jobs.size,
+        remaining: remaining - 1,
         message: "Translation job has been queued for #{valid_jobs.size} job descriptions."
       }
     rescue => e
@@ -399,5 +426,20 @@ class Api::TranslationsController < ApplicationController
       certifications_attributes: [ :name, :organization, :date ],
       languages_attributes: [ :language, :proficiency ]
     )
+  end
+
+  # Calculate remaining translations for current user
+  def remaining_translations
+    used = current_user.ai_translations.count
+    [ MAX_TRANSLATIONS_PER_USER - used, 0 ].max
+  end
+
+  # Endpoint to get translation limit info
+  def translation_limit
+    render json: {
+      max: MAX_TRANSLATIONS_PER_USER,
+      used: current_user.ai_translations.count,
+      remaining: remaining_translations
+    }
   end
 end

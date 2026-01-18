@@ -38,6 +38,7 @@ const CombinedStep2 = ({
   isTranslatingJobs = false,
   jobTranslationError = "",
   jobTranslationSuccess = false,
+  remainingTranslations = 5,
 }) => {
   // Check if there are any responsibilities to translate
   const hasResponsibilities = formData.work_experience.some(
@@ -208,8 +209,12 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={isTranslatingJobs || !hasResponsibilities}
-                  className="w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
+                  disabled={isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0}
+                  className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                    isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0
+                      ? "bg-green-300 text-white cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
+                  }`}
                 >
                   {isTranslatingJobs ? (
                     <>
@@ -221,7 +226,7 @@ const CombinedStep2 = ({
                     </>
                   ) : (
                     <>
-                      🔄 إعادة الترجمة
+                      🔄 إعادة الترجمة ({remainingTranslations} متبقي)
                     </>
                   )}
                 </button>
@@ -234,9 +239,9 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={isTranslatingJobs || !hasResponsibilities}
+                  disabled={isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0}
                   className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    isTranslatingJobs || !hasResponsibilities
+                    isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0
                       ? "bg-blue-300 text-white cursor-not-allowed"
                       : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                   }`}
@@ -251,7 +256,7 @@ const CombinedStep2 = ({
                     </>
                   ) : (
                     <>
-                      🌐 ترجم جميع المسؤوليات إلى الإنجليزية
+                      🌐 ترجم جميع المسؤوليات إلى الإنجليزية ({remainingTranslations} متبقي)
                     </>
                   )}
                 </button>
