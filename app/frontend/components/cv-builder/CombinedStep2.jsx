@@ -37,10 +37,16 @@ const CombinedStep2 = ({
   onTranslateJobDescriptions,
   isTranslatingJobs = false,
   jobTranslationError = "",
+  jobTranslationSuccess = false,
 }) => {
   // Check if there are any responsibilities to translate
   const hasResponsibilities = formData.work_experience.some(
     work => work.responsibilities?.some(r => r?.trim())
+  );
+
+  // Check if any job has translated responsibilities
+  const hasTranslatedResponsibilities = formData.work_experience.some(
+    work => work.responsibilities_english?.length > 0
   );
 
   return (
@@ -170,6 +176,20 @@ const CombinedStep2 = ({
                     ))}
                     <button type="button" onClick={() => addResponsibility(index)} className="text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium py-2 px-3 rounded active:bg-emerald-50 transition-all touch-manipulation">+ إضافة مسؤولية</button>
                   </div>
+                  {/* Show translated responsibilities */}
+                  {work.responsibilities_english?.length > 0 && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <label className="block text-sm font-medium text-blue-700 mb-2">🌐 الترجمة الإنجليزية</label>
+                      <ul className="space-y-1">
+                        {work.responsibilities_english.map((respEn, respIdx) => (
+                          <li key={respIdx} className="text-sm text-blue-900 flex items-start gap-2">
+                            <span className="text-blue-500 mt-0.5">•</span>
+                            <span>{respEn}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -179,40 +199,71 @@ const CombinedStep2 = ({
           </button>
 
           {/* AI Translation Button for all job descriptions */}
-          {hasResponsibilities && (
-            <div className="mt-4 p-4 border border-blue-200 rounded-lg bg-blue-50/50">
-              <p className="text-sm text-blue-700 mb-3 text-center">
-                💡 سيقوم النظام بترجمة جميع المسؤوليات والإنجازات إلى الإنجليزية
-              </p>
-              <button
-                type="button"
-                onClick={onTranslateJobDescriptions}
-                disabled={isTranslatingJobs}
-                className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                  isTranslatingJobs
-                    ? "bg-blue-300 text-white cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
-                }`}
-              >
-                {isTranslatingJobs ? (
-                  <>
-                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    جاري الترجمة...
-                  </>
-                ) : (
-                  <>
-                    🌐 ترجم جميع المسؤوليات إلى الإنجليزية
-                  </>
+          <div className={`mt-4 p-4 border rounded-lg ${jobTranslationSuccess || hasTranslatedResponsibilities ? 'border-green-200 bg-green-50/50' : 'border-blue-200 bg-blue-50/50'}`}>
+            {jobTranslationSuccess || hasTranslatedResponsibilities ? (
+              <>
+                <p className="text-sm text-green-700 mb-3 text-center">
+                  ✅ تم ترجمة المسؤوليات بنجاح! يمكنك رؤية الترجمة أعلاه في كل خبرة عمل.
+                </p>
+                <button
+                  type="button"
+                  onClick={onTranslateJobDescriptions}
+                  disabled={isTranslatingJobs || !hasResponsibilities}
+                  className="w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
+                >
+                  {isTranslatingJobs ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      جاري الترجمة...
+                    </>
+                  ) : (
+                    <>
+                      🔄 إعادة الترجمة
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-blue-700 mb-3 text-center">
+                  💡 سيقوم النظام بترجمة جميع المسؤوليات والإنجازات إلى الإنجليزية
+                </p>
+                <button
+                  type="button"
+                  onClick={onTranslateJobDescriptions}
+                  disabled={isTranslatingJobs || !hasResponsibilities}
+                  className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                    isTranslatingJobs || !hasResponsibilities
+                      ? "bg-blue-300 text-white cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+                  }`}
+                >
+                  {isTranslatingJobs ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      جاري الترجمة...
+                    </>
+                  ) : (
+                    <>
+                      🌐 ترجم جميع المسؤوليات إلى الإنجليزية
+                    </>
+                  )}
+                </button>
+                {!hasResponsibilities && (
+                  <p className="text-xs text-slate-500 mt-2 text-center">أضف مسؤوليات أولاً للترجمة</p>
                 )}
-              </button>
-              {jobTranslationError && (
-                <p className="text-sm text-red-600 mt-2 text-center">{jobTranslationError}</p>
-              )}
-            </div>
-          )}
+              </>
+            )}
+            {jobTranslationError && (
+              <p className="text-sm text-red-600 mt-2 text-center">{jobTranslationError}</p>
+            )}
+          </div>
         </div>
       </div>
 

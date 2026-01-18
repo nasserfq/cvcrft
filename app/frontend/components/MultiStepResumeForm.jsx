@@ -378,6 +378,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [translationError, setTranslationError] = useState("");
  const [isTranslatingJobs, setIsTranslatingJobs] = useState(false);
  const [jobTranslationError, setJobTranslationError] = useState("");
+ const [jobTranslationSuccess, setJobTranslationSuccess] = useState(false);
  const [isExporting, setIsExporting] = useState(false);
  const [exportStatus, setExportStatus] = useState("idle"); // idle, processing, completed, failed, timeout
  const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -952,6 +953,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
   setIsTranslatingJobs(true);
   setJobTranslationError("");
+  setJobTranslationSuccess(false);
 
   try {
    const response = await fetch("/api/translate_job_descriptions", {
@@ -1064,6 +1066,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       }
 
       setIsTranslatingJobs(false);
+      setJobTranslationSuccess(true);
       return;
      } else if (status.status === "failed") {
       setJobTranslationError("فشلت الترجمة. يرجى المحاولة مرة أخرى.");
@@ -2089,6 +2092,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    onTranslateJobDescriptions: translateJobDescriptions,
    isTranslatingJobs,
    jobTranslationError,
+   jobTranslationSuccess,
    // Step 3 props
    handleSkillsChange,
    addSkills,
