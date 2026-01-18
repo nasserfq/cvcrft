@@ -115,7 +115,13 @@ class ResumesController < ApplicationController
   end
 
   def new
-    @resume = current_user.resumes.build
+    # Create and save a draft resume immediately so auto-save works
+    @resume = current_user.resumes.build(
+      is_draft: true,
+      complete_name: current_user.email&.split("@")&.first || "",
+      email: current_user.email || ""
+    )
+    @resume.save(validate: false) # Save without validation to get an ID for auto-save
   end
 
   def create
