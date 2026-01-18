@@ -40,6 +40,9 @@ const CombinedStep2 = ({
   jobTranslationSuccess = false,
   remainingTranslations = 5,
 }) => {
+  // Ensure remainingTranslations is always a valid number
+  const safeRemainingTranslations = typeof remainingTranslations === 'number' ? remainingTranslations : 5;
+  
   // Check if there are any responsibilities to translate
   const hasResponsibilities = formData.work_experience.some(
     work => work.responsibilities?.some(r => r?.trim())
@@ -201,7 +204,25 @@ const CombinedStep2 = ({
 
           {/* AI Translation Button for all job descriptions */}
           <div className={`mt-4 p-4 border rounded-lg ${jobTranslationSuccess || hasTranslatedResponsibilities ? 'border-green-200 bg-green-50/50' : 'border-blue-200 bg-blue-50/50'}`}>
-            {jobTranslationSuccess || hasTranslatedResponsibilities ? (
+            {/* Always show loading state when translating */}
+            {isTranslatingJobs ? (
+              <>
+                <p className="text-sm text-blue-700 mb-3 text-center">
+                  ⏳ جاري ترجمة المسؤوليات...
+                </p>
+                <button
+                  type="button"
+                  disabled={true}
+                  className="w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 bg-blue-400 text-white cursor-not-allowed"
+                >
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  جاري الترجمة...
+                </button>
+              </>
+            ) : jobTranslationSuccess || hasTranslatedResponsibilities ? (
               <>
                 <p className="text-sm text-green-700 mb-3 text-center">
                   ✅ تم ترجمة المسؤوليات بنجاح! يمكنك رؤية الترجمة أعلاه في كل خبرة عمل.
@@ -209,28 +230,16 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0}
+                  disabled={!hasResponsibilities || safeRemainingTranslations <= 0}
                   className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0
+                    !hasResponsibilities || safeRemainingTranslations <= 0
                       ? "bg-green-300 text-white cursor-not-allowed"
                       : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                   }`}
                 >
-                  {isTranslatingJobs ? (
-                    <>
-                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      جاري الترجمة...
-                    </>
-                  ) : (
-                    <>
-                      🔄 إعادة الترجمة ({remainingTranslations} متبقي)
-                    </>
-                  )}
+                  🔄 إعادة الترجمة ({safeRemainingTranslations} متبقي)
                 </button>
-                {remainingTranslations <= 0 && (
+                {safeRemainingTranslations <= 0 && (
                   <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع الترجمات المتاحة</p>
                 )}
               </>
@@ -242,31 +251,19 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0}
+                  disabled={!hasResponsibilities || safeRemainingTranslations <= 0}
                   className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    isTranslatingJobs || !hasResponsibilities || remainingTranslations <= 0
+                    !hasResponsibilities || safeRemainingTranslations <= 0
                       ? "bg-blue-300 text-white cursor-not-allowed"
                       : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                   }`}
                 >
-                  {isTranslatingJobs ? (
-                    <>
-                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      جاري الترجمة...
-                    </>
-                  ) : (
-                    <>
-                      🌐 ترجم جميع المسؤوليات إلى الإنجليزية ({remainingTranslations} متبقي)
-                    </>
-                  )}
+                  🌐 ترجم جميع المسؤوليات إلى الإنجليزية ({safeRemainingTranslations} متبقي)
                 </button>
                 {!hasResponsibilities && (
                   <p className="text-xs text-slate-500 mt-2 text-center">أضف مسؤوليات أولاً للترجمة</p>
                 )}
-                {remainingTranslations <= 0 && (
+                {safeRemainingTranslations <= 0 && (
                   <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع الترجمات المتاحة</p>
                 )}
               </>
