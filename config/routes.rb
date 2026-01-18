@@ -116,6 +116,7 @@ Rails.application.routes.draw do
 
     # Translation API routes
     post "translate_professional_summary", to: "translations#translate_professional_summary"
+    post "translate_job_descriptions", to: "translations#translate_job_descriptions"
     get "translation_status/:id", to: "translations#translation_status"
     get "export_pdf", to: "translations#export_pdf", as: :export_pdf_translations
     post "export_pdf", to: "translations#export_pdf", as: :export_pdf_post_translations

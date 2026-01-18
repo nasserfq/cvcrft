@@ -47,6 +47,65 @@ class Api::TranslationsController < ApplicationController
     end
   end
 
+  def translate_job_descriptions
+    begin
+      Rails.logger.info "[AI Translate Jobs] Request params: #{params.inspect}"
+
+      user_id = current_user.id
+      resume_id = params[:resume_id]
+      job_descriptions = params[:job_descriptions] # Array of {index, job_title, company, responsibilities}
+
+      if job_descriptions.blank? || !job_descriptions.is_a?(Array)
+        render json: { error: "Job descriptions array is required" }, status: :unprocessable_entity
+        return
+      end
+
+      # Filter out empty job descriptions
+      valid_jobs = job_descriptions.select do |job|
+        job["responsibilities"]&.any? { |r| r.to_s.strip.present? }
+      end
+
+      if valid_jobs.empty?
+        render json: { error: "No job descriptions with responsibilities to translate" }, status: :unprocessable_entity
+        return
+      end
+
+      # Generate a unique job ID for tracking
+      job_id = SecureRandom.hex(12)
+
+      # Combine all job descriptions into one text for efficient translation
+      combined_text = valid_jobs.map do |job|
+        responsibilities = job["responsibilities"]&.select(&:present?)&.join("\n") || ""
+        "[#{job['job_title']} - #{job['company']}]\n#{responsibilities}"
+      end.join("\n\n---\n\n")
+
+      job = AiTranslationJob.perform_async(
+        combined_text,
+        user_id,
+        resume_id,
+        {
+          "temperature" => 0.7,
+          "max_tokens" => 2000,
+          "job_descriptions" => true,
+          "job_id" => job_id,
+          "job_indices" => valid_jobs.map { |j| j["index"] }
+        }
+      )
+
+      Rails.logger.info "[AI Translate Jobs] Job enqueued: #{job}, job_id: #{job_id}"
+      render json: {
+        job_id: job_id,
+        status: "queued",
+        job_count: valid_jobs.size,
+        message: "Translation job has been queued for #{valid_jobs.size} job descriptions."
+      }
+    rescue => e
+      Rails.logger.error "[AI Translate Jobs] Error: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.first(5).join("\n")}"
+      render json: { error: "Translation failed", message: e.message }, status: :internal_server_error
+    end
+  end
+
   def translation_status
     begin
       job_id = params[:id]
@@ -61,7 +120,10 @@ class Api::TranslationsController < ApplicationController
         # Parse the metadata to get the structured translation data
         metadata = translation.metadata || {}
 
-        render json: {
+        # Check if this is a job descriptions translation
+        is_job_descriptions = metadata["job_descriptions"] == true
+
+        response_data = {
           id: translation.id,
           job_id: job_id,
           status: translation.status,
@@ -74,8 +136,23 @@ class Api::TranslationsController < ApplicationController
           # Add structured data from metadata
           skills_extracted: metadata["skills_extracted"] || [],
           translation_notes: metadata["translation_notes"] || "",
-          raw_response: metadata["raw_response"] || ""
+          raw_response: metadata["raw_response"] || "",
+          # Job descriptions specific data
+          job_descriptions: is_job_descriptions,
+          job_indices: metadata["job_indices"] || []
         }
+
+        # Parse jobs from english_text if this is a job descriptions translation
+        if is_job_descriptions && translation.english_text.present?
+          begin
+            parsed = JSON.parse(translation.english_text)
+            response_data[:jobs] = parsed["jobs"] || []
+          rescue JSON::ParserError
+            response_data[:jobs] = []
+          end
+        end
+
+        render json: response_data
       else
         # Job might still be processing - return pending status
         render json: {

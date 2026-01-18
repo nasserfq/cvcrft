@@ -376,6 +376,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const [isTranslating, setIsTranslating] = useState(false);
  const [translationError, setTranslationError] = useState("");
+ const [isTranslatingJobs, setIsTranslatingJobs] = useState(false);
+ const [jobTranslationError, setJobTranslationError] = useState("");
  const [isExporting, setIsExporting] = useState(false);
  const [exportStatus, setExportStatus] = useState("idle"); // idle, processing, completed, failed, timeout
  const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -929,6 +931,167 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    setTranslationError("حدث خطأ في الترجمة. يرجى المحاولة مرة أخرى.");
    setIsTranslating(false);
   }
+ };
+
+ // Translate all job descriptions at once
+ const translateJobDescriptions = async () => {
+  // Filter jobs with responsibilities
+  const jobsWithResponsibilities = formData.work_experience
+   .map((work, index) => ({
+    index,
+    job_title: work.job_title,
+    company: work.company,
+    responsibilities: work.responsibilities?.filter(r => r?.trim()) || []
+   }))
+   .filter(job => job.responsibilities.length > 0);
+
+  if (jobsWithResponsibilities.length === 0) {
+   setJobTranslationError("لا توجد مسؤوليات للترجمة");
+   return;
+  }
+
+  setIsTranslatingJobs(true);
+  setJobTranslationError("");
+
+  try {
+   const response = await fetch("/api/translate_job_descriptions", {
+    method: "POST",
+    headers: {
+     "Content-Type": "application/json",
+     "X-CSRF-Token": document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute("content"),
+    },
+    body: JSON.stringify({
+     job_descriptions: jobsWithResponsibilities,
+     resume_id: resume?.id,
+    }),
+   });
+
+   if (response.ok) {
+    const result = await response.json();
+    if (result.status === "queued" && result.job_id) {
+     // Poll for completion
+     pollJobTranslationStatus(result.job_id, jobsWithResponsibilities);
+    } else {
+     setJobTranslationError("حدث خطأ غير متوقع في الترجمة");
+     setIsTranslatingJobs(false);
+    }
+   } else {
+    throw new Error("Translation request failed");
+   }
+  } catch (error) {
+   console.error("Job translation error:", error);
+   setJobTranslationError("حدث خطأ في الترجمة. يرجى المحاولة مرة أخرى.");
+   setIsTranslatingJobs(false);
+  }
+ };
+
+ // Poll for job descriptions translation status
+ const pollJobTranslationStatus = async (jobId, originalJobs) => {
+  const maxAttempts = 60; // 60 seconds max for multiple jobs
+  let attempts = 0;
+
+  const poll = async () => {
+   try {
+    const response = await fetch(`/api/translation_status/${jobId}`);
+    if (response.ok) {
+     const status = await response.json();
+
+     if (status.status === "completed" && status.jobs) {
+      // Update work experience with translated responsibilities
+      setFormData((prev) => {
+       const updatedExperience = [...prev.work_experience];
+       
+       // Map translated jobs back to original indices
+       status.jobs.forEach((translatedJob, idx) => {
+        const originalIndex = originalJobs[idx]?.index;
+        if (originalIndex !== undefined && updatedExperience[originalIndex]) {
+         // Add English responsibilities as new entries or store separately
+         updatedExperience[originalIndex] = {
+          ...updatedExperience[originalIndex],
+          responsibilities_english: translatedJob.responsibilities_english || []
+         };
+        }
+       });
+
+       return {
+        ...prev,
+        work_experience: updatedExperience,
+       };
+      });
+
+      // Extract skills from job descriptions
+      if (status.skills_extracted?.length > 0) {
+       const extractedSkills = status.skills_extracted;
+       const skillsByCategory = {};
+       extractedSkills.forEach((skill) => {
+        const category = skill.category || "technical";
+        if (!skillsByCategory[category]) {
+         skillsByCategory[category] = [];
+        }
+        skillsByCategory[category].push(skill.name);
+       });
+
+       const newSkills = Object.entries(skillsByCategory).map(
+        ([category, skillNames]) => ({
+         category: category,
+         skill_names: skillNames,
+        })
+       );
+
+       setFormData((prev) => {
+        const existingSkills = [...prev.skills];
+        newSkills.forEach((newSkill) => {
+         const existingCategoryIndex = existingSkills.findIndex(
+          (existing) => existing.category === newSkill.category
+         );
+         if (existingCategoryIndex >= 0) {
+          const existingSkill = existingSkills[existingCategoryIndex];
+          const mergedSkillNames = [
+           ...new Set([...existingSkill.skill_names, ...newSkill.skill_names]),
+          ];
+          existingSkills[existingCategoryIndex] = {
+           ...existingSkill,
+           skill_names: mergedSkillNames,
+          };
+         } else {
+          existingSkills.push(newSkill);
+         }
+        });
+        return { ...prev, skills: existingSkills };
+       });
+      }
+
+      setIsTranslatingJobs(false);
+      return;
+     } else if (status.status === "failed") {
+      setJobTranslationError("فشلت الترجمة. يرجى المحاولة مرة أخرى.");
+      setIsTranslatingJobs(false);
+      return;
+     }
+    }
+
+    attempts++;
+    if (attempts < maxAttempts) {
+     setTimeout(poll, 1000);
+    } else {
+     setJobTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setIsTranslatingJobs(false);
+    }
+   } catch (error) {
+    console.error("Polling error:", error);
+    attempts++;
+    if (attempts < maxAttempts) {
+     setTimeout(poll, 1000);
+    } else {
+     setJobTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setIsTranslatingJobs(false);
+    }
+   }
+  };
+
+  poll();
  };
 
  // Robust resume saving function
@@ -1922,6 +2085,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    handleResponsibilityChange,
    addResponsibility,
    removeResponsibility,
+   // Step 2 translation props
+   onTranslateJobDescriptions: translateJobDescriptions,
+   isTranslatingJobs,
+   jobTranslationError,
    // Step 3 props
    handleSkillsChange,
    addSkills,

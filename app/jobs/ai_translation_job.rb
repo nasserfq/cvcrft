@@ -110,6 +110,14 @@ class AiTranslationJob
   end
 
   def build_system_prompt
+    if @options[:job_descriptions]
+      build_job_descriptions_system_prompt
+    else
+      build_professional_summary_system_prompt
+    end
+  end
+
+  def build_professional_summary_system_prompt
     <<~PROMPT
       You are an AI assistant specialized in translating Arabic text to professional English for resumes and CVs.#{' '}
       Your task is to:
@@ -130,13 +138,60 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     PROMPT
   end
 
+  def build_job_descriptions_system_prompt
+    <<~PROMPT
+      You are an AI assistant specialized in translating Arabic job descriptions to professional English for resumes and CVs.
+      Your task is to:
+      1. Translate each job's responsibilities from Arabic to professional English
+      2. Use action verbs and quantifiable achievements where possible
+      3. Maintain professional tone suitable for international job applications
+      4. Keep bullet points concise but impactful
+      5. Preserve the structure: translate each job section separately
+
+      The input contains multiple jobs separated by "---". Each job has a header [Job Title - Company] followed by responsibilities.
+
+      Return your response in JSON format with the following structure:
+      {
+        "jobs": [
+          {
+            "job_title": "original job title",
+            "company": "original company",
+            "responsibilities_english": ["translated responsibility 1", "translated responsibility 2", ...]
+          }
+        ],
+        "skills_extracted": [
+          {"name": "skill name", "level": "beginner/intermediate/expert", "category": "technical/soft/domain"}
+        ],
+        "translation_notes": "notes about the translation process"
+      }
+    PROMPT
+  end
+
   def build_user_prompt
+    if @options[:job_descriptions]
+      build_job_descriptions_user_prompt
+    else
+      build_professional_summary_user_prompt
+    end
+  end
+
+  def build_professional_summary_user_prompt
     <<~PROMPT
       Please process the following Arabic text (either 3 descriptive sentences OR at least 50 words) about work experience, skills, or professional background:
 
       "#{@arabic_text}"
 
       Generate a comprehensive professional summary in English that incorporates all the information from this Arabic input. Focus on creating a cohesive, well-structured summary that highlights relevant skills and maintains professional terminology suitable for international job applications.
+    PROMPT
+  end
+
+  def build_job_descriptions_user_prompt
+    <<~PROMPT
+      Please translate the following job descriptions from Arabic to professional English. Each job section is separated by "---":
+
+      #{@arabic_text}
+
+      Translate each job's responsibilities to professional English, using action verbs and maintaining impact. Keep each translated responsibility concise (1-2 sentences max).
     PROMPT
   end
 
@@ -147,13 +202,26 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
       # Try to parse as JSON first
       parsed_content = JSON.parse(content)
 
-      {
-        english_text: parsed_content["english_text"],
-        skills_extracted: parsed_content["skills_extracted"] || [],
-        translation_notes: parsed_content["translation_notes"],
-        tokens_used: response["usage"]["total_tokens"],
-        raw_response: content
-      }
+      if @options[:job_descriptions]
+        # Job descriptions format
+        {
+          jobs: parsed_content["jobs"] || [],
+          english_text: parsed_content.to_json, # Store full response as english_text
+          skills_extracted: parsed_content["skills_extracted"] || [],
+          translation_notes: parsed_content["translation_notes"],
+          tokens_used: response["usage"]["total_tokens"],
+          raw_response: content
+        }
+      else
+        # Professional summary format
+        {
+          english_text: parsed_content["english_text"],
+          skills_extracted: parsed_content["skills_extracted"] || [],
+          translation_notes: parsed_content["translation_notes"],
+          tokens_used: response["usage"]["total_tokens"],
+          raw_response: content
+        }
+      end
     rescue JSON::ParserError
       # If not JSON, treat as plain text
       {
