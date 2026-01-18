@@ -398,12 +398,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   
   if (!formData.email?.trim()) {
    errors.email = "البريد الإلكتروني مطلوب";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+  } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email.trim())) {
    errors.email = "البريد الإلكتروني غير صالح";
   }
   
   if (!formData.phone_number?.trim()) {
    errors.phone_number = "رقم الهاتف مطلوب";
+  } else if (!/^\+?[0-9]+$/.test(formData.phone_number.trim())) {
+   errors.phone_number = "رقم الهاتف يجب أن يحتوي على أرقام فقط (مع علامة + اختيارية)";
   }
   
   if (!formData.city?.trim()) {
@@ -416,8 +418,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   
   if (!formData.professional_summary?.trim()) {
    errors.professional_summary = "الملخص المهني مطلوب";
-  } else if (formData.professional_summary.trim().length < 50) {
-   errors.professional_summary = "الملخص المهني يجب أن يكون 50 حرفاً على الأقل";
+  } else if (formData.professional_summary.trim().length < 5) {
+   errors.professional_summary = "الملخص المهني يجب أن يكون 5 حروف على الأقل";
   }
   
   return errors;
