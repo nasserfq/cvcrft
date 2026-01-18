@@ -142,13 +142,14 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     <<~PROMPT
       You are an AI assistant specialized in translating Arabic job descriptions to professional English for resumes and CVs.
       Your task is to:
-      1. Translate each job's responsibilities from Arabic to professional English
-      2. Use action verbs and quantifiable achievements where possible
-      3. Maintain professional tone suitable for international job applications
-      4. Keep bullet points concise but impactful
-      5. Preserve the structure: translate each job section separately
+      1. Translate EVERY piece of text from Arabic to professional English - even short phrases or single words
+      2. Use action verbs and expand brief descriptions into full professional sentences
+      3. If the input is a short phrase like "مدير مشروع" (Project Manager), expand it into a professional responsibility statement
+      4. Maintain professional tone suitable for international job applications
+      5. ALWAYS provide translations - never return empty arrays
 
       The input contains multiple jobs separated by "---". Each job has a header [Job Title - Company] followed by responsibilities.
+      Even if the responsibility is just a job title or brief phrase, translate and expand it into a proper professional responsibility statement.
 
       Return your response in JSON format with the following structure:
       {
@@ -191,7 +192,11 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
 
       #{@arabic_text}
 
-      Translate each job's responsibilities to professional English, using action verbs and maintaining impact. Keep each translated responsibility concise (1-2 sentences max).
+      IMPORTANT: Translate ALL text provided, even if it's just a short phrase or job title.#{' '}
+      - If the responsibility is brief like "مدير مشروع تقني" (Technical Project Manager), expand it into a full professional statement like "Led and managed technical projects from conception to completion"
+      - NEVER return empty responsibilities_english arrays
+      - Each Arabic line should result in at least one English translation
+      - Use action verbs and professional language suitable for international CVs
     PROMPT
   end
 

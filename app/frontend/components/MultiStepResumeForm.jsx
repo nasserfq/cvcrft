@@ -1001,7 +1001,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      const status = await response.json();
 
      if (status.status === "completed" && status.jobs) {
-      // Update work experience with translated responsibilities
+      // Update work experience with translated responsibilities - REPLACE the Arabic with English
       setFormData((prev) => {
        const updatedExperience = [...prev.work_experience];
        
@@ -1009,11 +1009,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        status.jobs.forEach((translatedJob, idx) => {
         const originalIndex = originalJobs[idx]?.index;
         if (originalIndex !== undefined && updatedExperience[originalIndex]) {
-         // Add English responsibilities as new entries or store separately
-         updatedExperience[originalIndex] = {
-          ...updatedExperience[originalIndex],
-          responsibilities_english: translatedJob.responsibilities_english || []
-         };
+         const englishResponsibilities = translatedJob.responsibilities_english || [];
+         // Replace Arabic responsibilities with English translations
+         if (englishResponsibilities.length > 0) {
+          updatedExperience[originalIndex] = {
+           ...updatedExperience[originalIndex],
+           responsibilities: englishResponsibilities,
+           responsibilities_arabic: updatedExperience[originalIndex].responsibilities, // Keep original
+          };
+         }
         }
        });
 

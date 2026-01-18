@@ -44,9 +44,9 @@ const CombinedStep2 = ({
     work => work.responsibilities?.some(r => r?.trim())
   );
 
-  // Check if any job has translated responsibilities
+  // Check if any job has been translated (has original Arabic stored)
   const hasTranslatedResponsibilities = formData.work_experience.some(
-    work => work.responsibilities_english?.length > 0
+    work => work.responsibilities_arabic?.length > 0
   );
 
   return (
@@ -176,15 +176,15 @@ const CombinedStep2 = ({
                     ))}
                     <button type="button" onClick={() => addResponsibility(index)} className="text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium py-2 px-3 rounded active:bg-emerald-50 transition-all touch-manipulation">+ إضافة مسؤولية</button>
                   </div>
-                  {/* Show translated responsibilities */}
-                  {work.responsibilities_english?.length > 0 && (
-                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <label className="block text-sm font-medium text-blue-700 mb-2">🌐 الترجمة الإنجليزية</label>
-                      <ul className="space-y-1">
-                        {work.responsibilities_english.map((respEn, respIdx) => (
-                          <li key={respIdx} className="text-sm text-blue-900 flex items-start gap-2">
-                            <span className="text-blue-500 mt-0.5">•</span>
-                            <span>{respEn}</span>
+                  {/* Show original Arabic if translation was done */}
+                  {work.responsibilities_arabic?.length > 0 && (
+                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <label className="block text-xs font-medium text-amber-700 mb-1">📝 النص الأصلي (العربي)</label>
+                      <ul className="space-y-0.5">
+                        {work.responsibilities_arabic.filter(r => r?.trim()).map((respAr, respIdx) => (
+                          <li key={respIdx} className="text-xs text-amber-800 flex items-start gap-1">
+                            <span className="text-amber-500 mt-0.5">•</span>
+                            <span>{respAr}</span>
                           </li>
                         ))}
                       </ul>
