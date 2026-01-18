@@ -9,7 +9,7 @@ class Api::TranslationsController < ApplicationController
       # Always enqueue a new AI translation job for every request
       Rails.logger.info "[AI Translate] Request params: #{params.inspect}"
 
-      user_id = params[:user_id] || 1
+      user_id = current_user.id
       resume_id = params[:resume_id]
       arabic_text = params[:arabic_text]
 
@@ -19,6 +19,9 @@ class Api::TranslationsController < ApplicationController
         return
       end
 
+      # Generate a unique job ID first
+      job_id = SecureRandom.hex(12)
+
       job = AiTranslationJob.perform_async(
         arabic_text,
         user_id,
@@ -26,13 +29,14 @@ class Api::TranslationsController < ApplicationController
         {
           "temperature" => 0.7,
           "max_tokens" => 500,
-          "professional_summary" => true
+          "professional_summary" => true,
+          "job_id" => job_id
         }
       )
 
-      Rails.logger.info "[AI Translate] Job enqueued: #{job}"
+      Rails.logger.info "[AI Translate] Job enqueued: #{job}, job_id: #{job_id}"
       render json: {
-        job_id: job,
+        job_id: job_id,
         status: "queued",
         message: "Translation job has been queued. Please poll for status."
       }
@@ -45,11 +49,11 @@ class Api::TranslationsController < ApplicationController
 
   def translation_status
     begin
-      # Get user_id from params or use a default for now
-      user_id = params[:user_id] || 1
+      job_id = params[:id]
 
-      # Find the latest translation for this user
-      translation = AiTranslation.where(user_id: user_id)
+      # Find the translation by job_id stored in metadata
+      translation = AiTranslation.where(user_id: current_user.id)
+                               .where("metadata->>'job_id' = ?", job_id)
                                .order(created_at: :desc)
                                .first
 
@@ -59,6 +63,7 @@ class Api::TranslationsController < ApplicationController
 
         render json: {
           id: translation.id,
+          job_id: job_id,
           status: translation.status,
           arabic_text: translation.arabic_text,
           english_text: translation.english_text,
@@ -72,7 +77,12 @@ class Api::TranslationsController < ApplicationController
           raw_response: metadata["raw_response"] || ""
         }
       else
-        render json: { error: "Translation not found" }, status: :not_found
+        # Job might still be processing - return pending status
+        render json: {
+          job_id: job_id,
+          status: "processing",
+          message: "Translation is still processing..."
+        }
       end
     rescue => e
       Rails.logger.error "Translation status API error: #{e.message}"
