@@ -256,13 +256,18 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
   def update_resume_with_translation(result)
     return unless @resume_id
 
+    # Skip resume update for job descriptions translations - they don't update the resume directly
+    return if @options["job_descriptions"]
+
     resume = Resume.find(@resume_id)
 
-    # Always update professional summary with AI-generated/translated result
-    if result[:english_text].present?
+    # Only update professional summary for professional summary translations
+    if @options["professional_summary"] && result[:english_text].present?
+      # Truncate to 1000 characters if needed
+      english_text = result[:english_text].to_s[0, 1000]
       resume.update!(
-        professional_summary: result[:english_text],
-        summary: result[:english_text]
+        professional_summary: english_text,
+        summary: english_text
       )
     end
 
