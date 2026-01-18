@@ -1,6 +1,22 @@
 import React, { memo } from "react";
 import { inputClassName } from "./FormUtils";
 
+// Error display component
+const FieldError = ({ error }) => error ? (
+  <p className="mt-1 text-sm text-red-600 flex items-center gap-1" data-error>
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    {error}
+  </p>
+) : null;
+
+// Input with error styling
+const getInputClassName = (hasError) => 
+  hasError 
+    ? inputClassName.replace('border-slate-300/70', 'border-red-400').replace('focus:ring-emerald-500/40', 'focus:ring-red-500/40').replace('focus:border-emerald-400', 'focus:border-red-400') + ' ring-red-200'
+    : inputClassName;
+
 // Icons
 const UserIcon = () => (
   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,6 +46,7 @@ const CombinedStep1 = ({
   translationCount,
   maxTranslations,
   renderSaveDraftButton,
+  validationErrors = {},
 }) => {
   return (
     <div className="space-y-8">
@@ -50,57 +67,62 @@ const CombinedStep1 = ({
         </h3>
         <div className="grid gap-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">الاسم الكامل</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">الاسم الكامل <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={formData.complete_name}
               onChange={(e) => handleInputChange("complete_name", e.target.value)}
-              className={inputClassName}
+              className={getInputClassName(validationErrors.complete_name)}
               placeholder="مثال: Ahmed Ali"
             />
+            <FieldError error={validationErrors.complete_name} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">البريد الإلكتروني</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">البريد الإلكتروني <span className="text-red-500">*</span></label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className={inputClassName}
+                className={getInputClassName(validationErrors.email)}
                 placeholder="ahmed@example.com"
               />
+              <FieldError error={validationErrors.email} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">رقم الهاتف</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">رقم الهاتف <span className="text-red-500">*</span></label>
               <input
                 type="tel"
                 value={formData.phone_number}
                 onChange={(e) => handleInputChange("phone_number", e.target.value)}
-                className={inputClassName}
+                className={getInputClassName(validationErrors.phone_number)}
                 placeholder="+966501234567"
               />
+              <FieldError error={validationErrors.phone_number} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">المدينة</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">المدينة <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.city}
                 onChange={(e) => handleInputChange("city", e.target.value)}
-                className={inputClassName}
+                className={getInputClassName(validationErrors.city)}
                 placeholder="Riyadh"
               />
+              <FieldError error={validationErrors.city} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">الدولة</label>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">الدولة <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.country}
                 onChange={(e) => handleInputChange("country", e.target.value)}
-                className={inputClassName}
+                className={getInputClassName(validationErrors.country)}
                 placeholder="Saudi Arabia"
               />
+              <FieldError error={validationErrors.country} />
             </div>
           </div>
         </div>
@@ -114,14 +136,15 @@ const CombinedStep1 = ({
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">الملخص المهني (بالعربية)</label>
+            <label className="block text-sm font-semibold text-slate-900 mb-2">الملخص المهني (بالعربية) <span className="text-red-500">*</span></label>
             <textarea
               value={formData.professional_summary}
               onChange={(e) => handleInputChange("professional_summary", e.target.value)}
               rows={4}
-              className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5 transition-all resize-none"
+              className={`w-full rounded-lg ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-slate-300/70 focus:ring-emerald-500/40 focus:border-emerald-400'} bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 ring-1 ring-black/5 transition-all resize-none`}
               placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك..."
             />
+            <FieldError error={validationErrors.professional_summary} />
             <p className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
               💡 سيقوم النظام بترجمة النص العربي إلى الإنجليزية وإنشاء ملخص مهني محسن
             </p>

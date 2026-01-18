@@ -384,8 +384,109 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [maxTranslations] = useState(5);
  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
  const [lastSavedAt, setLastSavedAt] = useState(null);
+ const [validationErrors, setValidationErrors] = useState({});
 
  const totalSteps = 4;
+
+ // Validation functions for each step
+ const validateStep1 = () => {
+  const errors = {};
+  
+  if (!formData.complete_name?.trim()) {
+   errors.complete_name = "الاسم الكامل مطلوب";
+  }
+  
+  if (!formData.email?.trim()) {
+   errors.email = "البريد الإلكتروني مطلوب";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+   errors.email = "البريد الإلكتروني غير صالح";
+  }
+  
+  if (!formData.phone_number?.trim()) {
+   errors.phone_number = "رقم الهاتف مطلوب";
+  }
+  
+  if (!formData.city?.trim()) {
+   errors.city = "المدينة مطلوبة";
+  }
+  
+  if (!formData.country?.trim()) {
+   errors.country = "الدولة مطلوبة";
+  }
+  
+  if (!formData.professional_summary?.trim()) {
+   errors.professional_summary = "الملخص المهني مطلوب";
+  } else if (formData.professional_summary.trim().length < 50) {
+   errors.professional_summary = "الملخص المهني يجب أن يكون 50 حرفاً على الأقل";
+  }
+  
+  return errors;
+ };
+
+ const validateStep2 = () => {
+  const errors = {};
+  
+  // Validate education - at least one valid entry
+  const validEducation = formData.education.filter(
+   edu => edu.degree?.trim() && edu.institution?.trim() && edu.start_date?.trim()
+  );
+  if (validEducation.length === 0) {
+   errors.education = "يجب إضافة مؤهل تعليمي واحد على الأقل";
+  }
+  
+  // Validate work experience - at least one valid entry
+  const validWorkExp = formData.work_experience.filter(
+   exp => exp.job_title?.trim() && exp.company?.trim() && exp.start_date?.trim()
+  );
+  if (validWorkExp.length === 0) {
+   errors.work_experience = "يجب إضافة خبرة عمل واحدة على الأقل";
+  }
+  
+  return errors;
+ };
+
+ const validateStep3 = () => {
+  const errors = {};
+  
+  // Validate skills - at least one category with skills
+  const validSkills = formData.skills.filter(
+   skill => skill.category?.trim() && skill.skill_names?.some(name => name?.trim())
+  );
+  if (validSkills.length === 0) {
+   errors.skills = "يجب إضافة مهارة واحدة على الأقل";
+  }
+  
+  // Validate languages - at least one language
+  const validLanguages = formData.languages.filter(
+   lang => lang.language?.trim() && lang.proficiency?.trim()
+  );
+  if (validLanguages.length === 0) {
+   errors.languages = "يجب إضافة لغة واحدة على الأقل";
+  }
+  
+  return errors;
+ };
+
+ const validateCurrentStep = () => {
+  let errors = {};
+  
+  switch (currentStep) {
+   case 1:
+    errors = validateStep1();
+    break;
+   case 2:
+    errors = validateStep2();
+    break;
+   case 3:
+    errors = validateStep3();
+    break;
+   default:
+    break;
+  }
+  
+  setValidationErrors(errors);
+  return Object.keys(errors).length === 0;
+ };
 
  // Hydrate formData with progressively loaded sections
  useEffect(() => {
@@ -1586,6 +1687,21 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const nextStep = () => {
   if (currentStep < totalSteps) {
+   // Validate current step before moving
+   if (!validateCurrentStep()) {
+    // Scroll to first error
+    setTimeout(() => {
+     const errorElement = document.querySelector('[data-error]');
+     if (errorElement) {
+      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+     }
+    }, 100);
+    return;
+   }
+   
+   // Clear validation errors on successful validation
+   setValidationErrors({});
+   
    // Auto-save current step before moving to next
    if (resume?.id) {
     saveDraft(currentStep, true);
@@ -1793,6 +1909,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    translationCount,
    maxTranslations,
    renderSaveDraftButton,
+   validationErrors,
    // Step 2 props
    handleEducationChange,
    addEducation,

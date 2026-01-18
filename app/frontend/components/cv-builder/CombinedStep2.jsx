@@ -1,6 +1,18 @@
 import React, { memo } from "react";
 import MobileDatePicker from "./MobileDatePicker";
 
+// Error display component
+const SectionError = ({ error }) => error ? (
+  <div className="mb-4 p-3 border border-red-200 rounded-lg bg-red-50" data-error>
+    <p className="text-sm text-red-600 flex items-center gap-2">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      {error}
+    </p>
+  </div>
+) : null;
+
 // Icon
 const BriefcaseIcon = () => (
   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,6 +32,7 @@ const CombinedStep2 = ({
   addResponsibility,
   removeResponsibility,
   renderSaveDraftButton,
+  validationErrors = {},
 }) => {
   return (
     <div className="space-y-8">
@@ -33,12 +46,13 @@ const CombinedStep2 = ({
       </div>
 
       {/* Education Section */}
-      <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+      <div className={`p-4 sm:p-6 border ${validationErrors.education ? 'border-red-300' : 'border-slate-200/60'} rounded-lg bg-slate-50/30`}>
         <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
           التعليم
-          <span className="text-xs text-slate-500 font-normal">(اختياري)</span>
+          <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
+        <SectionError error={validationErrors.education} />
         <div className="space-y-4">
           {formData.education.map((edu, index) => (
             <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50 overflow-hidden">
@@ -81,11 +95,13 @@ const CombinedStep2 = ({
       </div>
 
       {/* Work Experience Section */}
-      <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
+      <div className={`p-4 sm:p-6 border ${validationErrors.work_experience ? 'border-red-300' : 'border-slate-200/60'} rounded-lg bg-slate-50/30`}>
         <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
           الخبرات العملية
+          <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
+        <SectionError error={validationErrors.work_experience} />
         <div className="space-y-4">
           {formData.work_experience.map((work, index) => (
             <div key={index} className="p-3 sm:p-4 border border-slate-200/40 rounded-lg bg-white/50">
