@@ -230,6 +230,9 @@ const CombinedStep2 = ({
                     </>
                   )}
                 </button>
+                {remainingTranslations <= 0 && (
+                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع الترجمات المتاحة</p>
+                )}
               </>
             ) : (
               <>
@@ -262,6 +265,9 @@ const CombinedStep2 = ({
                 </button>
                 {!hasResponsibilities && (
                   <p className="text-xs text-slate-500 mt-2 text-center">أضف مسؤوليات أولاً للترجمة</p>
+                )}
+                {remainingTranslations <= 0 && (
+                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع الترجمات المتاحة</p>
                 )}
               </>
             )}
