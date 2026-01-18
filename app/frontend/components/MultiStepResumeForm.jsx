@@ -1439,18 +1439,6 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
  };
 
- // Auto-save effect - triggers 2 seconds after form data changes
- useEffect(() => {
-  // Skip auto-save if no resume ID (new unsaved resume)
-  if (!resume?.id) return;
-  
-  const autoSaveTimer = setTimeout(() => {
-   saveDraft(currentStep, true); // silent save
-  }, 2000);
-
-  return () => clearTimeout(autoSaveTimer);
- }, [formData, currentStep]);
-
  // Helper function to render save draft button (now a subtle manual backup option)
  const renderSaveDraftButton = (stepNumber) => (
   <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between">
