@@ -28,6 +28,17 @@ const SectionError = ({ error }) => error ? (
   </div>
 ) : null;
 
+// Field-level error display
+const FieldError = ({ error }) => error ? (
+  <p className="mt-1 text-xs text-red-600">{error}</p>
+) : null;
+
+// Input with error styling helper
+const getInputClass = (baseClass, hasError) => 
+  hasError 
+    ? baseClass.replace('border-slate-300/70', 'border-red-400') + ' ring-1 ring-red-200'
+    : baseClass;
+
 // Icon
 const BriefcaseIcon = () => (
   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,20 +108,26 @@ const CombinedStep2 = ({
                 )}
               </div>
               <div className="grid gap-3">
-                <input
-                  type="text"
-                  value={edu.degree}
-                  onChange={(e) => handleEducationChange(index, "degree", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
-                  placeholder="الدرجة العلمية (Bachelor of...)"
-                />
-                <input
-                  type="text"
-                  value={edu.institution}
-                  onChange={(e) => handleEducationChange(index, "institution", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
-                  placeholder="المؤسسة التعليمية"
-                />
+                <div>
+                  <input
+                    type="text"
+                    value={edu.degree}
+                    onChange={(e) => handleEducationChange(index, "degree", e.target.value)}
+                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`education_degree_${index}`])}
+                    placeholder="الدرجة العلمية (Bachelor of...)"
+                  />
+                  <FieldError error={validationErrors[`education_degree_${index}`]} />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={edu.institution}
+                    onChange={(e) => handleEducationChange(index, "institution", e.target.value)}
+                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`education_institution_${index}`])}
+                    placeholder="المؤسسة التعليمية"
+                  />
+                  <FieldError error={validationErrors[`education_institution_${index}`]} />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <MobileDatePicker value={edu.start_date} onChange={(value) => handleEducationChange(index, "start_date", value)} placeholder="البداية" />
                   <MobileDatePicker value={edu.end_date} onChange={(value) => handleEducationChange(index, "end_date", value)} disabled={edu.is_current} placeholder="النهاية" />
@@ -146,22 +163,28 @@ const CombinedStep2 = ({
                 )}
               </div>
               <div className="space-y-3">
-                <input
-                  type="text"
-                  value={work.job_title}
-                  onChange={(e) => handleWorkExperienceChange(index, "job_title", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base"
-                  placeholder="المسمى الوظيفي"
-                  style={{ fontSize: "16px" }}
-                />
-                <input
-                  type="text"
-                  value={work.company}
-                  onChange={(e) => handleWorkExperienceChange(index, "company", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base"
-                  placeholder="اسم الشركة"
-                  style={{ fontSize: "16px" }}
-                />
+                <div>
+                  <input
+                    type="text"
+                    value={work.job_title}
+                    onChange={(e) => handleWorkExperienceChange(index, "job_title", e.target.value)}
+                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base", validationErrors[`work_job_title_${index}`])}
+                    placeholder="المسمى الوظيفي"
+                    style={{ fontSize: "16px" }}
+                  />
+                  <FieldError error={validationErrors[`work_job_title_${index}`]} />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={work.company}
+                    onChange={(e) => handleWorkExperienceChange(index, "company", e.target.value)}
+                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base", validationErrors[`work_company_${index}`])}
+                    placeholder="اسم الشركة"
+                    style={{ fontSize: "16px" }}
+                  />
+                  <FieldError error={validationErrors[`work_company_${index}`]} />
+                </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <MobileDatePicker value={work.start_date} onChange={(value) => handleWorkExperienceChange(index, "start_date", value)} placeholder="البداية" />

@@ -1,6 +1,32 @@
 import React, { useState, useEffect, Suspense, lazy, memo } from "react";
 import { createPortal } from "react-dom";
 
+// Helper to check if text is primarily English (allows numbers, punctuation, spaces)
+// Returns true if text contains mostly English letters (Latin characters)
+const isEnglishText = (text) => {
+ if (!text || typeof text !== 'string') return true; // Empty is OK
+ const trimmed = text.trim();
+ if (!trimmed) return true; // Empty after trim is OK
+ 
+ // Remove numbers, punctuation, spaces - keep only letters
+ const lettersOnly = trimmed.replace(/[0-9\s\-_.,;:!?@#$%^&*()+=\[\]{}|\\/<>"'`~]/g, '');
+ if (!lettersOnly) return true; // Only numbers/punctuation is OK
+ 
+ // Check if letters are primarily Latin (English)
+ // Arabic characters are in range \u0600-\u06FF
+ const arabicLetters = lettersOnly.match(/[\u0600-\u06FF]/g) || [];
+ const latinLetters = lettersOnly.match(/[a-zA-Z]/g) || [];
+ 
+ // If there are Arabic letters and no/few Latin letters, it's not English
+ if (arabicLetters.length > 0 && latinLetters.length < arabicLetters.length) {
+  return false;
+ }
+ 
+ return true;
+};
+
+const ENGLISH_VALIDATION_MSG = "يرجى الكتابة باللغة الإنجليزية";
+
 // Lazy load step components for better initial load performance
 const CombinedStep1 = lazy(() => import("./cv-builder/CombinedStep1"));
 const CombinedStep2 = lazy(() => import("./cv-builder/CombinedStep2"));
@@ -456,6 +482,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
  const [lastSavedAt, setLastSavedAt] = useState(null);
  const [validationErrors, setValidationErrors] = useState({});
+ const [touchedFields, setTouchedFields] = useState({}); // Track which fields user has interacted with
+
+ // Mark a field as touched
+ const markFieldTouched = (fieldName) => {
+  setTouchedFields(prev => ({ ...prev, [fieldName]: true }));
+ };
 
  const totalSteps = 4;
 
@@ -465,6 +497,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   
   if (!formData.complete_name?.trim()) {
    errors.complete_name = "الاسم الكامل مطلوب";
+  } else if (!isEnglishText(formData.complete_name)) {
+   errors.complete_name = ENGLISH_VALIDATION_MSG;
   }
   
   if (!formData.email?.trim()) {
@@ -481,12 +515,17 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   
   if (!formData.city?.trim()) {
    errors.city = "المدينة مطلوبة";
+  } else if (!isEnglishText(formData.city)) {
+   errors.city = ENGLISH_VALIDATION_MSG;
   }
   
   if (!formData.country?.trim()) {
    errors.country = "الدولة مطلوبة";
+  } else if (!isEnglishText(formData.country)) {
+   errors.country = ENGLISH_VALIDATION_MSG;
   }
   
+  // Professional summary - NO English validation (Arabic allowed)
   if (!formData.professional_summary?.trim()) {
    errors.professional_summary = "الملخص المهني مطلوب";
   } else if (formData.professional_summary.trim().length < 5) {
@@ -505,6 +544,19 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
   if (validEducation.length === 0) {
    errors.education = "يجب إضافة مؤهل تعليمي واحد على الأقل";
+  } else {
+   // Check English validation for education fields
+   for (let i = 0; i < formData.education.length; i++) {
+    const edu = formData.education[i];
+    if (edu.degree?.trim() && !isEnglishText(edu.degree)) {
+     errors.education = `التعليم ${i + 1}: الدرجة العلمية - ${ENGLISH_VALIDATION_MSG}`;
+     break;
+    }
+    if (edu.institution?.trim() && !isEnglishText(edu.institution)) {
+     errors.education = `التعليم ${i + 1}: المؤسسة التعليمية - ${ENGLISH_VALIDATION_MSG}`;
+     break;
+    }
+   }
   }
   
   // Validate work experience - at least one valid entry
@@ -513,6 +565,20 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
   if (validWorkExp.length === 0) {
    errors.work_experience = "يجب إضافة خبرة عمل واحدة على الأقل";
+  } else {
+   // Check English validation for work experience fields (NOT responsibilities)
+   for (let i = 0; i < formData.work_experience.length; i++) {
+    const exp = formData.work_experience[i];
+    if (exp.job_title?.trim() && !isEnglishText(exp.job_title)) {
+     errors.work_experience = `الخبرة ${i + 1}: المسمى الوظيفي - ${ENGLISH_VALIDATION_MSG}`;
+     break;
+    }
+    if (exp.company?.trim() && !isEnglishText(exp.company)) {
+     errors.work_experience = `الخبرة ${i + 1}: اسم الشركة - ${ENGLISH_VALIDATION_MSG}`;
+     break;
+    }
+    // Note: responsibilities are NOT validated for English (Arabic allowed)
+   }
   }
   
   return errors;
@@ -527,6 +593,34 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
   if (validSkills.length === 0) {
    errors.skills = "يجب إضافة مهارة واحدة على الأقل";
+  } else {
+   // Check English validation for skills
+   for (let i = 0; i < formData.skills.length; i++) {
+    const skill = formData.skills[i];
+    if (skill.category?.trim() && !isEnglishText(skill.category)) {
+     errors.skills = `المهارة ${i + 1}: اسم الفئة - ${ENGLISH_VALIDATION_MSG}`;
+     break;
+    }
+    // Check each skill name
+    const nonEnglishSkill = skill.skill_names?.find(name => name?.trim() && !isEnglishText(name));
+    if (nonEnglishSkill) {
+     errors.skills = `المهارة ${i + 1}: "${nonEnglishSkill}" - ${ENGLISH_VALIDATION_MSG}`;
+     break;
+    }
+   }
+  }
+  
+  // Validate certifications - check English
+  for (let i = 0; i < (formData.certifications || []).length; i++) {
+   const cert = formData.certifications[i];
+   if (cert.name?.trim() && !isEnglishText(cert.name)) {
+    errors.certifications = `الشهادة ${i + 1}: اسم الشهادة - ${ENGLISH_VALIDATION_MSG}`;
+    break;
+   }
+   if (cert.organization?.trim() && !isEnglishText(cert.organization)) {
+    errors.certifications = `الشهادة ${i + 1}: المنظمة - ${ENGLISH_VALIDATION_MSG}`;
+    break;
+   }
   }
   
   // Validate languages - at least one language
@@ -535,6 +629,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
   if (validLanguages.length === 0) {
    errors.languages = "يجب إضافة لغة واحدة على الأقل";
+  } else {
+   // Check English validation for language names
+   for (let i = 0; i < formData.languages.length; i++) {
+    const lang = formData.languages[i];
+    if (lang.language?.trim() && !isEnglishText(lang.language)) {
+     errors.languages = `اللغة ${i + 1}: اسم اللغة - ${ENGLISH_VALIDATION_MSG}`;
+     break;
+    }
+   }
   }
   
   return errors;
@@ -559,6 +662,111 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   
   setValidationErrors(errors);
   return Object.keys(errors).length === 0;
+ };
+
+ // Live validation - validate a single field and update errors immediately
+ const validateFieldLive = (fieldName, value, extraContext = {}) => {
+  let error = null;
+  
+  // Step 1 fields
+  if (fieldName === 'complete_name') {
+   if (!value?.trim()) {
+    error = "الاسم الكامل مطلوب";
+   } else if (!isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  } else if (fieldName === 'email') {
+   if (!value?.trim()) {
+    error = "البريد الإلكتروني مطلوب";
+   } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value.trim())) {
+    error = "البريد الإلكتروني غير صالح";
+   }
+  } else if (fieldName === 'phone_number') {
+   if (!value?.trim()) {
+    error = "رقم الهاتف مطلوب";
+   } else if (!/^\+?[0-9]+$/.test(value.trim())) {
+    error = "رقم الهاتف يجب أن يحتوي على أرقام فقط";
+   }
+  } else if (fieldName === 'city') {
+   if (!value?.trim()) {
+    error = "المدينة مطلوبة";
+   } else if (!isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  } else if (fieldName === 'country') {
+   if (!value?.trim()) {
+    error = "الدولة مطلوبة";
+   } else if (!isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  } else if (fieldName === 'professional_summary') {
+   if (!value?.trim()) {
+    error = "الملخص المهني مطلوب";
+   } else if (value.trim().length < 5) {
+    error = "الملخص المهني يجب أن يكون 5 حروف على الأقل";
+   }
+   // No English check for professional_summary
+  }
+  // Step 2 fields - education
+  else if (fieldName === 'education_degree') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  } else if (fieldName === 'education_institution') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  }
+  // Step 2 fields - work experience
+  else if (fieldName === 'work_job_title') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  } else if (fieldName === 'work_company') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  }
+  // Step 3 fields - skills
+  else if (fieldName === 'skill_category') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  } else if (fieldName === 'skill_name') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  }
+  // Step 3 fields - certifications
+  else if (fieldName === 'cert_name') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  } else if (fieldName === 'cert_organization') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  }
+  // Step 3 fields - languages
+  else if (fieldName === 'language_name') {
+   if (value?.trim() && !isEnglishText(value)) {
+    error = ENGLISH_VALIDATION_MSG;
+   }
+  }
+  
+  // Update errors
+  setValidationErrors(prev => {
+   const newErrors = { ...prev };
+   const errorKey = extraContext.index !== undefined ? `${fieldName}_${extraContext.index}` : fieldName;
+   if (error) {
+    newErrors[errorKey] = error;
+   } else {
+    delete newErrors[errorKey];
+   }
+   return newErrors;
+  });
+  
+  return error;
  };
 
  // Helper to ensure responsibilities is always an array
@@ -692,6 +900,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    ...prev,
    [field]: value,
   }));
+  // Live validation
+  markFieldTouched(field);
+  validateFieldLive(field, value);
  };
 
  const handleEducationChange = (index, field, value) => {
@@ -701,6 +912,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     i === index ? { ...edu, [field]: value } : edu
    ),
   }));
+  // Live validation for education fields
+  const fieldKey = `education_${field}_${index}`;
+  markFieldTouched(fieldKey);
+  if (field === 'degree') {
+   validateFieldLive('education_degree', value, { index });
+  } else if (field === 'institution') {
+   validateFieldLive('education_institution', value, { index });
+  }
  };
 
  const addEducation = () => {
@@ -736,6 +955,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     i === index ? { ...work, [field]: value } : work
    ),
   }));
+  // Live validation for work experience fields (NOT responsibilities)
+  const fieldKey = `work_${field}_${index}`;
+  markFieldTouched(fieldKey);
+  if (field === 'job_title') {
+   validateFieldLive('work_job_title', value, { index });
+  } else if (field === 'company') {
+   validateFieldLive('work_company', value, { index });
+  }
  };
 
  const addWorkExperience = () => {
@@ -816,6 +1043,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     i === index ? { ...skill, [field]: value } : skill
    ),
   }));
+  // Live validation for skill fields
+  const fieldKey = `skill_${field}_${index}`;
+  markFieldTouched(fieldKey);
+  if (field === 'category') {
+   validateFieldLive('skill_category', value, { index });
+  }
  };
 
  const addSkills = () => {
@@ -845,8 +1078,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const handleNewSkillChange = (skillIndex, value) => {
+  // Live validation for skill name
+  const fieldKey = `skill_name_${skillIndex}_new`;
+  markFieldTouched(fieldKey);
+  validateFieldLive('skill_name', value, { index: `${skillIndex}_new` });
+  
   // Only add non-empty values
-  if (value && value.trim() !== "") {
+  if (value && value.trim() !== "" && isEnglishText(value)) {
    setFormData((prev) => ({
     ...prev,
     skills: prev.skills.map((skill, i) =>
@@ -856,12 +1094,18 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     ),
    }));
    setAddingSkillTo(null);
+   // Clear the error after successful add
+   setValidationErrors(prev => {
+    const newErrors = { ...prev };
+    delete newErrors[`skill_name_${skillIndex}_new`];
+    return newErrors;
+   });
   }
  };
 
  const handleNewSkillBlur = (skillIndex, value) => {
-  // Only add non-empty values
-  if (value && value.trim() !== "") {
+  // Only add non-empty values that are English
+  if (value && value.trim() !== "" && isEnglishText(value)) {
    setFormData((prev) => ({
     ...prev,
     skills: prev.skills.map((skill, i) =>
@@ -904,6 +1148,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      : skill
    ),
   }));
+  // Live validation for skill name
+  const fieldKey = `skill_name_${skillIndex}_${nameIndex}`;
+  markFieldTouched(fieldKey);
+  validateFieldLive('skill_name', value, { index: `${skillIndex}_${nameIndex}` });
  };
 
  const handleSkillNameBlur = (skillIndex, nameIndex) => {
@@ -929,6 +1177,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     i === index ? { ...cert, [field]: value } : cert
    ),
   }));
+  // Live validation for certification fields
+  const fieldKey = `cert_${field}_${index}`;
+  markFieldTouched(fieldKey);
+  if (field === 'name') {
+   validateFieldLive('cert_name', value, { index });
+  } else if (field === 'organization') {
+   validateFieldLive('cert_organization', value, { index });
+  }
  };
 
  const addCertification = () => {
@@ -961,6 +1217,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     i === index ? { ...lang, [field]: value } : lang
    ),
   }));
+  // Live validation for language name
+  const fieldKey = `language_${field}_${index}`;
+  markFieldTouched(fieldKey);
+  if (field === 'language') {
+   validateFieldLive('language_name', value, { index });
+  }
  };
 
  const translateProfessionalSummary = async () => {

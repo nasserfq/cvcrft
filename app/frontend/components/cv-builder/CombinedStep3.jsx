@@ -13,6 +13,17 @@ const SectionError = ({ error }) => error ? (
   </div>
 ) : null;
 
+// Field-level error display
+const FieldError = ({ error }) => error ? (
+  <p className="mt-1 text-xs text-red-600">{error}</p>
+) : null;
+
+// Input with error styling helper
+const getInputClass = (baseClass, hasError) => 
+  hasError 
+    ? baseClass.replace('border-slate-300/70', 'border-red-400') + ' ring-1 ring-red-200'
+    : baseClass;
+
 // Icon
 const LightbulbIcon = () => (
   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,50 +74,59 @@ const CombinedStep3 = ({
         <div className="space-y-4">
           {formData.skills.map((skill, index) => (
             <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
-              <div className="flex items-center justify-between mb-3">
-                <input
-                  type="text"
-                  value={skill.category}
-                  onChange={(e) => handleSkillsChange(index, "category", e.target.value)}
-                  className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm font-medium"
-                  placeholder="فئة المهارات (مثال: Technical Skills)"
-                />
-                {formData.skills.length > 1 && (
-                  <button type="button" onClick={() => removeSkills(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 mr-2 transition-all touch-manipulation">حذف</button>
-                )}
+              <div className="mb-3">
+                <div className="flex items-center justify-between">
+                  <input
+                    type="text"
+                    value={skill.category}
+                    onChange={(e) => handleSkillsChange(index, "category", e.target.value)}
+                    className={getInputClass("flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm font-medium", validationErrors[`skill_category_${index}`])}
+                    placeholder="فئة المهارات (مثال: Technical Skills)"
+                  />
+                  {formData.skills.length > 1 && (
+                    <button type="button" onClick={() => removeSkills(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 mr-2 transition-all touch-manipulation">حذف</button>
+                  )}
+                </div>
+                <FieldError error={validationErrors[`skill_category_${index}`]} />
               </div>
               <div className="space-y-2">
                 {(() => {
                   const validSkillNames = skill.skill_names.filter((name) => name && typeof name === "string" && name.trim() !== "");
                   return validSkillNames.map((skillName, nameIndex) => (
-                    <div key={nameIndex} className="flex items-center gap-2">
-                      <span className="text-emerald-600">•</span>
-                      <input
-                        type="text"
-                        value={skillName}
-                        onChange={(e) => handleSkillNameChange(index, nameIndex, e.target.value)}
-                        onBlur={() => handleSkillNameBlur(index, nameIndex)}
-                        className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
-                        placeholder="اسم المهارة"
-                      />
-                      {validSkillNames.length > 1 && (
-                        <button type="button" onClick={() => removeSkillName(index, nameIndex)} className="text-red-500 hover:text-red-700 active:text-red-800 text-sm px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">×</button>
-                      )}
+                    <div key={nameIndex}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-600">•</span>
+                        <input
+                          type="text"
+                          value={skillName}
+                          onChange={(e) => handleSkillNameChange(index, nameIndex, e.target.value)}
+                          onBlur={() => handleSkillNameBlur(index, nameIndex)}
+                          className={getInputClass("flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`skill_name_${index}_${nameIndex}`])}
+                          placeholder="اسم المهارة"
+                        />
+                        {validSkillNames.length > 1 && (
+                          <button type="button" onClick={() => removeSkillName(index, nameIndex)} className="text-red-500 hover:text-red-700 active:text-red-800 text-sm px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">×</button>
+                        )}
+                      </div>
+                      <FieldError error={validationErrors[`skill_name_${index}_${nameIndex}`]} />
                     </div>
                   ));
                 })()}
                 {addingSkillTo === index ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600">•</span>
-                    <input
-                      type="text"
-                      autoFocus
-                      onChange={(e) => handleNewSkillChange(index, e.target.value)}
-                      onBlur={(e) => handleNewSkillBlur(index, e.target.value)}
-                      onKeyPress={(e) => { if (e.key === "Enter") handleNewSkillChange(index, e.target.value); }}
-                      className="flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
-                      placeholder="اسم المهارة"
-                    />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-600">•</span>
+                      <input
+                        type="text"
+                        autoFocus
+                        onChange={(e) => handleNewSkillChange(index, e.target.value)}
+                        onBlur={(e) => handleNewSkillBlur(index, e.target.value)}
+                        onKeyPress={(e) => { if (e.key === "Enter") handleNewSkillChange(index, e.target.value); }}
+                        className={getInputClass("flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`skill_name_${index}_new`])}
+                        placeholder="اسم المهارة"
+                      />
+                    </div>
+                    <FieldError error={validationErrors[`skill_name_${index}_new`]} />
                   </div>
                 ) : (
                   <button type="button" onClick={() => addSkillName(index)} className="text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium py-2 px-3 rounded active:bg-emerald-50 transition-all touch-manipulation">+ إضافة مهارة</button>
@@ -127,6 +147,7 @@ const CombinedStep3 = ({
           الشهادات
           <span className="text-xs text-slate-500 font-normal">(اختياري)</span>
         </h3>
+        <SectionError error={validationErrors.certifications} />
         <div className="space-y-4">
           {formData.certifications.map((cert, index) => (
             <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
@@ -137,20 +158,26 @@ const CombinedStep3 = ({
                 )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  value={cert.name}
-                  onChange={(e) => handleCertificationChange(index, "name", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
-                  placeholder="اسم الشهادة (PMP®)"
-                />
-                <input
-                  type="text"
-                  value={cert.organization}
-                  onChange={(e) => handleCertificationChange(index, "organization", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
-                  placeholder="المؤسسة المانحة"
-                />
+                <div>
+                  <input
+                    type="text"
+                    value={cert.name}
+                    onChange={(e) => handleCertificationChange(index, "name", e.target.value)}
+                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`cert_name_${index}`])}
+                    placeholder="اسم الشهادة (PMP®)"
+                  />
+                  <FieldError error={validationErrors[`cert_name_${index}`]} />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={cert.organization}
+                    onChange={(e) => handleCertificationChange(index, "organization", e.target.value)}
+                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`cert_organization_${index}`])}
+                    placeholder="المؤسسة المانحة"
+                  />
+                  <FieldError error={validationErrors[`cert_organization_${index}`]} />
+                </div>
                 <MobileDatePicker value={cert.date} onChange={(value) => handleCertificationChange(index, "date", value)} placeholder="تاريخ الحصول" />
               </div>
             </div>
@@ -179,13 +206,16 @@ const CombinedStep3 = ({
                 )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  value={lang.language}
-                  onChange={(e) => handleLanguageChange(index, "language", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
-                  placeholder="اللغة (Arabic, English)"
-                />
+                <div>
+                  <input
+                    type="text"
+                    value={lang.language}
+                    onChange={(e) => handleLanguageChange(index, "language", e.target.value)}
+                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`language_name_${index}`])}
+                    placeholder="اللغة (Arabic, English)"
+                  />
+                  <FieldError error={validationErrors[`language_name_${index}`]} />
+                </div>
                 <select
                   value={lang.proficiency}
                   onChange={(e) => handleLanguageChange(index, "proficiency", e.target.value)}
