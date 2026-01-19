@@ -337,6 +337,15 @@ class Api::TranslationsController < ApplicationController
     render json: status_result
   end
 
+  # Endpoint to get translation limit info (must be above private)
+  def translation_limit
+    render json: {
+      max: MAX_TRANSLATIONS_PER_USER,
+      used: current_user.ai_translations.count,
+      remaining: remaining_translations
+    }
+  end
+
   private
 
   # Build nested attributes for resume from POST data
@@ -432,14 +441,5 @@ class Api::TranslationsController < ApplicationController
   def remaining_translations
     used = current_user.ai_translations.count
     [ MAX_TRANSLATIONS_PER_USER - used, 0 ].max
-  end
-
-  # Endpoint to get translation limit info
-  def translation_limit
-    render json: {
-      max: MAX_TRANSLATIONS_PER_USER,
-      used: current_user.ai_translations.count,
-      remaining: remaining_translations
-    }
   end
 end
