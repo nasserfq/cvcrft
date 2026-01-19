@@ -64,10 +64,10 @@ const CombinedStep2 = ({
   isTranslatingJobs = false,
   jobTranslationError = "",
   jobTranslationSuccess = false,
-  remainingTranslations = 5,
+  remainingJobsTranslations = 5,
 }) => {
-  // Ensure remainingTranslations is always a valid number
-  const safeRemainingTranslations = typeof remainingTranslations === 'number' ? remainingTranslations : 5;
+  // Ensure remainingJobsTranslations is always a valid number
+  const safeRemainingJobsTranslations = typeof remainingJobsTranslations === 'number' ? remainingJobsTranslations : 5;
   
   // Check if there are any responsibilities to translate
   const hasResponsibilities = formData.work_experience.some(
@@ -268,17 +268,17 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={!hasResponsibilities || safeRemainingTranslations <= 0}
+                  disabled={!hasResponsibilities || safeRemainingJobsTranslations <= 0}
                   className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    !hasResponsibilities || safeRemainingTranslations <= 0
+                    !hasResponsibilities || safeRemainingJobsTranslations <= 0
                       ? "bg-green-300 text-white cursor-not-allowed"
                       : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                   }`}
                 >
-                  🔄 إعادة الترجمة ({safeRemainingTranslations} متبقي)
+                  🔄 إعادة الترجمة ({safeRemainingJobsTranslations} متبقي)
                 </button>
-                {safeRemainingTranslations <= 0 && (
-                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع الترجمات المتاحة</p>
+                {safeRemainingJobsTranslations <= 0 && (
+                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع ترجمات الوظائف المتاحة</p>
                 )}
               </>
             ) : (
@@ -289,20 +289,20 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={!hasResponsibilities || safeRemainingTranslations <= 0}
+                  disabled={!hasResponsibilities || safeRemainingJobsTranslations <= 0}
                   className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    !hasResponsibilities || safeRemainingTranslations <= 0
+                    !hasResponsibilities || safeRemainingJobsTranslations <= 0
                       ? "bg-blue-300 text-white cursor-not-allowed"
                       : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                   }`}
                 >
-                  🌐 ترجم جميع المسؤوليات إلى الإنجليزية ({safeRemainingTranslations} متبقي)
+                  🌐 ترجم جميع المسؤوليات إلى الإنجليزية ({safeRemainingJobsTranslations} متبقي)
                 </button>
                 {!hasResponsibilities && (
                   <p className="text-xs text-slate-500 mt-2 text-center">أضف مسؤوليات أولاً للترجمة</p>
                 )}
-                {safeRemainingTranslations <= 0 && (
-                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع الترجمات المتاحة</p>
+                {safeRemainingJobsTranslations <= 0 && (
+                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع ترجمات الوظائف المتاحة</p>
                 )}
               </>
             )}

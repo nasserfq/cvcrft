@@ -174,7 +174,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     });
     if (response.ok) {
      const data = await response.json();
-     setRemainingTranslations(data.remaining);
+     // Use separate limits for summary and job descriptions
+     setRemainingSummaryTranslations(data.remaining_summary ?? 5);
+     setRemainingJobsTranslations(data.remaining_jobs ?? 5);
      setTranslationLimitLoaded(true);
     }
    } catch (e) {
@@ -476,8 +478,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [exportStatus, setExportStatus] = useState("idle"); // idle, processing, completed, failed, timeout
  const [isSavingDraft, setIsSavingDraft] = useState(false);
  const [addingSkillTo, setAddingSkillTo] = useState(null);
- const [remainingTranslations, setRemainingTranslations] = useState(5);
- const [maxTranslations] = useState(5);
+ // Separate translation limits for summary and job descriptions
+ const [remainingSummaryTranslations, setRemainingSummaryTranslations] = useState(5);
+ const [remainingJobsTranslations, setRemainingJobsTranslations] = useState(5);
+ const [maxSummaryTranslations] = useState(5);
+ const [maxJobsTranslations] = useState(5);
  const [translationLimitLoaded, setTranslationLimitLoaded] = useState(false);
  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
  const [lastSavedAt, setLastSavedAt] = useState(null);
@@ -1231,10 +1236,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
-  // Check translation limit
-  if (remainingTranslations <= 0) {
+  // Check translation limit for summary
+  if (remainingSummaryTranslations <= 0) {
    setTranslationError(
-    `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}). يرجى المحاولة لاحقاً.`
+    `لقد وصلت إلى الحد الأقصى من ترجمات الملخص المهني (${maxSummaryTranslations}). يرجى المحاولة لاحقاً.`
    );
    return;
   }
@@ -1260,9 +1265,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    if (response.ok) {
     const result = await response.json();
     if (result.status === "queued" && result.job_id) {
-     // Update remaining translations from server
-     if (result.remaining !== undefined) {
-      setRemainingTranslations(result.remaining);
+     // Update remaining summary translations from server
+     if (result.remaining_summary !== undefined) {
+      setRemainingSummaryTranslations(result.remaining_summary);
      }
      // Poll for completion
      pollTranslationStatus(result.job_id);
@@ -1272,8 +1277,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     }
    } else if (response.status === 429) {
     const result = await response.json();
-    setTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}).`);
-    setRemainingTranslations(0);
+    setTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من ترجمات الملخص المهني (${maxSummaryTranslations}).`);
+    setRemainingSummaryTranslations(0);
     setIsTranslating(false);
    } else {
     throw new Error("Translation request failed");
@@ -1302,10 +1307,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
-  // Check translation limit
-  if (remainingTranslations <= 0) {
+  // Check translation limit for job descriptions
+  if (remainingJobsTranslations <= 0) {
    setJobTranslationError(
-    `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}). يرجى المحاولة لاحقاً.`
+    `لقد وصلت إلى الحد الأقصى من ترجمات الوظائف (${maxJobsTranslations}). يرجى المحاولة لاحقاً.`
    );
    return;
   }
@@ -1332,9 +1337,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    if (response.ok) {
     const result = await response.json();
     if (result.status === "queued" && result.job_id) {
-     // Update remaining translations from server
-     if (result.remaining !== undefined) {
-      setRemainingTranslations(result.remaining);
+     // Update remaining job translations from server
+     if (result.remaining_jobs !== undefined) {
+      setRemainingJobsTranslations(result.remaining_jobs);
      }
      // Poll for completion
      pollJobTranslationStatus(result.job_id, jobsWithResponsibilities);
@@ -1344,8 +1349,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     }
    } else if (response.status === 429) {
     const result = await response.json();
-    setJobTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من الترجمات (${maxTranslations}).`);
-    setRemainingTranslations(0);
+    setJobTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من ترجمات الوظائف (${maxJobsTranslations}).`);
+    setRemainingJobsTranslations(0);
     setIsTranslatingJobs(false);
    } else {
     throw new Error("Translation request failed");
@@ -2446,8 +2451,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    translateProfessionalSummary,
    isTranslating,
    translationError,
-   remainingTranslations,
-   maxTranslations,
+   // Separate translation limits for each type
+   remainingSummaryTranslations,
+   maxSummaryTranslations,
+   remainingJobsTranslations,
+   maxJobsTranslations,
    renderSaveDraftButton,
    validationErrors,
    // Step 2 props

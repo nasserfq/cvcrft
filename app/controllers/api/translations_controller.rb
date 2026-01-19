@@ -4,16 +4,17 @@ class Api::TranslationsController < ApplicationController
   # Skip CSRF protection for API endpoints
   skip_before_action :verify_authenticity_token
 
-  # Global limit per user for all AI translations
-  MAX_TRANSLATIONS_PER_USER = 5
+  # Separate limits for each translation type
+  MAX_SUMMARY_TRANSLATIONS = 5
+  MAX_JOB_DESCRIPTIONS_TRANSLATIONS = 5
 
   def translate_professional_summary
     begin
-      # Check translation limit
-      remaining = remaining_translations
+      # Check translation limit for professional summary
+      remaining = remaining_summary_translations
       if remaining <= 0
         render json: {
-          error: "لقد استخدمت جميع الترجمات المتاحة (#{MAX_TRANSLATIONS_PER_USER})",
+          error: "لقد استخدمت جميع ترجمات الملخص المهني المتاحة (#{MAX_SUMMARY_TRANSLATIONS})",
           limit_reached: true,
           remaining: 0
         }, status: :too_many_requests
@@ -52,7 +53,7 @@ class Api::TranslationsController < ApplicationController
       render json: {
         job_id: job_id,
         status: "queued",
-        remaining: remaining - 1,
+        remaining_summary: remaining - 1,
         message: "Translation job has been queued. Please poll for status."
       }
     rescue => e
@@ -64,11 +65,11 @@ class Api::TranslationsController < ApplicationController
 
   def translate_job_descriptions
     begin
-      # Check translation limit
-      remaining = remaining_translations
+      # Check translation limit for job descriptions
+      remaining = remaining_job_descriptions_translations
       if remaining <= 0
         render json: {
-          error: "لقد استخدمت جميع الترجمات المتاحة (#{MAX_TRANSLATIONS_PER_USER})",
+          error: "لقد استخدمت جميع ترجمات الوظائف المتاحة (#{MAX_JOB_DESCRIPTIONS_TRANSLATIONS})",
           limit_reached: true,
           remaining: 0
         }, status: :too_many_requests
@@ -123,7 +124,7 @@ class Api::TranslationsController < ApplicationController
         job_id: job_id,
         status: "queued",
         job_count: valid_jobs.size,
-        remaining: remaining - 1,
+        remaining_jobs: remaining - 1,
         message: "Translation job has been queued for #{valid_jobs.size} job descriptions."
       }
     rescue => e
@@ -340,9 +341,18 @@ class Api::TranslationsController < ApplicationController
   # Endpoint to get translation limit info (must be above private)
   def translation_limit
     render json: {
-      max: MAX_TRANSLATIONS_PER_USER,
+      # Summary translations
+      max_summary: MAX_SUMMARY_TRANSLATIONS,
+      used_summary: summary_translations_used,
+      remaining_summary: remaining_summary_translations,
+      # Job descriptions translations
+      max_jobs: MAX_JOB_DESCRIPTIONS_TRANSLATIONS,
+      used_jobs: job_descriptions_translations_used,
+      remaining_jobs: remaining_job_descriptions_translations,
+      # Legacy fields for backward compatibility
+      max: MAX_SUMMARY_TRANSLATIONS + MAX_JOB_DESCRIPTIONS_TRANSLATIONS,
       used: current_user.ai_translations.count,
-      remaining: remaining_translations
+      remaining: remaining_summary_translations + remaining_job_descriptions_translations
     }
   end
 
@@ -437,9 +447,25 @@ class Api::TranslationsController < ApplicationController
     )
   end
 
-  # Calculate remaining translations for current user
-  def remaining_translations
-    used = current_user.ai_translations.count
-    [ MAX_TRANSLATIONS_PER_USER - used, 0 ].max
+  # Count summary translations used by querying metadata
+  def summary_translations_used
+    current_user.ai_translations.where("metadata->>'professional_summary' = ?", "true").count
+  end
+
+  # Count job descriptions translations used by querying metadata
+  def job_descriptions_translations_used
+    current_user.ai_translations.where("metadata->>'job_descriptions' = ?", "true").count
+  end
+
+  # Calculate remaining summary translations for current user
+  def remaining_summary_translations
+    used = summary_translations_used
+    [ MAX_SUMMARY_TRANSLATIONS - used, 0 ].max
+  end
+
+  # Calculate remaining job descriptions translations for current user
+  def remaining_job_descriptions_translations
+    used = job_descriptions_translations_used
+    [ MAX_JOB_DESCRIPTIONS_TRANSLATIONS - used, 0 ].max
   end
 end
