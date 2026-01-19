@@ -1,6 +1,21 @@
 import React, { memo } from "react";
 import MobileDatePicker from "./MobileDatePicker";
 
+// Helper to safely get responsibilities as an array
+const getResponsibilitiesArray = (responsibilities) => {
+  if (!responsibilities) return [];
+  if (Array.isArray(responsibilities)) return responsibilities;
+  if (typeof responsibilities === 'string') {
+    try {
+      const parsed = JSON.parse(responsibilities);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
 // Error display component
 const SectionError = ({ error }) => error ? (
   <div className="mb-4 p-3 border border-red-200 rounded-lg bg-red-50" data-error>
@@ -45,7 +60,7 @@ const CombinedStep2 = ({
   
   // Check if there are any responsibilities to translate
   const hasResponsibilities = formData.work_experience.some(
-    work => work.responsibilities?.some(r => r?.trim())
+    work => getResponsibilitiesArray(work.responsibilities).some(r => r?.trim())
   );
 
   // Check if any job has been translated (has original Arabic stored)

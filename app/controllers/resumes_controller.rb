@@ -186,7 +186,7 @@ class ResumesController < ApplicationController
   def destroy
     @resume.destroy
     respond_to do |format|
-      format.html { redirect_to resumes_path, notice: "Resume deleted successfully!" }
+      format.html { redirect_to resumes_path, notice: "تم حذف السيرة الذاتية بنجاح" }
       format.json { head :no_content }
     end
   end

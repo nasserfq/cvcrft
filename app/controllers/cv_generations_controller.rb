@@ -119,7 +119,7 @@ class CvGenerationsController < ApplicationController
   def destroy
     @cv_generation.destroy
     respond_to do |format|
-      format.html { redirect_to cv_generations_path, notice: "CV generation deleted successfully!" }
+      format.html { redirect_to resumes_path, notice: "تم حذف السيرة المولدة بنجاح" }
       format.json { head :no_content }
     end
   end

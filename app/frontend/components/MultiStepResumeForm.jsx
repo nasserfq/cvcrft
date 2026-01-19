@@ -223,8 +223,23 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      }
     })(),
     work_experience: (() => {
+     // Helper to ensure responsibilities is always an array
+     const parseResponsibilities = (resp) => {
+      if (!resp) return [""];
+      if (Array.isArray(resp)) return resp.length > 0 ? resp : [""];
+      if (typeof resp === 'string') {
+       try {
+        const parsed = JSON.parse(resp);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [""];
+       } catch {
+        return [""];
+       }
+      }
+      return [""];
+     };
+     
      try {
-      return draftData.work_experience
+      const workExp = draftData.work_experience
        ? JSON.parse(draftData.work_experience)
        : resume?.work_experience || [
           {
@@ -236,6 +251,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
            responsibilities: [""],
           },
          ];
+      // Ensure each work experience has responsibilities as an array
+      return workExp.map(work => ({
+       ...work,
+       responsibilities: parseResponsibilities(work.responsibilities),
+      }));
      } catch {
       return (
        resume?.work_experience || [
@@ -350,16 +370,39 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      is_current: false,
     },
    ],
-   work_experience: resume?.work_experience || [
-    {
-     job_title: "",
-     company: "",
-     start_date: "",
-     end_date: "",
-     is_current: false,
-     responsibilities: [""],
-    },
-   ],
+   work_experience: (() => {
+    // Helper to ensure responsibilities is always an array
+    const parseResponsibilities = (resp) => {
+     if (!resp) return [""];
+     if (Array.isArray(resp)) return resp.length > 0 ? resp : [""];
+     if (typeof resp === 'string') {
+      try {
+       const parsed = JSON.parse(resp);
+       return Array.isArray(parsed) && parsed.length > 0 ? parsed : [""];
+      } catch {
+       return [""];
+      }
+     }
+     return [""];
+    };
+    
+    if (resume?.work_experience && resume.work_experience.length > 0) {
+     return resume.work_experience.map(work => ({
+      ...work,
+      responsibilities: parseResponsibilities(work.responsibilities),
+     }));
+    }
+    return [
+     {
+      job_title: "",
+      company: "",
+      start_date: "",
+      end_date: "",
+      is_current: false,
+      responsibilities: [""],
+     },
+    ];
+   })(),
    skills: (() => {
     if (resume?.skills && resume.skills.length > 0) {
      return resume.skills.map((skill) => ({
@@ -518,6 +561,21 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   return Object.keys(errors).length === 0;
  };
 
+ // Helper to ensure responsibilities is always an array
+ const parseResponsibilities = (resp) => {
+  if (!resp) return [""];
+  if (Array.isArray(resp)) return resp.length > 0 ? resp : [""];
+  if (typeof resp === 'string') {
+   try {
+    const parsed = JSON.parse(resp);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [""];
+   } catch {
+    return [""];
+   }
+  }
+  return [""];
+ };
+
  // Hydrate formData with progressively loaded sections
  useEffect(() => {
   if (loadedExperiences.length > 0) {
@@ -529,7 +587,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      start_date: exp.start_date || "",
      end_date: exp.end_date || "",
      is_current: exp.is_current || false,
-     responsibilities: exp.responsibilities || [""],
+     responsibilities: parseResponsibilities(exp.responsibilities),
     })),
    }));
   }
