@@ -38,6 +38,9 @@ env:
   DATABASE_USER: cvcraft
   DATABASE_NAME: cvcraft_production
   CVCRAFT_DATABASE_PASSWORD: wisconsinQ1413!
+  # PostHog Analytics
+  VITE_PUBLIC_POSTHOG_KEY: phc_hbgIlm0QjZDuhGEO7YYg2tuAQcMnLDsafnm8A0Dw5S6
+  VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
 
 accessories:
  # The key 'trends-redis' IS the name of the accessory container

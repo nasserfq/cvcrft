@@ -1,6 +1,8 @@
 # PostHog Analytics Configuration
 # https://posthog.com/docs/libraries/ruby
 
+require 'posthog'
+
 POSTHOG = PostHog::Client.new({
   api_key: Rails.application.credentials.dig(:posthog, :api_key) || ENV["POSTHOG_API_KEY"] || "phc_hbgIlm0QjZDuhGEO7YYg2tuAQcMnLDsafnm8A0Dw5S6",
   host: "https://us.i.posthog.com",

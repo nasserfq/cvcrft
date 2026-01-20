@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy, memo } from "react";
 import { createPortal } from "react-dom";
+import { trackEvent } from "../lib/posthog";
 
 // Helper to check if text is primarily English (allows numbers, punctuation, spaces)
 // Returns true if text contains mostly English letters (Latin characters)
@@ -1244,6 +1245,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
+  // Track translation attempt
+  trackEvent("translation_started", { type: "professional_summary" });
+
   setIsTranslating(true);
   setTranslationError("");
 
@@ -1314,6 +1318,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    );
    return;
   }
+
+  // Track translation attempt
+  trackEvent("translation_started", { type: "job_descriptions", job_count: jobsWithResponsibilities.length });
 
   setIsTranslatingJobs(true);
   setJobTranslationError("");
@@ -1737,6 +1744,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const exportToPDF = async () => {
   setIsExporting(true);
   setTranslationError("");
+
+  // Track PDF export attempt
+  trackEvent("pdf_export_started", { resume_id: resume?.id });
 
   try {
 
@@ -2255,6 +2265,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    const newStep = currentStep + 1;
    setCurrentStep(newStep);
 
+   // Track step progression
+   trackEvent("form_step_completed", { step: currentStep, next_step: newStep });
+
    // Update URL with new step parameter
    const url = new URL(window.location);
    url.searchParams.set("step", newStep);
@@ -2437,6 +2450,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       proficiency: lang.proficiency,
      })),
    };
+
+   // Track form submission
+   trackEvent("resume_form_submitted", {
+    resume_id: resume?.id,
+    has_professional_summary: !!formData.professional_summary_english,
+    education_count: formData.education?.length || 0,
+    work_experience_count: formData.work_experience?.length || 0,
+    skills_count: formData.skills?.length || 0,
+   });
 
    onSubmit(railsFormData);
   }
