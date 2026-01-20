@@ -5,10 +5,13 @@ class ApplicationController < ActionController::Base
   # Basic HTTP Authentication (skip for health check)
   http_basic_authenticate_with name: ENV["BASIC_AUTH_USERNAME"] || "admin",
                               password: ENV["BASIC_AUTH_PASSWORD"] || "cvcraft2024",
-                              except: [:health_check]
+                              except: [ :health_check ]
 
   # Include Devise helpers for authentication
   include Devise::Controllers::Helpers
+
+  # Include PostHog tracking
+  include PosthogTrackable
 
   # Make Devise helpers available in views
   helper_method :user_signed_in?, :current_user

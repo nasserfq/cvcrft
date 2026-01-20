@@ -49,6 +49,13 @@ class Api::TranslationsController < ApplicationController
         }
       )
 
+      # Track translation event
+      track_event("translation_requested", {
+        type: "professional_summary",
+        resume_id: resume_id,
+        remaining: remaining - 1
+      })
+
       Rails.logger.info "[AI Translate] Job enqueued: #{job}, job_id: #{job_id}"
       render json: {
         job_id: job_id,
@@ -118,6 +125,14 @@ class Api::TranslationsController < ApplicationController
           "job_indices" => valid_jobs.map { |j| j["index"] }
         }
       )
+
+      # Track translation event
+      track_event("translation_requested", {
+        type: "job_descriptions",
+        resume_id: resume_id,
+        job_count: valid_jobs.size,
+        remaining: remaining - 1
+      })
 
       Rails.logger.info "[AI Translate Jobs] Job enqueued: #{job}, job_id: #{job_id}"
       render json: {
@@ -198,6 +213,9 @@ class Api::TranslationsController < ApplicationController
   def export_pdf
     begin
       Rails.logger.info "Export PDF request: params=#{params.inspect}, direct_download=#{params[:direct_download]}, token=#{params[:token]}"
+
+      # Track PDF export event
+      track_event("pdf_exported", { resume_id: params[:resume_id] })
 
       # Ensure the user is authenticated
       unless current_user

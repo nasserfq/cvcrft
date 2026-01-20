@@ -69,6 +69,10 @@ class AuthController < ApplicationController
         Rails.logger.info "Current user after sign_in: #{current_user&.email} (ID: #{current_user&.id})"
         Rails.logger.info "Warden user key: #{session['warden.user.user.key']}"
 
+        # Track login event in PostHog
+        identify_user(user)
+        track_event("user_logged_in", { login_method: "otp" })
+
         flash[:notice] = "تم تسجيل الدخول بنجاح!"
 
         # Redirect to the intended destination or CV builder page
@@ -89,6 +93,7 @@ class AuthController < ApplicationController
   end
 
   def logout
+    track_event("user_logged_out")
     sign_out(current_user)
     redirect_to root_path(signed_out: "true")
   end

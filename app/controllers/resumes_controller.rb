@@ -146,6 +146,9 @@ class ResumesController < ApplicationController
     if @resume.save
       Rails.logger.info "Resume saved successfully with ID: #{@resume.id}, user_id: #{@resume.user_id}"
 
+      # Track resume creation
+      track_event("resume_created", { resume_id: @resume.id })
+
       # Generate the PDF download URL
       pdf_url = "/api/export_pdf?resume_id=#{@resume.id}"
       view_url = "/api/export_pdf?resume_id=#{@resume.id}&view_in_browser=true"
@@ -184,6 +187,7 @@ class ResumesController < ApplicationController
   end
 
   def destroy
+    track_event("resume_deleted", { resume_id: @resume.id })
     @resume.destroy
     respond_to do |format|
       format.html { redirect_to resumes_path, notice: "تم حذف السيرة الذاتية بنجاح" }
