@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   # Root route
   root "home#index"
 
+  # User profile route
+  resource :profile, only: [ :show, :destroy ]
+
   # Test Sidekiq route
   get "/test_sidekiq", to: "home#test_sidekiq"
 

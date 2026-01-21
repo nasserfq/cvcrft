@@ -1,0 +1,351 @@
+<% content_for :title, "الملف الشخصي" %>
+
+<div dir="rtl" class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+  <!-- Top Navigation Bar -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-4">
+          <%= link_to root_path, class: "flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span class="font-medium">الرئيسية</span>
+          <% end %>
+          <span class="text-gray-300">|</span>
+          <%= link_to resumes_path, class: "flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="font-medium">سيرتي الذاتية</span>
+          <% end %>
+        </div>
+        <div class="flex items-center gap-3">
+          <%= link_to new_resume_path, class: "inline-flex items-center gap-2 px-6 py-3 text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]", style: "background: linear-gradient(to left, #059669, #10b981);" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            سيرة جديدة
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Profile Header Card -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+      <!-- Gradient Header -->
+      <div class="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 px-6 sm:px-10 py-10 sm:py-12">
+        <!-- Decorative circles -->
+        <div class="absolute top-0 left-0 w-40 h-40 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-60 h-60 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3"></div>
+        
+        <div class="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <!-- Avatar -->
+          <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg ring-4 ring-white/30">
+            <%= @user.name&.first&.upcase || @user.email&.first&.upcase || "U" %>
+          </div>
+          
+          <!-- User Info -->
+          <div class="text-center sm:text-right flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-1">
+              <%= @user.name.presence || @user.email.split('@').first %>
+            </h1>
+            <p class="text-emerald-100 text-lg mb-3"><%= @user.email %></p>
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-emerald-100/80 text-sm">
+              <span class="flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                عضو منذ <%= @user.created_at.strftime("%B %Y") %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4">
+        <div class="p-6 text-center border-b lg:border-b-0 border-l border-gray-100 hover:bg-emerald-50/50 transition-colors">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900"><%= @stats[:total_resumes] %></p>
+          <p class="text-sm text-gray-500 mt-1">سير ذاتية مكتملة</p>
+        </div>
+        <div class="p-6 text-center border-b lg:border-b-0 border-gray-100 hover:bg-amber-50/50 transition-colors">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900"><%= @stats[:total_drafts] %></p>
+          <p class="text-sm text-gray-500 mt-1">مسودات قيد العمل</p>
+        </div>
+        <div class="p-6 text-center border-l border-gray-100 hover:bg-blue-50/50 transition-colors">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 text-blue-600 mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900"><%= @stats[:total_cv_generations] %></p>
+          <p class="text-sm text-gray-500 mt-1">ملفات PDF</p>
+        </div>
+        <div class="p-6 text-center hover:bg-purple-50/50 transition-colors">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-purple-100 text-purple-600 mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+            </svg>
+          </div>
+          <p class="text-3xl font-bold text-gray-900"><%= @stats[:total_translations] %></p>
+          <p class="text-sm text-gray-500 mt-1">ترجمات AI</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Content (2/3) -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Resumes Section -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+              <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </span>
+              السير الذاتية
+              <span class="text-sm font-normal text-gray-400">(<%= @resumes.count %>)</span>
+            </h2>
+            <%= link_to new_resume_path, class: "inline-flex items-center gap-2 px-6 py-3 text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]", style: "background: linear-gradient(to left, #059669, #10b981);" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              إنشاء سيرة جديدة
+            <% end %>
+          </div>
+          
+          <div class="p-6">
+            <% if @resumes.any? %>
+              <div class="space-y-4">
+                <% @resumes.each do |resume| %>
+                  <div class="group flex items-center justify-between p-5 bg-gradient-to-l from-gray-50 to-white rounded-xl border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all">
+                    <div class="flex-1 min-w-0">
+                      <h3 class="font-semibold text-gray-900 text-lg truncate"><%= resume.complete_name.presence || "بدون اسم" %></h3>
+                      <p class="text-gray-500 text-sm truncate"><%= resume.email %></p>
+                      <div class="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                        <span class="flex items-center gap-1">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          <%= resume.updated_at.strftime("%Y-%m-%d") %>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <%= link_to resume_path(resume), class: "p-2.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors", title: "عرض" do %>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                      <% end %>
+                      <%= link_to edit_resume_path(resume), class: "p-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors", title: "تعديل" do %>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                      <% end %>
+                      <%= link_to "/api/export_pdf?resume_id=#{resume.id}", class: "p-2.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors", title: "تحميل PDF" do %>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                      <% end %>
+                      <%= button_to resume_path(resume), method: :delete, class: "p-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors", title: "حذف", data: { turbo_confirm: "هل أنت متأكد من حذف هذه السيرة الذاتية؟" } do %>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-12">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
+                  <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+                <p class="text-gray-500 text-lg mb-2">لا توجد سير ذاتية بعد</p>
+                <p class="text-gray-400 text-sm mb-6">ابدأ بإنشاء سيرتك الذاتية الاحترافية الآن</p>
+                <%= link_to new_resume_path, class: "inline-flex items-center gap-3 px-8 py-4 text-white text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]", style: "background: linear-gradient(to left, #059669, #10b981);" do %>
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                  </svg>
+                  إنشاء أول سيرة ذاتية
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Drafts Section -->
+        <% if @drafts.any? %>
+          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100">
+              <h2 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+                <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 text-amber-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </span>
+                المسودات
+                <span class="text-sm font-normal text-gray-400">(<%= @drafts.count %>)</span>
+              </h2>
+            </div>
+            <div class="p-6 space-y-4">
+              <% @drafts.each do |draft| %>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-gradient-to-l from-amber-50 to-white rounded-xl border border-amber-200 hover:border-amber-300 hover:shadow-md transition-all">
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-900 truncate text-base"><%= draft.complete_name.presence || "مسودة بدون اسم" %></p>
+                    <p class="text-sm text-gray-500 mt-1">آخر تعديل: <%= draft.updated_at.strftime("%Y-%m-%d %H:%M") %></p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <%= link_to edit_resume_path(draft), class: "inline-flex items-center justify-center gap-2 px-6 py-3 text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]", style: "background: linear-gradient(to left, #f59e0b, #fb923c);" do %>
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                      متابعة التحرير
+                    <% end %>
+                    <%= button_to resume_path(draft), method: :delete, class: "p-3 text-gray-400 hover:text-red-600 bg-white hover:bg-red-50 rounded-xl border border-gray-200 hover:border-red-200 transition-all shadow-sm", data: { turbo_confirm: "هل أنت متأكد من حذف هذه المسودة؟" } do %>
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Sidebar (1/3) -->
+      <div class="space-y-8">
+        <!-- Translation Credits Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div class="px-6 py-5 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+              </svg>
+              رصيد الترجمات
+            </h2>
+          </div>
+          <div class="p-6 space-y-5">
+            <!-- Summary Translations -->
+            <div class="p-4 bg-gradient-to-l from-blue-50 to-white rounded-xl border border-blue-100">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-blue-800">الملخص المهني</span>
+                <span class="text-sm font-bold text-blue-600"><%= @stats[:remaining_summary_translations] %>/5</span>
+              </div>
+              <div class="w-full bg-blue-100 rounded-full h-2.5">
+                <div class="bg-gradient-to-l from-blue-500 to-blue-600 h-2.5 rounded-full transition-all" style="width: <%= (@stats[:remaining_summary_translations] / 5.0 * 100).to_i %>%"></div>
+              </div>
+            </div>
+            
+            <!-- Jobs Translations -->
+            <div class="p-4 bg-gradient-to-l from-purple-50 to-white rounded-xl border border-purple-100">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-purple-800">وصف الوظائف</span>
+                <span class="text-sm font-bold text-purple-600"><%= @stats[:remaining_jobs_translations] %>/5</span>
+              </div>
+              <div class="w-full bg-purple-100 rounded-full h-2.5">
+                <div class="bg-gradient-to-l from-purple-500 to-purple-600 h-2.5 rounded-full transition-all" style="width: <%= (@stats[:remaining_jobs_translations] / 5.0 * 100).to_i %>%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF History Card -->
+        <% if @cv_generations.any? %>
+          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100">
+              <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                سجل PDF
+              </h2>
+            </div>
+            <div class="divide-y divide-gray-100">
+              <% @cv_generations.limit(5).each do |gen| %>
+                <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div>
+                    <p class="text-sm text-gray-700"><%= gen.created_at.strftime("%Y-%m-%d") %></p>
+                    <p class="text-xs text-gray-400"><%= gen.created_at.strftime("%H:%M") %></p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <% if gen.status == "completed" %>
+                      <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">مكتمل</span>
+                    <% elsif gen.status == "failed" %>
+                      <span class="px-2.5 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">فشل</span>
+                    <% else %>
+                      <span class="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full"><%= gen.status %></span>
+                    <% end %>
+                    <% if gen.status == "completed" && gen.resume_id %>
+                      <%= link_to "/api/export_pdf?resume_id=#{gen.resume_id}", class: "p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors" do %>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Danger Zone Card -->
+        <div class="bg-white rounded-2xl shadow-lg border-2 border-red-200 overflow-hidden">
+          <div class="px-6 py-5 border-b border-red-200 bg-gradient-to-l from-red-50 to-rose-50">
+            <h2 class="text-lg font-bold text-red-700 flex items-center gap-3">
+              <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-red-100">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+              </span>
+              منطقة الخطر
+            </h2>
+          </div>
+          <div class="p-6">
+            <p class="text-gray-600 text-base mb-5 leading-relaxed">
+              حذف حسابك سيؤدي إلى إزالة جميع بياناتك بشكل دائم. لا يمكن التراجع عن هذا الإجراء.
+            </p>
+            <%= button_to profile_path, 
+                method: :delete, 
+                class: "w-full inline-flex items-center justify-center gap-3 px-6 py-4 text-white text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]",
+                style: "background: linear-gradient(to left, #dc2626, #f43f5e);",
+                form: { 
+                  data: { 
+                    turbo_confirm: "⚠️ تحذير!\n\nهل أنت متأكد أنك تريد حذف حسابك نهائياً؟\n\nسيتم حذف:\n• جميع السير الذاتية\n• جميع المسودات\n• جميع الترجمات\n• جميع ملفات PDF\n\nهذا الإجراء لا يمكن التراجع عنه!",
+                    controller: "confirm-delete"
+                  },
+                  onsubmit: "return confirm('⚠️ تأكيد نهائي: هل تريد حذف حسابك ؟ لا يمكن التراجع!')"
+                } do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              حذف حسابي نهائياً
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -32,18 +32,18 @@
       <div class="flex items-center gap-3">
         
         <% if user_signed_in? %>
-          <span class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-600">
+          <%= link_to profile_path, class: "hidden sm:inline-flex items-center gap-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors js-hover-target", data: { hoverable: true } do %>
             <i data-lucide="user" class="w-4 h-4"></i>
             <span>مرحباً، <%= current_user.email %></span>
-          </span>
+          <% end %>
           <%= form_with url: "/auth/logout", method: :delete, class: "hidden sm:inline-flex" do |f| %>
-            <button type="submit" data-hoverable="true" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-red-700 transition-colors js-hover-target">
+            <button type="submit" data-hoverable="true" class="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-red-700 transition-colors js-hover-target">
               <i data-lucide="log-out" class="w-4 h-4"></i>
               <span>تسجيل الخروج</span>
             </button>
           <% end %>
         <% else %>
-          <a href="/login" data-hoverable="true" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 transition-colors js-hover-target">
+          <a href="/login" data-hoverable="true" class="hidden sm:inline-flex items-center gap-2 text-sm text-gray-700 hover:text-emerald-700 transition-colors js-hover-target">
             <i data-lucide="log-in" class="w-4 h-4"></i>
             <span>تسجيل الدخول</span>
           </a>
@@ -80,20 +80,20 @@
   <a href="#how" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">كيف يعمل</a>
   <a href="#pricing" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الأسعار</a>
   <a href="#faq" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الأسئلة الشائعة</a>
-        <div class="pt-3 border-t border-slate-200/60">
+        <div class="pt-3 border-t border-gray-200/60">
           <% if user_signed_in? %>
-            <div class="px-3 py-2 text-sm text-slate-600">
+            <%= link_to profile_path, class: "block px-3 py-2 text-sm text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target", data: { hoverable: true } do %>
               <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>
               <span>مرحباً، <%= current_user.email %></span>
-            </div>
+            <% end %>
             <%= form_with url: "/auth/logout", method: :delete, class: "block" do |f| %>
-              <button type="submit" data-hoverable="true" class="w-full text-left px-3 py-2 text-sm text-slate-700 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors js-hover-target">
+              <button type="submit" data-hoverable="true" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors js-hover-target">
                 <i data-lucide="log-out" class="w-4 h-4 inline mr-2"></i>
                 تسجيل الخروج
               </button>
             <% end %>
           <% else %>
-            <a href="/login" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">
+            <a href="/login" data-hoverable="true" class="block px-3 py-2 text-sm text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">
               <i data-lucide="log-in" class="w-4 h-4 inline mr-2"></i>
               تسجيل الدخول
             </a>
