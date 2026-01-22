@@ -1,5 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
+  include PosthogTrackable
 
   # Global limits
   MAX_CV_BUILDER_GENERATIONS = 5
@@ -33,10 +34,32 @@ class ProfilesController < ApplicationController
       job_based_remaining: [MAX_JOB_BASED_GENERATIONS - job_based_used, 0].max,
       job_based_max: MAX_JOB_BASED_GENERATIONS
     }
+    
+    # Track profile view
+    track_event("profile_viewed", {
+      total_resumes: @stats[:total_resumes],
+      total_drafts: @stats[:total_drafts],
+      total_cv_generations: @stats[:total_cv_generations],
+      cv_builder_remaining: @stats[:cv_builder_remaining],
+      job_based_remaining: @stats[:job_based_remaining]
+    })
   end
 
   def destroy
     @user = current_user
+    
+    # Capture stats before deletion for tracking
+    deletion_stats = {
+      user_id: @user.id,
+      email: @user.email,
+      total_resumes: @user.resumes.count,
+      total_cv_generations: @user.cv_generations.count,
+      total_translations: @user.ai_translations.count,
+      account_age_days: ((Time.current - @user.created_at) / 1.day).round
+    }
+    
+    # Track account deletion event BEFORE signing out
+    track_event("account_deleted", deletion_stats)
     
     # Sign out first
     sign_out(@user)
