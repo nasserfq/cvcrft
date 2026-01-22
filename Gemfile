@@ -22,7 +22,7 @@ gem "paper_trail"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 gem "posthog-ruby"
-gem "posthog-ruby"
+
 
 # Authentication and OTP
 gem "devise"
@@ -70,6 +70,9 @@ gem "prawn-table"
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  
+  # Pin minitest to a version compatible with Rails 8 parallel testing
+  gem "minitest", "~> 5.25"
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
@@ -87,4 +90,6 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  # Mocking and stubbing for tests
+  gem "mocha"
 end

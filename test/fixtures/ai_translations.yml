@@ -1,21 +1,56 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  user: one
-  resume: one
-  arabic_text: MyText
-  english_text: MyText
-  translation_quality: MyString
-  ai_model: MyString
-  tokens_used: 1
-  status: MyString
+completed_translation:
+  user: user_with_resumes
+  resume: complete_resume
+  arabic_text: تطوير وصيانة تطبيقات الويب باستخدام أحدث التقنيات مع التركيز على الأداء والجودة
+  english_text: Developing and maintaining web applications using latest technologies with focus on performance and quality
+  translation_quality: high
+  ai_model: gpt-4
+  tokens_used: 150
+  status: completed
+  metadata: {"source": "cv_builder"}
 
-two:
-  user: two
-  resume: two
-  arabic_text: MyText
-  english_text: MyText
-  translation_quality: MyString
-  ai_model: MyString
-  tokens_used: 1
-  status: MyString
+pending_translation:
+  user: test_user
+  resume: minimal_resume
+  arabic_text: مهندس برمجيات متمرس يتمتع بخبرة واسعة في تطوير التطبيقات والحلول البرمجية
+  english_text: 
+  translation_quality: 
+  ai_model: gpt-4
+  tokens_used: 
+  status: pending
+  metadata: {}
+
+failed_translation:
+  user: arabic_user
+  resume: arabic_resume
+  arabic_text: نص عربي للترجمة الفاشلة
+  english_text: 
+  translation_quality: 
+  ai_model: gpt-3.5-turbo
+  tokens_used: 
+  status: failed
+  metadata: {"error": "API timeout"}
+
+processing_translation:
+  user: user_with_resumes
+  resume: complete_resume
+  arabic_text: نص عربي قيد المعالجة حاليا في النظام ويتم ترجمته بواسطة الذكاء الاصطناعي
+  english_text: 
+  translation_quality: 
+  ai_model: gpt-4
+  tokens_used: 
+  status: processing
+  metadata: {}
+
+job_description_translation:
+  user: test_user
+  resume: 
+  arabic_text: مطور برمجيات للعمل على مشاريع متعددة وتطوير حلول مبتكرة للعملاء مع خبرة في البرمجة
+  english_text: Software developer to work on multiple projects and develop innovative solutions for clients with programming experience
+  translation_quality: medium
+  ai_model: gpt-3.5-turbo
+  tokens_used: 120
+  status: completed
+  metadata: {"source": "job_description"}

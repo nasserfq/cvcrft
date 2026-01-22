@@ -1,21 +1,54 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  resume: one
-  company: MyString
-  position: MyString
-  start_date: 2025-08-24
-  end_date: 2025-08-24
-  arabic_description: MyText
-  english_description: MyText
-  ats_keywords: 
+current_job:
+  resume: complete_resume
+  company: Tech Solutions Inc
+  position: Senior Developer
+  job_title: Senior Software Engineer
+  start_date: "2020-01"
+  end_date: 
+  is_current: true
+  arabic_description: تطوير وصيانة تطبيقات الويب باستخدام Ruby on Rails وReact
+  english_description: Developing and maintaining web applications using Ruby on Rails and React
+  responsibilities: Lead development team, code reviews, architecture decisions
+  ats_keywords: ["Ruby", "Rails", "React", "Leadership"]
 
-two:
-  resume: two
-  company: MyString
-  position: MyString
-  start_date: 2025-08-24
-  end_date: 2025-08-24
-  arabic_description: MyText
-  english_description: MyText
+past_job:
+  resume: complete_resume
+  company: Digital Agency
+  position: Web Developer
+  job_title: Full Stack Developer
+  start_date: "2017-06"
+  end_date: "2019-12"
+  is_current: false
+  arabic_description: تطوير مواقع الويب للعملاء باستخدام تقنيات حديثة
+  english_description: Developing websites for clients using modern technologies
+  responsibilities: Frontend development, client communication
+  ats_keywords: ["JavaScript", "HTML", "CSS", "PHP"]
+
+internship:
+  resume: minimal_resume
+  company: Startup Hub
+  position: Intern
+  job_title: Software Developer Intern
+  start_date: "2016-06"
+  end_date: "2016-09"
+  is_current: false
+  arabic_description: تدريب عملي في تطوير البرمجيات والتعلم من فريق متمرس
+  english_description: Practical training in software development and learning from experienced team
+  responsibilities: Assisting senior developers
+  ats_keywords: ["Python", "Git"]
+
+arabic_experience:
+  resume: arabic_resume
+  company: شركة التقنية العربية
+  position: مطور برمجيات
+  job_title: مطور برمجيات أول
+  start_date: "2019-03"
+  end_date: 
+  is_current: true
+  arabic_description: تطوير وتحسين منتجات البرمجيات للسوق العربي مع التركيز على تجربة المستخدم
+  english_description: 
+  responsibilities: تطوير البرمجيات، مراجعة الكود
+  ats_keywords:
   ats_keywords: 

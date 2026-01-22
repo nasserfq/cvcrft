@@ -1,0 +1,37 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+bachelors:
+  resume: complete_resume
+  degree: Bachelor of Computer Science
+  institution: King Saud University
+  start_date: "2012-09"
+  end_date: "2016-06"
+  gpa: "3.8"
+  is_current: false
+
+masters:
+  resume: complete_resume
+  degree: Master of Software Engineering
+  institution: Stanford University
+  start_date: "2018-09"
+  end_date: "2020-06"
+  gpa: "3.9"
+  is_current: false
+
+current_study:
+  resume: minimal_resume
+  degree: PhD in Computer Science
+  institution: MIT
+  start_date: "2022-09"
+  end_date: 
+  gpa: 
+  is_current: true
+
+arabic_education:
+  resume: arabic_resume
+  degree: بكالوريوس هندسة البرمجيات
+  institution: جامعة الملك فهد للبترول والمعادن
+  start_date: "2014-09"
+  end_date: "2018-06"
+  gpa: "4.5"
+  is_current: false

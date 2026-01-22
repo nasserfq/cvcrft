@@ -1,9 +1,57 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  email: MyString
-  name: MyString
+  email: user-one@example.com
+  name: User One
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  reset_password_token: 
+  reset_password_sent_at: 
+  remember_created_at: 
 
 two:
-  email: MyString
-  name: MyString
+  email: user-two@example.com
+  name: User Two
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  reset_password_token: 
+  reset_password_sent_at: 
+  remember_created_at: 
+
+admin_user:
+  email: admin@cvcraft.com
+  name: Admin User
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  reset_password_token: 
+  reset_password_sent_at: 
+  remember_created_at: 
+
+test_user:
+  email: test@example.com
+  name: Test User
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  reset_password_token: 
+  reset_password_sent_at: 
+  remember_created_at: 
+
+user_with_resumes:
+  email: resumes@example.com
+  name: Resume Builder
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  reset_password_token: 
+  reset_password_sent_at: 
+  remember_created_at: 
+
+user_without_resumes:
+  email: noresumes@example.com
+  name: New User
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  reset_password_token: 
+  reset_password_sent_at: 
+  remember_created_at: 
+
+arabic_user:
+  email: arabic@example.com
+  name: مستخدم عربي
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  reset_password_token: 
+  reset_password_sent_at: 
+  remember_created_at:

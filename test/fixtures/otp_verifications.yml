@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+valid_otp:
+  email: newuser@example.com
+  otp_code: "123456"
+  expires_at: <%= 10.minutes.from_now %>
+  verified: false
+
+expired_otp:
+  email: expired@example.com
+  otp_code: "654321"
+  expires_at: <%= 1.hour.ago %>
+  verified: false
+
+verified_otp:
+  email: verified@example.com
+  otp_code: "111111"
+  expires_at: <%= 5.minutes.from_now %>
+  verified: true
+
+about_to_expire_otp:
+  email: expiring@example.com
+  otp_code: "999999"
+  expires_at: <%= 1.minute.from_now %>
+  verified: false

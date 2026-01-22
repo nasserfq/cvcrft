@@ -1,17 +1,67 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  user: one
-  title: MyString
-  target_position: MyString
-  summary: MyText
-  ats_score: 1
-  ats_keywords: 
+complete_resume:
+  user: user_with_resumes
+  title: Senior Software Engineer Resume
+  target_position: Senior Software Engineer
+  summary: Experienced software engineer with 10+ years of experience in web development and cloud technologies.
+  professional_summary: مهندس برمجيات ذو خبرة واسعة في تطوير تطبيقات الويب والحوسبة السحابية
+  professional_summary_english: Experienced software engineer with expertise in web development and cloud computing
+  complete_name: Ahmed Mohamed
+  email: ahmed@example.com
+  phone_number: "+966501234567"
+  city: Riyadh
+  country: Saudi Arabia
+  ats_score: 85
+  ats_keywords: ["Ruby", "Rails", "JavaScript", "AWS"]
+  is_draft: false
+  draft_data: {}
 
-two:
-  user: two
-  title: MyString
-  target_position: MyString
-  summary: MyText
-  ats_score: 1
+draft_resume:
+  user: user_with_resumes
+  title: 
+  target_position: 
+  summary: 
+  professional_summary: ملخص تجريبي
+  complete_name: Draft User
+  email: draft@example.com
+  phone_number: 
+  city: 
+  country: 
+  ats_score: 
   ats_keywords: 
+  is_draft: true
+  draft_data: {"step": 1, "personal_info": {"name": "Draft User"}}
+
+minimal_resume:
+  user: test_user
+  title: 
+  target_position: 
+  summary: 
+  professional_summary: 
+  complete_name: Minimal User
+  email: minimal@example.com
+  phone_number: 
+  city: 
+  country: 
+  ats_score: 
+  ats_keywords: 
+  is_draft: false
+  draft_data: {}
+
+arabic_resume:
+  user: arabic_user
+  title: سيرة ذاتية
+  target_position: مطور برمجيات
+  summary: مطور برمجيات متمرس مع خبرة واسعة في تطوير التطبيقات
+  professional_summary: مطور برمجيات متمرس يتمتع بخبرة أكثر من 5 سنوات في تطوير تطبيقات الويب
+  professional_summary_english: 
+  complete_name: محمد أحمد
+  email: mohamed@example.com
+  phone_number: "+966551234567"
+  city: جدة
+  country: السعودية
+  ats_score: 75
+  ats_keywords: 
+  is_draft: false
+  draft_data: {} 

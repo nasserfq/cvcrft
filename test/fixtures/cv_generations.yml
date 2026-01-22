@@ -1,0 +1,61 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+completed_generation:
+  user: user_with_resumes
+  resume: complete_resume
+  job_description: Looking for a Senior Software Engineer with 5+ years of experience in Ruby on Rails, JavaScript, and cloud technologies. The ideal candidate should have strong problem-solving skills and experience leading development teams.
+  generated_content: '{"professional_summary": "Experienced software engineer...", "skills": ["Ruby", "Rails", "JavaScript"]}'
+  ai_model: gpt-4
+  status: completed
+  tokens_used: 500
+  metadata: {"source": "job_description", "processing_time": 3.5}
+  is_draft: false
+  draft_data: {}
+
+processing_generation:
+  user: test_user
+  resume: 
+  job_description: We are seeking a Full Stack Developer to join our growing team. The position requires experience with React, Node.js, and database management.
+  generated_content: 
+  ai_model: gpt-4
+  status: processing
+  tokens_used: 
+  metadata: {"source": "job_description"}
+  is_draft: false
+  draft_data: {}
+
+failed_generation:
+  user: arabic_user
+  resume: 
+  job_description: مطلوب مطور برمجيات للعمل على مشاريع متعددة في مجال التجارة الإلكترونية والتطبيقات المحمولة
+  generated_content: 
+  ai_model: gpt-3.5-turbo
+  status: failed
+  tokens_used: 
+  metadata: {"error": "Invalid response format", "source": "job_description"}
+  is_draft: false
+  draft_data: {}
+
+draft_generation:
+  user: user_with_resumes
+  resume: 
+  job_description: Software Developer position requiring Python, Django, and AWS experience with bonus points for ML knowledge.
+  generated_content: 
+  ai_model: gpt-4
+  status: draft
+  tokens_used: 
+  metadata: {"source": "cv_builder"}
+  is_draft: true
+  draft_data: {"step": 2, "work_experience": []}
+
+cv_builder_generation:
+  user: test_user
+  resume: minimal_resume
+  job_description: This is for CV Builder PDF export - Software Engineer with frontend experience needed.
+  generated_content: '{"summary": "Frontend engineer with React expertise"}'
+  ai_model: gpt-4
+  status: completed
+  tokens_used: 300
+  metadata: {"source": "cv_builder"}
+  is_draft: false
+  draft_data: {}

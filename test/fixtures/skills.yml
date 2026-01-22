@@ -1,13 +1,36 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  resume: one
-  name: MyString
-  level: MyString
-  category: MyString
+technical_skills:
+  resume: complete_resume
+  name: Programming
+  level: expert
+  category: technical
+  skill_names: '["Ruby", "JavaScript", "Python", "SQL"]'
 
-two:
-  resume: two
-  name: MyString
-  level: MyString
-  category: MyString
+soft_skills:
+  resume: complete_resume
+  name: Communication
+  level: advanced
+  category: soft
+  skill_names: '["Leadership", "Teamwork", "Problem Solving"]'
+
+language_skills:
+  resume: complete_resume
+  name: Languages
+  level: intermediate
+  category: language
+  skill_names: '["Arabic (Native)", "English (Fluent)"]'
+
+beginner_skill:
+  resume: minimal_resume
+  name: Learning
+  level: beginner
+  category: technical
+  skill_names: '["Java", "C++"]'
+
+arabic_skill:
+  resume: arabic_resume
+  name: البرمجة
+  level: advanced
+  category: technical
+  skill_names: '["بايثون", "جافاسكريبت", "روبي"]'

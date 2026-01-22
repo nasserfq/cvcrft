@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+aws_cert:
+  resume: complete_resume
+  name: AWS Solutions Architect Professional
+  organization: Amazon Web Services
+  date: "2023-05"
+
+ruby_cert:
+  resume: complete_resume
+  name: Ruby on Rails Certification
+  organization: The Pragmatic Studio
+  date: "2022-08"
+
+scrum_cert:
+  resume: minimal_resume
+  name: Certified Scrum Master
+  organization: Scrum Alliance
+  date: "2021-03"
+
+arabic_cert:
+  resume: arabic_resume
+  name: شهادة محترف إدارة المشاريع
+  organization: معهد إدارة المشاريع
+  date: "2023-01"

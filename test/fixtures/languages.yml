@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+arabic:
+  resume: complete_resume
+  language: Arabic
+  proficiency: Native
+
+english:
+  resume: complete_resume
+  language: English
+  proficiency: Fluent
+
+french:
+  resume: complete_resume
+  language: French
+  proficiency: Intermediate
+
+minimal_arabic:
+  resume: minimal_resume
+  language: Arabic
+  proficiency: Native
+
+arabic_lang:
+  resume: arabic_resume
+  language: العربية
+  proficiency: اللغة الأم
+
+english_lang:
+  resume: arabic_resume
+  language: الإنجليزية
+  proficiency: متقدم
