@@ -6,6 +6,9 @@ class CvGenerationsController < ApplicationController
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
 
+  # Global limit for job-based CV generation
+  MAX_JOB_BASED_GENERATIONS = 5
+
   def index
     if params[:recent_with_pdf] == "true"
       # Return most recent completed CV with PDF as JSON
@@ -64,15 +67,26 @@ class CvGenerationsController < ApplicationController
       return
     end
 
-    # Check CV generation limit (150 per user)
+    # Check CV generation limit (150 per user) - overall limit
     max_cv_generations = 150
     current_cv_count = current_user.cv_generations.count
 
     if current_cv_count >= max_cv_generations
-      Rails.logger.warn "User #{current_user.email} has reached CV generation limit (#{current_cv_count}/#{max_cv_generations})"
+      Rails.logger.warn "User #{current_user.email} has reached overall CV generation limit (#{current_cv_count}/#{max_cv_generations})"
       respond_to do |format|
         format.html { redirect_to cv_generations_path, alert: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً." }
         format.json { render json: { error: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً.", limit_reached: true }, status: :unprocessable_entity }
+      end
+      return
+    end
+
+    # Check job-based generation limit (5 per user)
+    job_based_count = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").count
+    if job_based_count >= MAX_JOB_BASED_GENERATIONS
+      Rails.logger.warn "User #{current_user.email} has reached job-based generation limit (#{job_based_count}/#{MAX_JOB_BASED_GENERATIONS})"
+      respond_to do |format|
+        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{MAX_JOB_BASED_GENERATIONS})." }
+        format.json { render json: { error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{MAX_JOB_BASED_GENERATIONS}).", limit_reached: true, remaining: 0 }, status: :too_many_requests }
       end
       return
     end
@@ -91,7 +105,8 @@ class CvGenerationsController < ApplicationController
         email: cv_generation_params[:email],
         temperature: cv_generation_params[:temperature] || 0.7,
         max_tokens: cv_generation_params[:max_tokens] || 15000,
-        force_pdf_regeneration: true  # Always regenerate PDF when user creates a new CV
+        force_pdf_regeneration: true,  # Always regenerate PDF when user creates a new CV
+        source: "job_description"  # Track the source for limit counting
       }
     )
 

@@ -178,6 +178,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      // Use separate limits for summary and job descriptions
      setRemainingSummaryTranslations(data.remaining_summary ?? 5);
      setRemainingJobsTranslations(data.remaining_jobs ?? 5);
+     // CV Builder generation limit
+     setRemainingCvBuilderGenerations(data.remaining_cv_builder ?? 5);
      setTranslationLimitLoaded(true);
     }
    } catch (e) {
@@ -485,6 +487,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [maxSummaryTranslations] = useState(5);
  const [maxJobsTranslations] = useState(5);
  const [translationLimitLoaded, setTranslationLimitLoaded] = useState(false);
+ // CV Builder generation limit
+ const [remainingCvBuilderGenerations, setRemainingCvBuilderGenerations] = useState(5);
+ const [maxCvBuilderGenerations] = useState(5);
  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
  const [lastSavedAt, setLastSavedAt] = useState(null);
  const [validationErrors, setValidationErrors] = useState({});
@@ -1742,6 +1747,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const exportToPDF = async () => {
+  // Check CV Builder limit first
+  if (remainingCvBuilderGenerations <= 0) {
+   setTranslationError("لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (5). يرجى الترقية للحصول على المزيد.");
+   return;
+  }
+  
   setIsExporting(true);
   setTranslationError("");
 
@@ -1980,6 +1991,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          downloadFrame.src = downloadUrl;
          setExportStatus("completed");
          setIsExporting(false);
+         // Update remaining CV Builder generations
+         setRemainingCvBuilderGenerations(prev => Math.max(prev - 1, 0));
         } else if (statusInfo.status === "failed") {
          // Job failed
          clearInterval(pollingInterval);

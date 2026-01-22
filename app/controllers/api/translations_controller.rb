@@ -7,6 +7,9 @@ class Api::TranslationsController < ApplicationController
   # Separate limits for each translation type
   MAX_SUMMARY_TRANSLATIONS = 5
   MAX_JOB_DESCRIPTIONS_TRANSLATIONS = 5
+  
+  # Limit for CV Builder PDF generation
+  MAX_CV_BUILDER_GENERATIONS = 5
 
   def translate_professional_summary
     begin
@@ -223,6 +226,19 @@ class Api::TranslationsController < ApplicationController
         return render json: { error: "Authentication required" }, status: :unauthorized
       end
 
+      # Check CV Builder generation limit (skip for direct downloads - those are re-downloads)
+      unless params[:direct_download] == "true"
+        cv_builder_count = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").count
+        if cv_builder_count >= MAX_CV_BUILDER_GENERATIONS
+          Rails.logger.warn "User #{current_user.email} has reached CV Builder limit (#{cv_builder_count}/#{MAX_CV_BUILDER_GENERATIONS})"
+          return render json: { 
+            error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (#{MAX_CV_BUILDER_GENERATIONS}).", 
+            limit_reached: true, 
+            remaining: 0 
+          }, status: :too_many_requests
+        end
+      end
+
       # Create the directory for storing PDFs if it doesn't exist
       pdf_dir = Rails.root.join("tmp", "pdfs", "generated")
       FileUtils.mkdir_p(pdf_dir) unless File.directory?(pdf_dir)
@@ -230,6 +246,16 @@ class Api::TranslationsController < ApplicationController
       # If resume_id is provided, perform the job immediately
       if params[:resume_id].present?
         Rails.logger.info "Performing PDF generation job immediately: user_id=#{current_user&.id}, resume_id=#{params[:resume_id]}"
+
+        # Track CV Builder usage (only for new generations, not re-downloads)
+        unless params[:direct_download] == "true"
+          current_user.cv_generations.create!(
+            resume_id: params[:resume_id],
+            status: "completed",
+            ai_model: "cv_builder",
+            metadata: { source: "cv_builder", pdf_generated: true }
+          )
+        end
 
         options = {
           "user_id" => current_user&.id,
@@ -290,6 +316,14 @@ class Api::TranslationsController < ApplicationController
         if @resume.save
           # Build nested attributes
           build_nested_attributes(@resume, resume_data)
+          
+          # Track CV Builder usage
+          current_user.cv_generations.create!(
+            resume_id: @resume.id,
+            status: "completed",
+            ai_model: "cv_builder",
+            metadata: { source: "cv_builder", pdf_generated: true }
+          )
 
           # Generate PDF
           options = {
@@ -358,6 +392,10 @@ class Api::TranslationsController < ApplicationController
 
   # Endpoint to get translation limit info (must be above private)
   def translation_limit
+    # Calculate new generation limits
+    cv_builder_used = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").count
+    job_based_used = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").count
+    
     render json: {
       # Summary translations
       max_summary: MAX_SUMMARY_TRANSLATIONS,
@@ -367,6 +405,14 @@ class Api::TranslationsController < ApplicationController
       max_jobs: MAX_JOB_DESCRIPTIONS_TRANSLATIONS,
       used_jobs: job_descriptions_translations_used,
       remaining_jobs: remaining_job_descriptions_translations,
+      # CV Builder generation limits
+      max_cv_builder: MAX_CV_BUILDER_GENERATIONS,
+      used_cv_builder: cv_builder_used,
+      remaining_cv_builder: [MAX_CV_BUILDER_GENERATIONS - cv_builder_used, 0].max,
+      # Job-based generation limits
+      max_job_based: 5,  # Same as CvGenerationsController::MAX_JOB_BASED_GENERATIONS
+      used_job_based: job_based_used,
+      remaining_job_based: [5 - job_based_used, 0].max,
       # Legacy fields for backward compatibility
       max: MAX_SUMMARY_TRANSLATIONS + MAX_JOB_DESCRIPTIONS_TRANSLATIONS,
       used: current_user.ai_translations.count,
