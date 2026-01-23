@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>منشئ السيرة الذاتية بالذكاء الاصطناعي — CV•AI</title>
+    <title>منشئ السيرة الذاتية بالذكاء الاصطناعي — سيرة</title>
     <meta name="description" content="أنشئ سيرة ذاتية احترافية خلال دقائق باستخدام الذكاء الاصطناعي. قوالب حديثة، تحسين تلقائي للنقاط، وتصدير PDF بجودة عالية." />
     <meta name="theme-color" content="#10b981" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -61,7 +61,7 @@
                 <span class="mt-1 grid place-items-center w-5 h-5 rounded-md bg-emerald-600 text-white ring-1 ring-black/5">
                   <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                 </span>
-                <span>قوالب حديثة جاهزة للتقديم في ثوانٍ</span>
+                <span>قالب متوافق مع انظمة ATS</span>
               </li>
               <li class="flex items-start gap-3">
                 <span class="mt-1 grid place-items-center w-5 h-5 rounded-md bg-emerald-600 text-white ring-1 ring-black/5">
@@ -311,9 +311,9 @@
                   <i data-lucide="wand-2" class="w-5 h-5"></i>
                   ابدأ الآن
                 <% end %>
-                <%= link_to (user_signed_in? ? cv_generations_path : login_path(return_to: cv_generations_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 hover:scale-105 active:bg-slate-100 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation", data: { hoverable: true } do %>
+                <%= link_to (user_signed_in? ? resumes_path : login_path(return_to: resumes_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 hover:scale-105 active:bg-slate-100 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation", data: { hoverable: true } do %>
                   <i data-lucide="list" class="w-5 h-5"></i>
-                  عرض السير المبنية
+                  عرض السير الذاتية
                 <% end %>
               </div>
             </div>
@@ -364,21 +364,21 @@
               <div class="flex items-center gap-3">
                 <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
                 <div>
-                  <div class="text-sm font-semibold tracking-tight">أحمد السلمي</div>
+                  <div class="text-sm font-semibold tracking-tight"> قريباً</div>
                   <div class="text-xs text-slate-500">مهندس برمجيات</div>
                 </div>
               </div>
-              <p class="mt-3 text-sm text-slate-700">خلال 15 دقيقة حصلت على نسخة ممتازة، وتم قبولي في أول شركتين قدّمت لهما.</p>
+              <p class="mt-3 text-sm text-slate-700">قريباً</p>
             </div>
             <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
               <div class="flex items-center gap-3">
                 <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
                 <div>
-                  <div class="text-sm font-semibold tracking-tight">ليان القحطاني</div>
+                  <div class="text-sm font-semibold tracking-tight">قريباً</div>
                   <div class="text-xs text-slate-500">مصممة UX</div>
                 </div>
               </div>
-              <p class="mt-3 text-sm text-slate-700">القوالب جميلة، والذكاء يقترح صيغ أقوى لكل وظيفة. أنصح به!</p>
+              <p class="mt-3 text-sm text-slate-700">قريباً</p>
             </div>
           </div>
         </div>
@@ -402,9 +402,11 @@
                 <span class="text-slate-500">ر.س</span>
               </div>
               <ul class="mt-4 text-sm text-slate-700 space-y-2">
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مولد نقاط أساسي</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> 5 سير ذاتية</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> 5 توليد من وصف وظيفي</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> 10 ترجمات</li>
                 <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> قالب واحد</li>
-                <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i> تصدير PDF بدون علامة مائية</li>
+                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تصدير PDF</li>
               </ul>
               <a href="#cta" data-hoverable="true" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation">ابدأ مجانًا</a>
             </div>
@@ -420,10 +422,7 @@
                 <span class="text-slate-500">قريباً</span>
               </div>
               <ul class="mt-4 text-sm text-slate-700 space-y-2">
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تحسين ATS متقدم</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مكتبة قوالب كاملة</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تصدير PDF/Docx بدون علامة مائية</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> مسارات خاصة وخصوصية معززة</li>
+                <li class="flex items-center gap-2 justify-center text-slate-500">قريباً...</li>
               </ul>
               <a href="#cta" data-hoverable="true" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-800 hover:scale-105 active:bg-emerald-900 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation">البدء بالخطة الاحترافية</a>
             </div>

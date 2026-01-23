@@ -3,12 +3,12 @@
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="space-y-3">
-        <div class="flex items-center gap-3">
-          <div class="grid place-items-center w-9 h-9 rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 shadow-sm">
-            <span class="text-sm font-semibold tracking-tight">CV</span>
+        <a href="/" class="flex items-center gap-3 cursor-pointer" style="cursor: pointer;">
+          <div class="grid place-items-center w-9 h-9 rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 shadow-sm pointer-events-none">
+            <span class="text-sm font-semibold tracking-tight">س</span>
           </div>
-          <span class="text-slate-900 text-base font-semibold tracking-tight">CV•AI</span>
-        </div>
+          <span class="text-slate-900 text-base font-semibold tracking-tight pointer-events-none">سيرة</span>
+        </a>
         <p class="text-sm text-slate-600">منصة ذكية لبناء سير ذاتية قوية ومقنعة.</p>
       </div>
       <div>
@@ -24,7 +24,7 @@
         <ul class="space-y-2 text-sm text-slate-600">
           <li><a href="#faq" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الأسئلة الشائعة</a></li>
           <li><a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">تواصل معنا</a></li>
-          <li><a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">سياسة الخصوصية</a></li>
+          <li><a href="<%= privacy_path %>" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">سياسة الخصوصية</a></li>
         </ul>
       </div>
       <div>
@@ -39,7 +39,7 @@
       </div>
     </div>
     <div class="mt-8 pt-6 border-t border-slate-200/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-      <p>© 2025 CV•AI. جميع الحقوق محفوظة.</p>
+      <p>© 2025 سيرة. جميع الحقوق محفوظة.</p>
       <div class="flex items-center gap-4">
   <a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الشروط</a>
   <a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الخصوصية</a>

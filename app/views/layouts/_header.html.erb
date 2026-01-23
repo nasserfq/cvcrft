@@ -9,12 +9,12 @@
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between py-3">
       <!-- Logo -->
-      <div class="flex items-center gap-3">
-        <div class="grid place-items-center w-9 h-9 rounded-lg bg-emerald-500 text-white ring-1 ring-black/5 shadow-sm">
-          <span class="text-sm font-semibold tracking-tight">CV</span>
+      <a href="/" class="flex items-center gap-3 cursor-pointer" style="cursor: pointer;">
+        <div class="grid place-items-center w-9 h-9 rounded-lg bg-emerald-500 text-white ring-1 ring-black/5 shadow-sm pointer-events-none">
+          <span class="text-sm font-semibold tracking-tight">س</span>
         </div>
-        <span class="text-slate-900 text-base font-semibold tracking-tight">CV•AI</span>
-      </div>
+        <span class="text-slate-900 text-base font-semibold tracking-tight pointer-events-none">سيرة</span>
+      </a>
       <!-- Nav -->
       <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
         <% if user_signed_in? %>

@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   # Root route
   root "home#index"
 
+  # Static pages
+  get "/privacy", to: "pages#privacy", as: :privacy
+
   # User profile route
   resource :profile, only: [ :show, :destroy ]
 
