@@ -3,9 +3,9 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   # Basic HTTP Authentication (skip for health check)
-  http_basic_authenticate_with name: ENV["BASIC_AUTH_USERNAME"] || "admin",
-                              password: ENV["BASIC_AUTH_PASSWORD"] || "cvcraft2024",
-                              except: [ :health_check ]
+  # http_basic_authenticate_with name: ENV["BASIC_AUTH_USERNAME"] || "admin",
+  #                             password: ENV["BASIC_AUTH_PASSWORD"] || "cvcraft2024",
+  #                             except: [ :health_check ]
 
   # Include Devise helpers for authentication
   include Devise::Controllers::Helpers
