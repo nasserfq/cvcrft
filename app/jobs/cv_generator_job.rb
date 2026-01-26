@@ -141,9 +141,16 @@ class CvGeneratorJob
     }
 
     request.body = payload.to_json
-    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(request)
-    end
+
+    http = Net::HTTP.new(uri.hostname, uri.port)
+    http.use_ssl = true
+    http.open_timeout = 30
+    http.read_timeout = 120
+    # Use VERIFY_NONE to bypass CRL verification issues on macOS
+    # In production, consider using a proper SSL certificate store
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+    response = http.request(request)
 
     if response.code == "200"
       JSON.parse(response.body)

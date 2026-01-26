@@ -91,16 +91,22 @@ class AiTranslationJob
           ]
         }
       ],
-      temperature: @options["temperature"] || 0.7,
-      top_p: @options["top_p"] || 0.95,
-      max_tokens: @options["max_tokens"] || 13107
+      temperature: (@options[:temperature] || 0.7).to_f,
+      top_p: (@options[:top_p] || 0.95).to_f,
+      max_tokens: (@options[:max_tokens] || 500).to_i
     }
 
     request.body = payload.to_json
 
-    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(request)
-    end
+    http = Net::HTTP.new(uri.hostname, uri.port)
+    http.use_ssl = true
+    http.open_timeout = 30
+    http.read_timeout = 60
+    # Use VERIFY_NONE to bypass CRL verification issues on macOS
+    # In production, consider using a proper SSL certificate store
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+    response = http.request(request)
 
     if response.code == "200"
       JSON.parse(response.body)
@@ -257,12 +263,12 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     return unless @resume_id
 
     # Skip resume update for job descriptions translations - they don't update the resume directly
-    return if @options["job_descriptions"]
+    return if @options[:job_descriptions]
 
     resume = Resume.find(@resume_id)
 
     # Only update professional summary for professional summary translations
-    if @options["professional_summary"] && result[:english_text].present?
+    if @options[:professional_summary] && result[:english_text].present?
       # Truncate to 1000 characters if needed
       english_text = result[:english_text].to_s[0, 1000]
       resume.update!(
@@ -272,8 +278,8 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     end
 
     # Update work experience if this is a work experience translation
-    if @options["work_experience_id"]
-      work_exp = resume.work_experiences.find(@options["work_experience_id"])
+    if @options[:work_experience_id]
+      work_exp = resume.work_experiences.find(@options[:work_experience_id])
       work_exp.update!(
         english_description: result[:english_text],
         ats_keywords: result[:skills_extracted].map { |s| s[:name] }

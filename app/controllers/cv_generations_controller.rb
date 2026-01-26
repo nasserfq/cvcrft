@@ -67,9 +67,9 @@ class CvGenerationsController < ApplicationController
       return
     end
 
-    # Check CV generation limit (150 per user) - overall limit
+    # Check CV generation limit (150 per user) - overall limit (only count completed)
     max_cv_generations = 150
-    current_cv_count = current_user.cv_generations.count
+    current_cv_count = current_user.cv_generations.where(status: "completed").count
 
     if current_cv_count >= max_cv_generations
       Rails.logger.warn "User #{current_user.email} has reached overall CV generation limit (#{current_cv_count}/#{max_cv_generations})"
@@ -80,8 +80,8 @@ class CvGenerationsController < ApplicationController
       return
     end
 
-    # Check job-based generation limit (5 per user)
-    job_based_count = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").count
+    # Check job-based generation limit (5 per user) - only count completed
+    job_based_count = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").where(status: "completed").count
     if job_based_count >= MAX_JOB_BASED_GENERATIONS
       Rails.logger.warn "User #{current_user.email} has reached job-based generation limit (#{job_based_count}/#{MAX_JOB_BASED_GENERATIONS})"
       respond_to do |format|
@@ -191,7 +191,7 @@ class CvGenerationsController < ApplicationController
   end
 
   def count
-    cv_count = current_user.cv_generations.count
+    cv_count = current_user.cv_generations.where(status: "completed").count
     max_cv_generations = 150  # Keep consistent with create action
 
     respond_to do |format|

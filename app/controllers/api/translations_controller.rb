@@ -7,7 +7,7 @@ class Api::TranslationsController < ApplicationController
   # Separate limits for each translation type
   MAX_SUMMARY_TRANSLATIONS = 5
   MAX_JOB_DESCRIPTIONS_TRANSLATIONS = 5
-  
+
   # Limit for CV Builder PDF generation
   MAX_CV_BUILDER_GENERATIONS = 5
 
@@ -185,7 +185,10 @@ class Api::TranslationsController < ApplicationController
           raw_response: metadata["raw_response"] || "",
           # Job descriptions specific data
           job_descriptions: is_job_descriptions,
-          job_indices: metadata["job_indices"] || []
+          job_indices: metadata["job_indices"] || [],
+          # Include remaining counts so frontend can update after completion/failure
+          remaining_summary: remaining_summary_translations,
+          remaining_jobs: remaining_job_descriptions_translations
         }
 
         # Parse jobs from english_text if this is a job descriptions translation
@@ -228,13 +231,13 @@ class Api::TranslationsController < ApplicationController
 
       # Check CV Builder generation limit (skip for direct downloads - those are re-downloads)
       unless params[:direct_download] == "true"
-        cv_builder_count = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").count
+        cv_builder_count = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").where(status: "completed").count
         if cv_builder_count >= MAX_CV_BUILDER_GENERATIONS
           Rails.logger.warn "User #{current_user.email} has reached CV Builder limit (#{cv_builder_count}/#{MAX_CV_BUILDER_GENERATIONS})"
-          return render json: { 
-            error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (#{MAX_CV_BUILDER_GENERATIONS}).", 
-            limit_reached: true, 
-            remaining: 0 
+          return render json: {
+            error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (#{MAX_CV_BUILDER_GENERATIONS}).",
+            limit_reached: true,
+            remaining: 0
           }, status: :too_many_requests
         end
       end
@@ -316,7 +319,7 @@ class Api::TranslationsController < ApplicationController
         if @resume.save
           # Build nested attributes
           build_nested_attributes(@resume, resume_data)
-          
+
           # Track CV Builder usage
           current_user.cv_generations.create!(
             resume_id: @resume.id,
@@ -392,10 +395,10 @@ class Api::TranslationsController < ApplicationController
 
   # Endpoint to get translation limit info (must be above private)
   def translation_limit
-    # Calculate new generation limits
-    cv_builder_used = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").count
-    job_based_used = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").count
-    
+    # Calculate new generation limits (only count completed generations)
+    cv_builder_used = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").where(status: "completed").count
+    job_based_used = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").where(status: "completed").count
+
     render json: {
       # Summary translations
       max_summary: MAX_SUMMARY_TRANSLATIONS,
@@ -408,11 +411,11 @@ class Api::TranslationsController < ApplicationController
       # CV Builder generation limits
       max_cv_builder: MAX_CV_BUILDER_GENERATIONS,
       used_cv_builder: cv_builder_used,
-      remaining_cv_builder: [MAX_CV_BUILDER_GENERATIONS - cv_builder_used, 0].max,
+      remaining_cv_builder: [ MAX_CV_BUILDER_GENERATIONS - cv_builder_used, 0 ].max,
       # Job-based generation limits
       max_job_based: 5,  # Same as CvGenerationsController::MAX_JOB_BASED_GENERATIONS
       used_job_based: job_based_used,
-      remaining_job_based: [5 - job_based_used, 0].max,
+      remaining_job_based: [ 5 - job_based_used, 0 ].max,
       # Legacy fields for backward compatibility
       max: MAX_SUMMARY_TRANSLATIONS + MAX_JOB_DESCRIPTIONS_TRANSLATIONS,
       used: current_user.ai_translations.count,
@@ -511,14 +514,14 @@ class Api::TranslationsController < ApplicationController
     )
   end
 
-  # Count summary translations used by querying metadata
+  # Count summary translations used by querying metadata (only count completed translations)
   def summary_translations_used
-    current_user.ai_translations.where("metadata->>'professional_summary' = ?", "true").count
+    current_user.ai_translations.where("metadata->>'professional_summary' = ?", "true").where(status: "completed").count
   end
 
-  # Count job descriptions translations used by querying metadata
+  # Count job descriptions translations used by querying metadata (only count completed translations)
   def job_descriptions_translations_used
-    current_user.ai_translations.where("metadata->>'job_descriptions' = ?", "true").count
+    current_user.ai_translations.where("metadata->>'job_descriptions' = ?", "true").where(status: "completed").count
   end
 
   # Calculate remaining summary translations for current user

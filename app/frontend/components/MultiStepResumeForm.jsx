@@ -1242,6 +1242,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
+  // Minimum 5 characters required
+  if (formData.professional_summary.trim().length < 5) {
+   setTranslationError("يجب أن يحتوي الملخص المهني على 5 أحرف على الأقل");
+   return;
+  }
+
   // Check translation limit for summary
   if (remainingSummaryTranslations <= 0) {
    setTranslationError(
@@ -2200,9 +2206,18 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        // You could add a success state here if you want to show a success message
       }
 
+      // Update remaining count from server (only counts completed)
+      if (status.remaining_summary !== undefined) {
+       setRemainingSummaryTranslations(status.remaining_summary);
+      }
+
       setIsTranslating(false);
       return;
      } else if (status.status === "failed") {
+      // Update remaining count from server (failed translations don't count)
+      if (status.remaining_summary !== undefined) {
+       setRemainingSummaryTranslations(status.remaining_summary);
+      }
       setTranslationError("فشلت الترجمة. يرجى المحاولة مرة أخرى.");
       setIsTranslating(false);
       return;
