@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>تسجيل الدخول — CV•AI</title>
+    <title>تسجيل الدخول — سيرة</title>
     <meta name="description" content="سجل دخولك إلى منشئ السيرة الذاتية بالذكاء الاصطناعي" />
     <meta name="theme-color" content="#10b981" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,15 +30,15 @@
             <span>تسجيل دخول آمن</span>
           </div>
           <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">
-            مرحباً بك في CV•AI
+            مرحباً بك في سيرة
           </h1>
           <p class="mt-2 text-slate-600 leading-7">
             أدخل بريدك الإلكتروني للحصول على رمز التحقق
           </p>
         </div>
 
-        <!-- Flash Messages -->
-        <% if flash[:notice] %>
+        <!-- Flash Messages (hide notice when OTP form is showing since we display email there) -->
+        <% if flash[:notice] && params[:otp_sent] != 'true' %>
           <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
             <div class="flex items-center gap-3">
               <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
@@ -101,7 +101,7 @@
                   <i data-lucide="mail" class="w-5 h-5 text-emerald-600"></i>
                   <div>
                     <p class="text-sm font-medium text-emerald-800">تم إرسال رمز التحقق</p>
-                    <p class="text-xs text-emerald-600">صالح لمدة 10 دقائق</p>
+                    <p class="text-xs text-emerald-600">إلى <%= params[:email] %> • صالح لمدة 10 دقائق</p>
                   </div>
                 </div>
               </div>
