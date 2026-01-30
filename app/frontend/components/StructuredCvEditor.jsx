@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { trackEvent } from "../lib/posthog";
 
 // Editable field component using input elements for proper LTR handling
 const EditableField = ({ value, onChange, placeholder, className = "", multiline = false, bold = false, center = false, inline = false }) => {
@@ -122,6 +123,11 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
   const [savingToResume, setSavingToResume] = useState(false);
   const saveTimeoutRef = useRef(null);
   const dataRef = useRef(data);
+  
+  // Track editor page view on mount
+  useEffect(() => {
+    trackEvent("linkedin_cv_editor_viewed", { import_id: importId });
+  }, [importId]);
   
   // Keep dataRef in sync with data
   useEffect(() => {
@@ -331,6 +337,7 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
   // Save to Resume (create actual resume)
   const handleSaveToResume = useCallback(async () => {
     setSavingToResume(true);
+    trackEvent("linkedin_cv_save_started", { import_id: importId });
     try {
       const response = await fetch(saveToResumeUrl, {
         method: "POST",
@@ -341,18 +348,21 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
       });
       const result = await response.json();
       if (result.success) {
+        trackEvent("linkedin_cv_save_completed", { import_id: importId, resume_id: result.resume_id });
         // Redirect to PDF generation/download
         window.location.href = `/resumes/${result.resume_id}/generate_pdf`;
       } else {
+        trackEvent("linkedin_cv_save_failed", { import_id: importId, error: result.error });
         alert("فشل في حفظ السيرة الذاتية: " + (result.error || "خطأ غير متوقع"));
       }
     } catch (error) {
       console.error("Save to resume failed:", error);
+      trackEvent("linkedin_cv_save_failed", { import_id: importId, error: error.message });
       alert("فشل في حفظ السيرة الذاتية");
     } finally {
       setSavingToResume(false);
     }
-  }, [saveToResumeUrl, csrfToken]);
+  }, [saveToResumeUrl, csrfToken, importId]);
 
   return (
     <div className="max-w-4xl mx-auto">
