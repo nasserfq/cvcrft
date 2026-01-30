@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_10_110744) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_30_111637) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -82,6 +82,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_10_110744) do
     t.index ["resume_id"], name: "index_languages_on_resume_id"
   end
 
+  create_table "linkedin_imports", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "status"
+    t.string "original_filename"
+    t.text "extracted_text"
+    t.jsonb "parsed_data"
+    t.text "error_message"
+    t.bigint "resume_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resume_id"], name: "index_linkedin_imports_on_resume_id"
+    t.index ["user_id"], name: "index_linkedin_imports_on_user_id"
+  end
+
   create_table "otp_verifications", force: :cascade do |t|
     t.string "email", null: false
     t.string "otp_code", null: false
@@ -112,7 +126,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_10_110744) do
     t.text "professional_summary_english"
     t.boolean "is_draft", default: false, null: false
     t.json "draft_data", default: {}
+    t.string "source", default: "manual", null: false
     t.index ["is_draft"], name: "index_resumes_on_is_draft"
+    t.index ["source"], name: "index_resumes_on_source"
     t.index ["user_id", "is_draft"], name: "index_resumes_on_user_id_and_is_draft"
     t.index ["user_id"], name: "index_resumes_on_user_id"
   end
@@ -164,6 +180,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_10_110744) do
   add_foreign_key "cv_generations", "users"
   add_foreign_key "educations", "resumes"
   add_foreign_key "languages", "resumes"
+  add_foreign_key "linkedin_imports", "resumes"
+  add_foreign_key "linkedin_imports", "users"
   add_foreign_key "resumes", "users"
   add_foreign_key "skills", "resumes"
   add_foreign_key "work_experiences", "resumes"

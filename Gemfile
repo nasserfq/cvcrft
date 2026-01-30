@@ -67,10 +67,13 @@ gem "parallel"
 gem "prawn"
 gem "prawn-table"
 
+# PDF text extraction (for LinkedIn import)
+gem "pdf-reader"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
-  
+
   # Pin minitest to a version compatible with Rails 8 parallel testing
   gem "minitest", "~> 5.25"
 

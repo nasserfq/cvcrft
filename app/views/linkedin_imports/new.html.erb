@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>استيراد من LinkedIn — سيرة</title>
+    <meta name="description" content="استورد سيرتك الذاتية من LinkedIn بنقرة واحدة" />
+    <meta name="theme-color" content="#10b981" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <%= csrf_meta_tags %>
+  </head>
+  <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans min-h-screen" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
+    <!-- Background Accents -->
+    <div class="pointer-events-none fixed inset-0 -z-10">
+      <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
+      <div class="absolute top-1/3 -right-20 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
+      <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="border-b border-slate-200/60 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
+      <div class="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
+        <%= link_to root_path, class: "flex items-center gap-2 text-slate-900" do %>
+          <span class="text-2xl font-bold text-emerald-600">سيرة</span>
+        <% end %>
+        <nav class="flex items-center gap-4">
+          <% if user_signed_in? %>
+            <span class="text-sm text-slate-600"><%= current_user.email %></span>
+            <%= button_to "تسجيل الخروج", auth_logout_path, method: :delete, class: "text-sm text-slate-600 hover:text-slate-900" %>
+          <% else %>
+            <%= link_to "تسجيل الدخول", login_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Flash Messages -->
+    <% if flash[:notice] %>
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-sm text-emerald-800"><%= flash[:notice] %></p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-sm text-red-800"><%= flash[:alert] %></p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Main Content -->
+    <main class="py-12">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <!-- Title -->
+        <div class="text-center mb-10">
+          <div class="inline-flex items-center gap-2 rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-xs ring-1 ring-blue-500/20 mb-4">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+            </svg>
+            <span>استيراد سهل</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
+            استورد سيرتك من LinkedIn
+          </h1>
+          <p class="text-slate-600 leading-7 max-w-xl mx-auto">
+            ارفع ملف PDF الخاص بحسابك على LinkedIn وسنقوم بتحويله إلى سيرة ذاتية احترافية يمكنك تحريرها مباشرة
+          </p>
+        </div>
+
+        <!-- How to Export LinkedIn PDF -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+          <h2 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            كيف تحصل على ملف PDF من LinkedIn؟
+          </h2>
+          <ol class="space-y-3 text-sm text-slate-600 list-decimal list-inside">
+            <li>افتح حسابك على <a href="https://www.linkedin.com" target="_blank" class="text-blue-600 hover:underline">LinkedIn</a></li>
+            <li>اذهب إلى صفحة ملفك الشخصي (Profile)</li>
+            <li>اضغط على زر <span class="font-medium text-slate-900">"More" (المزيد)</span></li>
+            <li>اختر <span class="font-medium text-slate-900">"Save to PDF" (حفظ كـ PDF)</span></li>
+            <li>احفظ الملف على جهازك ثم ارفعه هنا</li>
+          </ol>
+        </div>
+
+        <!-- Upload Form -->
+        <%= form_tag linkedin_import_path, method: :post, multipart: true, class: "space-y-6", id: "upload-form" do %>
+          <div 
+            id="drop-zone"
+            class="relative border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-emerald-400 hover:bg-emerald-50/50 transition-all cursor-pointer"
+          >
+            <input 
+              type="file" 
+              name="pdf_file" 
+              id="pdf-file-input"
+              accept=".pdf,application/pdf"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              required
+            />
+            <div id="upload-placeholder">
+              <svg class="w-16 h-16 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+              <p class="text-lg font-medium text-slate-700 mb-2">اسحب الملف وأفلته هنا</p>
+              <p class="text-sm text-slate-500">أو اضغط لاختيار ملف PDF</p>
+            </div>
+            <div id="file-selected" class="hidden">
+              <svg class="w-16 h-16 text-emerald-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-lg font-medium text-emerald-700 mb-2" id="selected-filename"></p>
+              <p class="text-sm text-slate-500">اضغط لاختيار ملف آخر</p>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            id="submit-btn"
+            disabled
+            class="w-full bg-emerald-600 text-white py-4 rounded-xl text-center font-semibold hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            <span>ابدأ الاستيراد</span>
+          </button>
+        <% end %>
+
+        <!-- Features -->
+        <div class="grid md:grid-cols-3 gap-6 mt-12">
+          <div class="text-center p-6">
+            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-2">سريع</h3>
+            <p class="text-sm text-slate-600">استخراج تلقائي للبيانات خلال ثوانٍ</p>
+          </div>
+          <div class="text-center p-6">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-2">قابل للتحرير</h3>
+            <p class="text-sm text-slate-600">حرر كل التفاصيل كما تريد</p>
+          </div>
+          <div class="text-center p-6">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-2">تصدير PDF</h3>
+            <p class="text-sm text-slate-600">تصدير احترافي متوافق مع ATS</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // File upload handling
+      const fileInput = document.getElementById('pdf-file-input');
+      const dropZone = document.getElementById('drop-zone');
+      const placeholder = document.getElementById('upload-placeholder');
+      const fileSelected = document.getElementById('file-selected');
+      const selectedFilename = document.getElementById('selected-filename');
+      const submitBtn = document.getElementById('submit-btn');
+      const form = document.getElementById('upload-form');
+
+      fileInput.addEventListener('change', function(e) {
+        handleFile(e.target.files[0]);
+      });
+
+      // Drag and drop
+      dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('border-emerald-400', 'bg-emerald-50');
+      });
+
+      dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-emerald-400', 'bg-emerald-50');
+      });
+
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-emerald-400', 'bg-emerald-50');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/pdf') {
+          fileInput.files = e.dataTransfer.files;
+          handleFile(file);
+        }
+      });
+
+      function handleFile(file) {
+        if (file && file.type === 'application/pdf') {
+          placeholder.classList.add('hidden');
+          fileSelected.classList.remove('hidden');
+          selectedFilename.textContent = file.name;
+          submitBtn.disabled = false;
+        }
+      }
+
+      // Form submission
+      form.addEventListener('submit', function(e) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>جاري الرفع...</span>
+        `;
+      });
+    </script>
+  </body>
+</html>

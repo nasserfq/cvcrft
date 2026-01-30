@@ -1,0 +1,22 @@
+<% content_for :head do %>
+  <%= vite_javascript_tag 'entrypoints/linkedin_import.jsx' %>
+  <script>
+    window.linkedinImportData = <%= raw @parsed_data.to_json %>;
+    window.linkedinImportUpdateUrl = '<%= linkedin_import_update_path(@linkedin_import) %>';
+    window.linkedinImportSaveToResumeUrl = '<%= linkedin_import_save_to_cv_path(@linkedin_import) %>';
+  </script>
+<% end %>
+
+<!-- Main Content -->
+<main class="py-8">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+    <!-- Title -->
+    <div class="mb-6 text-center">
+      <h1 class="text-2xl font-semibold text-slate-900 mb-2">تحرير سيرتك الذاتية</h1>
+      <p class="text-slate-600 text-sm">انقر على أي نص لتحريره مباشرة • التغييرات تُحفظ تلقائياً</p>
+    </div>
+
+    <!-- React Editor Mount Point -->
+    <div id="structured-cv-editor"></div>
+  </div>
+</main>

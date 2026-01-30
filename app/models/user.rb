@@ -8,48 +8,49 @@ class User < ApplicationRecord
   has_many :skills, through: :resumes
   has_many :ai_translations, dependent: :destroy
   has_many :cv_generations, dependent: :destroy
-  
+  has_many :linkedin_imports, dependent: :destroy
+
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
-  
+
   # CV Generation Statistics
   def cv_generation_count
     cv_generations.count
   end
-  
+
   def completed_cv_count
     cv_generations.completed.count
   end
-  
+
   def processing_cv_count
     cv_generations.processing.count
   end
-  
+
   def failed_cv_count
     cv_generations.failed.count
   end
-  
+
   def total_tokens_used
     cv_generations.sum(:tokens_used) || 0
   end
-  
+
   # CV Building Statistics (Resumes)
   def resume_count
     resumes.count
   end
-  
+
   def resumes_with_work_experience
     resumes.joins(:work_experiences).distinct.count
   end
-  
+
   def resumes_with_skills
     resumes.joins(:skills).distinct.count
   end
-  
+
   def resumes_with_ats_score
     resumes.where.not(ats_score: nil).count
   end
-  
+
   def average_ats_score
     resumes.where.not(ats_score: nil).average(:ats_score)&.round(2) || 0
   end
