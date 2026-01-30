@@ -1,0 +1,107 @@
+<div class="min-h-screen bg-gradient-to-b from-white via-purple-50 to-white py-12" dir="rtl">
+  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    
+    <% if @cv_analysis.completed? %>
+      <!-- Header -->
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 rounded-full bg-purple-100 text-purple-700 px-3 py-1 text-xs ring-1 ring-purple-500/20 mb-4">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>اكتمل التحليل</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-2">
+          تحليل سيرتك الذاتية
+        </h1>
+        <p class="text-slate-600">
+          <%= @cv_analysis.original_filename %>
+        </p>
+      </div>
+
+      <!-- React Component for Results -->
+      <div id="cv-analysis-results"></div>
+      <script>
+        window.cvAnalysisData = <%= raw @cv_analysis.analysis_results.to_json %>;
+        window.cvAnalysisLanguage = "<%= @cv_analysis.language %>";
+        window.cvAnalysisTargetJob = "<%= @cv_analysis.target_job %>";
+        window.cvAnalysisTargetIndustry = "<%= @cv_analysis.target_industry %>";
+      </script>
+
+      <!-- Actions -->
+      <div class="flex flex-wrap gap-4 justify-center mt-20 pt-10 border-t border-slate-200">
+        <a href="<%= cv_analysis_path %>" 
+           class="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>تحليل سيرة أخرى</span>
+        </a>
+        <a href="<%= root_path %>" 
+           class="inline-flex items-center gap-2 bg-white text-slate-700 px-6 py-3 rounded-xl font-semibold border border-slate-200 hover:bg-slate-50 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span>الصفحة الرئيسية</span>
+        </a>
+      </div>
+
+    <% elsif @cv_analysis.processing? %>
+      <!-- Processing State -->
+      <div class="text-center py-16">
+        <div class="relative w-24 h-24 mx-auto mb-8">
+          <div class="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
+          <div class="absolute inset-0 border-4 border-transparent border-t-purple-600 rounded-full animate-spin"></div>
+        </div>
+        <h2 class="text-2xl font-semibold text-slate-900 mb-4">جاري التحليل...</h2>
+        <p class="text-slate-600 mb-8">يرجى الانتظار بينما يقوم الذكاء الاصطناعي بتحليل سيرتك الذاتية</p>
+      </div>
+
+      <script>
+        // Auto-refresh for processing state
+        setTimeout(function() {
+          location.reload();
+        }, 3000);
+      </script>
+
+    <% elsif @cv_analysis.failed? %>
+      <!-- Failed State -->
+      <div class="text-center py-16">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-semibold text-slate-900 mb-4">حدث خطأ</h2>
+        <p class="text-slate-600 mb-8"><%= @cv_analysis.error_message || 'حدث خطأ أثناء التحليل' %></p>
+        <a href="<%= cv_analysis_path %>" 
+           class="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>حاول مرة أخرى</span>
+        </a>
+      </div>
+
+    <% else %>
+      <!-- Pending State -->
+      <div class="text-center py-16">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-semibold text-slate-900 mb-4">في انتظار البدء</h2>
+        <p class="text-slate-600 mb-8">سيبدأ التحليل قريباً...</p>
+      </div>
+
+      <script>
+        setTimeout(function() {
+          location.reload();
+        }, 2000);
+      </script>
+    <% end %>
+
+  </div>
+</div>
+
+<%= vite_javascript_tag 'entrypoints/cv_analysis_results.jsx' %>

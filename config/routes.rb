@@ -115,6 +115,12 @@ Rails.application.routes.draw do
   get "/linkedin-import/:id/download-pdf", to: "linkedin_imports#download_pdf", as: :linkedin_import_download_pdf
   delete "/linkedin-import/:id", to: "linkedin_imports#destroy"
 
+  # CV Analysis routes
+  get "/cv-analysis", to: "cv_analyses#new", as: :cv_analysis
+  post "/cv-analysis", to: "cv_analyses#create"
+  get "/cv-analysis/:id/status", to: "cv_analyses#status", as: :cv_analysis_status
+  get "/cv-analysis/:id", to: "cv_analyses#show", as: :cv_analysis_show
+
   # Authentication routes
   get "/login", to: "auth#login"
   post "/auth/send_otp", to: "auth#send_otp"

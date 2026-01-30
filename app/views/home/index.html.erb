@@ -147,7 +147,7 @@
                 </div>
               </div>
               <!-- Additional CTA Options -->
-              <div class="mt-6">
+              <div class="mt-6 space-y-4">
                 <!-- LinkedIn Import Card -->
                 <div class="bg-white p-6 rounded-xl border border-slate-200 hover:border-blue-400 transition-all shadow-sm">
                   <div class="flex items-center gap-4">
@@ -162,6 +162,23 @@
                     </div>
                     <%= link_to (user_signed_in? ? linkedin_import_path : login_path(return_to: linkedin_import_path)), class: "bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all shrink-0" do %>
                       استيراد الآن
+                    <% end %>
+                  </div>
+                </div>
+                <!-- CV Analysis Card -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 hover:border-purple-400 transition-all shadow-sm">
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center shrink-0">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                      </svg>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="text-lg font-semibold mb-1">تحليل السيرة الذاتية</h3>
+                      <p class="text-slate-600 text-sm">احصل على تقييم شامل ونصائح لتحسين سيرتك الذاتية</p>
+                    </div>
+                    <%= link_to (user_signed_in? ? cv_analysis_path : login_path(return_to: cv_analysis_path)), class: "bg-purple-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-purple-700 transition-all shrink-0" do %>
+                      حلل الآن
                     <% end %>
                   </div>
                 </div>

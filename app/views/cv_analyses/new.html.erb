@@ -1,0 +1,429 @@
+<div class="min-h-screen bg-gradient-to-b from-white via-purple-50 to-white py-12" dir="rtl">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+    
+    <!-- Upload Section (shown initially) -->
+    <div id="upload-section">
+      <!-- Title -->
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 rounded-full bg-purple-100 text-purple-700 px-3 py-1 text-xs ring-1 ring-purple-500/20 mb-4">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span>تحليل بالذكاء الاصطناعي</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
+          حلل سيرتك الذاتية
+        </h1>
+        <p class="text-slate-600 leading-7 max-w-xl mx-auto">
+          احصل على تقييم شامل لسيرتك الذاتية مع نقاط القوة والتحسينات المقترحة ونصائح لتحسين التوافق مع أنظمة تتبع المتقدمين (ATS)
+        </p>
+      </div>
+
+      <!-- What You'll Get -->
+      <div class="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+        <h2 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          ماذا ستحصل عليه؟
+        </h2>
+        <div class="grid md:grid-cols-2 gap-4 text-sm text-slate-600">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <span class="text-purple-700 font-bold text-xs">%</span>
+            </div>
+            <div>
+              <p class="font-medium text-slate-900">تقييم شامل (0-100)</p>
+              <p class="text-slate-500">نقاط لكل قسم من أقسام السيرة</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-slate-900">نقاط القوة</p>
+              <p class="text-slate-500">ما يميز سيرتك الذاتية</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-slate-900">فرص التحسين</p>
+              <p class="text-slate-500">اقتراحات لتحسين سيرتك</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-slate-900">نصائح ATS</p>
+              <p class="text-slate-500">تحسين التوافق مع أنظمة التوظيف</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Form -->
+      <%= form_tag cv_analysis_path, method: :post, multipart: true, class: "space-y-6", id: "upload-form", data: { turbo: false } do %>
+        
+        <!-- Drop Zone -->
+        <div 
+          id="drop-zone"
+          class="relative border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-purple-400 hover:bg-purple-50/50 transition-all cursor-pointer"
+        >
+          <input 
+            type="file" 
+            name="pdf_file" 
+            id="pdf-file-input"
+            accept=".pdf,application/pdf"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          <div id="upload-placeholder">
+            <svg class="w-16 h-16 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p class="text-lg font-medium text-slate-700 mb-2">اسحب ملف السيرة الذاتية وأفلته هنا</p>
+            <p class="text-sm text-slate-500">أو اضغط لاختيار ملف PDF</p>
+          </div>
+          <div id="file-selected" class="hidden">
+            <svg class="w-16 h-16 text-purple-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-lg font-medium text-purple-700 mb-2" id="selected-filename"></p>
+            <p class="text-sm text-slate-500">اضغط لاختيار ملف آخر</p>
+          </div>
+        </div>
+
+        <!-- Optional Fields -->
+        <div class="bg-slate-50 rounded-xl p-6 space-y-4">
+          <h3 class="font-medium text-slate-900 mb-2 flex items-center gap-2">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            خيارات إضافية (اختياري)
+          </h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label for="target_job" class="block text-sm font-medium text-slate-700 mb-1">الوظيفة المستهدفة</label>
+              <input 
+                type="text" 
+                name="target_job" 
+                id="target_job"
+                placeholder="مثال: مهندس برمجيات"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-slate-900 placeholder-slate-400"
+              />
+            </div>
+            <div>
+              <label for="target_industry" class="block text-sm font-medium text-slate-700 mb-1">المجال/الصناعة</label>
+              <input 
+                type="text" 
+                name="target_industry" 
+                id="target_industry"
+                placeholder="مثال: التقنية"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-slate-900 placeholder-slate-400"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">لغة التحليل</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="language" value="ar" checked class="w-4 h-4 text-purple-600 focus:ring-purple-500 border-slate-300">
+                <span class="text-sm text-slate-700">العربية</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="language" value="en" class="w-4 h-4 text-purple-600 focus:ring-purple-500 border-slate-300">
+                <span class="text-sm text-slate-700">English</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          id="submit-btn"
+          disabled
+          class="w-full bg-purple-600 text-white py-4 rounded-xl text-center font-semibold hover:bg-purple-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span>حلل سيرتي الذاتية</span>
+        </button>
+      <% end %>
+
+      <!-- Features -->
+      <div class="grid md:grid-cols-3 gap-6 mt-12">
+        <div class="text-center p-6">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-slate-900 mb-2">ذكي</h3>
+          <p class="text-sm text-slate-600">تحليل بالذكاء الاصطناعي المتقدم</p>
+        </div>
+        <div class="text-center p-6">
+          <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-slate-900 mb-2">آمن</h3>
+          <p class="text-sm text-slate-600">بياناتك محمية ولا تُشارك</p>
+        </div>
+        <div class="text-center p-6">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-slate-900 mb-2">سريع</h3>
+          <p class="text-sm text-slate-600">نتائج فورية خلال ثوانٍ</p>
+        </div>
+      </div>
+
+      <!-- Back Link -->
+      <div class="text-center mt-8">
+        <a href="<%= root_path %>" class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+          ← العودة للصفحة الرئيسية
+        </a>
+      </div>
+    </div>
+
+    <!-- Processing Section (hidden initially, shown after upload) -->
+    <div id="processing-section" class="hidden">
+      <div class="text-center py-16">
+        <!-- Animated Spinner -->
+        <div class="relative w-24 h-24 mx-auto mb-8">
+          <div class="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
+          <div class="absolute inset-0 border-4 border-transparent border-t-purple-600 rounded-full animate-spin"></div>
+          <div class="absolute inset-3 border-4 border-transparent border-t-purple-400 rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+        </div>
+        
+        <h2 class="text-2xl font-semibold text-slate-900 mb-4">جاري تحليل سيرتك الذاتية...</h2>
+        <p class="text-slate-600 mb-8">يقوم الذكاء الاصطناعي بتحليل المحتوى وتقييم كل قسم</p>
+        
+        <!-- Progress Steps -->
+        <div class="max-w-md mx-auto space-y-3" id="progress-steps">
+          <div class="flex items-center gap-3 text-right" id="step-upload">
+            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <span class="text-sm text-slate-700">تم رفع الملف</span>
+          </div>
+          <div class="flex items-center gap-3 text-right" id="step-extract">
+            <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
+              <div class="w-3 h-3 bg-purple-600 rounded-full"></div>
+            </div>
+            <span class="text-sm text-slate-500">استخراج النص...</span>
+          </div>
+          <div class="flex items-center gap-3 text-right" id="step-analyze">
+            <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <div class="w-3 h-3 bg-slate-300 rounded-full"></div>
+            </div>
+            <span class="text-sm text-slate-400">تحليل المحتوى...</span>
+          </div>
+          <div class="flex items-center gap-3 text-right" id="step-complete">
+            <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <div class="w-3 h-3 bg-slate-300 rounded-full"></div>
+            </div>
+            <span class="text-sm text-slate-400">إنشاء التقرير...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Section (hidden initially) -->
+    <div id="error-section" class="hidden">
+      <div class="text-center py-16">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-semibold text-slate-900 mb-4">حدث خطأ</h2>
+        <p class="text-slate-600 mb-8" id="error-message">حدث خطأ أثناء التحليل. يرجى المحاولة مرة أخرى.</p>
+        <button 
+          onclick="location.reload()" 
+          class="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>حاول مرة أخرى</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('pdf-file-input');
+  const submitBtn = document.getElementById('submit-btn');
+  const uploadPlaceholder = document.getElementById('upload-placeholder');
+  const fileSelected = document.getElementById('file-selected');
+  const selectedFilename = document.getElementById('selected-filename');
+  const uploadForm = document.getElementById('upload-form');
+  const uploadSection = document.getElementById('upload-section');
+  const processingSection = document.getElementById('processing-section');
+  const errorSection = document.getElementById('error-section');
+
+  // File selection handler
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      uploadPlaceholder.classList.add('hidden');
+      fileSelected.classList.remove('hidden');
+      selectedFilename.textContent = file.name;
+      submitBtn.disabled = false;
+      dropZone.classList.add('border-purple-400', 'bg-purple-50/50');
+      dropZone.classList.remove('border-slate-300');
+    }
+  });
+
+  // Drag and drop handlers
+  dropZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    dropZone.classList.add('border-purple-400', 'bg-purple-50/50');
+  });
+
+  dropZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    if (!fileInput.files.length) {
+      dropZone.classList.remove('border-purple-400', 'bg-purple-50/50');
+    }
+  });
+
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') {
+      fileInput.files = e.dataTransfer.files;
+      uploadPlaceholder.classList.add('hidden');
+      fileSelected.classList.remove('hidden');
+      selectedFilename.textContent = file.name;
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Form submission handler
+  uploadForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show processing section
+    uploadSection.classList.add('hidden');
+    processingSection.classList.remove('hidden');
+    
+    const formData = new FormData(uploadForm);
+    
+    fetch('<%= cv_analysis_path(format: :json) %>', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json'
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.text().then(text => { throw new Error(text) });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        // Start polling for status
+        pollStatus(data.analysis_id);
+      } else {
+        showError(data.error || 'حدث خطأ أثناء رفع الملف');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showError('حدث خطأ أثناء رفع الملف');
+    });
+  });
+
+  function pollStatus(analysisId) {
+    const statusUrl = '<%= cv_analysis_status_path(":id", format: :json) %>'.replace(':id', analysisId);
+    
+    const poll = setInterval(function() {
+      fetch(statusUrl, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        updateProgressSteps(data.status);
+        
+        if (data.status === 'completed') {
+          clearInterval(poll);
+          // Redirect to results page
+          window.location.href = '<%= cv_analysis_show_path(":id") %>'.replace(':id', analysisId);
+        } else if (data.status === 'failed') {
+          clearInterval(poll);
+          showError(data.error_message || 'حدث خطأ أثناء التحليل');
+        }
+      })
+      .catch(error => {
+        console.error('Poll error:', error);
+      });
+    }, 2000);
+  }
+
+  function updateProgressSteps(status) {
+    const stepExtract = document.getElementById('step-extract');
+    const stepAnalyze = document.getElementById('step-analyze');
+    const stepComplete = document.getElementById('step-complete');
+
+    if (status === 'processing') {
+      // Mark extract as done, analyze in progress
+      stepExtract.querySelector('div').classList.remove('bg-slate-100', 'animate-pulse');
+      stepExtract.querySelector('div').classList.add('bg-purple-100');
+      stepExtract.querySelector('div').innerHTML = '<svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      stepExtract.querySelector('span').classList.remove('text-slate-500');
+      stepExtract.querySelector('span').classList.add('text-slate-700');
+      stepExtract.querySelector('span').textContent = 'تم استخراج النص';
+
+      stepAnalyze.querySelector('div').classList.remove('bg-slate-100');
+      stepAnalyze.querySelector('div').classList.add('animate-pulse');
+      stepAnalyze.querySelector('div div').classList.remove('bg-slate-300');
+      stepAnalyze.querySelector('div div').classList.add('bg-purple-600');
+      stepAnalyze.querySelector('span').classList.remove('text-slate-400');
+      stepAnalyze.querySelector('span').classList.add('text-slate-500');
+    }
+  }
+
+  function showError(message) {
+    processingSection.classList.add('hidden');
+    errorSection.classList.remove('hidden');
+    document.getElementById('error-message').textContent = message;
+  }
+});
+</script>
