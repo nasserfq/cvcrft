@@ -103,7 +103,8 @@ class AtsPdfGenerator
             begin
               JSON.parse(raw_responsibilities)
             rescue
-              [ raw_responsibilities ] # If parsing fails, treat it as a single responsibility
+              # If parsing fails, split by newlines to get individual responsibilities
+              raw_responsibilities.split("\n").map(&:strip).reject(&:blank?)
             end
           else
             Array(raw_responsibilities)

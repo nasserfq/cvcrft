@@ -121,6 +121,12 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
   const [lastSaved, setLastSaved] = useState(null);
   const [savingToResume, setSavingToResume] = useState(false);
   const saveTimeoutRef = useRef(null);
+  const dataRef = useRef(data);
+  
+  // Keep dataRef in sync with data
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   // Auto-save on changes (debounced)
   const autoSave = useCallback(() => {
@@ -136,7 +142,7 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
             "Content-Type": "application/json",
             "X-CSRF-Token": csrfToken,
           },
-          body: JSON.stringify({ parsed_data: data }),
+          body: JSON.stringify({ parsed_data: dataRef.current }),
         });
         if (response.ok) {
           setLastSaved(new Date());
@@ -147,7 +153,7 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
         setSaving(false);
       }
     }, 1500);
-  }, [data, updateUrl, csrfToken]);
+  }, [updateUrl, csrfToken]);
 
   // Update field helpers
   const updateField = useCallback((field, value) => {
@@ -335,7 +341,8 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
       });
       const result = await response.json();
       if (result.success) {
-        window.location.href = result.redirect_url;
+        // Redirect to PDF generation/download
+        window.location.href = `/resumes/${result.resume_id}/generate_pdf`;
       } else {
         alert("فشل في حفظ السيرة الذاتية: " + (result.error || "خطأ غير متوقع"));
       }
@@ -455,14 +462,7 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
         <div className="mb-6">
           <SectionHeader title="EDUCATION" />
           {(data.educations || []).map((edu, index) => (
-            <div key={index} className="mb-4 group relative">
-              <button
-                onClick={() => removeEducation(index)}
-                className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"
-                title="Remove education"
-              >
-                ×
-              </button>
+            <div key={index} className="mb-4 group">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <EditableField
@@ -499,6 +499,13 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
                       inline
                     />
                   )}
+                  <button
+                    onClick={() => removeEducation(index)}
+                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none ml-2"
+                    title="Remove education"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
               <EditableField
@@ -521,14 +528,7 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
         <div className="mb-6">
           <SectionHeader title="WORK EXPERIENCE" />
           {(data.work_experiences || []).map((exp, expIndex) => (
-            <div key={expIndex} className="mb-6 group relative">
-              <button
-                onClick={() => removeWorkExperience(expIndex)}
-                className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"
-                title="Remove experience"
-              >
-                ×
-              </button>
+            <div key={expIndex} className="mb-6 group">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <EditableField
@@ -560,6 +560,13 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
                     placeholder="Present"
                     inline
                   />
+                  <button
+                    onClick={() => removeWorkExperience(expIndex)}
+                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none ml-2"
+                    title="Remove experience"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
               <EditableField
@@ -599,15 +606,9 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
         <div className="mb-6">
           <SectionHeader title="SKILLS" />
           {(data.skills || []).map((skillGroup, index) => (
-            <div key={index} className="mb-3 group relative">
-              <button
-                onClick={() => removeSkillGroup(index)}
-                className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"
-                title="Remove skill group"
-              >
-                ×
-              </button>
-              <div className="text-sm">
+            <div key={index} className="mb-3 group">
+              <div className="flex justify-between items-start">
+                <div className="text-sm flex-1">
                 <div className="font-bold text-slate-900">
                   <span
                     contentEditable
@@ -630,7 +631,15 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
                   />
                 </div>
               </div>
+              <button
+                onClick={() => removeSkillGroup(index)}
+                className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none ml-2"
+                title="Remove skill group"
+              >
+                ×
+              </button>
             </div>
+          </div>
           ))}
           <button
             onClick={addSkillGroup}
@@ -644,15 +653,8 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
         <div className="mb-6">
           <SectionHeader title="CERTIFICATIONS" />
           {(data.certifications || []).filter(cert => cert.name).map((cert, index) => (
-            <div key={index} className="mb-2 group relative">
-              <button
-                onClick={() => removeCertification(index)}
-                className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"
-                title="Remove certification"
-              >
-                ×
-              </button>
-              <div className="flex justify-between items-start">
+            <div key={index} className="mb-2 group">
+              <div className="flex justify-between items-center gap-2">
                 <div className="flex items-center gap-2 flex-1">
                   <EditableField
                     value={cert.name}
@@ -670,13 +672,22 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
                     inline
                   />
                 </div>
-                <EditableField
-                  value={cert.date || ""}
-                  onChange={(v) => updateCertification(index, "date", v)}
-                  placeholder="Date"
-                  className="text-sm text-slate-600 shrink-0"
-                  inline
-                />
+                <div className="flex items-center gap-2">
+                  <EditableField
+                    value={cert.date || ""}
+                    onChange={(v) => updateCertification(index, "date", v)}
+                    placeholder="Date"
+                    className="text-sm text-slate-600 shrink-0"
+                    inline
+                  />
+                  <button
+                    onClick={() => removeCertification(index)}
+                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none"
+                    title="Remove certification"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -692,15 +703,8 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
         <div className="mb-6">
           <SectionHeader title="LANGUAGES" />
           {(data.languages || []).map((lang, index) => (
-            <div key={index} className="mb-2 group relative">
-              <button
-                onClick={() => removeLanguage(index)}
-                className="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"
-                title="Remove language"
-              >
-                ×
-              </button>
-              <div className="flex justify-between items-start">
+            <div key={index} className="mb-2 group">
+              <div className="flex justify-between items-center gap-2">
                 <EditableField
                   value={lang.language}
                   onChange={(v) => updateLanguage(index, "language", v)}
@@ -709,13 +713,22 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
                   bold
                   inline
                 />
-                <EditableField
-                  value={lang.proficiency}
-                  onChange={(v) => updateLanguage(index, "proficiency", v)}
-                  placeholder="Fluent"
-                  className="text-sm text-slate-600"
-                  inline
-                />
+                <div className="flex items-center gap-2">
+                  <EditableField
+                    value={lang.proficiency}
+                    onChange={(v) => updateLanguage(index, "proficiency", v)}
+                    placeholder="Fluent"
+                    className="text-sm text-slate-600"
+                    inline
+                  />
+                  <button
+                    onClick={() => removeLanguage(index)}
+                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none"
+                    title="Remove language"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             </div>
           ))}

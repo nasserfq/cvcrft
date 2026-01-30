@@ -11,8 +11,14 @@ class LinkedinImportsController < ApplicationController
   def create
     # Check if file was uploaded
     unless params[:pdf_file].present?
-      flash[:alert] = "Please upload a LinkedIn PDF file"
-      redirect_to linkedin_import_path and return
+      respond_to do |format|
+        format.html do
+          flash[:alert] = "Please upload a LinkedIn PDF file"
+          redirect_to linkedin_import_path
+        end
+        format.json { render json: { success: false, error: "Please upload a LinkedIn PDF file" }, status: :unprocessable_entity }
+      end
+      return
     end
 
     begin
@@ -32,14 +38,27 @@ class LinkedinImportsController < ApplicationController
         # Queue the background job for AI processing
         LinkedinImportJob.perform_async(@linkedin_import.id)
 
-        redirect_to linkedin_import_status_path(@linkedin_import)
+        respond_to do |format|
+          format.html { redirect_to linkedin_import_status_path(@linkedin_import) }
+          format.json { render json: { success: true, id: @linkedin_import.id, status_url: linkedin_import_status_path(@linkedin_import, format: :json) } }
+        end
       else
-        flash[:alert] = "Failed to create import: #{@linkedin_import.errors.full_messages.join(', ')}"
-        redirect_to linkedin_import_path
+        respond_to do |format|
+          format.html do
+            flash[:alert] = "Failed to create import: #{@linkedin_import.errors.full_messages.join(', ')}"
+            redirect_to linkedin_import_path
+          end
+          format.json { render json: { success: false, error: @linkedin_import.errors.full_messages.join(", ") }, status: :unprocessable_entity }
+        end
       end
     rescue LinkedinPdfParserService::LinkedinPdfParseError => e
-      flash[:alert] = "Failed to parse PDF: #{e.message}"
-      redirect_to linkedin_import_path
+      respond_to do |format|
+        format.html do
+          flash[:alert] = "Failed to parse PDF: #{e.message}"
+          redirect_to linkedin_import_path
+        end
+        format.json { render json: { success: false, error: "Failed to parse PDF: #{e.message}" }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -178,12 +197,14 @@ class LinkedinImportsController < ApplicationController
       # Create skills with categories
       (data["skills"] || []).each do |skill_group|
         category = skill_group["category"]
-        (skill_group["skill_names"] || []).each do |skill_name|
-          resume.skills.create!(
-            name: skill_name,
-            category: category
-          )
-        end
+        skill_names = skill_group["skill_names"] || []
+        next if skill_names.empty?
+
+        resume.skills.create!(
+          category: category,
+          skill_names: skill_names,
+          name: skill_names.first # For backward compatibility
+        )
       end
 
       # Create certifications

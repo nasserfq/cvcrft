@@ -108,6 +108,7 @@ Rails.application.routes.draw do
   get "/linkedin-import", to: "linkedin_imports#new", as: :linkedin_import
   post "/linkedin-import", to: "linkedin_imports#create"
   get "/linkedin-import/:id/status", to: "linkedin_imports#status", as: :linkedin_import_status
+  get "/linkedin-import/:id", to: "linkedin_imports#show", as: :linkedin_import_show
   get "/linkedin-import/:id/edit", to: "linkedin_imports#show", as: :linkedin_import_edit
   patch "/linkedin-import/:id", to: "linkedin_imports#update", as: :linkedin_import_update
   post "/linkedin-import/:id/save-to-cv", to: "linkedin_imports#save_to_cv", as: :linkedin_import_save_to_cv
