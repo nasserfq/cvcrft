@@ -42,7 +42,7 @@ const EditableField = ({ value, onChange, placeholder, className = "", multiline
       placeholder={placeholder}
       dir="ltr"
       className={baseClassName}
-      style={{ textAlign, width: inline ? `${Math.max((localValue || placeholder || "").length + 1, 3)}ch` : undefined }}
+      style={{ textAlign, width: inline ? `${Math.max((localValue || placeholder || "").length, 2)}ch` : undefined }}
     />
   );
 };
@@ -482,7 +482,7 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
                         placeholder="Start"
                         inline
                       />
-                      <span className="mx-1">-</span>
+                      <span>-</span>
                       <EditableField
                         value={edu.end_date || ""}
                         onChange={(v) => updateEducation(index, "end_date", v)}
@@ -546,7 +546,7 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
                     placeholder="2020-01"
                     inline
                   />
-                  <span className="mx-1">-</span>
+                  <span>-</span>
                   <EditableField
                     value={exp.is_current ? "Present" : exp.end_date}
                     onChange={(v) => {
