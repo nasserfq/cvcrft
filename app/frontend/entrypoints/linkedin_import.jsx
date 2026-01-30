@@ -20,6 +20,7 @@ function renderApp() {
   }
 
   // Get data from window object
+  const importId = window.linkedinImportId || "";
   const initialData = window.linkedinImportData || {};
   const updateUrl = window.linkedinImportUpdateUrl || "";
   const saveToResumeUrl = window.linkedinImportSaveToResumeUrl || "";
@@ -29,6 +30,7 @@ function renderApp() {
   rootInstance = createRoot(container);
   rootInstance.render(
     React.createElement(StructuredCvEditor, {
+      importId: importId,
       initialData: initialData,
       updateUrl: updateUrl,
       saveToResumeUrl: saveToResumeUrl,

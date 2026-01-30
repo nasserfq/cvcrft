@@ -1,6 +1,7 @@
 <% content_for :head do %>
   <%= vite_javascript_tag 'entrypoints/linkedin_import.jsx' %>
   <script>
+    window.linkedinImportId = '<%= @linkedin_import.id %>';
     window.linkedinImportData = <%= raw @parsed_data.to_json %>;
     window.linkedinImportUpdateUrl = '<%= linkedin_import_update_path(@linkedin_import) %>';
     window.linkedinImportSaveToResumeUrl = '<%= linkedin_import_save_to_cv_path(@linkedin_import) %>';

@@ -116,7 +116,7 @@ const SectionHeader = ({ title }) => (
 );
 
 // Main Structured CV Editor Component
-const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken }) => {
+const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl, csrfToken }) => {
   const [data, setData] = useState(initialData);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
@@ -126,7 +126,9 @@ const StructuredCvEditor = ({ initialData, updateUrl, saveToResumeUrl, csrfToken
   
   // Track editor page view on mount
   useEffect(() => {
-    trackEvent("linkedin_cv_editor_viewed", { import_id: importId });
+    if (importId) {
+      trackEvent("linkedin_cv_editor_viewed", { import_id: importId });
+    }
   }, [importId]);
   
   // Keep dataRef in sync with data
