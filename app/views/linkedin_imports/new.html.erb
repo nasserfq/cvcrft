@@ -97,7 +97,7 @@
               <li>افتح حسابك على <a href="https://www.linkedin.com" target="_blank" class="text-blue-600 hover:underline">LinkedIn</a></li>
               <li>اذهب إلى صفحة ملفك الشخصي (Profile)</li>
               <li>اضغط على زر <span class="font-medium text-slate-900">"More" (المزيد)</span></li>
-              <li>اختر <span class="font-medium text-slate-900">"Save to PDF" (حفظ كـ PDF)</span></li>
+              <li>اختر <span class="font-medium text-slate-900">"Save to PDF" (حفظ كـ PDF)</span> من قسم <span class="font-medium text-slate-900">"Resources"</span></li>
               <li>احفظ الملف على جهازك ثم ارفعه هنا</li>
             </ol>
           </div>
@@ -114,7 +114,6 @@
                 id="pdf-file-input"
                 accept=".pdf,application/pdf"
                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                required
               />
               <div id="upload-placeholder">
                 <svg class="w-16 h-16 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,6 +218,12 @@
               <span id="step-editor-text" class="text-slate-400">تجهيز المحرر</span>
             </div>
           </div>
+          <button 
+            onclick="resetUpload()" 
+            class="mt-8 text-sm text-slate-500 hover:text-slate-700 underline transition-colors"
+          >
+            إلغاء ورفع ملف آخر
+          </button>
         </div>
 
         <!-- Error Section (shown on error) -->
@@ -231,13 +236,13 @@
           <h2 class="text-2xl font-semibold text-slate-900 mb-4">حدث خطأ</h2>
           <p class="text-slate-600 mb-6" id="error-message">فشل في معالجة الملف</p>
           <button 
-            onclick="location.reload()" 
+            onclick="resetUpload()" 
             class="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
-            <span>حاول مرة أخرى</span>
+            <span>ارفع ملف آخر</span>
           </button>
         </div>
 
@@ -381,6 +386,53 @@
         processingSection.classList.add('hidden');
         errorSection.classList.remove('hidden');
         errorMessage.textContent = message;
+      }
+
+      function resetUpload() {
+        // Hide processing and error sections
+        processingSection.classList.add('hidden');
+        errorSection.classList.add('hidden');
+        
+        // Show upload section
+        uploadSection.classList.remove('hidden');
+        
+        // Reset file input
+        fileInput.value = '';
+        placeholder.classList.remove('hidden');
+        fileSelected.classList.add('hidden');
+        selectedFilename.textContent = '';
+        
+        // Reset submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          <span>ابدأ الاستيراد</span>
+        `;
+        
+        // Reset processing step icons (in case user comes back)
+        const stepAiIcon = document.getElementById('step-ai-icon');
+        if (stepAiIcon) {
+          stepAiIcon.outerHTML = `
+            <svg class="w-5 h-5 text-slate-400 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          `;
+        }
+        document.getElementById('step-ai-text').textContent = 'تحليل الذكاء الاصطناعي...';
+        
+        const stepEditorIcon = document.getElementById('step-editor-icon');
+        if (stepEditorIcon) {
+          stepEditorIcon.outerHTML = `
+            <svg class="w-5 h-5 text-slate-300" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          `;
+        }
+        const stepEditorText = document.getElementById('step-editor-text');
+        stepEditorText.textContent = 'تجهيز المحرر';
+        stepEditorText.classList.add('text-slate-400');
       }
     </script>
   </body>

@@ -7,6 +7,12 @@ class Resume < ApplicationRecord
   has_many :languages, dependent: :destroy
   has_many :ai_translations, dependent: :destroy
   has_many :cv_generations, dependent: :destroy
+  has_one :linkedin_import, dependent: :nullify
+
+  # Find linkedin import for editing - either directly associated or find by user
+  def linkedin_import_for_edit
+    linkedin_import || (source == "linkedin" ? user.linkedin_imports.completed.order(created_at: :desc).first : nil)
+  end
 
   # Generate PDF after saving a resume - queue it for background processing
   after_create :queue_pdf_generation
