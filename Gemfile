@@ -75,7 +75,7 @@ group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
   # Pin minitest to a version compatible with Rails 8 parallel testing
-  gem "minitest", "~> 5.25"
+  gem "minitest", "~> 6.0"
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
