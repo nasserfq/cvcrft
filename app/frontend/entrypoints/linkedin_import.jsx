@@ -2,8 +2,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import StructuredCvEditor from "../components/StructuredCvEditor";
 
-// Track root instances
-let rootInstance = null;
+// Track root instances by container using WeakMap
+const rootMap = new WeakMap();
 
 function renderApp() {
   const container = document.getElementById("structured-cv-editor");
@@ -13,9 +13,9 @@ function renderApp() {
     return;
   }
 
-  // Skip if already rendered
-  if (rootInstance && container.hasChildNodes()) {
-    console.log("Root already exists, skipping");
+  // Check if we already have a root for this exact container
+  if (rootMap.has(container)) {
+    console.log("Root already exists for this container, skipping");
     return;
   }
 
@@ -26,19 +26,24 @@ function renderApp() {
   const saveToResumeUrl = window.linkedinImportSaveToResumeUrl || "";
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || "";
 
-  // Create root and render
-  rootInstance = createRoot(container);
-  rootInstance.render(
-    React.createElement(StructuredCvEditor, {
-      importId: importId,
-      initialData: initialData,
-      updateUrl: updateUrl,
-      saveToResumeUrl: saveToResumeUrl,
-      csrfToken: csrfToken
-    })
-  );
-
-  console.log("StructuredCvEditor rendered successfully");
+  try {
+    // Clear any existing content before creating root
+    container.innerHTML = "";
+    const root = createRoot(container);
+    rootMap.set(container, root);
+    root.render(
+      React.createElement(StructuredCvEditor, {
+        importId: importId,
+        initialData: initialData,
+        updateUrl: updateUrl,
+        saveToResumeUrl: saveToResumeUrl,
+        csrfToken: csrfToken
+      })
+    );
+    console.log("StructuredCvEditor rendered successfully");
+  } catch (error) {
+    console.error("Error rendering StructuredCvEditor:", error);
+  }
 }
 
 // Initial render
@@ -48,6 +53,5 @@ if (document.readyState === "loading") {
   renderApp();
 }
 
-// Re-render on Turbo navigation
-document.addEventListener("turbo:load", renderApp);
+// Handle Turbo navigation - use turbo:render which fires after DOM is stable
 document.addEventListener("turbo:render", renderApp);

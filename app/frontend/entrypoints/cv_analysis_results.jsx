@@ -2,8 +2,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import CvAnalysisResults from "../components/CvAnalysisResults";
 
-let rootInstance = null;
-let containerRendered = null;
+// Track root instances by container using WeakMap
+const rootMap = new WeakMap();
 
 function renderApp() {
   const container = document.getElementById("cv-analysis-results");
@@ -13,17 +13,10 @@ function renderApp() {
     return;
   }
 
-  // Skip if already rendered on this container
-  if (rootInstance && containerRendered === container) {
+  // Check if we already have a root for this exact container
+  if (rootMap.has(container)) {
     console.log("Root already exists for this container, skipping");
     return;
-  }
-
-  // If we have a root but container changed (Turbo navigation), unmount first
-  if (rootInstance && containerRendered !== container) {
-    rootInstance.unmount();
-    rootInstance = null;
-    containerRendered = null;
   }
 
   // Get data from window object (set in the view)
@@ -32,23 +25,25 @@ function renderApp() {
   const targetJob = window.cvAnalysisTargetJob || "";
   const targetIndustry = window.cvAnalysisTargetIndustry || "";
 
-  rootInstance = createRoot(container);
-  containerRendered = container;
-  
-  rootInstance.render(
-    React.createElement(CvAnalysisResults, {
-      analysis: analysisData,
-      language: language,
-      targetJob: targetJob,
-      targetIndustry: targetIndustry
-    })
-  );
-
-  console.log("CvAnalysisResults rendered successfully");
+  try {
+    // Clear any existing content before creating root
+    container.innerHTML = "";
+    const root = createRoot(container);
+    rootMap.set(container, root);
+    
+    root.render(
+      React.createElement(CvAnalysisResults, {
+        analysis: analysisData,
+        language: language,
+        targetJob: targetJob,
+        targetIndustry: targetIndustry
+      })
+    );
+    console.log("CvAnalysisResults rendered successfully");
+  } catch (error) {
+    console.error("Error rendering CvAnalysisResults:", error);
+  }
 }
-
-// Handle Turbo navigation
-document.addEventListener("turbo:load", renderApp);
 
 // Initial render
 if (document.readyState === "loading") {
@@ -56,3 +51,6 @@ if (document.readyState === "loading") {
 } else {
   renderApp();
 }
+
+// Handle Turbo navigation - use turbo:render which fires after DOM is stable
+document.addEventListener("turbo:render", renderApp);

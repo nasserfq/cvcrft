@@ -3,9 +3,8 @@ import { createRoot } from "react-dom/client";
 import MultiStepResumeForm from "../components/MultiStepResumeForm";
 import "../lib/posthog"; // Initialize PostHog analytics
 
-// Track root instances by container identity
-let rootInstance = null;
-let lastContainerId = null;
+// Track root instances by container
+const rootMap = new WeakMap();
 
 function renderApp() {
  const container = document.getElementById("resume-form-root");
@@ -15,28 +14,9 @@ function renderApp() {
   return;
  }
 
- // Generate a unique ID for this container instance
- const containerId = container.dataset.instanceId || Date.now().toString();
- container.dataset.instanceId = containerId;
-
- // If it's a different container (e.g., after Turbo navigation), reset the root
- if (lastContainerId !== null && lastContainerId !== containerId) {
-  console.log("New container detected, resetting root instance");
-  if (rootInstance) {
-   try {
-    rootInstance.unmount();
-   } catch (e) {
-    console.log("Could not unmount old root:", e);
-   }
-  }
-  rootInstance = null;
- }
- 
- lastContainerId = containerId;
-
- // Skip if already rendered to this container
- if (rootInstance && container.hasChildNodes()) {
-  console.log("Root already exists and container has children, skipping");
+ // Check if we already have a root for this exact container
+ if (rootMap.has(container)) {
+  console.log("Root already exists for this container, skipping");
   return;
  }
 
@@ -78,8 +58,11 @@ function renderApp() {
 
  try {
   console.log("Creating React root for resume form...");
-  rootInstance = createRoot(container);
-  rootInstance.render(
+  // Clear any existing content before creating root
+  container.innerHTML = "";
+  const root = createRoot(container);
+  rootMap.set(container, root);
+  root.render(
    <MultiStepResumeForm resume={resumeData} onSubmit={handleSubmit} />
   );
   console.log("React form rendered successfully");
@@ -94,19 +77,6 @@ function renderApp() {
  }
 }
 
-// Clean up on Turbo navigation
-function cleanup() {
- if (rootInstance) {
-  try {
-   rootInstance.unmount();
-  } catch (e) {
-   console.log("Could not unmount root on cleanup:", e);
-  }
-  rootInstance = null;
-  lastContainerId = null;
- }
-}
-
 // Render when DOM is ready
 if (document.readyState === "loading") {
  document.addEventListener("DOMContentLoaded", renderApp);
@@ -114,6 +84,5 @@ if (document.readyState === "loading") {
  renderApp();
 }
 
-// Handle Turbo navigation - re-render on each page load
-document.addEventListener("turbo:load", renderApp);
-document.addEventListener("turbo:before-render", cleanup);
+// Handle Turbo navigation - use turbo:render which fires after DOM is stable
+document.addEventListener("turbo:render", renderApp);
