@@ -1,0 +1,106 @@
+# Test fixtures for CvAnalysis model
+
+pending_analysis:
+  user: test_user
+  original_filename: "pending_cv.pdf"
+  extracted_text: "Sample CV content for analysis"
+  status: "pending"
+  language: "ar"
+  target_job: "مهندس برمجيات"
+  target_industry: "تقنية المعلومات"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+processing_analysis:
+  user: test_user
+  original_filename: "processing_cv.pdf"
+  extracted_text: "CV being processed"
+  status: "processing"
+  language: "en"
+  target_job: "Software Engineer"
+  target_industry: "Technology"
+  created_at: <%= 5.minutes.ago %>
+  updated_at: <%= Time.current %>
+
+completed_analysis:
+  user: test_user
+  original_filename: "completed_cv.pdf"
+  extracted_text: "Completed CV text"
+  status: "completed"
+  language: "ar"
+  target_job: "مدير مشاريع"
+  target_industry: "إدارة"
+  ai_model: "gpt-4.1-mini"
+  tokens_used: 1500
+  analysis_results:
+    overall_score: 85
+    section_scores:
+      ats_compatibility: 90
+      content_quality: 80
+      formatting: 85
+      keyword_optimization: 82
+      impact_statements: 88
+    strengths:
+      - "تنسيق ممتاز وسهل القراءة"
+      - "خبرات عمل موثقة جيداً"
+      - "مهارات تقنية واضحة"
+    improvements:
+      - "إضافة المزيد من الكلمات المفتاحية"
+      - "تحديد الإنجازات بالأرقام"
+    ats_tips:
+      - "استخدم عناوين أقسام قياسية"
+      - "تجنب الجداول والرسومات"
+    detailed_feedback:
+      ats_compatibility: "السيرة الذاتية متوافقة بشكل جيد مع أنظمة ATS"
+      content_quality: "المحتوى شامل ومفصل"
+      formatting: "التنسيق واضح ومنظم"
+      keyword_optimization: "يمكن تحسين الكلمات المفتاحية"
+      impact_statements: "استخدام جيد لأفعال الإنجاز"
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 30.minutes.ago %>
+
+failed_analysis:
+  user: test_user
+  original_filename: "failed_cv.pdf"
+  extracted_text: "Failed to process"
+  status: "failed"
+  language: "en"
+  error_message: "API connection timeout"
+  created_at: <%= 2.hours.ago %>
+  updated_at: <%= 2.hours.ago %>
+
+english_analysis:
+  user: admin_user
+  original_filename: "english_cv.pdf"
+  extracted_text: "John Doe - Software Engineer with 5 years experience"
+  status: "completed"
+  language: "en"
+  target_job: "Senior Developer"
+  target_industry: "Software"
+  ai_model: "gpt-4.1-mini"
+  tokens_used: 1200
+  analysis_results:
+    overall_score: 78
+    section_scores:
+      ats_compatibility: 75
+      content_quality: 80
+      formatting: 78
+      keyword_optimization: 75
+      impact_statements: 82
+    strengths:
+      - "Clear work history"
+      - "Good technical skills section"
+    improvements:
+      - "Add more quantifiable achievements"
+      - "Include relevant certifications"
+    ats_tips:
+      - "Use standard section headers"
+      - "Avoid graphics and tables"
+    detailed_feedback:
+      ats_compatibility: "Good ATS compatibility"
+      content_quality: "Strong content quality"
+      formatting: "Well organized layout"
+      keyword_optimization: "Could improve keyword density"
+      impact_statements: "Good use of action verbs"
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

@@ -1,0 +1,94 @@
+# Test fixtures for LinkedinImport model
+
+pending_import:
+  user: test_user
+  original_filename: "pending_linkedin.pdf"
+  extracted_text: "John Doe\nSoftware Engineer at Tech Company"
+  status: "pending"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+processing_import:
+  user: test_user
+  original_filename: "processing_linkedin.pdf"
+  extracted_text: "Jane Smith\nProduct Manager at StartupXYZ"
+  status: "processing"
+  created_at: <%= 5.minutes.ago %>
+  updated_at: <%= Time.current %>
+
+completed_import:
+  user: test_user
+  original_filename: "completed_linkedin.pdf"
+  extracted_text: "Ahmed Ali\nData Scientist at DataCorp"
+  status: "completed"
+  parsed_data:
+    complete_name: "Ahmed Ali"
+    email: "ahmed@example.com"
+    phone_number: "+966501234567"
+    city: "Riyadh"
+    country: "Saudi Arabia"
+    professional_summary: "Experienced data scientist with 5 years of experience"
+    work_experiences:
+      - job_title: "Senior Data Scientist"
+        company: "DataCorp"
+        start_date: "2020-01"
+        end_date: ""
+        is_current: true
+        responsibilities:
+          - "Led machine learning initiatives"
+          - "Built data pipelines"
+      - job_title: "Data Analyst"
+        company: "Analytics Inc"
+        start_date: "2018-01"
+        end_date: "2019-12"
+        is_current: false
+        responsibilities:
+          - "Analyzed business data"
+    educations:
+      - degree: "Master of Science in Data Science"
+        institution: "King Saud University"
+        start_date: "2016"
+        end_date: "2018"
+        gpa: "3.8"
+        is_current: false
+    skills:
+      - category: "Technical"
+        items:
+          - "Python"
+          - "Machine Learning"
+          - "SQL"
+      - category: "Languages"
+        items:
+          - "Arabic"
+          - "English"
+    certifications:
+      - name: "AWS Solutions Architect"
+        organization: "Amazon"
+        date: "2022"
+  created_at: <%= 1.hour.ago %>
+  updated_at: <%= 30.minutes.ago %>
+
+failed_import:
+  user: test_user
+  original_filename: "failed_linkedin.pdf"
+  extracted_text: "Corrupted text..."
+  status: "failed"
+  error_message: "Failed to parse LinkedIn data: Invalid format"
+  created_at: <%= 2.hours.ago %>
+  updated_at: <%= 2.hours.ago %>
+
+admin_import:
+  user: admin_user
+  original_filename: "admin_linkedin.pdf"
+  extracted_text: "Admin User Profile"
+  status: "completed"
+  parsed_data:
+    complete_name: "Admin User"
+    email: "admin@example.com"
+    professional_summary: "Administrator with experience"
+    work_experiences: []
+    educations: []
+    skills: []
+    certifications: []
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
