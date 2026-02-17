@@ -38,18 +38,18 @@ const ReviewStep = lazy(() => import("./cv-builder/ReviewStep"));
 const StepLoadingSkeleton = memo(() => (
  <div className="animate-pulse space-y-6">
   <div className="text-center mb-6">
-   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-200 mb-4" />
-   <div className="h-6 bg-slate-200 rounded w-1/2 mx-auto mb-2" />
-   <div className="h-4 bg-slate-200 rounded w-2/3 mx-auto" />
+   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 mb-4" />
+   <div className="h-6 bg-[#7C6CF2]/10 rounded-lg w-1/2 mx-auto mb-2" />
+   <div className="h-4 bg-gray-200 dark:bg-white/10 rounded-lg w-2/3 mx-auto" />
   </div>
-  <div className="p-6 border border-slate-200 rounded-lg bg-slate-50">
-   <div className="h-5 bg-slate-200 rounded w-1/4 mb-4" />
+  <div className="p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/50 dark:bg-white/5">
+   <div className="h-5 bg-[#7C6CF2]/10 rounded-lg w-1/4 mb-4" />
    <div className="space-y-3">
-    <div className="h-10 bg-slate-200 rounded" />
-    <div className="h-10 bg-slate-200 rounded" />
+    <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
+    <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
     <div className="grid grid-cols-2 gap-4">
-     <div className="h-10 bg-slate-200 rounded" />
-     <div className="h-10 bg-slate-200 rounded" />
+     <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
+     <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
     </div>
    </div>
   </div>
@@ -2568,30 +2568,22 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  return (
-  <div data-turbo="false" className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-2 sm:py-8 overflow-x-hidden w-full max-w-full">
+  <div data-turbo="false" className="py-2 sm:py-6 overflow-x-hidden w-full max-w-full">
    <div className="max-w-4xl mx-auto px-2 sm:px-4 w-full">
-    <div data-form-card className="bg-white rounded-lg sm:rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden w-full">
-     <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 sm:px-8 py-4 sm:py-6">
-      <h1 className="text-xl sm:text-3xl font-bold text-white text-center">
-       بناء السيرة الذاتية
-      </h1>
-      <p className="text-emerald-100 text-center mt-1 sm:mt-2 text-sm sm:text-base">
-       خطوة {currentStep} من 4
-      </p>
-     </div>
-     {/* Progress Bar */}
-     <div className="px-4 sm:px-8 py-4" dir="rtl">
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
-       <h1 className="text-lg sm:text-2xl font-bold text-slate-900">
+    <div data-form-card className="bg-white/80 dark:bg-[#27273A]/80 backdrop-blur-xl rounded-2xl shadow-lg border border-[#E6E8F0] dark:border-white/10 overflow-hidden w-full">
+     {/* Header with step indicator */}
+     <div className="bg-gradient-to-r from-[#7C6CF2] to-[#6A5AE0] px-4 sm:px-8 py-5 sm:py-6">
+      <div className="flex items-center justify-between">
+       <h1 className="text-lg sm:text-2xl font-semibold text-white">
         إنشاء سيرة ذاتية جديدة
        </h1>
        <div className="flex items-center gap-3">
         {/* Auto-save indicator */}
         {autoSaveStatus !== "idle" && (
          <span className={`text-xs flex items-center gap-1 ${
-          autoSaveStatus === "saving" ? "text-blue-600" :
-          autoSaveStatus === "saved" ? "text-emerald-600" :
-          "text-red-500"
+          autoSaveStatus === "saving" ? "text-white/70" :
+          autoSaveStatus === "saved" ? "text-[#2ED3B7]" :
+          "text-red-300"
          }`}>
           {autoSaveStatus === "saving" && (
            <>
@@ -2620,25 +2612,28 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           )}
          </span>
         )}
-        <span className="text-xs sm:text-sm text-slate-500">
+        <span className="text-xs sm:text-sm text-white/80 bg-white/10 px-3 py-1 rounded-full">
          الخطوة {currentStep} من {totalSteps}
         </span>
        </div>
       </div>
-      <div className="w-full bg-slate-200 rounded-full h-2">
-       <div
-        className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
-        style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-       ></div>
+      {/* Progress Bar */}
+      <div className="mt-4" dir="rtl">
+       <div className="w-full bg-white/20 rounded-full h-2">
+        <div
+         className="bg-[#2ED3B7] h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(46,211,183,0.5)]"
+         style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+        ></div>
+       </div>
       </div>
      </div>
 
      {/* Step Content */}
-     <div className="px-4 sm:px-8 pb-4 overflow-x-hidden">{renderStepContent()}</div>
+     <div className="px-4 sm:px-8 py-6 overflow-x-hidden">{renderStepContent()}</div>
 
      {/* Navigation Buttons - Mobile Optimized with Safe Area */}
      <div 
-      className="px-4 sm:px-8 py-4 border-t border-slate-200/60 bg-slate-50/50" 
+      className="px-4 sm:px-8 py-4 border-t border-[#E6E8F0] dark:border-white/10 bg-[#F8F7FF]/50 dark:bg-[#27273A]/50" 
       dir="rtl"
       style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
      >
@@ -2649,7 +2644,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          <button
           type="button"
           onClick={nextStep}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] touch-manipulation"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#7C6CF2] px-4 py-3 text-sm font-medium text-white transition-all hover:bg-[#6A5AE0] active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)] hover:shadow-[0_0_25px_-5px_rgba(124,108,242,0.5)] touch-manipulation"
          >
           التالي
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2661,7 +2656,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           type="button"
           onClick={exportToPDF}
           disabled={isExporting}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 touch-manipulation"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#2ED3B7] px-4 py-3 text-sm font-medium text-[#1E1E2F] transition-all hover:bg-[#25AB94] active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 shadow-[0_0_20px_-5px_rgba(46,211,183,0.4)] hover:shadow-[0_0_25px_-5px_rgba(46,211,183,0.5)] touch-manipulation"
          >
           {isExporting ? (
            <>
@@ -2676,7 +2671,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           )}
          </button>
         )}
-        <a href="/resumes" className="px-4 py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50 active:bg-slate-100 active:scale-[0.98] transition-all touch-manipulation">
+        <a href="/resumes" className="px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-[#E6E8F0] dark:ring-white/10 hover:bg-[#F8F7FF] dark:hover:bg-white/5 active:scale-[0.98] transition-all touch-manipulation">
          إلغاء
         </a>
        </div>
@@ -2684,7 +2679,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         <button
          type="button"
          onClick={prevStep}
-         className="w-full py-3 rounded-lg text-sm font-medium text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50 active:bg-slate-100 active:scale-[0.98] flex items-center justify-center gap-2 transition-all touch-manipulation"
+         className="w-full py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-[#E6E8F0] dark:ring-white/10 hover:bg-[#F8F7FF] dark:hover:bg-white/5 active:scale-[0.98] flex items-center justify-center gap-2 transition-all touch-manipulation"
         >
          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

@@ -14,7 +14,7 @@ const FieldError = ({ error }) => error ? (
 // Input with error styling
 const getInputClassName = (hasError) => 
   hasError 
-    ? inputClassName.replace('border-slate-300/70', 'border-red-400').replace('focus:ring-emerald-500/40', 'focus:ring-red-500/40').replace('focus:border-emerald-400', 'focus:border-red-400') + ' ring-red-200'
+    ? inputClassName.replace('border-[#E6E8F0]', 'border-red-400').replace('focus:ring-[#7C6CF2]/40', 'focus:ring-red-500/40').replace('focus:border-[#7C6CF2]', 'focus:border-red-400') + ' ring-red-200'
     : inputClassName;
 
 // Icons
@@ -52,22 +52,22 @@ const CombinedStep1 = ({
     <div className="space-y-8">
       {/* Section Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
           <UserIcon />
         </div>
-        <h2 className="text-xl font-semibold text-slate-900">المعلومات الشخصية والملخص المهني</h2>
-        <p className="text-slate-600 mt-2">ابدأ بإدخال معلوماتك الأساسية وملخصك المهني</p>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">المعلومات الشخصية والملخص المهني</h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">ابدأ بإدخال معلوماتك الأساسية وملخصك المهني</p>
       </div>
 
       {/* Personal Info Section */}
-      <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
+      <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">1</span>
           المعلومات الشخصية
         </h3>
         <div className="grid gap-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">الاسم الكامل <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الاسم الكامل <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={formData.complete_name}
@@ -79,7 +79,7 @@ const CombinedStep1 = ({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">البريد الإلكتروني <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">البريد الإلكتروني <span className="text-red-500">*</span></label>
               <input
                 type="email"
                 value={formData.email}
@@ -90,7 +90,7 @@ const CombinedStep1 = ({
               <FieldError error={validationErrors.email} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">رقم الهاتف <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">رقم الهاتف <span className="text-red-500">*</span></label>
               <input
                 type="tel"
                 value={formData.phone_number}
@@ -103,7 +103,7 @@ const CombinedStep1 = ({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">المدينة <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">المدينة <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.city}
@@ -114,7 +114,7 @@ const CombinedStep1 = ({
               <FieldError error={validationErrors.city} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-2">الدولة <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الدولة <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.country}
@@ -129,23 +129,23 @@ const CombinedStep1 = ({
       </div>
 
       {/* Professional Summary Section */}
-      <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
+      <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">2</span>
           الملخص المهني
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">الملخص المهني (بالعربية) <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الملخص المهني (بالعربية) <span className="text-red-500">*</span></label>
             <textarea
               value={formData.professional_summary}
               onChange={(e) => handleInputChange("professional_summary", e.target.value)}
               rows={4}
-              className={`w-full rounded-lg ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-slate-300/70 focus:ring-emerald-500/40 focus:border-emerald-400'} bg-white/70 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 ring-1 ring-black/5 transition-all resize-none`}
+              className={`w-full rounded-xl ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-[#E6E8F0] dark:border-white/10 focus:ring-[#7C6CF2]/40 focus:border-[#7C6CF2]'} bg-white/70 dark:bg-[#27273A]/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none`}
               placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك..."
             />
             <FieldError error={validationErrors.professional_summary} />
-            <p className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
+            <p className="mt-2 text-xs text-[#7C6CF2] bg-[#7C6CF2]/10 p-2 rounded-lg border border-[#7C6CF2]/20">
               💡 سيقوم النظام بترجمة النص العربي إلى الإنجليزية وإنشاء ملخص مهني محسن
             </p>
           </div>
@@ -156,7 +156,7 @@ const CombinedStep1 = ({
               type="button"
               onClick={translateProfessionalSummary}
               disabled={isTranslating || !formData.professional_summary.trim() || remainingSummaryTranslations <= 0}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-6 py-3 text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#2ED3B7] text-[#1E1E2F] px-6 py-3 text-sm font-medium hover:bg-[#25AB94] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(46,211,183,0.4)]"
             >
               {isTranslating ? (
                 <>
@@ -180,9 +180,9 @@ const CombinedStep1 = ({
 
           {formData.professional_summary_english && (
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-slate-900 mb-2">الملخص المهني (بالإنجليزية)</label>
-              <div className="p-4 border border-slate-200/60 rounded-lg bg-slate-50/50">
-                <p className="text-slate-700 leading-relaxed text-left" dir="ltr">{formData.professional_summary_english}</p>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الملخص المهني (بالإنجليزية)</label>
+              <div className="p-4 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/50 dark:bg-white/5">
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-left" dir="ltr">{formData.professional_summary_english}</p>
               </div>
             </div>
           )}

@@ -1,638 +1,1027 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="scroll-smooth">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>منشئ السيرة الذاتية بالذكاء الاصطناعي — سيرة</title>
-    <meta name="description" content="أنشئ سيرة ذاتية احترافية خلال دقائق باستخدام الذكاء الاصطناعي. قوالب حديثة، تحسين تلقائي للنقاط، وتصدير PDF بجودة عالية." />
-    <meta name="theme-color" content="#10b981" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سيرة | اصنع مستقبلك المهني بالذكاء الاصطناعي</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+          darkMode: 'class',
+          theme: {
+              extend: {
+                  fontFamily: {
+                      sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+                  },
+                  colors: {
+                      primary: '#7C6CF2',
+                      primaryHover: '#6A5AE0',
+                      primaryAccent: '#9B8CFF',
+                      lavender: {
+                          50: '#F8F7FF',
+                          100: '#F1EEFF',
+                      },
+                      darkBase: '#1E1E2F',
+                      darkCard: '#27273A',
+                      action: '#2ED3B7',
+                      actionHover: '#25AB94',
+                      canvas: '#FFFFFF',
+                      borderLight: '#E6E8F0',
+                      borderDark: 'rgba(255,255,255,0.08)',
+                      gray: {
+                          500: '#5C5F73',
+                          600: '#5C5F73',
+                      }
+                  },
+                  boxShadow: {
+                      'glow': '0 0 40px -10px rgba(124, 108, 242, 0.3)',
+                      'glow-mint': '0 0 40px -10px rgba(46, 211, 183, 0.2)',
+                  },
+                  fontSize: {
+                      xxs: '0.625rem',
+                  }
+              }
+          }
+      }
+    </script>
+    <style>
+      body {
+          font-feature-settings: "ss01", "ss02";
+          -webkit-font-smoothing: antialiased;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+          width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+          background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+          background: #333;
+      }
+
+      .gradient-text {
+          background-clip: text;
+          -webkit-background-clip: text;
+          color: transparent;
+          background-image: linear-gradient(135deg, #7C6CF2 0%, #2ED3B7 100%);
+      }
+
+      .blob {
+          position: absolute;
+          filter: blur(90px);
+          opacity: 0.5;
+          z-index: -1;
+          animation: pulse 10s infinite alternate;
+      }
+
+      @keyframes pulse {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.1); }
+      }
+
+      @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+      }
+
+      /* Mobile Menu Transition */
+      #mobile-menu {
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      }
+
+      iconify-icon {
+          display: inline-block;
+          vertical-align: middle;
+      }
+    </style>
   </head>
-  <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
-    <!-- Background Accents -->
-    <div class="pointer-events-none fixed inset-0 -z-10">
-      <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
-      <div class="absolute top-1/3 -right-20 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
-      <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+  <body
+    class="bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden text-lg"
+  >
+    <!-- Background Blobs -->
+    <div
+      class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none"
+    >
+      <div
+        class="blob bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full top-[-10%] left-[-10%]"
+      ></div>
+      <div
+        class="blob bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full bottom-[-10%] right-[-10%] animation-delay-2000"
+      ></div>
     </div>
-    <!-- Header -->
-    <!-- Flash Messages -->
-    <% if flash[:notice] && !flash[:notice].include?("CV generation job has been queued successfully") %>
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
-        <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
-          <div class="flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
-            <p class="text-sm text-emerald-800"><%= flash[:notice] %></p>
-          </div>
+
+    <!-- Navigation -->
+    <nav
+      class="fixed top-0 w-full z-50 border-b border-borderLight bg-white/80 backdrop-blur-xl dark:bg-darkBase/80 dark:border-borderDark"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between"
+      >
+        <!-- Logo -->
+        <div class="flex items-center gap-2 z-50">
+          <a
+            href="#"
+            class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2"
+          >
+            <span
+              class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"
+            >
+              س
+            </span>
+            سيرة
+          </a>
+        </div>
+
+        <!-- Desktop Menu -->
+        <div
+          class="hidden md:flex items-center gap-8 text-sm font-normal text-gray-500 dark:text-gray-400"
+        >
+          <% if user_signed_in? %>
+            <%= link_to resumes_path, class: "hover:text-primary transition-colors" do %>
+              سيرتي الذاتية
+            <% end %>
+          <% end %>
+          <a href="#features" class="hover:text-primary transition-colors">
+            المميزات
+          </a>
+          <a href="#how-it-works" class="hover:text-primary transition-colors">
+            كيف يعمل
+          </a>
+          <a href="#templates" class="hover:text-primary transition-colors">
+            القوالب
+          </a>
+        </div>
+
+        <!-- Actions -->
+        <div class="hidden md:flex items-center gap-4">
+          <button
+            id="themeToggle"
+            class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400"
+          >
+            <iconify-icon
+              icon="solar:sun-2-linear"
+              width="24"
+              height="24"
+              class="hidden dark:block"
+            ></iconify-icon>
+            <iconify-icon
+              icon="solar:moon-linear"
+              width="24"
+              height="24"
+              class="block dark:hidden"
+            ></iconify-icon>
+          </button>
+          
+          <% if user_signed_in? %>
+            <%= link_to profile_path, class: "flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" do %>
+              <iconify-icon icon="solar:user-linear" width="20"></iconify-icon>
+              <span><%= current_user.email %></span>
+            <% end %>
+            <%= form_with url: "/auth/logout", method: :delete, class: "inline-flex" do |f| %>
+              <button type="submit" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors">
+                <iconify-icon icon="solar:logout-2-linear" width="20"></iconify-icon>
+                <span>خروج</span>
+              </button>
+            <% end %>
+          <% end %>
+          
+          <a
+            href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
+            class="flex items-center justify-center px-5 py-2 rounded-full bg-primary hover:bg-primaryHover text-white text-sm font-normal transition-all shadow-glow hover:shadow-lg"
+          >
+            ابنِ سيرتك الآن
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="flex md:hidden items-center gap-4 z-50">
+          <button
+            id="themeToggleMobile"
+            class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400"
+          >
+            <iconify-icon
+              icon="solar:sun-2-linear"
+              width="22"
+              height="22"
+              class="hidden dark:block"
+            ></iconify-icon>
+            <iconify-icon
+              icon="solar:moon-linear"
+              width="22"
+              height="22"
+              class="block dark:hidden"
+            ></iconify-icon>
+          </button>
+          <button
+            id="mobileMenuBtn"
+            class="p-2 text-darkBase dark:text-white focus:outline-none"
+          >
+            <iconify-icon
+              icon="solar:hamburger-menu-linear"
+              width="26"
+              stroke-width="1.5"
+            ></iconify-icon>
+          </button>
         </div>
       </div>
-    <% end %>
-    <% if flash[:alert] %>
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
-        <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-          <div class="flex items-center gap-3">
-            <i data-lucide="alert-circle" class="w-5 h-5 text-red-600"></i>
-            <p class="text-sm text-red-800"><%= flash[:alert] %></p>
-          </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu"
+      class="fixed inset-0 z-[60] bg-white/95 dark:bg-darkBase/95 backdrop-blur-xl transform -translate-x-full md:hidden flex flex-col h-[100dvh]"
+    >
+      <!-- Mobile Menu Header -->
+      <div
+        class="flex items-center justify-between px-4 sm:px-6 h-16 shrink-0 border-b border-borderLight dark:border-borderDark"
+      >
+        <!-- Logo -->
+        <div class="flex items-center gap-2">
+          <span
+            class="bg-primary text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"
+          >
+            س
+          </span>
+          <span
+            class="text-xl font-medium tracking-tight text-darkBase dark:text-white"
+          >
+            سيرة
+          </span>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+          <button
+            id="themeToggleMobileInside"
+            class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400"
+          >
+            <iconify-icon
+              icon="solar:sun-2-linear"
+              width="24"
+              height="24"
+              class="hidden dark:block"
+            ></iconify-icon>
+            <iconify-icon
+              icon="solar:moon-linear"
+              width="24"
+              height="24"
+              class="block dark:hidden"
+            ></iconify-icon>
+          </button>
+          <button
+            id="closeMobileMenu"
+            class="p-2 text-gray-500 hover:text-darkBase dark:hover:text-white transition-colors"
+          >
+            <iconify-icon
+              icon="solar:close-circle-linear"
+              width="28"
+              stroke-width="1.5"
+            ></iconify-icon>
+          </button>
         </div>
       </div>
-    <% end %>
-    <!-- Hero -->
-    <section class="relative">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-10 items-center pt-10 sm:pt-14 pb-8">
-          <!-- Copy -->
-          <div class="space-y-6">
-            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs ring-1 ring-emerald-500/20">
-              <i data-lucide="sparkles" class="w-4 h-4"></i>
-              <span>جيل ذكي للنقاط والملخصات</span>
-            </div>
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-slate-900">
-              أنشئ سيرة ذاتية احترافية خلال دقائق
-            </h1>
-            <p class="text-slate-600 leading-7">
-              حمّل خبراتك أو ألصقها فقط، ودع الذكاء الاصطناعي يصوغ نقاطًا مؤثرة، يلائم القوالب، ويقترح تحسينات مدعومة بأفضل الممارسات.
-            </p>
-            <ul class="space-y-3 text-sm text-slate-700">
-              <li class="flex items-start gap-3">
-                <span class="mt-1 grid place-items-center w-5 h-5 rounded-md bg-emerald-600 text-white ring-1 ring-black/5">
-                  <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                </span>
-                <span>قالب متوافق مع انظمة ATS</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <span class="mt-1 grid place-items-center w-5 h-5 rounded-md bg-emerald-600 text-white ring-1 ring-black/5">
-                  <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                </span>
-                <span>تحسين تلقائي للكلمات المفتاحية وATS</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <span class="mt-1 grid place-items-center w-5 h-5 rounded-md bg-emerald-600 text-white ring-1 ring-black/5">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                </span>
-                <span>حفظ آمن وخصوصية على مستوى المؤسسة</span>
-              </li>
-            </ul>
-            <!-- Dual CTA Approach -->
-            <div id="cta" class="grid md:grid-cols-2 gap-6 mb-8">
-              <!-- CV Builder -->
-              <div class="bg-white p-6 rounded-xl border border-blue-200 hover:border-blue-400 transition-all shadow-sm">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                  <i data-lucide="edit-3" class="w-6 h-6 text-blue-600"></i>
-                </div>
-                <h3 class="text-xl font-semibold mb-3">منشئ السيرة الذاتية</h3>
-                <p class="text-slate-600 mb-4 text-sm">أنشئ سيرتك الذاتية خطوة بخطوة مع تحكم كامل في كل التفاصيل</p>
-                <ul class="space-y-2 mb-6 text-sm">
-                  <li class="flex items-center gap-2">
-                    <li class="flex items-center gap-2">
-                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
-                      <span>تحرير مباشر وتخصيص كامل</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
-                      <span>تصدير PDF بجودة عالية</span>
-                    </li>
-                  </ul>
-                  <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full bg-blue-600 text-white py-3 rounded-lg text-center block hover:bg-blue-700 hover:scale-105 active:bg-blue-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation js-loading-btn", data: { hoverable: true } do %>
-                    <span class="js-btn-content inline-flex items-center justify-center gap-2">
-                      <i data-lucide="edit-3" class="w-4 h-4"></i>
-                      <span>ابدأ البناء الآن</span>
-                    </span>
-                    <span class="js-btn-spinner inline-flex items-center justify-center gap-2" style="display: none;">
-                      <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>جاري التحميل...</span>
-                    </span>
-                  <% end %>
-                </div>
-                <!-- CV Generator -->
-                <div class="bg-gradient-to-br from-emerald-50 to-blue-50 p-6 rounded-xl border border-emerald-200 hover:border-emerald-400 transition-all shadow-sm">
-                  <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-                    <i data-lucide="sparkles" class="w-6 h-6 text-emerald-600"></i>
-                  </div>
-                  <h3 class="text-xl font-semibold mb-3">مولد الذكاء الاصطناعي</h3>
-                  <p class="text-slate-600 mb-4 text-sm">أدخل وصف الوظيفة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة</p>
-                  <ul class="space-y-2 mb-6 text-sm">
-                    <li class="flex items-center gap-2">
-                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
-                      <span>تحليل ذكي لوصف الوظيفة</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
-                      <span>تحسين تلقائي لـ ATS</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                      <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
-                      <span>صياغة نقاط قوية ومؤثرة</span>
-                    </li>
-                  </ul>
-                  <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "w-full bg-emerald-600 text-white py-3 rounded-lg text-center block hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 font-medium js-hover-target touch-manipulation js-loading-btn", data: { hoverable: true } do %>
-                    <span class="js-btn-content inline-flex items-center justify-center gap-2">
-                      <i data-lucide="sparkles" class="w-4 h-4"></i>
-                      <span>ابدأ التوليد الآن</span>
-                    </span>
-                    <span class="js-btn-spinner inline-flex items-center justify-center gap-2" style="display: none;">
-                      <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>جاري التحميل...</span>
-                    </span>
-                  <% end %>
-                </div>
-              </div>
-              <!-- Additional CTA Options -->
-              <div class="mt-6 space-y-4">
-                <!-- LinkedIn Import Card -->
-                <div class="bg-white p-6 rounded-xl border border-slate-200 hover:border-blue-400 transition-all shadow-sm">
-                  <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
-                      <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                      </svg>
-                    </div>
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold mb-1">استيراد من LinkedIn</h3>
-                      <p class="text-slate-600 text-sm">حمّل ملف PDF من LinkedIn وحرره مباشرة</p>
-                    </div>
-                    <%= link_to (user_signed_in? ? linkedin_import_path : login_path(return_to: linkedin_import_path)), class: "bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all shrink-0" do %>
-                      استيراد الآن
-                    <% end %>
-                  </div>
-                </div>
-                <!-- CV Analysis Card -->
-                <div class="bg-white p-6 rounded-xl border border-slate-200 hover:border-purple-400 transition-all shadow-sm">
-                  <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center shrink-0">
-                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                      </svg>
-                    </div>
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold mb-1">تحليل السيرة الذاتية</h3>
-                      <p class="text-slate-600 text-sm">احصل على تقييم شامل ونصائح لتحسين سيرتك الذاتية</p>
-                    </div>
-                    <%= link_to (user_signed_in? ? cv_analysis_path : login_path(return_to: cv_analysis_path)), class: "bg-purple-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-purple-700 transition-all shrink-0" do %>
-                      حلل الآن
-                    <% end %>
-                  </div>
-                </div>
-              </div>
-              <div class="flex flex-col sm:flex-row gap-3 sm:items-center justify-center mt-6">
-                <a href="#demo" data-hoverable="true" class="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-emerald-700 active:text-emerald-800 transition-all js-hover-target touch-manipulation py-2 px-3 rounded-lg active:bg-emerald-50">
-                  <i data-lucide="play-circle" class="w-5 h-5"></i>
-                  شاهد نموذج تفاعلي
-                </a>
-                <span class="hidden sm:inline text-slate-400">•</span>
-              </div>
-              <!-- Trust -->
-              <div class="pt-4">
-                <!--
-                -->
-                <p class="text-xs text-slate-500 mb-3">موثوق به من محترفين في شركات رائدة</p>
-                <div class="flex items-center gap-6 opacity-80">
-                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
-                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
-                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
-                  <div class="text-slate-400 text-sm font-medium tracking-tight">قريبا</div>
-                </div>
-              </div>
-            </div>
-            <!-- Visual -->
-            <div class="relative">
-              <div class="absolute -inset-6 -z-10 bg-gradient-to-b from-emerald-200/40 to-transparent rounded-2xl blur-2xl"></div>
-              <div class="rounded-2xl bg-white/80 backdrop-blur-xl ring-1 ring-slate-200/80 shadow-sm overflow-hidden">
-                <!-- CV Mockup Header -->
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200/80">
-                  <div class="flex items-center gap-2">
-                    <span class="inline-flex w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <span class="text-sm font-medium text-slate-800">سيرتي الذاتية</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-slate-500">
-                    <i data-lucide="download" class="w-4 h-4"></i>
-                    <i data-lucide="share-2" class="w-4 h-4"></i>
-                  </div>
-                </div>
-                <!-- CV Content -->
-                <div class="grid md:grid-cols-3">
-                  <aside class="md:col-span-1 p-4 border-l md:border-l-0 md:border-r border-slate-200/80 bg-gradient-to-b from-emerald-50/60 to-white">
-                    <div class="flex items-center gap-3 mb-4">
-                      <img src="/saudi_male.png" alt="avatar" class="w-12 h-12 rounded-full ring-1 ring-black/5 object-cover" />
-                      <div>
-                        <div class="text-sm font-semibold tracking-tight">أحمد علي</div>
-                        <div class="text-xs text-slate-500">مدير منتجات</div>
-                      </div>
-                    </div>
-                    <div class="space-y-3 text-xs">
-                      <div class="flex items-center gap-2 text-slate-700">
-                        <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-                        <span>sarakh@example.com</span>
-                      </div>
-                      <div class="flex items-center gap-2 text-slate-700">
-                        <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
-                        <span>+966 555 000 123</span>
-                      </div>
-                      <div class="flex items-center gap-2 text-slate-700">
-                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                        <span>الرياض، السعودية</span>
-                      </div>
-                      <div class="flex items-center gap-2 text-slate-700">
-                        <i data-lucide="link" class="w-3.5 h-3.5"></i>
-                        <span>linkedin.com/sara</span>
-                      </div>
-                    </div>
-                    <div class="mt-5">
-                      <h4 class="text-sm font-semibold tracking-tight text-slate-900 mb-2">المهارات</h4>
-                      <div class="flex flex-wrap gap-2">
-                        <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">إدارة المنتج</span>
-                        <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">تحليل البيانات</span>
-                        <span class="text-[11px] px-2 py-1 rounded-md bg-white ring-1 ring-slate-200 text-slate-700">UX</span>
-                      </div>
-                    </div>
-                  </aside>
-                  <main class="md:col-span-2 p-5">
-                    <h3 class="text-lg font-semibold tracking-tight text-slate-900">الملخص</h3>
-                    <p class="mt-2 text-sm text-slate-700 leading-6">
-                      قائد منتجات بخبرة 6 سنوات في بناء حلول نموّية. حقق زيادة 32% في الاحتفاظ من خلال تجارب A/B وتحديد فرص السوق.
-                    </p>
-                    <div class="mt-5">
-                      <h3 class="text-lg font-semibold tracking-tight text-slate-900">الخبرات</h3>
-                      <div class="mt-2 space-y-4">
-                        <div class="p-3 rounded-lg ring-1 ring-slate-200 bg-white">
-                          <div class="flex items-center justify-between gap-2">
-                            <div class="text-sm font-medium">مدير منتجات أولى — NOVA</div>
-                            <div class="text-xs text-slate-500">2021 - الآن</div>
-                          </div>
-                          <ul class="mt-2 list-disc pr-5 text-sm text-slate-700 space-y-1">
-                            <li>صاغ الذكاء الاصطناعي نقاط إنجاز قابلة للقياس وتحسنت نسبة القبول 2.4x.</li>
-                            <li>قيادة فريق متعدد التخصصات لإطلاق ميزات أثّرت على 1.2M مستخدم.</li>
-                          </ul>
-                        </div>
-                        <div class="p-3 rounded-lg ring-1 ring-slate-200 bg-white">
-                          <div class="flex items-center justify-between gap-2">
-                            <div class="text-sm font-medium">مدير منتجات — ATLAS</div>
-                            <div class="text-xs text-slate-500">2019 - 2021</div>
-                          </div>
-                          <ul class="mt-2 list-disc pr-5 text-sm text-slate-700 space-y-1">
-                            <li>تحسين تجربة الإعداد لزيادة التحويل بنسبة 18%.</li>
-                            <li>تنسيق خارطة طريق فصلية بميزانية 2.5M ر.س.</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-5">
-                      <h3 class="text-lg font-semibold tracking-tight text-slate-900">التعليم</h3>
-                      <p class="mt-2 text-sm text-slate-700">بكالوريوس علوم الحاسب — جامعة الملك سعود</p>
-                    </div>
-                  </main>
-                </div>
-              </div>
-            </div>
-          </div>
+
+      <!-- Menu Items -->
+      <div
+        class="flex-1 flex flex-col items-center justify-center gap-8 p-6 overflow-y-auto"
+      >
+        <% if user_signed_in? %>
+          <%= link_to resumes_path, class: "mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight" do %>
+            سيرتي الذاتية
+          <% end %>
+        <% end %>
+        <a
+          href="#features"
+          class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
+        >
+          المميزات
+        </a>
+        <a
+          href="#how-it-works"
+          class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
+        >
+          كيف يعمل
+        </a>
+        <a
+          href="#templates"
+          class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
+        >
+          القوالب
+        </a>
+
+        <div class="pt-6 border-t border-borderLight dark:border-borderDark w-full max-w-[280px] space-y-4">
+          <% if user_signed_in? %>
+            <%= link_to profile_path, class: "mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors" do %>
+              <iconify-icon icon="solar:user-linear" width="24"></iconify-icon>
+              <span><%= current_user.email %></span>
+            <% end %>
+            <%= form_with url: "/auth/logout", method: :delete, class: "w-full" do |f| %>
+              <button type="submit" class="w-full flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
+                <iconify-icon icon="solar:logout-2-linear" width="24"></iconify-icon>
+                <span>تسجيل الخروج</span>
+              </button>
+            <% end %>
+          <% else %>
+            <a href="/login" class="mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+              <iconify-icon icon="solar:login-2-linear" width="24"></iconify-icon>
+              <span>تسجيل الدخول</span>
+            </a>
+          <% end %>
         </div>
-      </section>
-      <!-- Features -->
-      <section id="features" class="py-10 sm:py-14 border-t border-slate-200/70">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="flex items-end justify-between mb-8">
-            <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">كل ما تحتاجه لسيرة ذاتية تُقبل</h2>
-            <a href="#pricing" data-hoverable="true" class="hidden sm:inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 active:text-emerald-900 js-hover-target transition-all touch-manipulation py-2 px-3 rounded-lg active:bg-emerald-50">
-              الأسعار
-              <i data-lucide="arrow-left" class="w-4 h-4"></i>
+
+        <a
+          href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
+          class="w-full max-w-[280px] py-4 rounded-2xl bg-primary hover:bg-primaryHover text-white text-lg font-medium shadow-glow text-center transition-all mt-6"
+        >
+          ابنِ سيرتك الآن
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <header
+      class="relative pt-32 pb-16 md:pt-40 md:pb-24 lg:pt-52 lg:pb-36 px-4 sm:px-6 overflow-hidden"
+    >
+      <div
+        class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center"
+      >
+        <!-- Content -->
+        <div
+          class="flex flex-col gap-6 md:gap-8 text-center lg:text-right order-1"
+        >
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 dark:bg-primary/10 w-fit mx-auto lg:mx-0 backdrop-blur-md"
+          >
+            <span class="relative flex h-2 w-2">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-action opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-2 w-2 bg-action"
+              ></span>
+            </span>
+            <span
+              class="text-primary dark:text-action text-xs md:text-sm font-normal tracking-wide"
+            >
+              مدعوم بالذكاء الاصطناعي
+            </span>
+          </div>
+
+          <h1
+            class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium leading-[1.15] md:leading-[1.1] tracking-tight text-darkBase dark:text-white"
+          >
+            سيرتك الذاتية الاحترافية،
+            <br />
+            <span class="gradient-text">جاهزة في دقائق.</span>
+          </h1>
+
+          <p
+            class="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0"
+          >
+            "سيرة" هو المساعد الذكي لبناء سير ذاتية متوافقة مع أنظمة ATS. صمم
+            سيرتك لتناسب الوصف الوظيفي، ترجم خبراتك، واستورد بياناتك من
+            LinkedIn.
+          </p>
+
+          <!-- Buttons Grid -->
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg mx-auto lg:mx-0 mt-8"
+          >
+            <!-- Resume Builder (Purple) -->
+            <a
+              href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
+              class="flex items-center justify-between p-4 rounded-xl bg-primary text-white hover:bg-primaryHover hover:shadow-glow transition-all group"
+            >
+              <span class="font-medium text-base">منشئ السيرة الذاتية</span>
+              <iconify-icon
+                icon="solar:document-add-linear"
+                width="24"
+                class="text-white/95"
+              ></iconify-icon>
+            </a>
+
+            <!-- Generate CV (Dark / Green) -->
+            <a
+              href="<%= user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path) %>"
+              class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-action dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
+            >
+              <span class="font-medium text-base">توليد حسب الوظيفة</span>
+              <iconify-icon
+                icon="solar:magic-stick-3-linear"
+                width="24"
+                class="text-action-700 dark:text-action"
+              ></iconify-icon>
+            </a>
+
+            <!-- Analyze CV (Dark / Orange) -->
+            <a
+              href="<%= user_signed_in? ? cv_analysis_path : login_path(return_to: cv_analysis_path) %>"
+              class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-orange-500 dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
+            >
+              <span class="font-medium text-base">تحليل السيرة الذاتية</span>
+              <iconify-icon
+                icon="solar:scanner-linear"
+                width="24"
+                class="text-orange-500"
+              ></iconify-icon>
+            </a>
+
+            <!-- Import LinkedIn (Dark / Blue) -->
+            <a
+              href="<%= user_signed_in? ? linkedin_import_path : login_path(return_to: linkedin_import_path) %>"
+              class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-blue-500 dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
+            >
+              <span class="font-medium text-base">استيراد من LinkedIn</span>
+              <iconify-icon
+                icon="solar:upload-square-linear"
+                width="24"
+                class="text-blue-600 dark:text-blue-400"
+              ></iconify-icon>
             </a>
           </div>
-          <div class="grid md:grid-cols-3 gap-5">
-            <!-- Card 1 -->
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
-              <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
-                <i data-lucide="wand-2" class="w-5 h-5"></i>
+
+          <div
+            class="flex items-center gap-4 justify-center lg:justify-start pt-2 md:pt-4 text-xs md:text-sm text-gray-500"
+          >
+            <div class="flex -space-x-3 space-x-reverse">
+              <div
+                class="w-8 h-8 rounded-full bg-gray-700 border-2 border-white dark:border-darkBase flex items-center justify-center text-[10px] text-white"
+              >
+                SA
               </div>
-              <h3 class="text-lg font-semibold tracking-tight text-slate-900">توليد ذكي للنقاط</h3>
-              <p class="mt-2 text-sm text-slate-600">حوّل خبرتك إلى إنجازات قابلة للقياس بصياغة قوية مدعومة بمقاييس واضحة.</p>
-            </div>
-            <!-- Card 2 -->
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
-              <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
-                <i data-lucide="languages" class="w-5 h-5"></i>
+              <div
+                class="w-8 h-8 rounded-full bg-gray-600 border-2 border-white dark:border-darkBase flex items-center justify-center text-[10px] text-white"
+              >
+                AE
               </div>
-              <h3 class="text-lg font-semibold tracking-tight text-slate-900">دعم متعدد اللغات</h3>
-              <p class="mt-2 text-sm text-slate-600">اكتب سيرتك بالعربية أو الإنجليزية مع ضبط الأسلوب تلقائيًا.</p>
-            </div>
-            <!-- Card 3 -->
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm p-5 hover:ring-emerald-300/60 hover:shadow transition-all">
-              <div class="w-10 h-10 rounded-lg grid place-items-center bg-emerald-600 text-white ring-1 ring-black/5 mb-4">
-                <i data-lucide="shield" class="w-5 h-5"></i>
-              </div>
-              <h3 class="text-lg font-semibold tracking-tight text-slate-900">خصوصية وأمان</h3>
-              <p class="mt-2 text-sm text-slate-600">تشفير واشتراك دقيق، مع سيطرة كاملة على بياناتك.</p>
-            </div>
-          </div>
-          <!-- CV Generator CTA -->
-          <div class="mt-12 text-center">
-            <div class="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-200/50">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-blue-600 text-white ring-1 ring-black/5 mx-auto mb-4 grid place-items-center">
-                <i data-lucide="sparkles" class="w-8 h-8"></i>
-              </div>
-              <h3 class="text-xl font-semibold tracking-tight text-slate-900 mb-2">منشئ السيرة الذاتية بالذكاء الاصطناعي</h3>
-              <p class="text-slate-600 mb-6 max-w-2xl mx-auto">
-                أدخل وصف الوظيفة المطلوبة ودع الذكاء الاصطناعي ينشئ لك سيرة ذاتية مخصصة ومحسنة لـ ATS
-              </p>
-              <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <%= link_to (user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path)), class: "inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white font-medium px-6 py-3 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation", data: { hoverable: true } do %>
-                  <i data-lucide="wand-2" class="w-5 h-5"></i>
-                  ابدأ الآن
-                <% end %>
-                <%= link_to (user_signed_in? ? resumes_path : login_path(return_to: resumes_path)), class: "inline-flex items-center gap-2 rounded-lg border border-slate-300 text-slate-700 font-medium px-6 py-3 hover:bg-slate-50 hover:scale-105 active:bg-slate-100 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation", data: { hoverable: true } do %>
-                  <i data-lucide="list" class="w-5 h-5"></i>
-                  عرض السير الذاتية
-                <% end %>
+              <div
+                class="w-8 h-8 rounded-full bg-gray-500 border-2 border-white dark:border-darkBase flex items-center justify-center text-[10px] text-white"
+              >
+                KW
               </div>
             </div>
+            <p>موثوق من قبل <%= number_with_delimiter(@users_count) %>+ باحث عن عمل</p>
           </div>
         </div>
-      </section>
-      <!-- How it works -->
-      <section id="how" class="py-10 sm:py-14">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-6">كيف يعمل؟</h2>
-          <div class="grid md:grid-cols-3 gap-5">
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
-              <div class="flex items-center gap-3">
-                <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">1</span>
-                <h3 class="text-base font-semibold tracking-tight">أدخل خبراتك</h3>
+
+        <!-- Visual Mockup -->
+        <div
+          class="relative order-2 perspective-1000 mt-8 lg:mt-0 w-full max-w-md lg:max-w-full mx-auto"
+        >
+          <div
+            class="absolute inset-0 bg-primary/20 blur-[60px] md:blur-[100px] rounded-full"
+          ></div>
+
+          <!-- Glass Card -->
+          <div
+            class="relative bg-white/60 dark:bg-[#1C1C21]/60 backdrop-blur-xl rounded-2xl p-4 md:p-6 shadow-2xl transform lg:rotate-y-[-5deg] hover:rotate-y-0 transition-transform duration-500 border border-borderLight dark:border-borderDark"
+          >
+            <!-- Fake UI Header -->
+            <div
+              class="flex items-center justify-between mb-4 md:mb-6 border-b border-borderLight dark:border-borderDark pb-3 md:pb-4 dark:bg-darkCard/60"
+            >
+              <div class="flex gap-1.5 md:gap-2">
+                <div
+                  class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-500/80"
+                ></div>
+                <div
+                  class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-yellow-500/80"
+                ></div>
+                <div
+                  class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-green-500/80"
+                ></div>
               </div>
-              <p class="mt-2 text-sm text-slate-600">حمّل ملفك أو الصق خبراتك كما هي.</p>
-            </div>
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
-              <div class="flex items-center gap-3">
-                <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">2</span>
-                <h3 class="text-base font-semibold tracking-tight">دع الذكاء يصيغ</h3>
+              <div class="text-[10px] md:text-xs text-gray-400 font-mono">
+                seera_editor_v1.0.exe
               </div>
-              <p class="mt-2 text-sm text-slate-600">نقح النقاط، عدّل النبرة، واختر القالب المناسب.</p>
             </div>
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5">
-              <div class="flex items-center gap-3">
-                <span class="w-9 h-9 grid place-items-center rounded-lg bg-emerald-600 text-white ring-1 ring-black/5 text-sm font-medium">3</span>
-                <h3 class="text-base font-semibold tracking-tight">صدّر وشارك</h3>
-              </div>
-              <p class="mt-2 text-sm text-slate-600">حمّل PDF بجودة عالية أو شارك رابطًا قابلاً للعرض.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- Testimonials -->
-      <section class="py-10 sm:py-14 border-y border-slate-200/70 bg-white/60">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="flex items-end justify-between mb-6">
-            <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">ماذا يقول المستخدمون</h2>
-            <div class="hidden sm:flex items-center gap-2 text-emerald-700 text-sm">
-              <i data-lucide="star" class="w-4 h-4"></i>
-              <span>تقييم 4.9/5</span>
-            </div>
-          </div>
-          <div class="grid md:grid-cols-2 gap-5">
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
-              <div class="flex items-center gap-3">
-                <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
-                <div>
-                  <div class="text-sm font-semibold tracking-tight"> قريباً</div>
-                  <div class="text-xs text-slate-500">مهندس برمجيات</div>
+
+            <!-- Layout Content -->
+            <div class="flex gap-3 md:gap-4 h-[300px] md:h-[380px]">
+              <!-- Sidebar -->
+              <div class="w-1/3 space-y-2 md:space-y-3 hidden sm:block">
+                <div
+                  class="h-20 md:h-28 rounded-lg bg-white/50 dark:bg-white/5 p-3 md:p-4 border border-borderLight dark:border-borderDark"
+                >
+                  <div
+                    class="w-7 h-7 md:w-9 md:h-9 rounded bg-primary/20 mb-2 md:mb-3 flex items-center justify-center text-primary"
+                  >
+                    <iconify-icon
+                      icon="solar:user-linear"
+                      width="18"
+                    ></iconify-icon>
+                  </div>
+                  <div
+                    class="h-1.5 md:h-2 w-12 md:w-16 bg-gray-200 dark:bg-white/20 rounded mb-1.5 md:mb-2"
+                  ></div>
+                  <div
+                    class="h-1 md:h-1.5 w-16 md:w-20 bg-gray-100 dark:bg-white/10 rounded"
+                  ></div>
+                </div>
+                <div
+                  class="h-20 md:h-28 rounded-lg bg-action/10 dark:bg-action/5 p-3 md:p-4 border border-action/20 relative overflow-hidden"
+                >
+                  <div
+                    class="absolute top-0 right-0 w-1 h-full bg-action"
+                  ></div>
+                  <div
+                    class="w-7 h-7 md:w-9 md:h-9 rounded bg-action/20 mb-2 md:mb-3 flex items-center justify-center text-action"
+                  >
+                    <iconify-icon
+                      icon="solar:magic-stick-3-linear"
+                      width="18"
+                    ></iconify-icon>
+                  </div>
+                  <div
+                    class="text-[10px] md:text-xs text-action-800 dark:text-action mb-1 md:mb-2 font-medium"
+                  >
+                    تحليل الوظيفة
+                  </div>
+                  <div
+                    class="h-1 md:h-1.5 w-full bg-action/20 dark:bg-action/10 rounded"
+                  ></div>
                 </div>
               </div>
-              <p class="mt-3 text-sm text-slate-700">قريباً</p>
-            </div>
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
-              <div class="flex items-center gap-3">
-                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=160&q=60" alt="user" class="w-10 h-10 rounded-full object-cover ring-1 ring-black/5" />
-                <div>
-                  <div class="text-sm font-semibold tracking-tight">قريباً</div>
-                  <div class="text-xs text-slate-500">مصممة UX</div>
+
+              <!-- Main Preview -->
+              <div
+                class="w-full sm:w-2/3 bg-white rounded-lg p-4 md:p-5 shadow-inner relative overflow-hidden dark:bg-lavender-50"
+              >
+                <!-- Scanning Line Effect -->
+                <div
+                  class="absolute top-0 left-0 w-full h-1 bg-action/50 shadow-[0_0_15px_rgba(46,242,163,0.5)] animate-[scan_3s_ease-in-out_infinite]"
+                ></div>
+
+                <div class="flex justify-between items-start mb-4 md:mb-6">
+                  <div class="">
+                    <div
+                      class="h-4 md:h-5 w-20 md:w-28 bg-gray-800 rounded mb-2"
+                    ></div>
+                    <div
+                      class="h-2 md:h-2.5 w-32 md:w-40 bg-gray-300 rounded"
+                    ></div>
+                  </div>
+                  <div
+                    class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200"
+                  ></div>
+                </div>
+                <div class="space-y-2 md:space-y-3 mb-4 md:mb-6">
+                  <div class="h-2 md:h-2.5 w-full bg-gray-200 rounded"></div>
+                  <div class="h-2 md:h-2.5 w-5/6 bg-gray-200 rounded"></div>
+                  <div class="h-2 md:h-2.5 w-4/6 bg-gray-200 rounded"></div>
+                </div>
+                <div
+                  class="mt-4 p-2 md:p-3 bg-blue-50 rounded border border-blue-100"
+                >
+                  <div class="flex items-center gap-2 mb-2">
+                    <iconify-icon
+                      icon="solar:stars-minimalistic-linear"
+                      class="text-primary w-3 h-3 md:w-4 md:h-4"
+                    ></iconify-icon>
+                    <span class="text-[10px] text-primary font-semibold">
+                      تم التحسين بواسطة الذكاء الاصطناعي
+                    </span>
+                  </div>
+                  <div
+                    class="h-1.5 md:h-2 w-full bg-blue-200 rounded mb-1.5"
+                  ></div>
+                  <div class="h-1.5 md:h-2 w-3/4 bg-blue-200 rounded"></div>
                 </div>
               </div>
-              <p class="mt-3 text-sm text-slate-700">قريباً</p>
+            </div>
+
+            <!-- Floating Badge -->
+            <div
+              class="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 bg-white dark:bg-darkCard border border-borderLight dark:border-borderDark p-3 md:p-4 rounded-xl shadow-xl flex items-center gap-3 md:gap-4 animate-bounce z-10"
+              style="animation-duration: 3s;"
+            >
+              <div
+                class="bg-green-500/10 text-green-500 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center"
+              >
+                <iconify-icon
+                  icon="solar:check-circle-linear"
+                  width="20"
+                  md:width="24"
+                  stroke-width="2"
+                ></iconify-icon>
+              </div>
+              <div class="text-right">
+                <div
+                  class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400"
+                >
+                  النتيجة
+                </div>
+                <div
+                  class="text-sm md:text-base font-semibold text-darkBase dark:text-white"
+                >
+                  95% ATS
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </section>
-      <!-- Pricing -->
-      <section id="pricing" class="py-10 sm:py-14">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="text-center max-w-2xl mx-auto">
-            <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">اختر الخطة المناسبة</h2>
-            <p class="mt-2 text-sm text-slate-600">ابدأ مجانًا وارتقِ لاحقًا كلما احتجت إلى مزايا متقدمة.</p>
-          </div>
-          <div class="mt-8 grid md:grid-cols-2 gap-5">
-            <!-- Free -->
-            <div class="rounded-xl bg-white ring-1 ring-slate-200 p-6 shadow-sm hover:ring-emerald-300/60 transition-all">
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold tracking-tight text-slate-900">مجاني</h3>
-                <span class="text-slate-500 text-sm">للبدء</span>
-              </div>
-              <div class="mt-2 flex items-end gap-1">
-                <span class="text-3xl font-semibold tracking-tight text-slate-900">0</span>
-                <span class="text-slate-500">ر.س</span>
-              </div>
-              <ul class="mt-4 text-sm text-slate-700 space-y-2">
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> 5 سير ذاتية</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> 5 توليد من وصف وظيفي</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> 10 ترجمات</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> قالب واحد</li>
-                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> تصدير PDF</li>
-              </ul>
-              <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), data: { hoverable: true }, class: "mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation" do %>ابدأ مجانًا<% end %>
+      </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 md:py-24 px-4 sm:px-6 relative">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12 md:mb-20">
+          <h2
+            class="text-3xl md:text-4xl lg:text-5xl font-medium text-darkBase dark:text-white mb-4 md:mb-6 tracking-tight"
+          >
+            أدوات مصممة لنجاحك
+          </h2>
+          <p
+            class="text-lg md:text-xl text-gray-600 dark:text-gray-500 max-w-3xl mx-auto font-normal px-4"
+          >
+            كل ما تحتاجه لإنشاء سيرة ذاتية تقنع مسؤولي التوظيف.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 md:gap-8">
+          <!-- Feature 1 -->
+          <div
+            class="group bg-white backdrop-blur-xl rounded-2xl p-8 md:p-10 border border-borderLight dark:border-borderDark hover:border-primary/30 transition-all shadow-sm dark:shadow-none hover:shadow-lg hover:-translate-y-1 relative overflow-hidden dark:bg-darkCard/60"
+          >
+            <div
+              class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"
+            ></div>
+            <div
+              class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 md:mb-8 group-hover:bg-primary group-hover:text-white transition-colors"
+            >
+              <iconify-icon
+                icon="solar:document-add-linear"
+                width="28"
+              ></iconify-icon>
             </div>
-            <!-- Pro -->
-            <div class="relative rounded-xl bg-gradient-to-b from-white to-emerald-50 ring-1 ring-emerald-200 p-6 shadow-sm hover:shadow-md hover:ring-emerald-300/70 transition-all">
-              <span class="absolute -top-3 right-4 text-[11px] px-2 py-1 rounded-full bg-emerald-600 text-white ring-1 ring-black/5">الأكثر اختيارًا</span>
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold tracking-tight text-slate-900">احترافي</h3>
-                <span class="text-emerald-700 text-sm">للباحثين الجادين</span>
+            <h3
+              class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
+            >
+              توليد حسب الوظيفة
+            </h3>
+            <p
+              class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
+            >
+              ألصق الوصف الوظيفي للوظيفة التي تستهدفها، وسيقوم الذكاء الاصطناعي
+              بصياغة المهارات والملخص المهني ليتطابق مع متطلباتها تماماً.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div
+            class="group bg-white dark:bg-[#1C1C21]/60 backdrop-blur-xl rounded-2xl p-8 md:p-10 border border-borderLight dark:border-borderDark hover:border-action/30 transition-all shadow-sm dark:shadow-none hover:shadow-lg hover:-translate-y-1 relative overflow-hidden"
+          >
+            <div
+              class="absolute top-0 right-0 w-32 h-32 bg-action/10 dark:bg-action/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"
+            ></div>
+            <div
+              class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-action/10 text-action-700 dark:text-action flex items-center justify-center mb-6 md:mb-8 group-hover:bg-action group-hover:text-darkBase transition-colors"
+            >
+              <iconify-icon icon="solar:globe-linear" width="28"></iconify-icon>
+            </div>
+            <h3
+              class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
+            >
+              ترجمة فورية احترافية
+            </h3>
+            <p
+              class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
+            >
+              اكتب خبراتك بالعربية، وسنقوم بترجمتها وصياغتها إلى الإنجليزية
+              المهنية بضغطة زر، جاهزة للشركات العالمية.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div
+            class="group bg-white dark:bg-[#1C1C21]/60 backdrop-blur-xl rounded-2xl p-8 md:p-10 border border-borderLight dark:border-borderDark hover:border-blue-400/30 transition-all shadow-sm dark:shadow-none hover:shadow-lg hover:-translate-y-1 relative overflow-hidden"
+          >
+            <div
+              class="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"
+            ></div>
+            <div
+              class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-blue-400/10 text-blue-500 dark:text-blue-400 flex items-center justify-center mb-6 md:mb-8 group-hover:bg-blue-500 group-hover:text-white transition-colors"
+            >
+              <iconify-icon
+                icon="solar:upload-linear"
+                width="28"
+              ></iconify-icon>
+            </div>
+            <h3
+              class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
+            >
+              استيراد من LinkedIn
+            </h3>
+            <p
+              class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
+            >
+              لا داعي للبدء من الصفر. حمل ملف PDF من حسابك في لينكد إن، وسنقوم
+              بتحويله إلى سيرة ذاتية قابلة للتعديل فوراً.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section
+      id="how-it-works"
+      class="py-16 md:py-24 px-4 sm:px-6 border-t border-borderLight dark:border-borderDark dark:bg-darkBase/50 bg-lavender-50/50"
+    >
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-12 md:mb-20">
+          <h2
+            class="text-2xl md:text-3xl font-medium text-darkBase dark:text-white"
+          >
+            رحلة بناء السيرة الذاتية
+          </h2>
+        </div>
+
+        <div class="relative">
+          <!-- Connecting Line (Desktop Only) -->
+          <div
+            class="absolute top-8 right-9 bottom-8 w-px bg-gradient-to-b from-primary via-action to-transparent hidden md:block opacity-30"
+          ></div>
+
+          <div class="space-y-8 md:space-y-12">
+            <!-- Step 1 -->
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 relative">
+              <div class="hidden md:flex flex-col items-center">
+                <div
+                  class="w-20 h-20 rounded-full bg-white dark:bg-darkBase border-4 border-gray-100 dark:border-darkCard text-primary font-medium text-3xl flex items-center justify-center z-10 shadow-lg dark:shadow-glow"
+                >
+                  1
+                </div>
               </div>
-              <div class="mt-2 flex items-end gap-1">
-                <span class="text-3xl font-semibold tracking-tight text-slate-900">0</span>
-                <span class="text-slate-500">قريباً</span>
+              <div
+                class="bg-white backdrop-blur-md p-6 md:p-8 rounded-2xl flex-1 border border-borderLight dark:border-borderDark shadow-sm md:mr-10 transition-transform hover:-translate-y-1 dark:bg-darkCard/60"
+              >
+                <div class="flex items-center gap-3 mb-3 md:hidden">
+                  <span
+                    class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm"
+                  >
+                    1
+                  </span>
+                  <h4 class="text-lg font-medium text-darkBase dark:text-white">
+                    أدخل معلوماتك
+                  </h4>
+                </div>
+                <h4
+                  class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
+                >
+                  أدخل معلوماتك أو استوردها
+                </h4>
+                <p
+                  class="text-sm md:text-base text-gray-600 dark:text-gray-400"
+                >
+                  ابدأ بإدخال بياناتك الأساسية، أو وفر الوقت باستيراد ملف PDF
+                  الخاص بـ LinkedIn.
+                </p>
               </div>
-              <ul class="mt-4 text-sm text-slate-700 space-y-2">
-                <li class="flex items-center gap-2 justify-center text-slate-500">قريباً...</li>
-              </ul>
-              <a href="#cta" data-hoverable="true" class="mt-5 inline-flex items-center justify-center w-full rounded-md bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 ring-1 ring-black/5 hover:bg-emerald-800 hover:scale-105 active:bg-emerald-900 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation">البدء بالخطة الاحترافية</a>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 relative">
+              <div class="hidden md:flex flex-col items-center">
+                <div
+                  class="w-20 h-20 rounded-full bg-white dark:bg-darkBase border-4 border-gray-100 dark:border-darkCard text-action-600 dark:text-action font-medium text-3xl flex items-center justify-center z-10 shadow-lg dark:shadow-glow-mint"
+                >
+                  2
+                </div>
+              </div>
+              <div
+                class="bg-white dark:bg-[#1C1C21]/60 backdrop-blur-md p-6 md:p-8 rounded-2xl flex-1 border border-borderLight dark:border-borderDark shadow-sm md:mr-10 transition-transform hover:-translate-y-1"
+              >
+                <div class="flex items-center gap-3 mb-3 md:hidden">
+                  <span
+                    class="w-8 h-8 rounded-full bg-action/10 text-action-700 flex items-center justify-center font-bold text-sm"
+                  >
+                    2
+                  </span>
+                  <h4 class="text-lg font-medium text-darkBase dark:text-white">
+                    الذكاء الاصطناعي
+                  </h4>
+                </div>
+                <h4
+                  class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
+                >
+                  الذكاء الاصطناعي يعمل لأجلك
+                </h4>
+                <p
+                  class="text-sm md:text-base text-gray-600 dark:text-gray-400"
+                >
+                  اختر الوصف الوظيفي المستهدف. سيقوم النظام بصياغة "نبذة عني"
+                  وتحسين وصف الخبرات.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 relative">
+              <div class="hidden md:flex flex-col items-center">
+                <div
+                  class="w-20 h-20 rounded-full bg-white dark:bg-darkBase border-4 border-gray-100 dark:border-darkCard text-gray-800 dark:text-white font-medium text-3xl flex items-center justify-center z-10 shadow-lg"
+                >
+                  3
+                </div>
+              </div>
+              <div
+                class="bg-white dark:bg-[#1C1C21]/60 backdrop-blur-md p-6 md:p-8 rounded-2xl flex-1 border border-borderLight dark:border-borderDark shadow-sm md:mr-10 transition-transform hover:-translate-y-1"
+              >
+                <div class="flex items-center gap-3 mb-3 md:hidden">
+                  <span
+                    class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm"
+                  >
+                    3
+                  </span>
+                  <h4 class="text-lg font-medium text-darkBase dark:text-white">
+                    حمل وارسل
+                  </h4>
+                </div>
+                <h4
+                  class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
+                >
+                  حمل وارسل
+                </h4>
+                <p
+                  class="text-sm md:text-base text-gray-600 dark:text-gray-400"
+                >
+                  استعرض النتيجة في قالبنا الاحترافي، وحمل الملف بصيغة PDF جاهزة
+                  للإرسال.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </section>
-      <!-- FAQ -->
-      <section id="faq" class="py-10 sm:py-14 border-t border-slate-200/70">
-        <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-6">الأسئلة الشائعة</h2>
-          <div class="space-y-3">
-            <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
-              <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
-                هل يمكنني تعديل النصوص بعد التوليد؟
-                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
-              </summary>
-              <p class="mt-2 text-sm text-slate-600">نعم، يمكنك تعديل كل جزء، وسيتكيف الذكاء مع أسلوبك ويقترح تحسينات.</p>
-            </details>
-            <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
-              <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
-                هل يدعم النظام العربية بالكامل؟
-                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
-              </summary>
-              <p class="mt-2 text-sm text-slate-600">يدعم العربية والإنجليزية، بما في ذلك المحاذاة من اليمين لليسار والتشكيل الأساسي.</p>
-            </details>
-            <details class="group rounded-lg bg-white ring-1 ring-slate-200 p-4">
-              <summary class="flex cursor-pointer items-center justify-between text-sm text-slate-800 font-medium">
-                هل يمكن التصدير بدون علامة مائية؟
-                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform"></i>
-              </summary>
-              <p class="mt-2 text-sm text-slate-600">متاح في الخطة الاحترافية بصيغ PDF وDocx بجودة عالية.</p>
-            </details>
+      </div>
+    </section>
+
+    <!-- Templates Preview Section -->
+    <section id="templates" class="py-16 md:py-24 px-4 sm:px-6 text-center">
+      <div class="max-w-3xl mx-auto">
+        <span
+          class="text-primary dark:text-action text-xs font-semibold tracking-wider uppercase mb-3 block"
+        >
+          القوالب
+        </span>
+        <h2
+          class="text-3xl md:text-4xl font-medium text-darkBase dark:text-white mb-4 md:mb-6"
+        >
+          البساطة هي سر القبول
+        </h2>
+        <p
+          class="md:text-xl dark:text-gray-400 md:mb-12 text-lg text-gray-600 mb-10"
+        >
+          نركز حالياً على تقديم قالب معتمد عالمياً لتجاوز أنظمة الـ ATS بكفاءة
+          عالية.
+          <br class="hidden sm:block" />
+          <span
+            class="text-primary mt-3 inline-block text-xs md:text-sm font-medium bg-primary/10 px-3 py-1.5 rounded-full"
+          >
+            قوالب إبداعية إضافية قريباً
+          </span>
+        </p>
+
+        <div
+          class="relative w-full max-w-[280px] sm:max-w-sm mx-auto group cursor-pointer"
+        >
+          <div
+            class="absolute inset-0 bg-gradient-to-tr from-primary to-action opacity-0 group-hover:opacity-20 blur-2xl transition-opacity duration-500 rounded-lg"
+          ></div>
+          <div
+            class="relative bg-white rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-white/20 aspect-[1/1.41] transform group-hover:-translate-y-2 transition-transform duration-300"
+          >
+            <!-- Minimalist Resume Skeleton -->
+            <div class="p-6 md:p-8 h-full flex flex-col text-left" dir="ltr">
+              <div class="border-b border-gray-200 pb-4 md:pb-6 mb-4 md:mb-6">
+                <div class="h-4 md:h-6 w-1/2 bg-gray-800 mb-2 md:mb-3"></div>
+                <div class="h-2 md:h-3 w-1/3 bg-gray-400"></div>
+              </div>
+              <div class="space-y-4 md:space-y-5 flex-1">
+                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
+                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
+                <div class="h-2 md:h-2.5 w-5/6 bg-gray-100"></div>
+                <div class="mt-4 md:mt-6 h-3 md:h-4 w-1/4 bg-gray-300"></div>
+                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
+                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
+                <div class="mt-1 md:mt-2 h-2 md:h-2.5 w-3/4 bg-gray-100"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
-    </div>
-    <!-- Footer -->
-    <!-- JavaScript for mobile menu and icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 md:py-24 px-4 sm:px-6">
+      <div class="max-w-6xl mx-auto">
+        <div
+          class="relative rounded-2xl md:rounded-3xl overflow-hidden bg-darkBase text-white p-8 md:p-20 text-center shadow-2xl"
+        >
+          <!-- Background Gradient -->
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-primary/30 to-transparent"
+          ></div>
+          <div
+            class="absolute -right-20 -top-20 w-64 h-64 md:w-96 md:h-96 bg-primary/20 blur-3xl rounded-full"
+          ></div>
+
+          <div class="relative z-10">
+            <h2
+              class="text-3xl md:text-5xl font-medium mb-6 md:mb-8 tracking-tight"
+            >
+              جاهز للحصول على وظيفتك القادمة؟
+            </h2>
+            <p
+              class="text-base md:text-xl font-normal text-gray-300 max-w-2xl mr-auto mb-8 md:mb-10 ml-auto"
+            >
+              انضم للكثير ممن طوروا مسارهم المهني باستخدام سيرة. التجربة مجانية
+              بالكامل.
+            </p>
+
+            <a
+              href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
+              class="inline-block px-8 py-4 md:px-10 md:py-5 rounded-xl bg-primary hover:bg-primaryHover text-white font-medium shadow-glow transition-all text-base md:text-lg"
+            >
+              ابدأ الآن
+            </a>
+            <p class="mt-4 md:mt-6 text-xs md:text-sm text-gray-400">
+              لا نطلب بطاقة ائتمان للتجربة
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons({
-            attrs: { 'stroke-width': 1.5 }
-          });
-        }
+      // Theme Logic
+      const html = document.documentElement;
 
-        // Mobile touch animation for buttons
-        const buttons = document.querySelectorAll('a[class*="bg-"], button[class*="bg-"]');
-        buttons.forEach(btn => {
-          btn.addEventListener('touchstart', () => {
-            btn.style.transform = 'scale(1.05)';
-          }, { passive: true });
-          btn.addEventListener('touchend', () => {
-            setTimeout(() => {
-              btn.style.transform = 'scale(1)';
-            }, 150);
-          }, { passive: true });
-          btn.addEventListener('touchcancel', () => {
-            btn.style.transform = 'scale(1)';
-          }, { passive: true });
-        });
-
-              // Mobile menu functionality
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        console.log('Mobile menu button:', mobileMenuButton);
-        console.log('Mobile menu:', mobileMenu);
-
-        // Ensure mobile menu is hidden by default
-        if (mobileMenu) {
-          mobileMenu.classList.add('hidden');
-          mobileMenu.style.display = 'none';
-        }
-
-        if (mobileMenuButton && mobileMenu) {
-          mobileMenuButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const isHidden = mobileMenu.classList.contains('hidden');
-            console.log('Menu clicked, isHidden:', isHidden);
-
-            if (isHidden) {
-              mobileMenu.classList.remove('hidden');
-              mobileMenu.style.display = 'block';
-              // Change icon to close
-              const icon = mobileMenuButton.querySelector('i');
-              if (icon && typeof lucide !== 'undefined') {
-                icon.setAttribute('data-lucide', 'x');
-                lucide.createIcons();
-              }
-            } else {
-              mobileMenu.classList.add('hidden');
-              mobileMenu.style.display = 'none';
-              // Change icon back to menu
-              const icon = mobileMenuButton.querySelector('i');
-              if (icon && typeof lucide !== 'undefined') {
-                icon.setAttribute('data-lucide', 'menu');
-                lucide.createIcons();
-              }
-            }
-          });
-
-          // Close mobile menu when clicking on a link
-          const mobileMenuLinks = mobileMenu.querySelectorAll('a');
-          mobileMenuLinks.forEach(link => {
-            link.addEventListener('click', () => {
-              mobileMenu.classList.add('hidden');
-              mobileMenu.style.display = 'none';
-              const icon = mobileMenuButton.querySelector('i');
-              if (icon && typeof lucide !== 'undefined') {
-                icon.setAttribute('data-lucide', 'menu');
-                lucide.createIcons();
-              }
-            });
-          });
-
-          // Close mobile menu when clicking outside
-          document.addEventListener('click', (e) => {
-            if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
-              mobileMenu.classList.add('hidden');
-              mobileMenu.style.display = 'none';
-              const icon = mobileMenuButton.querySelector('i');
-              if (icon && typeof lucide !== 'undefined') {
-                icon.setAttribute('data-lucide', 'menu');
-                lucide.createIcons();
-              }
-            }
-          });
-        } else {
-          console.error('Mobile menu elements not found!');
-        }
-
-        // Loading animation for js-loading-btn links
-        function resetLoadingBtns() {
-          document.querySelectorAll('.js-loading-btn').forEach(btn => {
-            const content = btn.querySelector('.js-btn-content');
-            const spinner = btn.querySelector('.js-btn-spinner');
-            if (content) {
-              content.style.display = '';
-            }
-            if (spinner) {
-              spinner.style.display = 'none';
-            }
-            btn.style.pointerEvents = '';
-            btn.style.opacity = '';
-          });
-        }
-
-        // Reset immediately
-        resetLoadingBtns();
-
-        // Reset on page events
-        window.addEventListener('pageshow', resetLoadingBtns);
-        window.addEventListener('load', resetLoadingBtns);
-
-        document.addEventListener('click', (e) => {
-          const btn = e.target.closest('.js-loading-btn');
-          if (!btn) return;
-
-          const content = btn.querySelector('.js-btn-content');
-          const spinner = btn.querySelector('.js-btn-spinner');
-          
-          if (content && spinner) {
-            content.style.display = 'none';
-            spinner.style.display = '';
-            btn.style.pointerEvents = 'none';
-            btn.style.opacity = '0.8';
+      function toggleTheme() {
+          if (html.classList.contains('dark')) {
+              html.classList.remove('dark');
+              localStorage.theme = 'light';
+          } else {
+              html.classList.add('dark');
+              localStorage.theme = 'dark';
           }
-        });
+      }
+
+      // Initialize Theme
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          html.classList.add('dark');
+      } else {
+          html.classList.remove('dark');
+      }
+
+      // Attach listeners to all theme toggles
+      document.querySelectorAll('#themeToggle, #themeToggleMobile, #themeToggleMobileInside').forEach(btn => {
+          btn.addEventListener('click', toggleTheme);
       });
+
+      // Mobile Menu Logic
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const closeMobileMenu = document.getElementById('closeMobileMenu');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      function openMenu() {
+          if (mobileMenu) {
+              mobileMenu.classList.remove('-translate-x-full');
+              document.body.style.overflow = 'hidden';
+          }
+      }
+
+      function closeMenu() {
+          if (mobileMenu) {
+              mobileMenu.classList.add('-translate-x-full');
+              document.body.style.overflow = '';
+          }
+      }
+
+      if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
+      if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
+
+      // Close menu when clicking ANY link inside it
+      if (mobileMenu) {
+          const links = mobileMenu.querySelectorAll('a');
+          links.forEach(link => link.addEventListener('click', closeMenu));
+      }
     </script>
   </body>
 </html>

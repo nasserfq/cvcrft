@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl" class="scroll-smooth">
   <head>
-    <title><%= content_for(:title) || "سيرة - أنشئ سيرتك الذاتية الاحترافية" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="UTF-8">
+    <title><%= content_for(:title) || "سيرة | اصنع مستقبلك المهني بالذكاء الاصطناعي" %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="description" content="<%= content_for(:description) || 'أنشئ سيرتك الذاتية الاحترافية بسهولة مع سيرة. استورد من لينكد إن أو ابدأ من الصفر.' %>">
@@ -12,7 +13,7 @@
     <meta property="og:url" content="<%= request.original_url rescue 'https://cvcrft.com' %>">
     <meta property="og:title" content="<%= content_for(:title) || 'سيرة - أنشئ سيرتك الذاتية الاحترافية' %>">
     <meta property="og:description" content="<%= content_for(:description) || 'أنشئ سيرتك الذاتية الاحترافية بسهولة مع سيرة. استورد من لينكد إن أو ابدأ من الصفر.' %>">
-    <meta property="og:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=5" %>">
+    <meta property="og:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=6" %>">
     <meta property="og:locale" content="ar_SA">
     
     <!-- Twitter -->
@@ -20,15 +21,122 @@
     <meta name="twitter:url" content="<%= request.original_url rescue 'https://cvcrft.com' %>">
     <meta name="twitter:title" content="<%= content_for(:title) || 'سيرة - أنشئ سيرتك الذاتية الاحترافية' %>">
     <meta name="twitter:description" content="<%= content_for(:description) || 'أنشئ سيرتك الذاتية الاحترافية بسهولة مع سيرة. استورد من لينكد إن أو ابدأ من الصفر.' %>">
-    <meta name="twitter:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=5" %>">
+    <meta name="twitter:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=6" %>">
     
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
+    
+    <%# Prevent Turbo from caching pages with user state - refresh on back navigation %>
+    <meta name="turbo-cache-control" content="no-cache">
+    <meta name="turbo-refresh-method" content="morph">
+    <meta name="turbo-refresh-scroll" content="preserve">
+    
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-    <link rel="icon" href="/icon.png?v=5" type="image/png">
-    <link rel="apple-touch-icon" href="/icon.png?v=5">
+    <link rel="icon" href="/icon.png?v=6" type="image/png">
+    <link rel="apple-touch-icon" href="/icon.png?v=6">
+    
+    <!-- Tailwind CSS & Iconify -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#7B2FF7',
+                        primaryHover: '#5A1EDB',
+                        darkBase: '#121217',
+                        darkCard: '#1C1C21',
+                        action: '#2EF2A3',
+                        actionHover: '#1BCB86',
+                        canvas: '#FFFFFF',
+                        borderLight: 'rgba(0,0,0,0.08)',
+                        borderDark: 'rgba(255,255,255,0.08)',
+                    },
+                    boxShadow: {
+                        'glow': '0 0 40px -10px rgba(123, 47, 247, 0.3)',
+                        'glow-mint': '0 0 40px -10px rgba(46, 242, 163, 0.2)',
+                    },
+                    fontSize: {
+                        xxs: '0.625rem',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-feature-settings: "ss01", "ss02";
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+        
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(135deg, #7B2FF7 0%, #2EF2A3 100%);
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(90px);
+            opacity: 0.5;
+            z-index: -1;
+            animation: pulse 10s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Mobile Menu Transition */
+        #mobile-menu {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+        
+        iconify-icon {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+    
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
@@ -42,10 +150,17 @@
       Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
     -->
   </head>
-  <body dir="rtl">
+  <body class="bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden text-lg">
+    <!-- Background Blobs -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div class="blob bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full top-[-10%] left-[-10%]"></div>
+        <div class="blob bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full bottom-[-10%] right-[-10%] animation-delay-2000"></div>
+    </div>
+
     <%= render 'layouts/header' %>
     <%= yield %>
     <%= render 'layouts/footer' %>
+    
     <!-- Global hover/touch animation for native buttons and anchor-buttons -->
     <style>
       /* subtle lift and shadow when active (hover or touch) */
@@ -226,6 +341,61 @@
           }
         });
       })();
+    </script>
+    
+    <!-- Theme Toggle & Mobile Menu Scripts -->
+    <script>
+        // Theme Logic
+        const html = document.documentElement;
+        
+        function toggleTheme() {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        // Initialize Theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        // Attach listeners to all theme toggles
+        document.querySelectorAll('#themeToggle, #themeToggleMobile, #themeToggleMobileInside').forEach(btn => {
+            if (btn) btn.addEventListener('click', toggleTheme);
+        });
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        function openMenu() {
+            if (mobileMenu) {
+                mobileMenu.classList.remove('-translate-x-full');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeMenu() {
+            if (mobileMenu) {
+                mobileMenu.classList.add('-translate-x-full');
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
+        if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', closeMenu);
+        });
     </script>
   </body>
 </html>

@@ -64,7 +64,7 @@ const MobileDatePicker = ({
         type="button"
         onClick={() => !disabled && setIsOpen(true)}
         disabled={disabled}
-        className="w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-xl border border-[#E6E8F0] dark:border-white/10 bg-white dark:bg-[#27273A] px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 focus:border-[#7C6CF2] transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           fontSize: "16px",
           minHeight: "48px",
@@ -72,7 +72,7 @@ const MobileDatePicker = ({
       >
         <div className="flex items-center justify-between gap-1">
           <svg
-            className="w-4 h-4 text-slate-400 flex-shrink-0"
+            className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -84,7 +84,7 @@ const MobileDatePicker = ({
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <span className={`flex-1 text-sm truncate ${value ? "text-slate-900" : "text-slate-400"}`}>
+          <span className={`flex-1 text-sm truncate ${value ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}>
             {formatDisplayValue(value)}
           </span>
         </div>
@@ -98,13 +98,13 @@ const MobileDatePicker = ({
           }}
           onClick={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
         >
-          <div className="bg-white rounded-2xl w-full max-w-sm max-h-[85vh] overflow-hidden shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm max-h-[85vh] overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-[#7C6CF2] text-white px-6 py-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold">اختر التاريخ</h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:text-emerald-200 transition-colors"
+                className="text-white hover:text-white/70 transition-colors"
               >
                 <svg
                   className="w-6 h-6"
@@ -124,13 +124,12 @@ const MobileDatePicker = ({
 
             {/* Content */}
             <div className="p-4 sm:p-6 overflow-y-auto max-h-[65vh]" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {/* Year Selector */}
               <div className="mb-4 sm:mb-6">
-                <label className="block text-sm font-semibold text-slate-900 mb-2 sm:mb-3">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3">
                   السنة (اسحب لرؤية المزيد)
                 </label>
                 <div 
-                  className="max-h-48 sm:max-h-72 overflow-y-auto border border-slate-200 rounded-lg p-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100"
+                  className="max-h-48 sm:max-h-72 overflow-y-auto border border-[#E6E8F0] dark:border-gray-600 rounded-xl p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -138,10 +137,10 @@ const MobileDatePicker = ({
                       <button
                         key={year}
                         onClick={() => setSelectedYear(year)}
-                        className={`py-3 sm:py-3 px-2 rounded-lg text-base sm:text-sm font-medium transition-all active:scale-95 ${
+                        className={`py-3 sm:py-3 px-2 rounded-xl text-base sm:text-sm font-medium transition-all active:scale-95 ${
                           selectedYear === year
-                            ? "bg-emerald-600 text-white shadow-md"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300"
+                            ? "bg-[#7C6CF2] text-white shadow-md"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300"
                         }`}
                         style={{ minHeight: '44px' }}
                       >
@@ -154,7 +153,7 @@ const MobileDatePicker = ({
 
               {/* Month Selector */}
               <div className="mb-2 sm:mb-6">
-                <label className="block text-sm font-semibold text-slate-900 mb-2 sm:mb-3">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3">
                   الشهر
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -162,10 +161,10 @@ const MobileDatePicker = ({
                     <button
                       key={month.value}
                       onClick={() => setSelectedMonth(month.value)}
-                      className={`py-3 px-2 rounded-lg text-base sm:text-sm font-medium transition-all active:scale-95 ${
+                      className={`py-3 px-2 rounded-xl text-base sm:text-sm font-medium transition-all active:scale-95 ${
                         selectedMonth === month.value
-                          ? "bg-emerald-600 text-white shadow-md"
-                          : "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300"
+                          ? "bg-[#7C6CF2] text-white shadow-md"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300"
                       }`}
                       style={{ minHeight: '44px' }}
                     >
@@ -177,16 +176,16 @@ const MobileDatePicker = ({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 p-6 bg-white border-t border-slate-200">
+            <div className="flex gap-3 p-6 bg-white dark:bg-gray-800 border-t border-[#E6E8F0] dark:border-gray-600">
               <button
                 onClick={handleClear}
-                className="flex-1 py-3 px-4 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 active:bg-slate-300 active:scale-[0.98] transition-all touch-manipulation"
+                className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 active:scale-[0.98] transition-all touch-manipulation"
               >
                 الغاء
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 py-3 px-4 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 active:bg-emerald-800 active:scale-[0.98] transition-all touch-manipulation"
+                className="flex-1 py-3 px-4 bg-[#7C6CF2] text-white rounded-xl font-medium hover:bg-[#6A5AE0] active:scale-[0.98] transition-all touch-manipulation shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)]"
               >
                 تأكيد
               </button>

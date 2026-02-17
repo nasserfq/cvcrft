@@ -36,7 +36,7 @@ const FieldError = ({ error }) => error ? (
 // Input with error styling helper
 const getInputClass = (baseClass, hasError) => 
   hasError 
-    ? baseClass.replace('border-slate-300/70', 'border-red-400') + ' ring-1 ring-red-200'
+    ? baseClass.replace('border-[#E6E8F0]/70', 'border-red-400') + ' ring-1 ring-red-200'
     : baseClass;
 
 // Icon
@@ -83,26 +83,26 @@ const CombinedStep2 = ({
     <div className="space-y-8">
       {/* Section Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
           <BriefcaseIcon />
         </div>
-        <h2 className="text-xl font-semibold text-slate-900">التعليم والخبرات العملية</h2>
-        <p className="text-slate-600 mt-2">أضف معلوماتك التعليمية وخبراتك العملية</p>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">التعليم والخبرات العملية</h2>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">أضف معلوماتك التعليمية وخبراتك العملية</p>
       </div>
 
       {/* Education Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.education ? 'border-red-300' : 'border-slate-200/60'} rounded-lg bg-slate-50/30`}>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
+      <div className={`p-4 sm:p-6 border ${validationErrors.education ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">1</span>
           التعليم
           <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.education} />
         <div className="space-y-4">
           {formData.education.map((edu, index) => (
-            <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50 overflow-hidden">
+            <div key={index} className="p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50 overflow-hidden">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-slate-700">التعليم {index + 1}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">التعليم {index + 1}</span>
                 {formData.education.length > 1 && (
                   <button type="button" onClick={() => removeEducation(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
                 )}
@@ -113,7 +113,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={edu.degree}
                     onChange={(e) => handleEducationChange(index, "degree", e.target.value)}
-                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`education_degree_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`education_degree_${index}`])}
                     placeholder="الدرجة العلمية (Bachelor of...)"
                   />
                   <FieldError error={validationErrors[`education_degree_${index}`]} />
@@ -123,7 +123,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={edu.institution}
                     onChange={(e) => handleEducationChange(index, "institution", e.target.value)}
-                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`education_institution_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`education_institution_${index}`])}
                     placeholder="المؤسسة التعليمية"
                   />
                   <FieldError error={validationErrors[`education_institution_${index}`]} />
@@ -133,31 +133,31 @@ const CombinedStep2 = ({
                   <MobileDatePicker value={edu.end_date} onChange={(value) => handleEducationChange(index, "end_date", value)} disabled={edu.is_current} placeholder="النهاية" />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={edu.is_current} onChange={(e) => handleEducationChange(index, "is_current", e.target.checked)} className="w-4 h-4 text-emerald-600 rounded" />
-                  <span className="text-xs text-slate-700">دراسة حالية</span>
+                  <input type="checkbox" checked={edu.is_current} onChange={(e) => handleEducationChange(index, "is_current", e.target.checked)} className="w-4 h-4 text-[#7C6CF2] rounded" />
+                  <span className="text-xs text-gray-700 dark:text-gray-300">دراسة حالية</span>
                 </label>
               </div>
             </div>
           ))}
-          <button type="button" onClick={addEducation} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addEducation} className="w-full py-3 text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-[#7C6CF2]/30 rounded-xl hover:bg-[#7C6CF2]/10 active:bg-[#7C6CF2]/20 active:scale-[0.99] transition-all touch-manipulation">
             + إضافة تعليم آخر
           </button>
         </div>
       </div>
 
       {/* Work Experience Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.work_experience ? 'border-red-300' : 'border-slate-200/60'} rounded-lg bg-slate-50/30`}>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
+      <div className={`p-4 sm:p-6 border ${validationErrors.work_experience ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">2</span>
           الخبرات العملية
           <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.work_experience} />
         <div className="space-y-4">
           {formData.work_experience.map((work, index) => (
-            <div key={index} className="p-3 sm:p-4 border border-slate-200/40 rounded-lg bg-white/50">
+            <div key={index} className="p-3 sm:p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-slate-700">الخبرة {index + 1}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">الخبرة {index + 1}</span>
                 {formData.work_experience.length > 1 && (
                   <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
                 )}
@@ -168,7 +168,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={work.job_title}
                     onChange={(e) => handleWorkExperienceChange(index, "job_title", e.target.value)}
-                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base", validationErrors[`work_job_title_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-base", validationErrors[`work_job_title_${index}`])}
                     placeholder="المسمى الوظيفي"
                     style={{ fontSize: "16px" }}
                   />
@@ -179,7 +179,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={work.company}
                     onChange={(e) => handleWorkExperienceChange(index, "company", e.target.value)}
-                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-base", validationErrors[`work_company_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-base", validationErrors[`work_company_${index}`])}
                     placeholder="اسم الشركة"
                     style={{ fontSize: "16px" }}
                   />
@@ -194,20 +194,20 @@ const CombinedStep2 = ({
                   </div>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer py-1">
-                  <input type="checkbox" checked={work.is_current} onChange={(e) => handleWorkExperienceChange(index, "is_current", e.target.checked)} className="w-5 h-5 text-emerald-600 rounded" />
-                  <span className="text-sm text-slate-700">عمل حالي</span>
+                  <input type="checkbox" checked={work.is_current} onChange={(e) => handleWorkExperienceChange(index, "is_current", e.target.checked)} className="w-5 h-5 text-[#7C6CF2] rounded" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">عمل حالي</span>
                 </label>
                 <div className="pt-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">المسؤوليات والإنجازات</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المسؤوليات والإنجازات</label>
                   <div className="space-y-2">
                     {work.responsibilities.map((resp, respIndex) => (
                       <div key={respIndex} className="flex items-start gap-2">
-                        <span className="text-emerald-600 mt-3 text-lg">•</span>
+                        <span className="text-[#7C6CF2] mt-3 text-lg">•</span>
                         <textarea
                           value={resp}
                           onChange={(e) => handleResponsibilityChange(index, respIndex, e.target.value)}
                           rows={2}
-                          className="flex-1 min-w-0 rounded-lg border border-slate-300/70 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none"
+                          className="flex-1 min-w-0 rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 resize-none"
                           placeholder="اكتب مسؤولية أو إنجاز..."
                           style={{ fontSize: "16px" }}
                         />
@@ -216,11 +216,11 @@ const CombinedStep2 = ({
                         )}
                       </div>
                     ))}
-                    <button type="button" onClick={() => addResponsibility(index)} className="text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium py-2 px-3 rounded active:bg-emerald-50 transition-all touch-manipulation">+ إضافة مسؤولية</button>
+                    <button type="button" onClick={() => addResponsibility(index)} className="text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium py-2 px-3 rounded active:bg-[#7C6CF2]/10 transition-all touch-manipulation">+ إضافة مسؤولية</button>
                   </div>
                   {/* Show original Arabic if translation was done */}
                   {work.responsibilities_arabic?.length > 0 && (
-                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                       <label className="block text-xs font-medium text-amber-700 mb-1">📝 النص الأصلي (العربي)</label>
                       <ul className="space-y-0.5">
                         {work.responsibilities_arabic.filter(r => r?.trim()).map((respAr, respIdx) => (
@@ -236,22 +236,22 @@ const CombinedStep2 = ({
               </div>
             </div>
           ))}
-          <button type="button" onClick={addWorkExperience} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addWorkExperience} className="w-full py-3 text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-[#7C6CF2]/30 rounded-xl hover:bg-[#7C6CF2]/10 active:bg-[#7C6CF2]/20 active:scale-[0.99] transition-all touch-manipulation">
             + إضافة خبرة عمل أخرى
           </button>
 
           {/* AI Translation Button for all job descriptions */}
-          <div className={`mt-4 p-4 border rounded-lg ${jobTranslationSuccess || hasTranslatedResponsibilities ? 'border-green-200 bg-green-50/50' : 'border-blue-200 bg-blue-50/50'}`}>
+          <div className={`mt-4 p-4 border rounded-xl ${jobTranslationSuccess || hasTranslatedResponsibilities ? 'border-green-200 bg-green-50/50' : 'border-[#7C6CF2]/20 bg-[#7C6CF2]/10'}`}>
             {/* Always show loading state when translating */}
             {isTranslatingJobs ? (
               <>
-                <p className="text-sm text-blue-700 mb-3 text-center">
+                <p className="text-sm text-[#7C6CF2] mb-3 text-center">
                   ⏳ جاري ترجمة المسؤوليات...
                 </p>
                 <button
                   type="button"
                   disabled={true}
-                  className="w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 bg-blue-400 text-white cursor-not-allowed"
+                  className="w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 bg-[#2ED3B7]/70 text-white cursor-not-allowed"
                 >
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -269,7 +269,7 @@ const CombinedStep2 = ({
                   type="button"
                   onClick={onTranslateJobDescriptions}
                   disabled={!hasResponsibilities || safeRemainingJobsTranslations <= 0}
-                  className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                  className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                     !hasResponsibilities || safeRemainingJobsTranslations <= 0
                       ? "bg-green-300 text-white cursor-not-allowed"
                       : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
@@ -283,23 +283,23 @@ const CombinedStep2 = ({
               </>
             ) : (
               <>
-                <p className="text-sm text-blue-700 mb-3 text-center">
+                <p className="text-sm text-[#7C6CF2] mb-3 text-center">
                   💡 سيقوم النظام بترجمة جميع المسؤوليات والإنجازات إلى الإنجليزية
                 </p>
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
                   disabled={!hasResponsibilities || safeRemainingJobsTranslations <= 0}
-                  className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                  className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                     !hasResponsibilities || safeRemainingJobsTranslations <= 0
-                      ? "bg-blue-300 text-white cursor-not-allowed"
-                      : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+                      ? "bg-[#2ED3B7]/50 text-white cursor-not-allowed"
+                      : "bg-[#2ED3B7] text-white hover:bg-[#28C4A8] active:bg-[#24B09A]"
                   }`}
                 >
                   🌐 ترجم جميع المسؤوليات إلى الإنجليزية ({safeRemainingJobsTranslations} متبقي)
                 </button>
                 {!hasResponsibilities && (
-                  <p className="text-xs text-slate-500 mt-2 text-center">أضف مسؤوليات أولاً للترجمة</p>
+                  <p className="text-xs text-gray-500 mt-2 text-center">أضف مسؤوليات أولاً للترجمة</p>
                 )}
                 {safeRemainingJobsTranslations <= 0 && (
                   <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع ترجمات الوظائف المتاحة</p>

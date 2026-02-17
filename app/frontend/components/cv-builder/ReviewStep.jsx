@@ -4,10 +4,10 @@ const ReviewStep = ({ formData, renderSaveDraftButton }) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold text-slate-900">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           معاينة السيرة الذاتية
         </h2>
-        <p className="text-slate-600 mt-2">
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           تصفح السيرة الذاتية التي قمت بإنشائها للتأكد من أن كل المعلومات صحيحة.
         </p>
       </div>

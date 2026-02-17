@@ -20,9 +20,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_191645) do
     t.text "arabic_text"
     t.text "english_text"
     t.string "translation_quality"
-    t.string "ai_model"
+    t.string "ai_model", default: "gpt-4.1-mini"
     t.integer "tokens_used"
-    t.string "status"
+    t.string "status", default: "pending"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "metadata", default: {}
@@ -43,19 +43,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_191645) do
 
   create_table "cv_analyses", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.string "status"
+    t.string "status", default: "pending", null: false
     t.string "original_filename"
     t.text "extracted_text"
-    t.jsonb "analysis_results"
+    t.jsonb "analysis_results", default: {}
     t.text "error_message"
     t.string "target_job"
     t.string "target_industry"
-    t.string "language"
+    t.string "language", default: "ar"
     t.string "ai_model"
     t.integer "tokens_used"
-    t.jsonb "metadata"
+    t.jsonb "metadata", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_cv_analyses_on_created_at"
+    t.index ["status"], name: "index_cv_analyses_on_status"
     t.index ["user_id"], name: "index_cv_analyses_on_user_id"
   end
 
@@ -102,15 +104,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_191645) do
 
   create_table "linkedin_imports", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.string "status"
+    t.string "status", default: "pending", null: false
     t.string "original_filename"
     t.text "extracted_text"
-    t.jsonb "parsed_data"
+    t.jsonb "parsed_data", default: {}
     t.text "error_message"
     t.bigint "resume_id"
+    t.string "job_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_linkedin_imports_on_job_id"
     t.index ["resume_id"], name: "index_linkedin_imports_on_resume_id"
+    t.index ["status"], name: "index_linkedin_imports_on_status"
     t.index ["user_id"], name: "index_linkedin_imports_on_user_id"
   end
 
@@ -187,7 +192,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_191645) do
     t.datetime "updated_at", null: false
     t.string "job_title"
     t.text "responsibilities"
-    t.boolean "is_current"
+    t.boolean "is_current", default: false
     t.index ["resume_id"], name: "index_work_experiences_on_resume_id"
   end
 

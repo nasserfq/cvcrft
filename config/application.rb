@@ -39,7 +39,6 @@ module Cvcraft
     # Configure Sidekiq as the background job processor
     config.active_job.queue_adapter = :sidekiq
     
-    # Configure session store for Devise
-    config.session_store :cookie_store, key: '_cvcraft_session'
+    # Session store is configured in config/initializers/session_store.rb
   end
 end

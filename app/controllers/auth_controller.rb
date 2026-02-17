@@ -1,9 +1,11 @@
 class AuthController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [ :send_otp, :verify_otp, :logout ]
   before_action :authenticate_user!, only: [ :logout ]
+  before_action :redirect_if_authenticated, only: [ :login ]
+  layout false, only: [ :login ]
 
   def login
-    # Show login form
+    # Show login form (only for unauthenticated users)
   end
 
   def send_otp
@@ -34,7 +36,7 @@ class AuthController < ApplicationController
   def verify_otp
     email = params[:email]&.strip&.downcase
     otp_code = params[:otp_code]&.strip
-    return_to = params[:return_to]
+    return_to = params[:return_to].presence || session.delete(:user_return_to)
 
     unless email.present? && otp_code.present?
       flash[:alert] = "البريد الإلكتروني ورمز التحقق مطلوبان"
@@ -110,6 +112,20 @@ class AuthController < ApplicationController
       }
     else
       render json: { authenticated: false }
+    end
+  end
+
+  private
+
+  def redirect_if_authenticated
+    if user_signed_in?
+      # If user is already logged in, redirect to return_to or home
+      return_to = params[:return_to].presence || session.delete(:user_return_to)
+      if return_to.present? && return_to.start_with?("/")
+        redirect_to return_to
+      else
+        redirect_to root_path
+      end
     end
   end
 end

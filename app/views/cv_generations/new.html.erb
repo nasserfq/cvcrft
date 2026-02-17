@@ -17,15 +17,21 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       <script src="https://cdn.tailwindcss.com"></script>
       <script src="https://unpkg.com/lucide@latest"></script>
+      <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
       <style>
         .line-clamp-3 {
           display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+        
+        iconify-icon {
+            display: inline-block;
+            vertical-align: middle;
         }
 
         /* PDF viewer styles */
@@ -74,44 +80,72 @@
           padding: 0;
         }
       </style>
+      <script>
+        tailwind.config = {
+          darkMode: 'class',
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+              },
+              colors: {
+                primary: '#7B2FF7',
+                primaryHover: '#5A1EDB',
+                darkBase: '#121217',
+                darkCard: '#1C1C21',
+                action: '#2EF2A3',
+                actionHover: '#1BCB86',
+                canvas: '#FFFFFF',
+                borderLight: 'rgba(0,0,0,0.08)',
+                borderDark: 'rgba(255,255,255,0.08)',
+              }
+            }
+          }
+        }
+      </script>
     </head>
-    <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
-      <!-- Background Accents -->
-      <div class="pointer-events-none fixed inset-0 -z-10">
-        <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
-        <div class="absolute top-1/3 -right-20 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
-        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+    <body class="antialiased min-h-screen flex flex-col bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden" style="font-family: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;">
+      <!-- Navbar -->
+      <%= render 'layouts/header' %>
+      
+      <!-- Background Blobs -->
+      <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+        <div class="bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full absolute top-[-10%] left-[-10%]"></div>
+        <div class="bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full absolute bottom-[-10%] right-[-10%]"></div>
       </div>
+      
+      <!-- Main Content -->
+      <main class="flex-1">
       <!-- Flash Messages -->
       <% if flash[:notice] %>
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
-          <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
+          <div class="rounded-lg bg-action/10 dark:bg-action/20 border border-action/30 p-4">
             <div class="flex items-center gap-3">
-              <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
-              <p class="text-sm text-emerald-800"><%= flash[:notice] %></p>
+              <i data-lucide="check-circle" class="w-5 h-5 text-action"></i>
+              <p class="text-sm text-action dark:text-action"><%= flash[:notice] %></p>
             </div>
           </div>
         </div>
       <% end %>
       <% if flash[:alert] %>
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
-          <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+          <div class="rounded-lg bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 p-4">
             <div class="flex items-center gap-3">
-              <i data-lucide="alert-circle" class="w-5 h-5 text-red-600"></i>
-              <p class="text-sm text-red-800"><%= flash[:alert] %></p>
+              <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+              <p class="text-sm text-red-800 dark:text-red-300"><%= flash[:alert] %></p>
             </div>
           </div>
         </div>
       <% end %>
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 pb-8">
         <!-- Header -->
-        <div class="mb-8">
-          <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs ring-1 ring-emerald-500/20 mb-4">
+        <div class="mb-8 text-center">
+          <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary px-3 py-1 text-xs ring-1 ring-primary/30 mb-4">
             <i data-lucide="sparkles" class="w-4 h-4"></i>
             <span>منشئ السيرة الذاتية بالذكاء الاصطناعي</span>
           </div>
-          <h1 class="text-3xl font-bold text-slate-900 mb-2">أنشئ سيرة ذاتية احترافية</h1>
-          <p class="text-slate-600">استخدم الذكاء الاصطناعي لإنشاء ملخص مهني مخصص بناءً على وصف الوظيفة</p>
+          <h1 class="text-3xl md:text-4xl font-bold text-primary mb-3">أنشئ سيرة ذاتية احترافية</h1>
+          <p class="text-gray-600 dark:text-gray-300 text-base leading-relaxed max-w-2xl mx-auto">استخدم الذكاء الاصطناعي لإنشاء ملخص مهني مخصص بناءً على وصف الوظيفة</p>
         </div>
         <!-- React Component Container -->
         <div id="cv-generation-results">
@@ -146,9 +180,9 @@
           render() {
             if (this.state.hasError) {
               return (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h2 className="text-red-800 font-medium">عذراً، حدث خطأ ما</h2>
-                  <p className="text-red-600 text-sm mt-2">{this.state.error?.message || 'خطأ غير معروف'}</p>
+                <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                  <h2 className="text-red-800 dark:text-red-300 font-medium">عذراً، حدث خطأ ما</h2>
+                  <p className="text-red-600 dark:text-red-400 text-sm mt-2">{this.state.error?.message || 'خطأ غير معروف'}</p>
                 </div>
               );
             }
@@ -162,9 +196,9 @@
           } catch (error) {
             console.error('🔴 Render Error:', error);
             return (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <h2 className="text-red-800 font-medium">عذراً، حدث خطأ في العرض</h2>
-                <p className="text-red-600 text-sm mt-2">{error.message}</p>
+              <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                <h2 className="text-red-800 dark:text-red-300 font-medium">عذراً، حدث خطأ في العرض</h2>
+                <p className="text-red-600 dark:text-red-400 text-sm mt-2">{error.message}</p>
               </div>
             );
           }
@@ -584,8 +618,8 @@
           if (isLoading) {
             return (
               <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-                <p className="mt-4 text-slate-600">جاري تحميل البيانات...</p>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل البيانات...</p>
               </div>
             );
           }
@@ -593,28 +627,28 @@
           return (
             <div className="cv-generator-app">
               {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-800">{error}</p>
+                <div className="mb-4 bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                  <p className="text-red-800 dark:text-red-300">{error}</p>
                 </div>
               )}
 
               {/* Job Description Section */}
               <div className="mb-8">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   وصف الوظيفة
                 </label>
                 <textarea
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="أدخل وصف الوظيفة التي تريد التقدم إليها..."
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
                   rows="4"
                 />
               </div>
 
               {/* Resume Selection */}
               <div className="mb-8">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   اختيار السيرة الذاتية
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -637,29 +671,29 @@
                     return (
                       <div
                         key={resumeId}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        className={`p-4 border rounded-lg cursor-pointer transition-all bg-white dark:bg-white/5 ${
                           selectedResumeId === resumeId.toString()
-                            ? 'border-emerald-500 bg-emerald-50'
-                            : 'border-slate-200 hover:border-slate-300'
+                            ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                            : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
                         }`}
                         onClick={() => setSelectedResumeId(resumeId.toString())}
                       >
                       {/* Header */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-medium text-slate-900">{resume.complete_name}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-white">{resume.complete_name}</h3>
                           {resume.is_cv_builder && (
-                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full font-medium">
+                            <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full font-medium">
                               CV Builder
                             </span>
                           )}
                           {resume.is_ai_generated && (
-                            <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-full font-medium">
+                            <span className="px-2 py-1 text-xs bg-action/10 text-action rounded-full font-medium">
                               مبنية بالذكاء الاصطناعي
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-slate-600">{resume.email}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{resume.email}</p>
                       </div>
 
                       {/* Professional Summary Preview */}
@@ -668,8 +702,8 @@
                       {/* Job Description for AI Generated CVs */}
                       {resume.is_ai_generated && resume.job_description && (
                         <div className="mb-3">
-                          <p className="text-xs text-slate-500 font-medium mb-1">وصف الوظيفة:</p>
-                          <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">وصف الوظيفة:</p>
+                          <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-relaxed">
                             {resume.job_description.substring(0, 80)}
                             {resume.job_description.length > 80 ? '...' : ''}
                           </p>
@@ -677,24 +711,24 @@
                       )}
                       {/* CV Generation Info */}
                       {resume.latest_cv_generation ? (
-                        <div className="mb-3 p-2 bg-slate-50 rounded border">
+                        <div className="mb-3 p-2 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-slate-700">آخر إنشاء:</span>
-                            <span className="text-xs text-slate-600">
+                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">آخر إنشاء:</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
                               {resume.last_generated ? new Date(resume.last_generated).toLocaleDateString('en-GB') : 'غير محدد'}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
                               <div className={`w-2 h-2 rounded-full ${
-                                resume.latest_cv_generation.status === 'completed' ? 'bg-emerald-500' :
+                                resume.latest_cv_generation.status === 'completed' ? 'bg-action' :
                                 resume.latest_cv_generation.status === 'processing' ? 'bg-yellow-500' :
                                 resume.latest_cv_generation.status === 'failed' ? 'bg-red-500' : 'bg-gray-500'
                               }`}></div>
                               <span className={`text-xs ${
-                                resume.latest_cv_generation.status === 'completed' ? 'text-emerald-700' :
-                                resume.latest_cv_generation.status === 'processing' ? 'text-yellow-700' :
-                                resume.latest_cv_generation.status === 'failed' ? 'text-red-700' : 'text-gray-700'
+                                resume.latest_cv_generation.status === 'completed' ? 'text-action' :
+                                resume.latest_cv_generation.status === 'processing' ? 'text-yellow-600 dark:text-yellow-400' :
+                                resume.latest_cv_generation.status === 'failed' ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
                               }`}>
                                 {resume.latest_cv_generation.status === 'completed' ? 'PDF متوفر' :
                                  resume.latest_cv_generation.status === 'processing' ? 'جاري المعالجة' :
@@ -702,14 +736,14 @@
                               </span>
                             </div>
                             {resume.latest_cv_generation.metadata?.pdf_size && (
-                              <span className="text-xs text-slate-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {(resume.latest_cv_generation.metadata.pdf_size / 1024).toFixed(1)} KB
                               </span>
                             )}
                           </div>
                           {/* Show AI-generated summary for latest built CV */}
                           {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary) && (
-                            <div className="text-xs text-emerald-700 mt-2">
+                            <div className="text-xs text-action mt-2">
                               <span className="font-semibold">الملخص المهني:</span>
                               <span> {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary).substring(0, 120)}
                                 {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary).length > 120 ? '...' : ''}
@@ -718,20 +752,20 @@
                           )}
                         </div>
                       ) : resume.is_cv_builder ? (
-                        <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
+                        <div className="mb-3 p-2 bg-primary/5 dark:bg-primary/10 rounded border border-primary/20">
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <span className="text-xs text-blue-700 font-medium">سيرة ذاتية مبنية</span>
+                              <div className="w-2 h-2 bg-primary rounded-full"></div>
+                              <span className="text-xs text-primary font-medium">سيرة ذاتية مبنية</span>
                             </div>
-                            <span className="text-xs text-blue-600">جاهزة للتحسين</span>
+                            <span className="text-xs text-primary/70">جاهزة للتحسين</span>
                           </div>
-                          <div className="text-xs text-blue-600 mt-1">
+                          <div className="text-xs text-primary/70 mt-1">
                             تم إنشاؤها: {resume.created_at ? new Date(resume.created_at).toLocaleDateString('en-GB') : 'غير محدد'}
                           </div>
                           {/* Show fallback summary for CV Builder resumes if no latest CV */}
                           {(resume.professional_summary_english || resume.professional_summary) && (
-                            <div className="text-xs text-blue-700 mt-2">
+                            <div className="text-xs text-primary mt-2">
                               <span className="font-semibold">الملخص المهني:</span>
                               <span> {(resume.professional_summary_english || resume.professional_summary).substring(0, 120)}
                                 {(resume.professional_summary_english || resume.professional_summary).length > 120 ? '...' : ''}
@@ -740,17 +774,17 @@
                           )}
                         </div>
                       ) : (
-                        <div className="mb-3 p-2 bg-slate-50 rounded border">
+                        <div className="mb-3 p-2 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                              <span className="text-xs text-slate-600">سيرة ذاتية أساسية</span>
+                              <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
+                              <span className="text-xs text-gray-600 dark:text-gray-400">سيرة ذاتية أساسية</span>
                             </div>
                           </div>
                         </div>
                       )}
                       {/* Contact Info */}
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {resume.phone_number && <div>📞 {resume.phone_number}</div>}
                         {resume.city && resume.country && <div>📍 {resume.city}, {resume.country}</div>}
                       </div>
@@ -765,14 +799,14 @@
                                 setPreviewTitle(resume.complete_name);
                                 setShowPreviewModal(true);
                               }}
-                              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className="flex-1 bg-primary hover:bg-primaryHover text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
                               <i data-lucide="eye" class="w-3 h-3"></i>
                               معاينة
                             </button>
                             <button
                               onClick={() => handleDownload(`/cv_generations/${resume.latest_cv_generation.id}/download_pdf`, `cv_generated_${resume.latest_cv_generation.id}.pdf`)}
-                              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className="flex-1 bg-action hover:bg-action/90 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
                               <i data-lucide="download" class="w-3 h-3"></i>
                               تحميل PDF
@@ -799,14 +833,14 @@
                                 setPreviewTitle(resume.complete_name);
                                 setShowPreviewModal(true);
                               }}
-                              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className="flex-1 bg-primary hover:bg-primaryHover text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
                               <i data-lucide="eye" class="w-3 h-3"></i>
                               معاينة
                             </button>
                             <button
                               onClick={() => handleDownload(`/resumes/${resume.id}/generate_pdf`, `${resume.complete_name || 'resume'}_${resume.id}.pdf`)}
-                              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className="flex-1 bg-action hover:bg-action/90 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
                               <i data-lucide="download" class="w-3 h-3"></i>
                               تحميل PDF
@@ -824,7 +858,7 @@
                       {/* Selection Indicator */}
                       {selectedResumeId === resumeId.toString() && (
                         <div className="mt-3 flex items-center justify-center">
-                          <div className="flex items-center gap-2 text-emerald-600">
+                          <div className="flex items-center gap-2 text-primary">
                             <i data-lucide="check-circle" class="w-4 h-4"></i>
                             <span className="text-sm font-medium">محدد</span>
                           </div>
@@ -834,7 +868,7 @@
                     );
                   }) : (
                     <div className="col-span-full text-center py-8">
-                      <p className="text-slate-600">لا توجد سير ذاتية متاحة</p>
+                      <p className="text-gray-600 dark:text-gray-400">لا توجد سير ذاتية متاحة</p>
                     </div>
                   )}
                 </div>
@@ -842,7 +876,7 @@
                   type="button"
                   onClick={handleSubmit}
                   disabled={isGenerating || !selectedResumeId || !jobDescription.trim() || userCvCount >= maxCvGenerations}
-                  className="w-full bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-action text-white px-6 py-3 rounded-lg font-medium hover:bg-action/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isGenerating ? 'جاري الإنشاء...' :
                    userCvCount >= maxCvGenerations ? `وصلت للحد الأقصى (${maxCvGenerations})` :
@@ -855,63 +889,63 @@
         <div className="mt-8">
           {isGenerating && (
             <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-              <p className="mt-4 text-slate-600">جاري إنشاء السيرة الذاتية...</p>
-              <p className="text-sm text-slate-500">يرجى الانتظار بينما نقوم بإنشاء سيرتك الذاتية...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري إنشاء السيرة الذاتية...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">يرجى الانتظار بينما نقوم بإنشاء سيرتك الذاتية...</p>
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800">{error}</p>
+            <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+              <p className="text-red-800 dark:text-red-300">{error}</p>
             </div>
           )}
 
           {cvData && !isGenerating && (
-            <div className="bg-white border border-slate-200 rounded-lg p-6">
+            <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-6">
               {/* CV Actions Integration */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-900">تم إنشاء السيرة الذاتية بنجاح!</h3>
-                <div className="flex items-center gap-2 text-emerald-600">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">تم إنشاء السيرة الذاتية بنجاح!</h3>
+                <div className="flex items-center gap-2 text-action">
                   <i data-lucide="file-text" class="w-5 h-5"></i>
                   <span className="text-sm font-medium">PDF جاهز</span>
                 </div>
               </div>
 
                 <div className="mb-4">
-                  <h4 className="font-medium text-slate-700 mb-2">الملخص المهني الجديد:</h4>
-                  <p className="text-slate-600 leading-relaxed">{cvData.generated_content}</p>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">الملخص المهني الجديد:</h4>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{cvData.generated_content}</p>
                 </div>
               {/* Show PDF buttons only if PDF was generated */}
               {(cvData.metadata?.pdf_generated === true || cvData.metadata?.pdf_generated === 'true' || cvData.metadata?.pdf_generated === 1) ? (
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setShowPdfModal(true)}
-                    className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
+                    className="flex-1 bg-action text-white px-4 py-3 rounded-lg hover:bg-action/90 flex items-center justify-center gap-2 font-medium transition-colors"
                   >
                     <i data-lucide="eye" class="w-4 h-4"></i>
                     معاينة PDF
                   </button>
                   <button
                     onClick={downloadPdf}
-                    className="flex-1 bg-slate-600 text-white px-4 py-3 rounded-lg hover:bg-slate-700 flex items-center justify-center gap-2 font-medium"
+                    className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-primaryHover flex items-center justify-center gap-2 font-medium transition-colors"
                   >
                     <i data-lucide="download" class="w-4 h-4"></i>
                     تحميل PDF
                   </button>
                 </div>
               ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-yellow-800">
+                <div className="bg-yellow-50 dark:bg-yellow-500/20 border border-yellow-200 dark:border-yellow-500/30 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
                     <i data-lucide="alert-circle" class="w-5 h-5"></i>
                     <span className="font-medium">PDF غير متوفر</span>
                   </div>
-                  <p className="text-sm text-yellow-700 mt-1">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
                     لم يتم إنشاء PDF لهذه السيرة الذاتية. يرجى المحاولة مرة أخرى.
                   </p>
                   {cvData.metadata?.pdf_error && (
-                    <p className="text-xs text-yellow-600 mt-2">
+                    <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-2">
                       خطأ: {cvData.metadata.pdf_error}
                     </p>
                   )}
@@ -925,12 +959,12 @@
 
         {/* PDF Preview Integration */}
               {showPdfModal && cvData && (
-                <div className="fixed inset-0 z-50 flex flex-col bg-white">
-                  <div className="flex items-center justify-between p-4 border-b">
-                    <h3 className="text-lg font-semibold text-slate-900">معاينة السيرة الذاتية</h3>
+                <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-darkBase">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">معاينة السيرة الذاتية</h3>
                     <button
                       onClick={() => setShowPdfModal(false)}
-                      className="text-slate-500 hover:text-slate-700 text-xl font-bold"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xl font-bold"
                     >
                       ✕
                     </button>
@@ -947,18 +981,18 @@
                     />
                   </div>
                   {/* Mobile-friendly action buttons */}
-                  <div className="p-4 border-t bg-slate-50">
+                  <div className="p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
                     <div className="flex gap-3">
                       <button
                         onClick={downloadPdf}
-                        className="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2 font-medium"
+                        className="flex-1 bg-action text-white px-4 py-3 rounded-lg hover:bg-action/90 flex items-center justify-center gap-2 font-medium transition-colors"
                       >
                         <i data-lucide="download" className="w-4 h-4"></i>
                         تحميل PDF
                       </button>
                       <button
                         onClick={() => setShowPdfModal(false)}
-                        className="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium"
+                        className="px-6 py-3 border border-gray-300 dark:border-white/20 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 font-medium transition-colors"
                       >
                         إغلاق
                       </button>
@@ -970,16 +1004,16 @@
               {/* PDF Preview Modal */}
               {showPreviewModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
-                    <div className="flex items-center justify-between p-4 border-b">
-                      <h2 className="text-lg font-bold text-slate-900">معاينة السيرة الذاتية</h2>
-                      <button onClick={() => setShowPreviewModal(false)} className="text-slate-600 hover:text-red-600 font-bold text-lg">×</button>
+                  <div className="bg-white dark:bg-darkBase rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200 dark:border-white/10">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">معاينة السيرة الذاتية</h2>
+                      <button onClick={() => setShowPreviewModal(false)} className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 font-bold text-lg">×</button>
                     </div>
                     <div className="flex-1 overflow-hidden relative">
                       {/* PDF Loading Indicator */}
-                      <div id="pdf-loading" className="absolute inset-0 flex items-center justify-center bg-white z-10">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <span className="ml-3 text-blue-700">جاري تحميل PDF...</span>
+                      <div id="pdf-loading" className="absolute inset-0 flex items-center justify-center bg-white dark:bg-darkBase z-10">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <span className="ml-3 text-primary">جاري تحميل PDF...</span>
                       </div>
                       {/* PDF Preview Iframe */}
                       <iframe
@@ -989,16 +1023,16 @@
                         onLoad={() => { const el = document.getElementById('pdf-loading'); if (el) el.style.display = 'none'; }}
                       ></iframe>
                     </div>
-                    <div className="flex justify-end gap-2 p-4 border-t bg-slate-50">
+                    <div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
                       <button
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
+                        className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
                         onClick={() => window.open(previewPdfUrl, '_blank')}
                       >
                         <span className="mr-2">👁️</span>
                         فتح في نافذة جديدة
                       </button>
                       <button
-                        className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
+                        className="bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
                         onClick={() => setShowPreviewModal(false)}
                       >
                         إغلاق
@@ -1058,6 +1092,36 @@
           }
         });
       </script>
+      <script>
+        // Theme Logic
+        const html = document.documentElement;
+        
+        function toggleTheme() {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        // Initialize Theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        // Attach listeners to all theme toggles
+        document.querySelectorAll('#themeToggle, #themeToggleMobile, #themeToggleMobileInside').forEach(btn => {
+            if (btn) btn.addEventListener('click', toggleTheme);
+        });
+      </script>
+      </main>
+      
+      <!-- Footer -->
+      <%= render 'layouts/footer' %>
     </body>
   </html>
 <% end %>

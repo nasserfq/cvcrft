@@ -21,7 +21,7 @@ const FieldError = ({ error }) => error ? (
 // Input with error styling helper
 const getInputClass = (baseClass, hasError) => 
   hasError 
-    ? baseClass.replace('border-slate-300/70', 'border-red-400') + ' ring-1 ring-red-200'
+    ? baseClass.replace('border-[#E6E8F0]/70', 'border-red-400') + ' ring-1 ring-red-200'
     : baseClass;
 
 // Icon
@@ -56,31 +56,31 @@ const CombinedStep3 = ({
     <div className="space-y-8">
       {/* Section Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
           <LightbulbIcon />
         </div>
-        <h2 className="text-xl font-semibold text-slate-900">المهارات والشهادات واللغات</h2>
-        <p className="text-slate-600 mt-2">أضف مهاراتك وشهاداتك واللغات التي تتحدثها</p>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">المهارات والشهادات واللغات</h2>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">أضف مهاراتك وشهاداتك واللغات التي تتحدثها</p>
       </div>
 
       {/* Skills Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.skills ? 'border-red-300' : 'border-slate-200/60'} rounded-lg bg-slate-50/30`}>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
+      <div className={`p-4 sm:p-6 border ${validationErrors.skills ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">1</span>
           المهارات
           <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.skills} />
         <div className="space-y-4">
           {formData.skills.map((skill, index) => (
-            <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
+            <div key={index} className="p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
               <div className="mb-3">
                 <div className="flex items-center justify-between">
                   <input
                     type="text"
                     value={skill.category}
                     onChange={(e) => handleSkillsChange(index, "category", e.target.value)}
-                    className={getInputClass("flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm font-medium", validationErrors[`skill_category_${index}`])}
+                    className={getInputClass("flex-1 rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm font-medium", validationErrors[`skill_category_${index}`])}
                     placeholder="فئة المهارات (مثال: Technical Skills)"
                   />
                   {formData.skills.length > 1 && (
@@ -95,13 +95,13 @@ const CombinedStep3 = ({
                   return validSkillNames.map((skillName, nameIndex) => (
                     <div key={nameIndex}>
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald-600">•</span>
+                        <span className="text-[#7C6CF2]">•</span>
                         <input
                           type="text"
                           value={skillName}
                           onChange={(e) => handleSkillNameChange(index, nameIndex, e.target.value)}
                           onBlur={() => handleSkillNameBlur(index, nameIndex)}
-                          className={getInputClass("flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`skill_name_${index}_${nameIndex}`])}
+                          className={getInputClass("flex-1 rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`skill_name_${index}_${nameIndex}`])}
                           placeholder="اسم المهارة"
                         />
                         {validSkillNames.length > 1 && (
@@ -115,44 +115,44 @@ const CombinedStep3 = ({
                 {addingSkillTo === index ? (
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-emerald-600">•</span>
+                      <span className="text-[#7C6CF2]">•</span>
                       <input
                         type="text"
                         autoFocus
                         onChange={(e) => handleNewSkillChange(index, e.target.value)}
                         onBlur={(e) => handleNewSkillBlur(index, e.target.value)}
                         onKeyPress={(e) => { if (e.key === "Enter") handleNewSkillChange(index, e.target.value); }}
-                        className={getInputClass("flex-1 rounded-lg border border-slate-300/70 bg-white/70 px-3 py-1.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`skill_name_${index}_new`])}
+                        className={getInputClass("flex-1 rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`skill_name_${index}_new`])}
                         placeholder="اسم المهارة"
                       />
                     </div>
                     <FieldError error={validationErrors[`skill_name_${index}_new`]} />
                   </div>
                 ) : (
-                  <button type="button" onClick={() => addSkillName(index)} className="text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium py-2 px-3 rounded active:bg-emerald-50 transition-all touch-manipulation">+ إضافة مهارة</button>
+                  <button type="button" onClick={() => addSkillName(index)} className="text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium py-2 px-3 rounded active:bg-[#7C6CF2]/10 transition-all touch-manipulation">+ إضافة مهارة</button>
                 )}
               </div>
             </div>
           ))}
-          <button type="button" onClick={addSkills} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addSkills} className="w-full py-3 text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-[#7C6CF2]/30 rounded-xl hover:bg-[#7C6CF2]/10 active:bg-[#7C6CF2]/20 active:scale-[0.99] transition-all touch-manipulation">
             + إضافة فئة مهارات أخرى
           </button>
         </div>
       </div>
 
       {/* Certifications Section */}
-      <div className="p-4 sm:p-6 border border-slate-200/60 rounded-lg bg-slate-50/30">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
+      <div className="p-4 sm:p-6 border border-[#E6E8F0]/60 dark:border-gray-700 rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">2</span>
           الشهادات
-          <span className="text-xs text-slate-500 font-normal">(اختياري)</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">(اختياري)</span>
         </h3>
         <SectionError error={validationErrors.certifications} />
         <div className="space-y-4">
           {formData.certifications.map((cert, index) => (
-            <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
+            <div key={index} className="p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-slate-700">الشهادة {index + 1}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">الشهادة {index + 1}</span>
                 {formData.certifications.length > 1 && (
                   <button type="button" onClick={() => removeCertification(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
                 )}
@@ -163,7 +163,7 @@ const CombinedStep3 = ({
                     type="text"
                     value={cert.name}
                     onChange={(e) => handleCertificationChange(index, "name", e.target.value)}
-                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`cert_name_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`cert_name_${index}`])}
                     placeholder="اسم الشهادة (PMP®)"
                   />
                   <FieldError error={validationErrors[`cert_name_${index}`]} />
@@ -173,7 +173,7 @@ const CombinedStep3 = ({
                     type="text"
                     value={cert.organization}
                     onChange={(e) => handleCertificationChange(index, "organization", e.target.value)}
-                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`cert_organization_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`cert_organization_${index}`])}
                     placeholder="المؤسسة المانحة"
                   />
                   <FieldError error={validationErrors[`cert_organization_${index}`]} />
@@ -182,25 +182,25 @@ const CombinedStep3 = ({
               </div>
             </div>
           ))}
-          <button type="button" onClick={addCertification} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addCertification} className="w-full py-3 text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-[#7C6CF2]/30 rounded-xl hover:bg-[#7C6CF2]/10 active:bg-[#7C6CF2]/20 active:scale-[0.99] transition-all touch-manipulation">
             + إضافة شهادة أخرى
           </button>
         </div>
       </div>
 
       {/* Languages Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.languages ? 'border-red-300' : 'border-slate-200/60'} rounded-lg bg-slate-50/30`}>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">3</span>
+      <div className={`p-4 sm:p-6 border ${validationErrors.languages ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">3</span>
           اللغات
           <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.languages} />
         <div className="space-y-4">
           {formData.languages.map((lang, index) => (
-            <div key={index} className="p-4 border border-slate-200/40 rounded-lg bg-white/50">
+            <div key={index} className="p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-slate-700">اللغة {index + 1}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">اللغة {index + 1}</span>
                 {formData.languages.length > 1 && (
                   <button type="button" onClick={() => removeLanguage(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
                 )}
@@ -211,7 +211,7 @@ const CombinedStep3 = ({
                     type="text"
                     value={lang.language}
                     onChange={(e) => handleLanguageChange(index, "language", e.target.value)}
-                    className={getInputClass("w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm", validationErrors[`language_name_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`language_name_${index}`])}
                     placeholder="اللغة (Arabic, English)"
                   />
                   <FieldError error={validationErrors[`language_name_${index}`]} />
@@ -219,7 +219,7 @@ const CombinedStep3 = ({
                 <select
                   value={lang.proficiency}
                   onChange={(e) => handleLanguageChange(index, "proficiency", e.target.value)}
-                  className="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm"
+                  className="w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm"
                 >
                   <option value="">اختر مستوى الإتقان</option>
                   <option value="Native">أمية (Native)</option>
@@ -231,7 +231,7 @@ const CombinedStep3 = ({
               </div>
             </div>
           ))}
-          <button type="button" onClick={addLanguage} className="w-full py-3 text-emerald-600 hover:text-emerald-700 active:text-emerald-800 text-sm font-medium border border-dashed border-emerald-300 rounded-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addLanguage} className="w-full py-3 text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-[#7C6CF2]/30 rounded-xl hover:bg-[#7C6CF2]/10 active:bg-[#7C6CF2]/20 active:scale-[0.99] transition-all touch-manipulation">
             + إضافة لغة أخرى
           </button>
         </div>

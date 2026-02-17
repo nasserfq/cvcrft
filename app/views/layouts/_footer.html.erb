@@ -1,47 +1,19 @@
 <!-- Footer -->
-<footer class="pt-10 pb-8">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="space-y-3">
-        <a href="/" class="flex items-center cursor-pointer" style="cursor: pointer;">
-          <img src="/logo.png?v=5" alt="سيرة" class="h-14 w-auto pointer-events-none" />
-        </a>
-        <p class="text-sm text-slate-600">منصة ذكية لبناء سير ذاتية قوية ومقنعة.</p>
-      </div>
-      <div>
-        <h4 class="text-sm font-semibold tracking-tight text-slate-900 mb-3">المنتج</h4>
-        <ul class="space-y-2 text-sm text-slate-600">
-          <li><a href="#features" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الميزات</a></li>
-          <li><a href="#how" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">كيف يعمل</a></li>
-          <li><a href="#pricing" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الأسعار</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="text-sm font-semibold tracking-tight text-slate-900 mb-3">الدعم</h4>
-        <ul class="space-y-2 text-sm text-slate-600">
-          <li><a href="#faq" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الأسئلة الشائعة</a></li>
-          <li><a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">تواصل معنا</a></li>
-          <li><a href="<%= privacy_path %>" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">سياسة الخصوصية</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="text-sm font-semibold tracking-tight text-slate-900 mb-3">النشرة</h4>
-        <form class="space-y-2">
-          <input type="email" placeholder="بريدك الإلكتروني" class="w-full rounded-md border border-slate-300/70 bg-white/70 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5" />
-          <button data-hoverable="true" class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-3 py-2 ring-1 ring-black/5 hover:bg-emerald-700 transition-colors js-hover-target">
-            <i data-lucide="send" class="w-4 h-4"></i>
-            اشترك
-          </button>
-        </form>
-      </div>
+<footer class="border-t border-borderLight dark:border-borderDark bg-gray-50 dark:bg-darkBase pt-12 md:pt-16 pb-8 md:pb-10 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
+        <div class="flex items-center gap-3">
+            <span class="bg-primary text-white w-6 h-6 rounded flex items-center justify-center text-xs font-bold">س</span>
+            <span class="font-medium text-lg md:text-xl text-darkBase dark:text-white">سيرة</span>
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-6 md:gap-8 text-sm md:text-base text-gray-500">
+            <a href="#" class="hover:text-primary transition-colors">الشروط والأحكام</a>
+            <a href="<%= privacy_path %>" class="hover:text-primary transition-colors">سياسة الخصوصية</a>
+            <a href="#" class="hover:text-primary transition-colors">اتصل بنا</a>
+        </div>
+
+        <div class="text-xs md:text-sm text-gray-500 dir-ltr">
+            © <%= Time.current.year %> سيرة. جميع الحقوق محفوظة.
+        </div>
     </div>
-    <div class="mt-8 pt-6 border-t border-slate-200/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-      <p>© 2025 سيرة. جميع الحقوق محفوظة.</p>
-      <div class="flex items-center gap-4">
-  <a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الشروط</a>
-  <a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الخصوصية</a>
-  <a href="#" data-hoverable="true" class="hover:text-emerald-700 js-hover-target">الأمان</a>
-      </div>
-    </div>
-  </div>
 </footer>

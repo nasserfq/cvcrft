@@ -1,37 +1,37 @@
-<div class="min-h-screen bg-gradient-to-b from-white via-emerald-50 to-white py-12" dir="rtl">
+<div class="min-h-screen bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-darkBase dark:via-darkBase dark:to-darkBase py-12 transition-colors duration-300" dir="rtl">
   <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
     
     <!-- Upload Section (shown initially) -->
     <div id="upload-section">
       <!-- Title -->
       <div class="text-center mb-10">
-        <div class="inline-flex items-center gap-2 rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-xs ring-1 ring-blue-500/20 mb-4">
+        <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary dark:bg-primary/20 px-3 py-1 text-xs ring-1 ring-primary/20 mb-4">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
           </svg>
           <span>استيراد سهل</span>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-4">
+        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
           استورد سيرتك من LinkedIn
         </h1>
-        <p class="text-slate-600 leading-7 max-w-xl mx-auto">
+        <p class="text-gray-600 dark:text-gray-300 leading-7 max-w-xl mx-auto">
           ارفع ملف PDF الخاص بحسابك على LinkedIn وسنقوم بتحويله إلى سيرة ذاتية احترافية يمكنك تحريرها مباشرة
         </p>
       </div>
 
       <!-- How to Export LinkedIn PDF -->
-      <div class="bg-white rounded-xl border border-slate-200 p-6 mb-8">
-        <h2 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 p-6 mb-8 backdrop-blur-sm">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           كيف تحصل على ملف PDF من LinkedIn؟
         </h2>
-        <ol class="space-y-3 text-sm text-slate-600 list-decimal list-inside">
-          <li>افتح حسابك على <a href="https://www.linkedin.com" target="_blank" class="text-blue-600 hover:underline">LinkedIn</a></li>
-          <li>اذهب إلى صفحة ملفك الشخصي <span class="font-medium text-slate-900">"Profile" (الملف الشخصي)</span></li>
-          <li>أسفل صورة الملف الشخصي، اضغط على قسم <span class="font-medium text-slate-900">"Resources" (الموارد)</span></li>
-          <li>اختر <span class="font-medium text-slate-900">"Save to PDF" (حفظ بتنسيق PDF)</span></li>
+        <ol class="space-y-3 text-sm text-gray-600 dark:text-gray-300 list-decimal list-inside">
+          <li>افتح حسابك على <a href="https://www.linkedin.com" target="_blank" class="text-primary hover:underline">LinkedIn</a></li>
+          <li>اذهب إلى صفحة ملفك الشخصي <span class="font-medium text-gray-900 dark:text-white">"Profile" (الملف الشخصي)</span></li>
+          <li>أسفل صورة الملف الشخصي، اضغط على قسم <span class="font-medium text-gray-900 dark:text-white">"Resources" (الموارد)</span></li>
+          <li>اختر <span class="font-medium text-gray-900 dark:text-white">"Save to PDF" (حفظ بتنسيق PDF)</span></li>
           <li>احفظ الملف على جهازك ثم ارفعه هنا</li>
         </ol>
       </div>
@@ -40,7 +40,7 @@
       <%= form_tag linkedin_import_path, method: :post, multipart: true, class: "space-y-6", id: "upload-form", data: { turbo: false } do %>
         <div 
           id="drop-zone"
-          class="relative border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-emerald-400 hover:bg-emerald-50/50 transition-all cursor-pointer"
+          class="relative border-2 border-dashed border-gray-300 dark:border-white/20 rounded-xl p-12 text-center hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all cursor-pointer bg-white dark:bg-white/5 backdrop-blur-sm"
         >
           <input 
             type="file" 
@@ -50,18 +50,18 @@
             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div id="upload-placeholder">
-            <svg class="w-16 h-16 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
             </svg>
-            <p class="text-lg font-medium text-slate-700 mb-2">اسحب الملف وأفلته هنا</p>
-            <p class="text-sm text-slate-500">أو اضغط لاختيار ملف PDF</p>
+            <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">اسحب الملف وأفلته هنا</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">أو اضغط لاختيار ملف PDF</p>
           </div>
           <div id="file-selected" class="hidden">
-            <svg class="w-16 h-16 text-emerald-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-16 h-16 text-action mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-lg font-medium text-emerald-700 mb-2" id="selected-filename"></p>
-            <p class="text-sm text-slate-500">اضغط لاختيار ملف آخر</p>
+            <p class="text-lg font-medium text-action mb-2" id="selected-filename"></p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">اضغط لاختيار ملف آخر</p>
           </div>
         </div>
 
@@ -69,7 +69,7 @@
           type="submit" 
           id="submit-btn"
           disabled
-          class="w-full bg-emerald-600 text-white py-4 rounded-xl text-center font-semibold hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
+          class="w-full bg-primary text-white py-4 rounded-xl text-center font-semibold hover:bg-primaryHover disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
@@ -80,32 +80,32 @@
 
       <!-- Features -->
       <div class="grid md:grid-cols-3 gap-6 mt-12">
-        <div class="text-center p-6">
-          <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
+          <div class="w-12 h-12 bg-action/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-slate-900 mb-2">سريع</h3>
-          <p class="text-sm text-slate-600">استخراج تلقائي للبيانات خلال ثوانٍ</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">سريع</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">استخراج تلقائي للبيانات خلال ثوانٍ</p>
         </div>
-        <div class="text-center p-6">
-          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-slate-900 mb-2">قابل للتحرير</h3>
-          <p class="text-sm text-slate-600">حرر كل التفاصيل كما تريد</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">قابل للتحرير</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">حرر كل التفاصيل كما تريد</p>
         </div>
-        <div class="text-center p-6">
-          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-slate-900 mb-2">تصدير PDF</h3>
-          <p class="text-sm text-slate-600">تصدير احترافي متوافق مع ATS</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">تصدير PDF</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">تصدير احترافي متوافق مع ATS</p>
         </div>
       </div>
     </div>
@@ -114,47 +114,47 @@
     <div id="processing-section" class="hidden text-center py-12">
       <div class="mb-8">
         <div class="w-20 h-20 mx-auto relative">
-          <svg class="animate-spin w-20 h-20 text-emerald-600" fill="none" viewBox="0 0 24 24">
+          <svg class="animate-spin w-20 h-20 text-primary" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
         </div>
       </div>
-      <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900 mb-4">
+      <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
         جاري تحليل سيرتك الذاتية
       </h2>
-      <p class="text-slate-600 mb-8 max-w-md mx-auto">
+      <p class="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
         نستخدم الذكاء الاصطناعي لاستخراج البيانات من ملفك. قد تستغرق العملية حتى دقيقة واحدة.
       </p>
-      <div class="space-y-3 text-sm text-slate-500">
+      <div class="space-y-3 text-sm text-gray-500 dark:text-gray-400">
         <div class="flex items-center justify-center gap-3" id="step-upload">
-          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           <span>تم رفع الملف</span>
         </div>
         <div class="flex items-center justify-center gap-3" id="step-extract">
-          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
           <span>استخراج النص</span>
         </div>
         <div class="flex items-center justify-center gap-3" id="step-ai">
-          <svg class="w-5 h-5 text-slate-400 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
           </svg>
           <span id="step-ai-text">تحليل الذكاء الاصطناعي...</span>
         </div>
         <div class="flex items-center justify-center gap-3" id="step-editor">
-          <svg class="w-5 h-5 text-slate-300" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-gray-300 dark:text-gray-600" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
           </svg>
-          <span id="step-editor-text" class="text-slate-400">تجهيز المحرر</span>
+          <span id="step-editor-text" class="text-gray-400 dark:text-gray-500">تجهيز المحرر</span>
         </div>
       </div>
       <button 
         onclick="resetUpload()" 
-        class="mt-8 text-sm text-slate-500 hover:text-slate-700 underline transition-colors"
+        class="mt-8 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline transition-colors"
       >
         إلغاء ورفع ملف آخر
       </button>
@@ -167,11 +167,11 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </div>
-      <h2 class="text-2xl font-semibold text-slate-900 mb-4">حدث خطأ</h2>
-      <p class="text-slate-600 mb-6" id="error-message">فشل في معالجة الملف</p>
+      <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">حدث خطأ</h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6" id="error-message">فشل في معالجة الملف</p>
       <button 
         onclick="resetUpload()" 
-        class="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors"
+        class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primaryHover transition-colors"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -216,17 +216,17 @@
   // Drag and drop
   dropZone.addEventListener('dragover', function(e) {
     e.preventDefault();
-    dropZone.classList.add('border-emerald-400', 'bg-emerald-50');
+    dropZone.classList.add('border-primary', 'bg-primary/5');
   });
 
   dropZone.addEventListener('dragleave', function(e) {
     e.preventDefault();
-    dropZone.classList.remove('border-emerald-400', 'bg-emerald-50');
+    dropZone.classList.remove('border-primary', 'bg-primary/5');
   });
 
   dropZone.addEventListener('drop', function(e) {
     e.preventDefault();
-    dropZone.classList.remove('border-emerald-400', 'bg-emerald-50');
+    dropZone.classList.remove('border-primary', 'bg-primary/5');
     const file = e.dataTransfer.files[0];
     if (file && file.type === 'application/pdf') {
       fileInput.files = e.dataTransfer.files;
@@ -300,19 +300,19 @@
         trackLinkedInEvent('linkedin_import_processing_completed', { import_id: importId });
         // Update step indicators
         document.getElementById('step-ai-icon').outerHTML = `
-          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         `;
         document.getElementById('step-ai-text').textContent = 'تحليل الذكاء الاصطناعي';
         
         document.getElementById('step-editor-icon').outerHTML = `
-          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         `;
         document.getElementById('step-editor-text').textContent = 'جاهز!';
-        document.getElementById('step-editor-text').classList.remove('text-slate-400');
+        document.getElementById('step-editor-text').classList.remove('text-gray-400', 'dark:text-gray-500');
         
         // Redirect to editor after a short delay
         setTimeout(() => {
@@ -365,7 +365,7 @@
     const stepAiIcon = document.getElementById('step-ai-icon');
     if (stepAiIcon) {
       stepAiIcon.outerHTML = `
-        <svg class="w-5 h-5 text-slate-400 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
         </svg>
       `;
@@ -375,13 +375,13 @@
     const stepEditorIcon = document.getElementById('step-editor-icon');
     if (stepEditorIcon) {
       stepEditorIcon.outerHTML = `
-        <svg class="w-5 h-5 text-slate-300" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 text-gray-300 dark:text-gray-600" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
         </svg>
       `;
     }
     const stepEditorText = document.getElementById('step-editor-text');
     stepEditorText.textContent = 'تجهيز المحرر';
-    stepEditorText.classList.add('text-slate-400');
+    stepEditorText.classList.add('text-gray-400', 'dark:text-gray-500');
   }
 </script>

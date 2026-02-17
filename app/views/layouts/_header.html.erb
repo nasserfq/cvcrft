@@ -1,103 +1,124 @@
-<!-- Background Accents -->
-<div class="pointer-events-none fixed inset-0 -z-10">
-  <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
-  <div class="absolute top-1/3 -right-20 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
-  <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
-</div>
-<!-- Header -->
-<header class="sticky top-0 z-30 backdrop-blur-xl bg-white/70 border-b border-slate-200/60">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between py-3">
-      <!-- Logo -->
-      <a href="/" class="flex items-center cursor-pointer" style="cursor: pointer;">
-        <img src="/logo.png?v=5" alt="سيرة" class="h-14 w-auto pointer-events-none" />
-      </a>
-      <!-- Nav -->
-      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-600">
-        <% if user_signed_in? %>
-          <%= link_to resumes_path, class: "hover:text-emerald-600 transition-colors js-hover-target", data: { hoverable: true } do %>
-            <i data-lucide="file-text" class="w-4 h-4 inline mr-1"></i>
-            سيرتي الذاتية
-          <% end %>
-        <% end %>
-  <a href="#features" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">الميزات</a>
-  <a href="#how" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">كيف يعمل</a>
-  <a href="#pricing" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">الأسعار</a>
-  <a href="#faq" data-hoverable="true" class="hover:text-emerald-600 transition-colors js-hover-target">الأسئلة الشائعة</a>
-      </nav>
-      <!-- Actions -->
-      <div class="flex items-center gap-3">
-        
-        <% if user_signed_in? %>
-          <%= link_to profile_path, class: "hidden sm:inline-flex items-center gap-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors js-hover-target", data: { hoverable: true } do %>
-            <i data-lucide="user" class="w-4 h-4"></i>
-            <span>مرحباً، <%= current_user.email %></span>
-          <% end %>
-          <%= form_with url: "/auth/logout", method: :delete, class: "hidden sm:inline-flex" do |f| %>
-            <button type="submit" data-hoverable="true" class="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-red-700 transition-colors js-hover-target">
-              <i data-lucide="log-out" class="w-4 h-4"></i>
-              <span>تسجيل الخروج</span>
-            </button>
-          <% end %>
-        <% else %>
-          <a href="/login" data-hoverable="true" class="hidden sm:inline-flex items-center gap-2 text-sm text-gray-700 hover:text-emerald-700 transition-colors js-hover-target">
-            <i data-lucide="log-in" class="w-4 h-4"></i>
-            <span>تسجيل الدخول</span>
-          </a>
-        <% end %>
-        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "inline-flex items-center gap-2 rounded-md bg-emerald-600 text-white text-sm font-medium px-4 py-2.5 shadow-sm ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 hover:shadow active:bg-emerald-800 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation js-loading-btn", data: { hoverable: true } do %>
-          <span class="js-btn-content inline-flex items-center gap-2">
-            <i data-lucide="wand-2" class="w-4 h-4"></i>
-            <span>ابدأ الآن مجانًا</span>
-          </span>
-          <span class="js-btn-spinner inline-flex items-center gap-2" style="display: none;">
-            <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>جاري التحميل...</span>
-          </span>
-        <% end %>
-        <!-- Mobile menu button -->
-        <button id="mobile-menu-button" data-hoverable="true" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors js-hover-target">
-          <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
-      </div>
-    </div>
-    <!-- Mobile menu -->
-    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200/60" style="display: none;">
-      <div class="py-4 space-y-3">
-        <% if user_signed_in? %>
-          <%= link_to resumes_path, class: "block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target", data: { hoverable: true } do %>
-            <i data-lucide="file-text" class="w-4 h-4 inline mr-2"></i>
-            سيرتي الذاتية
-          <% end %>
-        <% end %>
-  <a href="#features" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الميزات</a>
-  <a href="#how" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">كيف يعمل</a>
-  <a href="#pricing" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الأسعار</a>
-  <a href="#faq" data-hoverable="true" class="block px-3 py-2 text-sm text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">الأسئلة الشائعة</a>
-        <div class="pt-3 border-t border-gray-200/60">
-          <% if user_signed_in? %>
-            <%= link_to profile_path, class: "block px-3 py-2 text-sm text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors js-hover-target", data: { hoverable: true } do %>
-              <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>
-              <span>مرحباً، <%= current_user.email %></span>
-            <% end %>
-            <%= form_with url: "/auth/logout", method: :delete, class: "block" do |f| %>
-              <button type="submit" data-hoverable="true" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors js-hover-target">
-                <i data-lucide="log-out" class="w-4 h-4 inline mr-2"></i>
-                تسجيل الخروج
-              </button>
-            <% end %>
-          <% else %>
-            <a href="/login" data-hoverable="true" class="block px-3 py-2 text-sm text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors js-hover-target">
-              <i data-lucide="log-in" class="w-4 h-4 inline mr-2"></i>
-              تسجيل الدخول
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 border-b border-borderLight bg-white/80 backdrop-blur-xl dark:bg-darkBase/80 dark:border-borderDark">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-center gap-2 z-50">
+            <a href="/" class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2">
+                <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
+                سيرة
             </a>
-          <% end %>
         </div>
-      </div>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-8 text-sm font-normal text-gray-500 dark:text-gray-400">
+            <% if user_signed_in? %>
+                <%= link_to resumes_path, class: "hover:text-primary transition-colors" do %>
+                    سيرتي الذاتية
+                <% end %>
+            <% end %>
+            <a href="#features" class="hover:text-primary transition-colors">المميزات</a>
+            <a href="#how-it-works" class="hover:text-primary transition-colors">كيف يعمل</a>
+            <a href="#templates" class="hover:text-primary transition-colors">القوالب</a>
+        </div>
+
+        <!-- Actions -->
+        <div class="hidden md:flex items-center gap-4">
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block"></iconify-icon>
+                <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden"></iconify-icon>
+            </button>
+            
+            <% if user_signed_in? %>
+                <%= link_to profile_path, class: "flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" do %>
+                    <iconify-icon icon="solar:user-linear" width="20"></iconify-icon>
+                    <span><%= current_user.email %></span>
+                <% end %>
+                <%= form_with url: "/auth/logout", method: :delete, class: "inline-flex" do |f| %>
+                    <button type="submit" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors">
+                        <iconify-icon icon="solar:logout-2-linear" width="20"></iconify-icon>
+                        <span>خروج</span>
+                    </button>
+                <% end %>
+            <% else %>
+                <a href="/login" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+                    <iconify-icon icon="solar:login-2-linear" width="20"></iconify-icon>
+                    <span>تسجيل الدخول</span>
+                </a>
+            <% end %>
+            
+            <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "flex items-center justify-center px-5 py-2 rounded-full bg-primary hover:bg-primaryHover text-white text-sm font-normal transition-all shadow-glow hover:shadow-lg" do %>
+                ابنِ سيرتك الآن
+            <% end %>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="flex md:hidden items-center gap-4 z-50">
+            <button id="themeToggleMobile" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block"></iconify-icon>
+                <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden"></iconify-icon>
+            </button>
+            <button id="mobileMenuBtn" class="p-2 text-darkBase dark:text-white focus:outline-none">
+                <iconify-icon icon="solar:hamburger-menu-linear" width="26" stroke-width="1.5"></iconify-icon>
+            </button>
+        </div>
     </div>
-  </div>
+</nav>
+
+<!-- Mobile Menu Overlay -->
+<div id="mobile-menu" class="fixed inset-0 z-[60] bg-white/95 dark:bg-darkBase/95 backdrop-blur-xl transform -translate-x-full md:hidden flex flex-col h-[100dvh]">
+    <!-- Mobile Menu Header -->
+    <div class="flex items-center justify-between px-4 sm:px-6 h-16 shrink-0 border-b border-borderLight dark:border-borderDark">
+        <!-- Logo -->
+        <div class="flex items-center gap-2">
+            <span class="bg-primary text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
+            <span class="text-xl font-medium tracking-tight text-darkBase dark:text-white">سيرة</span>
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+            <button id="themeToggleMobileInside" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block"></iconify-icon>
+                <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden"></iconify-icon>
+            </button>
+            <button id="closeMobileMenu" class="p-2 text-gray-500 hover:text-darkBase dark:hover:text-white transition-colors">
+                <iconify-icon icon="solar:close-circle-linear" width="28" stroke-width="1.5"></iconify-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Menu Items -->
+    <div class="flex-1 flex flex-col items-center justify-center gap-8 p-6 overflow-y-auto">
+        <% if user_signed_in? %>
+            <%= link_to resumes_path, class: "mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight" do %>
+                سيرتي الذاتية
+            <% end %>
+        <% end %>
+        <a href="#features" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">المميزات</a>
+        <a href="#how-it-works" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">كيف يعمل</a>
+        <a href="#templates" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">القوالب</a>
+        
+        <div class="pt-6 border-t border-borderLight dark:border-borderDark w-full max-w-[280px] space-y-4">
+            <% if user_signed_in? %>
+                <%= link_to profile_path, class: "mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors" do %>
+                    <iconify-icon icon="solar:user-linear" width="24"></iconify-icon>
+                    <span><%= current_user.email %></span>
+                <% end %>
+                <%= form_with url: "/auth/logout", method: :delete, class: "w-full" do |f| %>
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
+                        <iconify-icon icon="solar:logout-2-linear" width="24"></iconify-icon>
+                        <span>تسجيل الخروج</span>
+                    </button>
+                <% end %>
+            <% else %>
+                <a href="/login" class="mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                    <iconify-icon icon="solar:login-2-linear" width="24"></iconify-icon>
+                    <span>تسجيل الدخول</span>
+                </a>
+            <% end %>
+        </div>
+        
+        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full max-w-[280px] py-4 rounded-2xl bg-primary hover:bg-primaryHover text-white text-lg font-medium shadow-glow text-center transition-all mt-6" do %>
+            ابنِ سيرتك الآن
+        <% end %>
+    </div>
 </div>
-</header>

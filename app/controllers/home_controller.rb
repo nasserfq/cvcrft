@@ -10,6 +10,9 @@ class HomeController < ApplicationController
     if params[:signed_out] == "true"
       flash.now[:notice] = "تم تسجيل الخروج بنجاح"
     end
+
+    # User count for social proof
+    @users_count = User.count
     
     # Load recent CV generations and resumes for logged-in users
     if user_signed_in?

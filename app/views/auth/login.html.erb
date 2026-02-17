@@ -1,85 +1,182 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الدخول — سيرة</title>
     <meta name="description" content="سجل دخولك إلى منشئ السيرة الذاتية بالذكاء الاصطناعي" />
-    <meta name="theme-color" content="#10b981" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#7B2FF7" />
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
-    <!-- Background Accents -->
-    <div class="pointer-events-none fixed inset-0 -z-10">
-      <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
-      <div class="absolute top-1/3 -right-20 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
-      <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#7B2FF7',
+                        primaryHover: '#5A1EDB',
+                        darkBase: '#121217',
+                        darkCard: '#1C1C21',
+                        action: '#2EF2A3',
+                        actionHover: '#1BCB86',
+                        canvas: '#FFFFFF',
+                        borderLight: 'rgba(0,0,0,0.08)',
+                        borderDark: 'rgba(255,255,255,0.08)',
+                    },
+                    boxShadow: {
+                        'glow': '0 0 40px -10px rgba(123, 47, 247, 0.3)',
+                        'glow-mint': '0 0 40px -10px rgba(46, 242, 163, 0.2)',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-feature-settings: "ss01", "ss02";
+            -webkit-font-smoothing: antialiased;
+        }
+        .blob {
+            position: absolute;
+            filter: blur(90px);
+            opacity: 0.5;
+            z-index: -1;
+            animation: pulse 10s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(135deg, #7B2FF7 0%, #2EF2A3 100%);
+        }
+        iconify-icon {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden">
+
+    <!-- Background Blobs -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div class="blob bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full top-[-10%] left-[-10%]"></div>
+        <div class="blob bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full bottom-[-10%] right-[-10%] animation-delay-2000"></div>
     </div>
 
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-borderLight bg-white/80 backdrop-blur-xl dark:bg-darkBase/80 dark:border-borderDark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 z-50">
+                <a href="/" class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2">
+                    <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
+                    سيرة
+                </a>
+            </div>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-8 text-sm font-normal text-gray-500 dark:text-gray-400">
+                <a href="/#features" class="hover:text-primary transition-colors">المميزات</a>
+                <a href="/#how-it-works" class="hover:text-primary transition-colors">كيف يعمل</a>
+                <a href="/#templates" class="hover:text-primary transition-colors">القوالب</a>
+            </div>
+
+            <!-- Actions -->
+            <div class="hidden md:flex items-center gap-4">
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                    <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block"></iconify-icon>
+                    <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden"></iconify-icon>
+                </button>
+                
+                <span class="flex items-center gap-2 text-sm text-primary dark:text-action">
+                    <iconify-icon icon="solar:login-2-linear" width="20"></iconify-icon>
+                    <span>تسجيل الدخول</span>
+                </span>
+            </div>
+
+            <!-- Mobile Actions -->
+            <div class="flex md:hidden items-center gap-4 z-50">
+                <button id="themeToggleMobile" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                    <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block"></iconify-icon>
+                    <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden"></iconify-icon>
+                </button>
+            </div>
+        </div>
+    </nav>
 
     <!-- Main Content -->
-    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-28">
       <div class="max-w-md w-full space-y-8">
         <!-- Header -->
         <div class="text-center">
-          <div class="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs ring-1 ring-emerald-500/20 mb-4">
-            <i data-lucide="shield-check" class="w-4 h-4"></i>
-            <span>تسجيل دخول آمن</span>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 dark:bg-primary/10 mb-4 backdrop-blur-md">
+            <iconify-icon icon="solar:shield-check-linear" width="16" class="text-action"></iconify-icon>
+            <span class="text-primary dark:text-action text-xs md:text-sm font-normal">تسجيل دخول آمن</span>
           </div>
-          <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">
-            مرحباً بك في سيرة
+          <h1 class="text-3xl sm:text-4xl font-medium tracking-tight text-darkBase dark:text-white">
+            مرحباً بك في <span class="gradient-text">سيرة</span>
           </h1>
-          <p class="mt-2 text-slate-600 leading-7">
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-7">
             أدخل بريدك الإلكتروني للحصول على رمز التحقق
           </p>
         </div>
 
-        <!-- Flash Messages (hide notice when OTP form is showing since we display email there) -->
+        <!-- Flash Messages -->
         <% if flash[:notice] && params[:otp_sent] != 'true' %>
-          <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
+          <div class="rounded-xl bg-action/10 border border-action/30 p-4 backdrop-blur-xl">
             <div class="flex items-center gap-3">
-              <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>
-              <p class="text-sm text-emerald-800"><%= flash[:notice] %></p>
+              <iconify-icon icon="solar:check-circle-linear" width="20" class="text-action"></iconify-icon>
+              <p class="text-sm text-darkBase dark:text-white"><%= flash[:notice] %></p>
             </div>
           </div>
         <% end %>
         <% if flash[:alert] %>
-          <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+          <div class="rounded-xl bg-red-500/10 border border-red-500/30 p-4 backdrop-blur-xl">
             <div class="flex items-center gap-3">
-              <i data-lucide="alert-circle" class="w-5 h-5 text-red-600"></i>
-              <p class="text-sm text-red-800"><%= flash[:alert] %></p>
+              <iconify-icon icon="solar:danger-circle-linear" width="20" class="text-red-500"></iconify-icon>
+              <p class="text-sm text-darkBase dark:text-white"><%= flash[:alert] %></p>
             </div>
           </div>
         <% end %>
 
         <!-- Email Form -->
         <% unless params[:otp_sent] == 'true' %>
-          <div class="rounded-xl bg-white/80 backdrop-blur-xl ring-1 ring-slate-200/80 shadow-sm p-6">
+          <div class="bg-white/60 dark:bg-[#1C1C21]/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
             <form class="space-y-6" action="/auth/send_otp" method="post">
               <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
               <%= hidden_field_tag :return_to, params[:return_to] %>
               <div>
-                <label for="email" class="block text-sm font-medium text-slate-700 mb-2">البريد الإلكتروني</label>
+                <label for="email" class="block text-sm font-medium text-darkBase dark:text-white mb-2">البريد الإلكتروني</label>
                 <input 
                   id="email" 
                   name="email" 
                   type="email" 
                   autocomplete="email" 
                   required 
-                  class="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5" 
+                  class="w-full rounded-xl border border-borderLight dark:border-borderDark bg-white/70 dark:bg-white/5 px-4 py-3.5 text-sm text-darkBase dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" 
                   placeholder="أدخل بريدك الإلكتروني"
                 />
               </div>
               <button 
                 type="submit" 
-                data-hoverable="true"
-                data-loading-text="جاري الإرسال..."
-                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-3 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation"
+                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primaryHover text-white text-sm font-medium px-4 py-3.5 shadow-glow hover:shadow-lg transition-all"
               >
-                <i data-lucide="mail" class="w-4 h-4 btn-icon"></i>
+                <iconify-icon icon="solar:letter-linear" width="18" class="btn-icon"></iconify-icon>
                 <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 <span class="btn-text">إرسال رمز التحقق</span>
               </button>
@@ -89,43 +186,41 @@
 
         <!-- OTP Form -->
         <% if params[:otp_sent] == 'true' %>
-          <div class="rounded-xl bg-white/80 backdrop-blur-xl ring-1 ring-slate-200/80 shadow-sm p-6">
+          <div class="bg-white/60 dark:bg-[#1C1C21]/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
             <form class="space-y-6" action="/auth/verify_otp" method="post">
               <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
               <%= hidden_field_tag :email, params[:email] %>
               <%= hidden_field_tag :return_to, params[:return_to] %>
               
               <!-- Success Message -->
-              <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-4">
+              <div class="rounded-xl bg-action/10 border border-action/30 p-4">
                 <div class="flex items-center gap-3">
-                  <i data-lucide="mail" class="w-5 h-5 text-emerald-600"></i>
+                  <iconify-icon icon="solar:letter-linear" width="20" class="text-action"></iconify-icon>
                   <div>
-                    <p class="text-sm font-medium text-emerald-800">تم إرسال رمز التحقق</p>
-                    <p class="text-xs text-emerald-600">إلى <%= params[:email] %> • صالح لمدة 10 دقائق</p>
+                    <p class="text-sm font-medium text-darkBase dark:text-white">تم إرسال رمز التحقق</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">إلى <%= params[:email] %> • صالح لمدة 10 دقائق</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label for="otp_code" class="block text-sm font-medium text-slate-700 mb-2">رمز التحقق</label>
+                <label for="otp_code" class="block text-sm font-medium text-darkBase dark:text-white mb-2">رمز التحقق</label>
                 <input 
                   id="otp_code" 
                   name="otp_code" 
                   type="text" 
                   maxlength="6" 
                   required 
-                  class="w-full rounded-lg border border-slate-300/70 bg-white/70 px-3 py-3 text-center text-2xl tracking-widest text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400 ring-1 ring-black/5" 
+                  class="w-full rounded-xl border border-borderLight dark:border-borderDark bg-white/70 dark:bg-white/5 px-4 py-3.5 text-center text-2xl tracking-widest text-darkBase dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" 
                   placeholder="000000"
                 />
               </div>
               
               <button 
                 type="submit" 
-                data-hoverable="true"
-                data-loading-text="جاري التحقق..."
-                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium px-4 py-3 ring-1 ring-black/5 hover:bg-emerald-700 hover:scale-105 active:scale-110 transition-all duration-150 js-hover-target touch-manipulation"
+                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-xl bg-action hover:bg-actionHover text-darkBase text-sm font-medium px-4 py-3.5 shadow-glow-mint hover:shadow-lg transition-all"
               >
-                <i data-lucide="log-in" class="w-4 h-4 btn-icon"></i>
+                <iconify-icon icon="solar:login-2-linear" width="18" class="btn-icon"></iconify-icon>
                 <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 <span class="btn-text">تسجيل الدخول</span>
               </button>
@@ -135,80 +230,88 @@
 
         <!-- Footer -->
         <div class="text-center">
-          <p class="text-xs text-slate-500">
+          <p class="text-xs text-gray-500 dark:text-gray-400">
             بالضغط على "تسجيل الدخول" فإنك توافق على 
-            <a href="#" data-hoverable="true" class="text-emerald-600 hover:text-emerald-700 js-hover-target">شروط الخدمة</a>
+            <a href="#" class="text-primary hover:text-primaryHover dark:text-action transition-colors">شروط الخدمة</a>
             و
-            <a href="<%= privacy_path %>" data-hoverable="true" class="text-emerald-600 hover:text-emerald-700 js-hover-target">سياسة الخصوصية</a>
+            <a href="<%= privacy_path %>" class="text-primary hover:text-primaryHover dark:text-action transition-colors">سياسة الخصوصية</a>
           </p>
         </div>
       </div>
     </div>
 
-    <!-- JavaScript for icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons({
-            attrs: { 'stroke-width': 1.5 }
-          });
+        // Theme Logic
+        const html = document.documentElement;
+        
+        function toggleTheme() {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
         }
 
-        // Reset button loading state on page load (for back/forward navigation or errors)
-        document.querySelectorAll('.btn-loading').forEach(btn => {
-          btn.disabled = false;
-          btn.classList.remove('opacity-75', 'cursor-wait');
-          const icon = btn.querySelector('.btn-icon');
-          const spinner = btn.querySelector('.btn-spinner');
-          if (icon) icon.classList.remove('hidden');
-          if (spinner) spinner.classList.add('hidden');
+        // Initialize Theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        // Attach listeners to theme toggles
+        document.querySelectorAll('#themeToggle, #themeToggleMobile').forEach(btn => {
+            if (btn) btn.addEventListener('click', toggleTheme);
         });
 
         // Button loading animation
-        document.querySelectorAll('.btn-loading').forEach(btn => {
-          const originalText = btn.querySelector('.btn-text')?.textContent;
-          btn.dataset.originalText = originalText;
-          
-          const form = btn.closest('form');
-          if (form) {
-            form.addEventListener('submit', function(e) {
-              // Show loading state after form starts submitting
-              setTimeout(() => {
-                btn.classList.add('opacity-75', 'cursor-wait');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Reset button loading state on page load
+            document.querySelectorAll('.btn-loading').forEach(btn => {
+                btn.disabled = false;
+                const icon = btn.querySelector('.btn-icon');
+                const spinner = btn.querySelector('.btn-spinner');
+                if (icon) icon.style.display = '';
+                if (spinner) spinner.classList.add('hidden');
+            });
+
+            // Handle form submission
+            document.querySelectorAll('.btn-loading').forEach(btn => {
+                const originalText = btn.querySelector('.btn-text')?.textContent;
+                btn.dataset.originalText = originalText;
                 
+                const form = btn.closest('form');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        setTimeout(() => {
+                            btn.classList.add('opacity-75');
+                            
+                            const icon = btn.querySelector('.btn-icon');
+                            const spinner = btn.querySelector('.btn-spinner');
+                            
+                            if (icon) icon.style.display = 'none';
+                            if (spinner) spinner.classList.remove('hidden');
+                        }, 0);
+                    });
+                }
+            });
+        });
+
+        // Reset on pageshow (back/forward navigation)
+        window.addEventListener('pageshow', () => {
+            document.querySelectorAll('.btn-loading').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
                 const icon = btn.querySelector('.btn-icon');
                 const spinner = btn.querySelector('.btn-spinner');
                 const text = btn.querySelector('.btn-text');
-                const loadingText = btn.dataset.loadingText;
-                
-                if (icon) icon.classList.add('hidden');
-                if (spinner) spinner.classList.remove('hidden');
-                if (text && loadingText) text.textContent = loadingText;
-              }, 0);
+                if (icon) icon.style.display = '';
+                if (spinner) spinner.classList.add('hidden');
+                if (text && btn.dataset.originalText) text.textContent = btn.dataset.originalText;
             });
-          }
         });
-      });
-
-      // Reset on pageshow (back/forward navigation)
-      window.addEventListener('pageshow', () => {
-        document.querySelectorAll('.btn-loading').forEach(btn => {
-          btn.disabled = false;
-          btn.classList.remove('opacity-75', 'cursor-wait');
-          const icon = btn.querySelector('.btn-icon');
-          const spinner = btn.querySelector('.btn-spinner');
-          const text = btn.querySelector('.btn-text');
-          if (icon) icon.classList.remove('hidden');
-          if (spinner) spinner.classList.add('hidden');
-          if (text && btn.dataset.originalText) text.textContent = btn.dataset.originalText;
-        });
-        
-        // Re-init icons
-        if (typeof lucide !== 'undefined') {
-          lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
-        }
-      });
     </script>
-  </body>
+</body>
 </html>

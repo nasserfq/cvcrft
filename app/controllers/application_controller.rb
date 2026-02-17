@@ -20,4 +20,23 @@ class ApplicationController < ActionController::Base
   def health_check
     render json: { status: "ok", timestamp: Time.current }
   end
+
+  protected
+
+  # Override Devise's authenticate_user! to store intended URL before redirecting to login
+  def authenticate_user!
+    unless user_signed_in?
+      # Store the intended URL so we can redirect back after login
+      store_location_for_custom_auth
+      redirect_to login_path(return_to: request.fullpath), alert: "يرجى تسجيل الدخول أولاً"
+      return
+    end
+  end
+
+  private
+
+  # Store the current URL for redirect after login
+  def store_location_for_custom_auth
+    session[:user_return_to] = request.fullpath if request.get? && !request.xhr?
+  end
 end
