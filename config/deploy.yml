@@ -19,7 +19,8 @@ proxy:
 ssh:
  user: nasserfq
  keys:
-  - "/Users/Nasser/Downloads/hllelaiapp_key.pem" # Correct SSH key path format
+  #- "/Users/Nasser/Downloads/hllelaiapp_key.pem"
+  - "/Users/nasserfq/Downloads/hllelaiapp_key.pem" # Correct SSH key path format
 
 registry:
  username: nasserfq
