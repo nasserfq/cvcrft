@@ -23,9 +23,9 @@
 
         <!-- Actions -->
         <div class="hidden md:flex items-center gap-4">
-            <button id="themeToggle" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
-                <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block"></iconify-icon>
-                <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden"></iconify-icon>
+            <button id="themeToggle" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block pointer-events-none"></iconify-icon>
+                <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden pointer-events-none"></iconify-icon>
             </button>
             
             <% if user_signed_in? %>
@@ -53,9 +53,9 @@
 
         <!-- Mobile Menu Button -->
         <div class="flex md:hidden items-center gap-4 z-50">
-            <button id="themeToggleMobile" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
-                <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block"></iconify-icon>
-                <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden"></iconify-icon>
+            <button id="themeToggleMobile" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block pointer-events-none"></iconify-icon>
+                <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden pointer-events-none"></iconify-icon>
             </button>
             <button id="mobileMenuBtn" onclick="document.getElementById('mobile-menu').classList.remove('translate-x-full'); document.body.style.overflow='hidden';" class="p-2 text-darkBase dark:text-white focus:outline-none">
                 <iconify-icon icon="solar:hamburger-menu-linear" width="26" stroke-width="1.5" class="pointer-events-none"></iconify-icon>
@@ -76,9 +76,9 @@
         
         <!-- Actions -->
         <div class="flex items-center gap-3">
-            <button id="themeToggleMobileInside" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
-                <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block"></iconify-icon>
-                <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden"></iconify-icon>
+            <button id="themeToggleMobileInside" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block pointer-events-none"></iconify-icon>
+                <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden pointer-events-none"></iconify-icon>
             </button>
             <button id="closeMobileMenu" onclick="document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';" class="p-2 text-gray-500 hover:text-darkBase dark:hover:text-white transition-colors">
                 <iconify-icon icon="solar:close-circle-linear" width="28" stroke-width="1.5" class="pointer-events-none"></iconify-icon>

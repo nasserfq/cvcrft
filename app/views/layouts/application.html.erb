@@ -347,28 +347,13 @@
     <script>
         // Theme Logic
         const html = document.documentElement;
-        
-        function toggleTheme() {
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                html.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        }
 
-        // Initialize Theme
+        // Initialize Theme on page load
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             html.classList.add('dark');
         } else {
             html.classList.remove('dark');
         }
-
-        // Attach listeners to all theme toggles
-        document.querySelectorAll('#themeToggle, #themeToggleMobile, #themeToggleMobileInside').forEach(btn => {
-            if (btn) btn.addEventListener('click', toggleTheme);
-        });
 
         // Mobile Menu Logic
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');

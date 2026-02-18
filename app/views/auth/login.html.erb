@@ -98,9 +98,9 @@
 
             <!-- Actions -->
             <div class="hidden md:flex items-center gap-4">
-                <button id="themeToggle" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
-                    <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block"></iconify-icon>
-                    <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden"></iconify-icon>
+                <button id="themeToggle" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                    <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block pointer-events-none"></iconify-icon>
+                    <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden pointer-events-none"></iconify-icon>
                 </button>
                 
                 <span class="flex items-center gap-2 text-sm text-primary dark:text-action">
@@ -111,9 +111,9 @@
 
             <!-- Mobile Actions -->
             <div class="flex md:hidden items-center gap-4 z-50">
-                <button id="themeToggleMobile" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
-                    <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block"></iconify-icon>
-                    <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden"></iconify-icon>
+                <button id="themeToggleMobile" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
+                    <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block pointer-events-none"></iconify-icon>
+                    <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden pointer-events-none"></iconify-icon>
                 </button>
             </div>
         </div>
@@ -243,16 +243,6 @@
     <script>
         // Theme Logic
         const html = document.documentElement;
-        
-        function toggleTheme() {
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                html.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        }
 
         // Initialize Theme
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -260,11 +250,6 @@
         } else {
             html.classList.remove('dark');
         }
-
-        // Attach listeners to theme toggles
-        document.querySelectorAll('#themeToggle, #themeToggleMobile').forEach(btn => {
-            if (btn) btn.addEventListener('click', toggleTheme);
-        });
 
         // Button loading animation
         document.addEventListener('DOMContentLoaded', () => {
