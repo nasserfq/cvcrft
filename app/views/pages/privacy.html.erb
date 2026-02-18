@@ -256,9 +256,8 @@
     <!-- Footer -->
     <%= render 'layouts/footer' %>
 
-    <!-- Dark Mode Script -->
+    <!-- Theme & Mobile Menu Script -->
     <script>
-      const themeToggle = document.getElementById('themeToggle');
       const html = document.documentElement;
       
       // Check for saved preference or system preference
@@ -271,12 +270,43 @@
         html.classList.add('dark');
       }
       
-      if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-          html.classList.toggle('dark');
-          localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-        });
+      // Toggle theme function
+      function toggleTheme() {
+        html.classList.toggle('dark');
+        localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
       }
+      
+      // Attach listeners to all theme toggles
+      document.querySelectorAll('#themeToggle, #themeToggleMobile, #themeToggleMobileInside').forEach(btn => {
+        if (btn) btn.addEventListener('click', toggleTheme);
+      });
+
+      // Mobile Menu Logic
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const closeMobileMenu = document.getElementById('closeMobileMenu');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileLinks = document.querySelectorAll('.mobile-link');
+
+      function openMenu() {
+        if (mobileMenu) {
+          mobileMenu.classList.remove('translate-x-full');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+
+      function closeMenu() {
+        if (mobileMenu) {
+          mobileMenu.classList.add('translate-x-full');
+          document.body.style.overflow = '';
+        }
+      }
+
+      if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
+      if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
+
+      mobileLinks.forEach(link => {
+        link.addEventListener('click', closeMenu);
+      });
     </script>
   </body>
 </html>

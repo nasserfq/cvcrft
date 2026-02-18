@@ -229,12 +229,14 @@
           </button>
           <button
             id="mobileMenuBtn"
+            onclick="document.getElementById('mobile-menu').classList.remove('translate-x-full'); document.body.style.overflow='hidden';"
             class="p-2 text-darkBase dark:text-white focus:outline-none"
           >
             <iconify-icon
               icon="solar:hamburger-menu-linear"
               width="26"
               stroke-width="1.5"
+              class="pointer-events-none"
             ></iconify-icon>
           </button>
         </div>
@@ -244,7 +246,7 @@
     <!-- Mobile Menu Overlay -->
     <div
       id="mobile-menu"
-      class="fixed inset-0 z-[60] bg-white/95 dark:bg-darkBase/95 backdrop-blur-xl transform -translate-x-full md:hidden flex flex-col h-[100dvh]"
+      class="fixed inset-0 z-[60] bg-white/95 dark:bg-darkBase/95 backdrop-blur-xl translate-x-full transition-transform duration-300 ease-in-out md:hidden flex flex-col h-[100dvh]"
     >
       <!-- Mobile Menu Header -->
       <div
@@ -285,12 +287,14 @@
           </button>
           <button
             id="closeMobileMenu"
+            onclick="document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';"
             class="p-2 text-gray-500 hover:text-darkBase dark:hover:text-white transition-colors"
           >
             <iconify-icon
               icon="solar:close-circle-linear"
               width="28"
               stroke-width="1.5"
+              class="pointer-events-none"
             ></iconify-icon>
           </button>
         </div>
@@ -307,18 +311,21 @@
         <% end %>
         <a
           href="#features"
+          onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='features'; }, 50); return false;"
           class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
         >
           المميزات
         </a>
         <a
           href="#how-it-works"
+          onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='how-it-works'; }, 50); return false;"
           class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
         >
           كيف يعمل
         </a>
         <a
           href="#templates"
+          onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='templates'; }, 50); return false;"
           class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
         >
           القوالب
@@ -970,58 +977,60 @@
     </section>
 
     <script>
-      // Theme Logic
-      const html = document.documentElement;
+      document.addEventListener('DOMContentLoaded', function() {
+        // Theme Logic
+        const html = document.documentElement;
 
-      function toggleTheme() {
-          if (html.classList.contains('dark')) {
-              html.classList.remove('dark');
-              localStorage.theme = 'light';
-          } else {
-              html.classList.add('dark');
-              localStorage.theme = 'dark';
-          }
-      }
+        function toggleTheme() {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
 
-      // Initialize Theme
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          html.classList.add('dark');
-      } else {
-          html.classList.remove('dark');
-      }
+        // Initialize Theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
 
-      // Attach listeners to all theme toggles
-      document.querySelectorAll('#themeToggle, #themeToggleMobile, #themeToggleMobileInside').forEach(btn => {
-          btn.addEventListener('click', toggleTheme);
+        // Attach listeners to all theme toggles
+        document.querySelectorAll('#themeToggle, #themeToggleMobile, #themeToggleMobileInside').forEach(btn => {
+            if (btn) btn.addEventListener('click', toggleTheme);
+        });
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        function openMenu() {
+            if (mobileMenu) {
+                mobileMenu.classList.remove('translate-x-full');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeMenu() {
+            if (mobileMenu) {
+                mobileMenu.classList.add('translate-x-full');
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
+        if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
+
+        // Close menu when clicking ANY link inside it
+        if (mobileMenu) {
+            const links = mobileMenu.querySelectorAll('a');
+            links.forEach(link => link.addEventListener('click', closeMenu));
+        }
       });
-
-      // Mobile Menu Logic
-      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-      const closeMobileMenu = document.getElementById('closeMobileMenu');
-      const mobileMenu = document.getElementById('mobile-menu');
-
-      function openMenu() {
-          if (mobileMenu) {
-              mobileMenu.classList.remove('-translate-x-full');
-              document.body.style.overflow = 'hidden';
-          }
-      }
-
-      function closeMenu() {
-          if (mobileMenu) {
-              mobileMenu.classList.add('-translate-x-full');
-              document.body.style.overflow = '';
-          }
-      }
-
-      if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
-      if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
-
-      // Close menu when clicking ANY link inside it
-      if (mobileMenu) {
-          const links = mobileMenu.querySelectorAll('a');
-          links.forEach(link => link.addEventListener('click', closeMenu));
-      }
     </script>
   </body>
 </html>

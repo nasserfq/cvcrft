@@ -16,9 +16,9 @@
                     سيرتي الذاتية
                 <% end %>
             <% end %>
-            <a href="#features" class="hover:text-primary transition-colors">المميزات</a>
-            <a href="#how-it-works" class="hover:text-primary transition-colors">كيف يعمل</a>
-            <a href="#templates" class="hover:text-primary transition-colors">القوالب</a>
+            <a href="/#features" class="hover:text-primary transition-colors">المميزات</a>
+            <a href="/#how-it-works" class="hover:text-primary transition-colors">كيف يعمل</a>
+            <a href="/#templates" class="hover:text-primary transition-colors">القوالب</a>
         </div>
 
         <!-- Actions -->
@@ -57,15 +57,15 @@
                 <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block"></iconify-icon>
                 <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden"></iconify-icon>
             </button>
-            <button id="mobileMenuBtn" class="p-2 text-darkBase dark:text-white focus:outline-none">
-                <iconify-icon icon="solar:hamburger-menu-linear" width="26" stroke-width="1.5"></iconify-icon>
+            <button id="mobileMenuBtn" onclick="document.getElementById('mobile-menu').classList.remove('translate-x-full'); document.body.style.overflow='hidden';" class="p-2 text-darkBase dark:text-white focus:outline-none">
+                <iconify-icon icon="solar:hamburger-menu-linear" width="26" stroke-width="1.5" class="pointer-events-none"></iconify-icon>
             </button>
         </div>
     </div>
 </nav>
 
 <!-- Mobile Menu Overlay -->
-<div id="mobile-menu" class="fixed inset-0 z-[60] bg-white/95 dark:bg-darkBase/95 backdrop-blur-xl transform -translate-x-full md:hidden flex flex-col h-[100dvh]">
+<div id="mobile-menu" class="fixed inset-0 z-[60] bg-white/95 dark:bg-darkBase/95 backdrop-blur-xl translate-x-full transition-transform duration-300 ease-in-out md:hidden flex flex-col h-[100dvh]">
     <!-- Mobile Menu Header -->
     <div class="flex items-center justify-between px-4 sm:px-6 h-16 shrink-0 border-b border-borderLight dark:border-borderDark">
         <!-- Logo -->
@@ -80,8 +80,8 @@
                 <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block"></iconify-icon>
                 <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden"></iconify-icon>
             </button>
-            <button id="closeMobileMenu" class="p-2 text-gray-500 hover:text-darkBase dark:hover:text-white transition-colors">
-                <iconify-icon icon="solar:close-circle-linear" width="28" stroke-width="1.5"></iconify-icon>
+            <button id="closeMobileMenu" onclick="document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';" class="p-2 text-gray-500 hover:text-darkBase dark:hover:text-white transition-colors">
+                <iconify-icon icon="solar:close-circle-linear" width="28" stroke-width="1.5" class="pointer-events-none"></iconify-icon>
             </button>
         </div>
     </div>
@@ -89,17 +89,17 @@
     <!-- Menu Items -->
     <div class="flex-1 flex flex-col items-center justify-center gap-8 p-6 overflow-y-auto">
         <% if user_signed_in? %>
-            <%= link_to resumes_path, class: "mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight" do %>
+            <%= link_to resumes_path, onclick: "document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';", class: "mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight" do %>
                 سيرتي الذاتية
             <% end %>
         <% end %>
-        <a href="#features" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">المميزات</a>
-        <a href="#how-it-works" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">كيف يعمل</a>
-        <a href="#templates" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">القوالب</a>
+        <a href="/#features" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#features'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">المميزات</a>
+        <a href="/#how-it-works" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#how-it-works'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">كيف يعمل</a>
+        <a href="/#templates" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#templates'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">القوالب</a>
         
         <div class="pt-6 border-t border-borderLight dark:border-borderDark w-full max-w-[280px] space-y-4">
             <% if user_signed_in? %>
-                <%= link_to profile_path, class: "mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors" do %>
+                <%= link_to profile_path, onclick: "document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';", class: "mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors" do %>
                     <iconify-icon icon="solar:user-linear" width="24"></iconify-icon>
                     <span><%= current_user.email %></span>
                 <% end %>
@@ -110,14 +110,14 @@
                     </button>
                 <% end %>
             <% else %>
-                <a href="/login" class="mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                <a href="/login" onclick="document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';" class="mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
                     <iconify-icon icon="solar:login-2-linear" width="24"></iconify-icon>
                     <span>تسجيل الدخول</span>
                 </a>
             <% end %>
         </div>
         
-        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "w-full max-w-[280px] py-4 rounded-2xl bg-primary hover:bg-primaryHover text-white text-lg font-medium shadow-glow text-center transition-all mt-6" do %>
+        <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), onclick: "document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';", class: "w-full max-w-[280px] py-4 rounded-2xl bg-primary hover:bg-primaryHover text-white text-lg font-medium shadow-glow text-center transition-all mt-6" do %>
             ابنِ سيرتك الآن
         <% end %>
     </div>
