@@ -170,28 +170,25 @@ class AtsPdfGenerator
           date = certification[:date].to_s.strip
 
           unless name.empty?
-            # Create a bounding box for each certification entry
-            pdf.bounding_box([ 0, pdf.cursor ], width: pdf.bounds.width, height: 20) do
-              # Date on the right
-              if date.present?
-                pdf.bounding_box([ pdf.bounds.width - 80, pdf.bounds.top ], width: 80) do
-                  pdf.text date, size: 10, align: :right
-                end
-              end
-
-              # Name and organization on the left
-              pdf.bounding_box([ 0, pdf.bounds.top ], width: pdf.bounds.width - 90) do
-                pdf.font("Helvetica-Bold") { pdf.text "#{name}     ", size: 10 }
-                pdf.move_up 11.5
-                pdf.indent(pdf.width_of("#{name}     ", size: 10)) do
-                  pdf.font("Helvetica") { pdf.text org.to_s, size: 10 }
-                end
+            # Date aligned to right
+            if date.present?
+              pdf.float do
+                pdf.text date, size: 10, align: :right
               end
             end
 
-            pdf.move_down 2
+            # Name in bold, then organization in regular font on same line
+            pdf.font("Helvetica-Bold") { pdf.text "#{name}  ", size: 10, inline_format: false }
+            if org.present?
+              pdf.move_up 11.5
+              name_width = pdf.width_of("#{name}", size: 10) + 25  # Add 25pt spacing
+              pdf.indent(name_width) do
+                pdf.font("Helvetica") { pdf.text org, size: 10 }
+              end
+            end
+
+            pdf.move_down 4  # Space between certifications
           end
-          pdf.move_down 2  # Small space between certifications
         end        # Languages Section
         pdf.move_down 15
         pdf.text "LANGUAGES", size: 13, style: :bold
