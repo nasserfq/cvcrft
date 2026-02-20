@@ -257,6 +257,15 @@
                   </div>
                 </div>
               <% end %>
+              
+              <!-- Edit Button for completed resumes -->
+              <div class="mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+                <% edit_link = linkedin_import.present? ? linkedin_import_show_path(linkedin_import) : edit_resume_path(resume) %>
+                <%= link_to edit_link, class: 'w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary rounded-lg transition-colors text-sm font-medium' do %>
+                  <iconify-icon icon="solar:pen-bold" width="16"></iconify-icon>
+                  تعديل السيرة الذاتية
+                <% end %>
+              </div>
             </div>
           <% end %>
         </div>

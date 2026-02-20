@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy, memo } from "react";
 import { createPortal } from "react-dom";
 import { trackEvent } from "../lib/posthog";
+import CvImportModal from "./cv-builder/CvImportModal";
 
 // Helper to check if text is primarily English (allows numbers, punctuation, spaces)
 // Returns true if text contains mostly English letters (Latin characters)
@@ -494,6 +495,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [lastSavedAt, setLastSavedAt] = useState(null);
  const [validationErrors, setValidationErrors] = useState({});
  const [touchedFields, setTouchedFields] = useState({}); // Track which fields user has interacted with
+ const [showImportModal, setShowImportModal] = useState(false); // CV Import modal state
 
  // Mark a field as touched
  const markFieldTouched = (fieldName) => {
@@ -2336,6 +2338,68 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
  };
 
+ // Handle CV import completion - populate form with imported data
+ const handleImportComplete = (parsedData) => {
+  if (!parsedData) return;
+
+  // Track import event
+  trackEvent("cv_imported", { source: "pdf_upload" });
+
+  // Update form data with imported values
+  setFormData(prev => ({
+   ...prev,
+   complete_name: parsedData.complete_name || prev.complete_name,
+   email: parsedData.email || prev.email,
+   phone_number: parsedData.phone_number || prev.phone_number,
+   city: parsedData.city || prev.city,
+   country: parsedData.country || prev.country,
+   professional_summary: parsedData.professional_summary || prev.professional_summary,
+   work_experience: parsedData.work_experiences?.length > 0
+    ? parsedData.work_experiences.map(exp => ({
+      job_title: exp.job_title || "",
+      company: exp.company || "",
+      start_date: exp.start_date || "",
+      end_date: exp.end_date || "",
+      is_current: exp.is_current || false,
+      responsibilities: exp.responsibilities?.length > 0 ? exp.responsibilities : [""],
+     }))
+    : prev.work_experience,
+   education: parsedData.educations?.length > 0
+    ? parsedData.educations.map(edu => ({
+      degree: edu.degree || "",
+      institution: edu.institution || "",
+      start_date: edu.start_date || "",
+      end_date: edu.end_date || "",
+      gpa: edu.gpa || "",
+      is_current: edu.is_current || false,
+     }))
+    : prev.education,
+   skills: parsedData.skills?.length > 0
+    ? parsedData.skills.map(skill => ({
+      category: skill.category || "",
+      skill_names: skill.skill_names || [],
+     }))
+    : prev.skills,
+   certifications: parsedData.certifications?.length > 0
+    ? parsedData.certifications.map(cert => ({
+      name: cert.name || "",
+      organization: cert.organization || "",
+      date: cert.date || "",
+     }))
+    : prev.certifications,
+   languages: parsedData.languages?.length > 0
+    ? parsedData.languages.map(lang => ({
+      language: lang.language || "",
+      proficiency: lang.proficiency || "",
+     }))
+    : prev.languages,
+  }));
+
+  // Clear validation errors since we have new data
+  setValidationErrors({});
+  setTouchedFields({});
+ };
+
  const handleSubmit = (e) => {
   e.preventDefault();
 
@@ -2573,10 +2637,26 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     <div data-form-card className="bg-white/80 dark:bg-[#27273A]/80 backdrop-blur-xl rounded-2xl shadow-lg border border-[#E6E8F0] dark:border-white/10 overflow-hidden w-full">
      {/* Header with step indicator */}
      <div className="bg-gradient-to-r from-[#7C6CF2] to-[#6A5AE0] px-4 sm:px-8 py-5 sm:py-6">
-      <div className="flex items-center justify-between">
-       <h1 className="text-lg sm:text-2xl font-semibold text-white">
-        إنشاء سيرة ذاتية جديدة
-       </h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+       <div className="flex items-center gap-3 flex-wrap">
+        <h1 className="text-lg sm:text-2xl font-semibold text-white">
+         إنشاء سيرة ذاتية جديدة
+        </h1>
+        {/* Import CV Button - Show on step 1 */}
+        {currentStep === 1 && (
+         <button
+          type="button"
+          onClick={() => setShowImportModal(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs sm:text-sm font-medium transition-colors border border-white/20"
+         >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span className="hidden sm:inline">استيراد من ملف</span>
+          <span className="sm:hidden">استيراد</span>
+         </button>
+        )}
+       </div>
        <div className="flex items-center gap-3">
         {/* Auto-save indicator */}
         {autoSaveStatus !== "idle" && (
@@ -2691,6 +2771,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      </div>
     </div>
    </div>
+
+   {/* CV Import Modal */}
+   <CvImportModal
+    isOpen={showImportModal}
+    onClose={() => setShowImportModal(false)}
+    onImportComplete={handleImportComplete}
+   />
   </div>
  );
 };

@@ -115,6 +115,11 @@ Rails.application.routes.draw do
   get "/linkedin-import/:id/download-pdf", to: "linkedin_imports#download_pdf", as: :linkedin_import_download_pdf
   delete "/linkedin-import/:id", to: "linkedin_imports#destroy"
 
+  # CV Import routes (for importing existing CVs)
+  post "/cv-import", to: "cv_imports#create", as: :cv_import
+  get "/cv-import/:id/status", to: "cv_imports#status", as: :cv_import_status
+  get "/cv-import/:id", to: "cv_imports#show", as: :cv_import_show
+
   # CV Analysis routes
   get "/cv-analysis", to: "cv_analyses#new", as: :cv_analysis
   post "/cv-analysis", to: "cv_analyses#create"

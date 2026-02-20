@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_30_191645) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_20_190830) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_191645) do
     t.index ["resume_id"], name: "index_cv_generations_on_resume_id"
     t.index ["user_id", "is_draft"], name: "index_cv_generations_on_user_id_and_is_draft"
     t.index ["user_id"], name: "index_cv_generations_on_user_id"
+  end
+
+  create_table "cv_imports", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "original_filename"
+    t.text "extracted_text"
+    t.jsonb "parsed_data", default: {}
+    t.text "error_message"
+    t.string "detected_language"
+    t.bigint "resume_id"
+    t.string "job_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["detected_language"], name: "index_cv_imports_on_detected_language"
+    t.index ["job_id"], name: "index_cv_imports_on_job_id"
+    t.index ["resume_id"], name: "index_cv_imports_on_resume_id"
+    t.index ["status"], name: "index_cv_imports_on_status"
+    t.index ["user_id"], name: "index_cv_imports_on_user_id"
   end
 
   create_table "educations", force: :cascade do |t|
@@ -202,6 +221,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_191645) do
   add_foreign_key "cv_analyses", "users"
   add_foreign_key "cv_generations", "resumes"
   add_foreign_key "cv_generations", "users"
+  add_foreign_key "cv_imports", "resumes"
+  add_foreign_key "cv_imports", "users"
   add_foreign_key "educations", "resumes"
   add_foreign_key "languages", "resumes"
   add_foreign_key "linkedin_imports", "resumes"

@@ -1,0 +1,32 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+pending_import:
+  user: test_user
+  status: pending
+  original_filename: resume.pdf
+  extracted_text: "John Doe\nSoftware Engineer"
+  detected_language: en
+
+completed_import:
+  user: test_user
+  status: completed
+  original_filename: complete_resume.pdf
+  extracted_text: "Jane Smith\nProduct Manager"
+  parsed_data: '{"complete_name": "Jane Smith", "email": "jane@example.com"}'
+  detected_language: en
+
+failed_import:
+  user: test_user
+  status: failed
+  original_filename: failed_resume.pdf
+  extracted_text: "Some text"
+  error_message: "Failed to parse"
+  detected_language: en
+
+arabic_import:
+  user: test_user
+  status: failed
+  original_filename: arabic_resume.pdf
+  extracted_text: "محمد أحمد - مدير مشروع"
+  error_message: "السيرة الذاتية تحتوي على نص عربي"
+  detected_language: ar
