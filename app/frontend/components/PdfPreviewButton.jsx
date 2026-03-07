@@ -1,7 +1,21 @@
 import React from "react";
+import i18n from "../lib/i18n";
+
+// Simple translation function using i18n directly (avoids hook issues)
+const t = (key, options) => i18n.t(key, options);
 
 const PdfPreviewButton = ({ cvId }) => {
  const handlePreview = async () => {
+  // Get translations for popup window
+  const translations = {
+    title: t('preview.title'),
+    close: t('common.close'),
+    loading: t('preview.loading'),
+    error: t('preview.error'),
+    downloadFile: t('preview.download_file'),
+    errorAlert: t('preview.error_alert')
+  };
+  
   try {
    const response = await fetch(`/cv_generations/${cvId}/preview`);
    if (!response.ok) {
@@ -18,7 +32,7 @@ const PdfPreviewButton = ({ cvId }) => {
         <!DOCTYPE html>
         <html>
           <head>
-            <title>CV Preview</title>
+            <title>${translations.title}</title>
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <style>
@@ -87,14 +101,14 @@ const PdfPreviewButton = ({ cvId }) => {
           </head>
           <body>
             <div class="header">
-              <h1 style="margin: 0; font-size: 1.25rem;">معاينة السيرة الذاتية</h1>
-              <button class="close-btn" onclick="window.close()">إغلاق</button>
+              <h1 style="margin: 0; font-size: 1.25rem;">${translations.title}</h1>
+              <button class="close-btn" onclick="window.close()">${translations.close}</button>
             </div>
             <div class="pdf-container">
-              <div id="loading" class="loading">جاري تحميل معاينة السيرة الذاتية...</div>
+              <div id="loading" class="loading">${translations.loading}</div>
               <div id="error" class="error-message">
-                تعذر عرض ملف PDF. 
-                <a href="${pdfUrl}" download="cv_preview.pdf">تحميل الملف</a>
+                ${translations.error} 
+                <a href="${pdfUrl}" download="cv_preview.pdf">${translations.downloadFile}</a>
               </div>
               <iframe
                 class="pdf-viewer"
@@ -121,9 +135,7 @@ const PdfPreviewButton = ({ cvId }) => {
    previewWindow.document.close();
   } catch (error) {
    console.error("Error previewing PDF:", error);
-   alert(
-    "حدث خطأ أثناء محاولة عرض معاينة السيرة الذاتية. يرجى المحاولة مرة أخرى."
-   );
+   alert(translations.errorAlert);
   }
  };
 
@@ -133,7 +145,7 @@ const PdfPreviewButton = ({ cvId }) => {
    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center"
   >
    <span className="mr-2">👁️</span>
-   معاينة السيرة الذاتية
+   {t('preview.button')}
   </button>
  );
 };

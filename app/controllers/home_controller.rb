@@ -1,4 +1,6 @@
 class HomeController < ApplicationController
+  layout false, only: [:index]
+
   def index
     # Test Sidekiq job if requested
     if params[:test_sidekiq]

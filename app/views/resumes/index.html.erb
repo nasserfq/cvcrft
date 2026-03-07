@@ -2,13 +2,13 @@
   <!-- Header with Actions -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
     <div class="text-center sm:text-right w-full sm:w-auto">
-      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2">سيرتي الذاتية</h1>
-      <p class="text-gray-600 dark:text-gray-300">إدارة وتحرير سيرك الذاتية</p>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2"><%= t('resume.my_resume') %></h1>
+      <p class="text-gray-600 dark:text-gray-300"><%= t('resume.manage_resumes') %></p>
     </div>
     <div class="flex gap-3 w-full sm:w-auto justify-center sm:justify-end">
       <%= link_to new_resume_path, class: 'inline-flex items-center gap-2 bg-action hover:bg-actionHover text-darkBase font-medium py-2.5 px-4 rounded-lg transition-colors', data: { hoverable: true } do %>
         <iconify-icon icon="solar:add-circle-bold" width="20"></iconify-icon>
-        إنشاء سيرة جديدة
+        <%= t('resume.create_new') %>
       <% end %>
     </div>
   </div>
@@ -20,19 +20,19 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
       <div class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-gray-200 dark:border-white/10 shadow-sm">
         <div class="text-2xl font-bold text-darkBase dark:text-white"><%= total_count %></div>
-        <div class="text-sm text-gray-600 dark:text-gray-400">إجمالي السير</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400"><%= t('resume.total_resumes') %></div>
       </div>
       <div class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-primary/20 shadow-sm">
         <div class="text-2xl font-bold text-primary"><%= @drafts.size %></div>
-        <div class="text-sm text-gray-600 dark:text-gray-400">مسودات</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400"><%= t('resume.drafts') %></div>
       </div>
       <div class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-action/30 shadow-sm">
         <div class="text-2xl font-bold text-action"><%= @resumes.size %></div>
-        <div class="text-sm text-gray-600 dark:text-gray-400">مكتملة</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400"><%= t('resume.completed') %></div>
       </div>
       <div class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-primary/20 shadow-sm">
         <div class="text-2xl font-bold text-primary"><%= @cv_generations.size %></div>
-        <div class="text-sm text-gray-600 dark:text-gray-400">مولدة بالذكاء</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400"><%= t('resume.ai_generated') %></div>
       </div>
     </div>
   <% end %>
@@ -42,13 +42,13 @@
     <div class="flex items-center gap-2 mb-6 flex-wrap">
       <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-sm font-medium ring-1 ring-primary/30">
         <iconify-icon icon="solar:folder-bold" width="16"></iconify-icon>
-        الكل
+        <%= t('resume.all') %>
         <span class="bg-primary/20 px-2 py-0.5 rounded-full text-xs"><%= total_count %></span>
       </span>
       <% if @drafts.any? %>
         <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/5 text-gray-600 dark:text-gray-300 text-sm font-medium border border-gray-200 dark:border-white/10">
           <iconify-icon icon="solar:document-text-bold" width="16"></iconify-icon>
-          مسودات
+          <%= t('resume.drafts') %>
           <span class="bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-xs"><%= @drafts.size %></span>
         </span>
       <% end %>
@@ -62,7 +62,7 @@
         <div class="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-xl flex items-center justify-center">
           <iconify-icon icon="solar:document-text-bold" class="text-primary" width="20"></iconify-icon>
         </div>
-        <h2 class="text-xl font-bold text-darkBase dark:text-white">مسودات قيد العمل</h2>
+        <h2 class="text-xl font-bold text-darkBase dark:text-white"><%= t('resume.drafts_in_progress') %></h2>
         <span class="bg-primary/10 dark:bg-primary/20 text-primary text-xs font-semibold px-3 py-1 rounded-full"><%= @drafts.size %></span>
       </div>
 
@@ -71,7 +71,7 @@
           <% step = resume.draft_data&.dig('current_step') || 1 %>
           <div id="resume_<%= resume.id %>" class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-primary/50 p-5 transition-all hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 group relative">
             <!-- Delete Button -->
-            <%= button_to resume_path(resume), method: :delete, form: { data: { turbo_confirm: 'هل أنت متأكد من حذف هذه المسودة؟' } }, class: 'absolute top-3 left-3 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10', title: 'حذف' do %>
+            <%= button_to resume_path(resume), method: :delete, form: { data: { turbo_confirm: t('resume.delete_draft_confirm') } }, class: 'absolute top-3 left-3 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10', title: t('actions.delete') do %>
               <iconify-icon icon="solar:trash-bin-trash-bold" width="16"></iconify-icon>
             <% end %>
 
@@ -79,8 +79,8 @@
               <!-- Header -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="px-2.5 py-1 text-xs bg-primary/10 dark:bg-primary/20 text-primary rounded-full font-medium">مسودة</span>
-                  <span class="px-2 py-1 text-xs bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-full">الخطوة <%= step %>/4</span>
+                  <span class="px-2.5 py-1 text-xs bg-primary/10 dark:bg-primary/20 text-primary rounded-full font-medium"><%= t('resume.draft') %></span>
+                  <span class="px-2 py-1 text-xs bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-full"><%= t('resume.step_of', step: step) %></span>
                   <% if resume.source == "linkedin" %>
                     <span class="px-2.5 py-1 text-xs bg-[#0077B5] text-white rounded-full font-medium flex items-center gap-1">
                       <iconify-icon icon="mdi:linkedin" width="12"></iconify-icon>
@@ -90,19 +90,19 @@
                 </div>
                 <div class="flex items-center gap-1">
                   <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                  <span class="text-xs text-primary font-medium">قيد العمل</span>
+                  <span class="text-xs text-primary font-medium"><%= t('resume.in_progress') %></span>
                 </div>
               </div>
 
               <!-- Name -->
               <h3 class="text-lg font-bold text-darkBase dark:text-white mb-1 truncate">
-                <%= resume.complete_name.present? ? resume.complete_name : "سيرة بدون اسم" %>
+                <%= resume.complete_name.present? ? resume.complete_name : t('resume.no_name_draft') %>
               </h3>
               
               <!-- Email -->
               <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
                 <iconify-icon icon="solar:letter-bold" width="16"></iconify-icon>
-                <span class="truncate"><%= resume.email.presence || "لم يتم إدخال البريد" %></span>
+                <span class="truncate"><%= resume.email.presence || t('resume.email_not_entered') %></span>
               </div>
 
               <!-- Professional Summary Preview -->
@@ -116,7 +116,7 @@
               <!-- Progress Bar -->
               <div class="mb-4 p-3 bg-primary/5 dark:bg-primary/10 rounded-xl">
                 <div class="flex justify-between text-xs mb-2">
-                  <span class="text-primary font-medium">التقدم في الإنشاء</span>
+                  <span class="text-primary font-medium"><%= t('resume.creation_progress') %></span>
                   <span class="text-primary font-bold"><%= ((step.to_f / 4) * 100).round %>%</span>
                 </div>
                 <div class="w-full bg-primary/20 rounded-full h-2">
@@ -128,15 +128,15 @@
               <div class="flex flex-wrap items-center gap-2 text-xs mb-4 pb-4 border-b border-gray-100 dark:border-white/10">
                 <span class="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 text-primary px-2 py-1 rounded-full">
                   <iconify-icon icon="solar:case-bold" width="14"></iconify-icon>
-                  <%= resume.work_experiences.size %> خبرات
+                  <%= t('resume.experiences_count', count: resume.work_experiences.size) %>
                 </span>
                 <span class="flex items-center gap-1 bg-action/10 dark:bg-action/20 text-action px-2 py-1 rounded-full">
                   <iconify-icon icon="solar:square-academic-cap-bold" width="14"></iconify-icon>
-                  <%= resume.educations.size rescue 0 %> تعليم
+                  <%= t('resume.education_count', count: (resume.educations.size rescue 0)) %>
                 </span>
                 <span class="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 text-primary px-2 py-1 rounded-full">
                   <iconify-icon icon="solar:star-bold" width="14"></iconify-icon>
-                  <%= resume.skills.size %> مهارات
+                  <%= t('resume.skills_count', count: resume.skills.size) %>
                 </span>
               </div>
 
@@ -145,13 +145,13 @@
                 <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                   <iconify-icon icon="solar:clock-circle-bold" width="14"></iconify-icon>
                   <% if resume.draft_data&.dig('saved_at') %>
-                    آخر تحديث: <%= Time.parse(resume.draft_data['saved_at']).strftime("%d/%m/%Y %H:%M") rescue resume.updated_at.strftime("%d/%m/%Y %H:%M") %>
+                    <%= t('resume.last_updated') %> <%= (Time.parse(resume.draft_data['saved_at']).strftime("%d/%m/%Y %H:%M") rescue resume.updated_at.strftime("%d/%m/%Y %H:%M")) %>
                   <% else %>
-                    تم الإنشاء: <%= resume.created_at.strftime("%d/%m/%Y") %>
+                    <%= t('resume.created') %> <%= resume.created_at.strftime("%d/%m/%Y") %>
                   <% end %>
                 </div>
                 <div class="flex items-center gap-1 text-primary group-hover:text-primaryHover transition-colors">
-                  <span class="text-sm font-medium">استكمال</span>
+                  <span class="text-sm font-medium"><%= t('resume.continue') %></span>
                   <iconify-icon icon="solar:arrow-left-bold" class="transform group-hover:-translate-x-1 transition-transform" width="16"></iconify-icon>
                 </div>
               </div>
@@ -170,7 +170,7 @@
           <div class="w-10 h-10 bg-action/10 dark:bg-action/20 rounded-xl flex items-center justify-center">
             <iconify-icon icon="solar:verified-check-bold" class="text-action" width="20"></iconify-icon>
           </div>
-          <h2 class="text-xl font-bold text-darkBase dark:text-white">سير ذاتية مكتملة</h2>
+          <h2 class="text-xl font-bold text-darkBase dark:text-white"><%= t('resume.completed_resumes') %></h2>
           <span class="bg-action/10 dark:bg-action/20 text-action text-xs font-semibold px-3 py-1 rounded-full"><%= @resumes.size %></span>
         </div>
 
@@ -178,7 +178,7 @@
           <% @resumes.each do |resume| %>
             <div id="resume_<%= resume.id %>" class="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-white/10 hover:border-action/50 dark:hover:border-action/50 p-5 transition-all hover:shadow-lg hover:shadow-action/5 hover:-translate-y-1 group relative">
               <!-- Delete Button -->
-              <%= button_to resume_path(resume), method: :delete, form: { data: { turbo_confirm: 'هل أنت متأكد من حذف هذه السيرة الذاتية؟' } }, class: 'absolute top-3 left-3 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10', title: 'حذف' do %>
+              <%= button_to resume_path(resume), method: :delete, form: { data: { turbo_confirm: t('resume.delete_resume_confirm') } }, class: 'absolute top-3 left-3 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10', title: t('actions.delete') do %>
                 <iconify-icon icon="solar:trash-bin-trash-bold" width="16"></iconify-icon>
               <% end %>
 
@@ -190,7 +190,7 @@
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-2.5 py-1 text-xs bg-action/10 dark:bg-action/20 text-action rounded-full font-medium flex items-center gap-1">
                       <iconify-icon icon="solar:check-circle-bold" width="12"></iconify-icon>
-                      مكتملة
+                      <%= t('resume.completed') %>
                     </span>
                     <% if resume.source == "linkedin" %>
                       <span class="px-2.5 py-1 text-xs bg-[#0077B5] text-white rounded-full font-medium flex items-center gap-1">
@@ -207,7 +207,7 @@
 
                 <!-- Name -->
                 <h3 class="text-lg font-bold text-darkBase dark:text-white mb-1 truncate">
-                  <%= resume.complete_name.presence || "سيرة بدون اسم" %>
+                  <%= resume.complete_name.presence || t('resume.no_name_draft') %>
                 </h3>
                 
                 <!-- Email -->
@@ -228,20 +228,20 @@
                 <div class="flex flex-wrap items-center gap-2 text-xs mb-4 pb-4 border-b border-gray-100 dark:border-white/10">
                   <span class="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 text-primary px-2 py-1 rounded-full">
                     <iconify-icon icon="solar:case-bold" width="14"></iconify-icon>
-                    <%= resume.work_experiences.size %> خبرات
+                    <%= t('resume.experiences_count', count: resume.work_experiences.size) %>
                   </span>
                   <span class="flex items-center gap-1 bg-action/10 dark:bg-action/20 text-action px-2 py-1 rounded-full">
                     <iconify-icon icon="solar:square-academic-cap-bold" width="14"></iconify-icon>
-                    <%= resume.educations.size rescue 0 %> تعليم
+                    <%= t('resume.education_count', count: (resume.educations.size rescue 0)) %>
                   </span>
                   <span class="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 text-primary px-2 py-1 rounded-full">
                     <iconify-icon icon="solar:star-bold" width="14"></iconify-icon>
-                    <%= resume.skills.size %> مهارات
+                    <%= t('resume.skills_count', count: resume.skills.size) %>
                   </span>
                   <% if resume.respond_to?(:certificates) && resume.certificates.any? %>
                     <span class="flex items-center gap-1 bg-action/10 dark:bg-action/20 text-action px-2 py-1 rounded-full">
                       <iconify-icon icon="solar:medal-ribbons-star-bold" width="14"></iconify-icon>
-                      <%= resume.certificates.size %> شهادات
+                      <%= t('resume.certificates_count', count: resume.certificates.size) %>
                     </span>
                   <% end %>
                 </div>
@@ -249,10 +249,10 @@
                 <!-- Footer with CTA -->
                 <div class="flex items-center justify-between">
                   <div class="text-xs text-gray-400 dark:text-gray-500">
-                    تم الإنشاء: <%= resume.created_at.strftime("%d/%m/%Y") %>
+                    <%= t('resume.created') %> <%= resume.created_at.strftime("%d/%m/%Y") %>
                   </div>
                   <div class="flex items-center gap-1 text-action group-hover:text-actionHover transition-colors">
-                    <span class="text-sm font-medium">عرض التفاصيل</span>
+                    <span class="text-sm font-medium"><%= t('resume.view_details') %></span>
                     <iconify-icon icon="solar:arrow-left-bold" class="transform group-hover:-translate-x-1 transition-transform" width="16"></iconify-icon>
                   </div>
                 </div>
@@ -263,7 +263,7 @@
                 <% edit_link = linkedin_import.present? ? linkedin_import_show_path(linkedin_import) : edit_resume_path(resume) %>
                 <%= link_to edit_link, class: 'w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary rounded-lg transition-colors text-sm font-medium' do %>
                   <iconify-icon icon="solar:pen-bold" width="16"></iconify-icon>
-                  تعديل السيرة الذاتية
+                  <%= t('resume.edit_resume') %>
                 <% end %>
               </div>
             </div>
@@ -279,7 +279,7 @@
           <div class="w-10 h-10 bg-gradient-to-br from-primary/20 to-action/20 rounded-xl flex items-center justify-center">
             <iconify-icon icon="solar:magic-stick-3-bold" class="text-primary" width="20"></iconify-icon>
           </div>
-          <h2 class="text-xl font-bold text-darkBase dark:text-white">مولدة بالذكاء الاصطناعي</h2>
+          <h2 class="text-xl font-bold text-darkBase dark:text-white"><%= t('resume.ai_generated_title') %></h2>
           <span class="bg-gradient-to-r from-primary/10 to-action/10 dark:from-primary/20 dark:to-action/20 text-primary text-xs font-semibold px-3 py-1 rounded-full"><%= @cv_generations.size %></span>
         </div>
 
@@ -287,7 +287,7 @@
           <% @cv_generations.each do |generation| %>
             <div id="cv_generation_<%= generation.id %>" class="bg-gradient-to-br from-white/80 to-primary/5 dark:from-white/5 dark:to-primary/10 backdrop-blur-sm rounded-2xl border border-primary/20 hover:border-primary/50 p-5 transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 group relative">
               <!-- Delete Button -->
-              <%= button_to cv_generation_path(generation), method: :delete, form: { data: { turbo_confirm: 'هل أنت متأكد من حذف هذه السيرة المولدة؟' } }, class: 'absolute top-3 left-3 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10', title: 'حذف' do %>
+              <%= button_to cv_generation_path(generation), method: :delete, form: { data: { turbo_confirm: t('resume.delete_generated_confirm') } }, class: 'absolute top-3 left-3 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-10', title: t('actions.delete') do %>
                 <iconify-icon icon="solar:trash-bin-trash-bold" width="16"></iconify-icon>
               <% end %>
 
@@ -296,7 +296,7 @@
                 <div class="flex items-start justify-between mb-4">
                   <span class="px-2.5 py-1 text-xs bg-gradient-to-r from-primary/10 to-action/10 dark:from-primary/20 dark:to-action/20 text-primary rounded-full font-medium flex items-center gap-1">
                     <iconify-icon icon="solar:magic-stick-3-bold" width="12"></iconify-icon>
-                    ذكاء اصطناعي
+                    <%= t('resume.artificial_intelligence') %>
                   </span>
                   <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
                     <iconify-icon icon="solar:clock-circle-bold" width="14"></iconify-icon>
@@ -305,12 +305,12 @@
                 </div>
 
                 <!-- Title -->
-                <h3 class="text-lg font-bold text-darkBase dark:text-white mb-3">سيرة ذاتية #<%= generation.id %></h3>
+                <h3 class="text-lg font-bold text-darkBase dark:text-white mb-3"><%= t('resume.cv_number', id: generation.id) %></h3>
 
                 <!-- Job Description Preview -->
                 <% if generation.job_description.present? %>
                   <div class="p-3 bg-white/70 dark:bg-white/5 rounded-xl mb-4">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">الوظيفة المستهدفة:</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium"><%= t('resume.target_job') %></p>
                     <p class="text-sm text-gray-700 dark:text-gray-300 line-clamp-2"><%= truncate(generation.job_description, length: 100) %></p>
                   </div>
                 <% end %>
@@ -318,7 +318,7 @@
                 <!-- Generated Content Preview -->
                 <% if generation.generated_content.present? %>
                   <div class="p-3 bg-primary/5 dark:bg-primary/10 rounded-xl mb-4">
-                    <p class="text-xs text-primary mb-1 font-medium">المحتوى المولد:</p>
+                    <p class="text-xs text-primary mb-1 font-medium"><%= t('resume.generated_content') %></p>
                     <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-2"><%= truncate(generation.generated_content, length: 100) %></p>
                   </div>
                 <% end %>
@@ -327,7 +327,7 @@
                 <% if generation.metadata&.dig("pdf_generated") %>
                   <div class="flex items-center gap-2 mb-4 p-2 bg-action/10 dark:bg-action/20 border border-action/30 rounded-xl">
                     <iconify-icon icon="solar:verified-check-bold" class="text-action" width="16"></iconify-icon>
-                    <span class="text-xs text-action font-medium">PDF جاهز للتحميل</span>
+                    <span class="text-xs text-action font-medium"><%= t('resume.pdf_ready') %></span>
                   </div>
                 <% end %>
 
@@ -335,10 +335,10 @@
                 <div class="flex items-center justify-between pt-4 border-t border-primary/10 dark:border-primary/20">
                   <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-gradient-to-r from-primary to-action rounded-full"></span>
-                    <span class="text-xs text-primary">تم التوليد تلقائياً</span>
+                    <span class="text-xs text-primary"><%= t('resume.auto_generated') %></span>
                   </div>
                   <div class="flex items-center gap-1 text-primary group-hover:text-primaryHover transition-colors">
-                    <span class="text-sm font-medium">عرض التفاصيل</span>
+                    <span class="text-sm font-medium"><%= t('resume.view_details') %></span>
                     <iconify-icon icon="solar:arrow-left-bold" class="transform group-hover:-translate-x-1 transition-transform" width="16"></iconify-icon>
                   </div>
                 </div>
@@ -356,16 +356,16 @@
       <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary/10 to-action/10 dark:from-primary/20 dark:to-action/20 rounded-2xl flex items-center justify-center">
         <iconify-icon icon="solar:document-add-bold" class="text-primary" width="40"></iconify-icon>
       </div>
-      <h3 class="text-xl font-bold text-darkBase dark:text-white mb-2">لا توجد سير ذاتية بعد</h3>
-      <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">ابدأ رحلتك المهنية بإنشاء سيرة ذاتية احترافية تساعدك في الحصول على وظيفة أحلامك</p>
+      <h3 class="text-xl font-bold text-darkBase dark:text-white mb-2"><%= t('resume.no_resumes_yet') %></h3>
+      <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto"><%= t('resume.start_journey') %></p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <%= link_to new_resume_path, class: 'inline-flex items-center justify-center gap-2 bg-action hover:bg-actionHover text-darkBase font-medium py-3 px-6 rounded-xl transition-colors' do %>
           <iconify-icon icon="solar:add-circle-bold" width="20"></iconify-icon>
-          إنشاء سيرة ذاتية جديدة
+          <%= t('resume.create_new_resume') %>
         <% end %>
         <%= link_to new_cv_generation_path, class: 'inline-flex items-center justify-center gap-2 bg-primary hover:bg-primaryHover text-white font-medium py-3 px-6 rounded-xl transition-colors' do %>
           <iconify-icon icon="solar:magic-stick-3-bold" width="20"></iconify-icon>
-          توليد بالذكاء الاصطناعي
+          <%= t('resume.generate_with_ai') %>
         <% end %>
       </div>
     </div>

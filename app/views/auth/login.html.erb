@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="scroll-smooth">
+<html lang="<%= I18n.locale %>" dir="<%= text_direction %>" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول — سيرة</title>
-    <meta name="description" content="سجل دخولك إلى منشئ السيرة الذاتية بالذكاء الاصطناعي" />
+    <title><%= t('auth.page_title') %> — <%= t('site.name') %></title>
+    <meta name="description" content="<%= t('auth.page_description') %>" />
     <meta name="theme-color" content="#7B2FF7" />
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -84,16 +84,16 @@
             <!-- Logo -->
             <div class="flex items-center gap-2 z-50">
                 <a href="/" class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2">
-                    <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
-                    سيرة
+                    <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"><%= I18n.locale == :ar ? 'س' : 'C' %></span>
+                    <%= t('site.name') %>
                 </a>
             </div>
 
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center gap-8 text-sm font-normal text-gray-500 dark:text-gray-400">
-                <a href="/#features" class="hover:text-primary transition-colors">المميزات</a>
-                <a href="/#how-it-works" class="hover:text-primary transition-colors">كيف يعمل</a>
-                <a href="/#templates" class="hover:text-primary transition-colors">القوالب</a>
+                <a href="/#features" class="hover:text-primary transition-colors"><%= t('nav.features') %></a>
+                <a href="/#how-it-works" class="hover:text-primary transition-colors"><%= t('nav.how_it_works') %></a>
+                <a href="/#templates" class="hover:text-primary transition-colors"><%= t('nav.templates') %></a>
             </div>
 
             <!-- Actions -->
@@ -105,7 +105,7 @@
                 
                 <span class="flex items-center gap-2 text-sm text-primary dark:text-action">
                     <iconify-icon icon="solar:login-2-linear" width="20"></iconify-icon>
-                    <span>تسجيل الدخول</span>
+                    <span><%= t('nav.login') %></span>
                 </span>
             </div>
 
@@ -126,13 +126,13 @@
         <div class="text-center">
           <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 dark:bg-primary/10 mb-4 backdrop-blur-md">
             <iconify-icon icon="solar:shield-check-linear" width="16" class="text-action"></iconify-icon>
-            <span class="text-primary dark:text-action text-xs md:text-sm font-normal">تسجيل دخول آمن</span>
+            <span class="text-primary dark:text-action text-xs md:text-sm font-normal"><%= t('auth.secure_login') %></span>
           </div>
           <h1 class="text-3xl sm:text-4xl font-medium tracking-tight text-darkBase dark:text-white">
-            مرحباً بك في <span class="gradient-text">سيرة</span>
+            <%= t('auth.welcome') %> <span class="gradient-text"><%= t('site.name') %></span>
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400 leading-7">
-            أدخل بريدك الإلكتروني للحصول على رمز التحقق
+            <%= t('auth.otp_instruction') %>
           </p>
         </div>
 
@@ -161,7 +161,7 @@
               <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
               <%= hidden_field_tag :return_to, params[:return_to] %>
               <div>
-                <label for="email" class="block text-sm font-medium text-darkBase dark:text-white mb-2">البريد الإلكتروني</label>
+                <label for="email" class="block text-sm font-medium text-darkBase dark:text-white mb-2"><%= t('auth.email') %></label>
                 <input 
                   id="email" 
                   name="email" 
@@ -169,7 +169,7 @@
                   autocomplete="email" 
                   required 
                   class="w-full rounded-xl border border-borderLight dark:border-borderDark bg-white/70 dark:bg-white/5 px-4 py-3.5 text-sm text-darkBase dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" 
-                  placeholder="أدخل بريدك الإلكتروني"
+                  placeholder="<%= t('auth.email_placeholder') %>"
                 />
               </div>
               <button 
@@ -178,7 +178,7 @@
               >
                 <iconify-icon icon="solar:letter-linear" width="18" class="btn-icon"></iconify-icon>
                 <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span class="btn-text">إرسال رمز التحقق</span>
+                <span class="btn-text"><%= t('auth.send_code') %></span>
               </button>
             </form>
           </div>
@@ -197,14 +197,14 @@
                 <div class="flex items-center gap-3">
                   <iconify-icon icon="solar:letter-linear" width="20" class="text-action"></iconify-icon>
                   <div>
-                    <p class="text-sm font-medium text-darkBase dark:text-white">تم إرسال رمز التحقق</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">إلى <%= params[:email] %> • صالح لمدة 10 دقائق</p>
+                    <p class="text-sm font-medium text-darkBase dark:text-white"><%= t('auth.code_sent') %></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400"><%= t('auth.code_sent_to', email: params[:email]) %></p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label for="otp_code" class="block text-sm font-medium text-darkBase dark:text-white mb-2">رمز التحقق</label>
+                <label for="otp_code" class="block text-sm font-medium text-darkBase dark:text-white mb-2"><%= t('auth.verification_code') %></label>
                 <input 
                   id="otp_code" 
                   name="otp_code" 
@@ -222,7 +222,7 @@
               >
                 <iconify-icon icon="solar:login-2-linear" width="18" class="btn-icon"></iconify-icon>
                 <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span class="btn-text">تسجيل الدخول</span>
+                <span class="btn-text"><%= t('auth.login_title') %></span>
               </button>
             </form>
           </div>
@@ -231,14 +231,34 @@
         <!-- Footer -->
         <div class="text-center">
           <p class="text-xs text-gray-500 dark:text-gray-400">
-            بالضغط على "تسجيل الدخول" فإنك توافق على 
-            <a href="#" class="text-primary hover:text-primaryHover dark:text-action transition-colors">شروط الخدمة</a>
-            و
-            <a href="<%= privacy_path %>" class="text-primary hover:text-primaryHover dark:text-action transition-colors">سياسة الخصوصية</a>
+            <%= t('auth.terms_agreement') %>
+            <a href="#" class="text-primary hover:text-primaryHover dark:text-action transition-colors"><%= t('auth.terms_of_service') %></a>
+            <%= t('auth.and') %>
+            <a href="<%= privacy_path %>" class="text-primary hover:text-primaryHover dark:text-action transition-colors"><%= t('auth.privacy_policy') %></a>
           </p>
         </div>
       </div>
     </div>
+
+    <!-- Site Footer -->
+    <footer class="border-t border-borderLight dark:border-borderDark bg-gray-50 dark:bg-darkBase pt-8 pb-6 px-4 sm:px-6">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
+        <div class="flex items-center gap-3">
+          <span class="bg-primary text-white w-6 h-6 rounded flex items-center justify-center text-xs font-bold"><%= I18n.locale == :ar ? 'س' : 'C' %></span>
+          <span class="font-medium text-lg text-darkBase dark:text-white"><%= I18n.locale == :ar ? 'سيرة' : 'CVCraft' %></span>
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-gray-500">
+          <a href="#" class="hover:text-primary transition-colors"><%= t('footer.terms') %></a>
+          <a href="<%= privacy_path %>" class="hover:text-primary transition-colors"><%= t('footer.privacy') %></a>
+          <a href="#" class="hover:text-primary transition-colors"><%= t('footer.contact') %></a>
+        </div>
+
+        <div class="text-xs text-gray-500">
+          © <%= Time.current.year %> <%= I18n.locale == :ar ? 'سيرة' : 'CVCraft' %>. <%= t('footer.copyright') %>
+        </div>
+      </div>
+    </footer>
 
     <script>
         // Theme Logic

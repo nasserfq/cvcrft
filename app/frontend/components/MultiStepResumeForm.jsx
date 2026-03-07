@@ -1,7 +1,11 @@
 import React, { useState, useEffect, Suspense, lazy, memo } from "react";
 import { createPortal } from "react-dom";
+import i18n from "../lib/i18n";
 import { trackEvent } from "../lib/posthog";
 import CvImportModal from "./cv-builder/CvImportModal";
+
+// Simple translation function using i18n directly (avoids hook issues)
+const t = (key, options) => i18n.t(key, options);
 
 // Helper to check if text is primarily English (allows numbers, punctuation, spaces)
 // Returns true if text contains mostly English letters (Latin characters)
@@ -27,7 +31,7 @@ const isEnglishText = (text) => {
  return true;
 };
 
-const ENGLISH_VALIDATION_MSG = "يرجى الكتابة باللغة الإنجليزية";
+// Note: ENGLISH_VALIDATION_MSG is now handled via i18n t('validation.english_only')
 
 // Lazy load step components for better initial load performance
 const CombinedStep1 = lazy(() => import("./cv-builder/CombinedStep1"));
@@ -58,8 +62,9 @@ const StepLoadingSkeleton = memo(() => (
 ));
 
 const MultiStepResumeForm = ({ resume, onSubmit }) => {
- // Clean skills data to remove empty skill names
-
+ // Get translated validation message
+ const ENGLISH_VALIDATION_MSG = t('validation.english_only');
+ 
  // Clean skills data to remove empty skill names
  const cleanSkillsData = (skills) => {
   if (!skills || !Array.isArray(skills)) {
@@ -2123,7 +2128,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
-    يتم الحفظ تلقائياً
+    {t('form.auto_saved')}
    </p>
    <button
     type="button"
@@ -2131,7 +2136,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     disabled={isSavingDraft}
     className="text-xs text-slate-500 hover:text-slate-700 active:text-slate-800 underline disabled:opacity-50 py-1 px-2 rounded active:bg-slate-100 transition-all touch-manipulation"
    >
-    {isSavingDraft ? "جاري الحفظ..." : "حفظ يدوي"}
+    {isSavingDraft ? t('form.saving') : t('form.manual_save')}
    </button>
   </div>
  );
@@ -2640,7 +2645,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       <div className="flex items-center justify-between flex-wrap gap-3">
        <div className="flex items-center gap-3 flex-wrap">
         <h1 className="text-lg sm:text-2xl font-semibold text-white">
-         إنشاء سيرة ذاتية جديدة
+         {t('resume.new_title')}
         </h1>
         {/* Import CV Button - Show on step 1 */}
         {currentStep === 1 && (
@@ -2652,8 +2657,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
-          <span className="hidden sm:inline">استيراد من ملف</span>
-          <span className="sm:hidden">استيراد</span>
+          <span className="hidden sm:inline">{t('import.from_file_long')}</span>
+          <span className="sm:hidden">{t('import.from_file_short')}</span>
          </button>
         )}
        </div>
@@ -2671,7 +2676,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            جاري الحفظ...
+            {t('form.saving')}
            </>
           )}
           {autoSaveStatus === "saved" && (
@@ -2679,7 +2684,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            تم الحفظ تلقائياً
+            {t('form.auto_saved')}
            </>
           )}
           {autoSaveStatus === "error" && (
@@ -2687,13 +2692,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            خطأ في الحفظ
+            {t('form.save_error')}
            </>
           )}
          </span>
         )}
         <span className="text-xs sm:text-sm text-white/80 bg-white/10 px-3 py-1 rounded-full">
-         الخطوة {currentStep} من {totalSteps}
+         {t('steps.step_of', { current: currentStep, total: totalSteps })}
         </span>
        </div>
       </div>
@@ -2726,7 +2731,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           onClick={nextStep}
           className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#7C6CF2] px-4 py-3 text-sm font-medium text-white transition-all hover:bg-[#6A5AE0] active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)] hover:shadow-[0_0_25px_-5px_rgba(124,108,242,0.5)] touch-manipulation"
          >
-          التالي
+          {t('steps.next')}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -2744,15 +2749,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            جاري التصدير...
+            {t('form.exporting')}
            </>
           ) : (
-           <>إنشاء وتحميل</>
+           <>{t('form.create_download')}</>
           )}
          </button>
         )}
         <a href="/resumes" className="px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-[#E6E8F0] dark:ring-white/10 hover:bg-[#F8F7FF] dark:hover:bg-white/5 active:scale-[0.98] transition-all touch-manipulation">
-         إلغاء
+         {t('actions.cancel')}
         </a>
        </div>
        {currentStep > 1 && (
@@ -2764,7 +2769,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
          </svg>
-         السابق
+         {t('steps.previous')}
         </button>
        )}
       </div>

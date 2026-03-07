@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-darkBase dark:via-darkBase dark:to-darkBase py-12 transition-colors duration-300" dir="rtl">
+<div class="min-h-screen bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-darkBase dark:via-darkBase dark:to-darkBase py-12 transition-colors duration-300" dir="<%= I18n.locale == :ar ? 'rtl' : 'ltr' %>">
   <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
     
     <!-- Upload Section (shown initially) -->
@@ -9,13 +9,13 @@
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
           </svg>
-          <span>استيراد سهل</span>
+          <span><%= t('linkedin_import.badge') %></span>
         </div>
         <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
-          استورد سيرتك من LinkedIn
+          <%= t('linkedin_import.title') %>
         </h1>
         <p class="text-gray-600 dark:text-gray-300 leading-7 max-w-xl mx-auto">
-          ارفع ملف PDF الخاص بحسابك على LinkedIn وسنقوم بتحويله إلى سيرة ذاتية احترافية يمكنك تحريرها مباشرة
+          <%= t('linkedin_import.description') %>
         </p>
       </div>
 
@@ -25,14 +25,14 @@
           <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          كيف تحصل على ملف PDF من LinkedIn؟
+          <%= t('linkedin_import.how_to_title') %>
         </h2>
         <ol class="space-y-3 text-sm text-gray-600 dark:text-gray-300 list-decimal list-inside">
-          <li>افتح حسابك على <a href="https://www.linkedin.com" target="_blank" class="text-primary hover:underline">LinkedIn</a></li>
-          <li>اذهب إلى صفحة ملفك الشخصي <span class="font-medium text-gray-900 dark:text-white">"Profile" (الملف الشخصي)</span></li>
-          <li>أسفل صورة الملف الشخصي، اضغط على قسم <span class="font-medium text-gray-900 dark:text-white">"Resources" (الموارد)</span></li>
-          <li>اختر <span class="font-medium text-gray-900 dark:text-white">"Save to PDF" (حفظ بتنسيق PDF)</span></li>
-          <li>احفظ الملف على جهازك ثم ارفعه هنا</li>
+          <li><%= t('linkedin_import.step1') %> <a href="https://www.linkedin.com" target="_blank" class="text-primary hover:underline">LinkedIn</a></li>
+          <li><%= t('linkedin_import.step2') %> <span class="font-medium text-gray-900 dark:text-white"><%= t('linkedin_import.step2_profile') %></span></li>
+          <li><%= t('linkedin_import.step3') %> <span class="font-medium text-gray-900 dark:text-white"><%= t('linkedin_import.step3_resources') %></span></li>
+          <li><%= t('linkedin_import.step4') %> <span class="font-medium text-gray-900 dark:text-white"><%= t('linkedin_import.step4_save_pdf') %></span></li>
+          <li><%= t('linkedin_import.step5') %></li>
         </ol>
       </div>
 
@@ -53,15 +53,15 @@
             <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
             </svg>
-            <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">اسحب الملف وأفلته هنا</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">أو اضغط لاختيار ملف PDF</p>
+            <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2"><%= t('linkedin_import.drop_title') %></p>
+            <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('linkedin_import.drop_subtitle') %></p>
           </div>
           <div id="file-selected" class="hidden">
             <svg class="w-16 h-16 text-action mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <p class="text-lg font-medium text-action mb-2" id="selected-filename"></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">اضغط لاختيار ملف آخر</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('linkedin_import.file_selected') %></p>
           </div>
         </div>
 
@@ -74,7 +74,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
           </svg>
-          <span>ابدأ الاستيراد</span>
+          <span><%= t('linkedin_import.start_import') %></span>
         </button>
       <% end %>
 
@@ -86,8 +86,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">سريع</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">استخراج تلقائي للبيانات خلال ثوانٍ</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('linkedin_import.feature_fast') %></h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('linkedin_import.feature_fast_desc') %></p>
         </div>
         <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
           <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -95,8 +95,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">قابل للتحرير</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">حرر كل التفاصيل كما تريد</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('linkedin_import.feature_editable') %></h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('linkedin_import.feature_editable_desc') %></p>
         </div>
         <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
           <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -104,8 +104,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">تصدير PDF</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">تصدير احترافي متوافق مع ATS</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('linkedin_import.feature_pdf') %></h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('linkedin_import.feature_pdf_desc') %></p>
         </div>
       </div>
     </div>
@@ -121,42 +121,42 @@
         </div>
       </div>
       <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
-        جاري تحليل سيرتك الذاتية
+        <%= t('linkedin_import.processing_title') %>
       </h2>
       <p class="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
-        نستخدم الذكاء الاصطناعي لاستخراج البيانات من ملفك. قد تستغرق العملية حتى دقيقة واحدة.
+        <%= t('linkedin_import.processing_desc') %>
       </p>
       <div class="space-y-3 text-sm text-gray-500 dark:text-gray-400">
         <div class="flex items-center justify-center gap-3" id="step-upload">
           <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span>تم رفع الملف</span>
+          <span><%= t('linkedin_import.step_upload') %></span>
         </div>
         <div class="flex items-center justify-center gap-3" id="step-extract">
           <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span>استخراج النص</span>
+          <span><%= t('linkedin_import.step_extract') %></span>
         </div>
         <div class="flex items-center justify-center gap-3" id="step-ai">
           <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
           </svg>
-          <span id="step-ai-text">تحليل الذكاء الاصطناعي...</span>
+          <span id="step-ai-text"><%= t('linkedin_import.step_ai') %></span>
         </div>
         <div class="flex items-center justify-center gap-3" id="step-editor">
           <svg class="w-5 h-5 text-gray-300 dark:text-gray-600" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
           </svg>
-          <span id="step-editor-text" class="text-gray-400 dark:text-gray-500">تجهيز المحرر</span>
+          <span id="step-editor-text" class="text-gray-400 dark:text-gray-500"><%= t('linkedin_import.preparing_editor') %></span>
         </div>
       </div>
       <button 
         onclick="resetUpload()" 
         class="mt-8 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline transition-colors"
       >
-        إلغاء ورفع ملف آخر
+        <%= t('linkedin_import.cancel_upload_another') %>
       </button>
     </div>
 
@@ -167,8 +167,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
       </div>
-      <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">حدث خطأ</h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-6" id="error-message">فشل في معالجة الملف</p>
+      <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4"><%= t('linkedin_import.error_occurred') %></h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6" id="error-message"><%= t('linkedin_import.processing_failed') %></p>
       <button 
         onclick="resetUpload()" 
         class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primaryHover transition-colors"
@@ -176,7 +176,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
         </svg>
-        <span>ارفع ملف آخر</span>
+        <span><%= t('linkedin_import.upload_another') %></span>
       </button>
     </div>
 
@@ -184,6 +184,18 @@
 </div>
 
 <script>
+  // Translations for JavaScript
+  const LINKEDIN_TRANSLATIONS = {
+    uploading: "<%= j t('linkedin_import.uploading') %>",
+    upload_error: "<%= j t('linkedin_import.upload_error') %>",
+    ai_analysis: "<%= j t('linkedin_import.ai_analysis') %>",
+    ready: "<%= j t('linkedin_import.ready') %>",
+    preparing_editor: "<%= j t('linkedin_import.preparing_editor') %>",
+    start_import: "<%= j t('linkedin_import.start_import') %>",
+    processing_failed: "<%= j t('linkedin_import.processing_failed') %>",
+    step_ai: "<%= j t('linkedin_import.step_ai') %>"
+  };
+
   // PostHog tracking helper
   function trackLinkedInEvent(eventName, properties = {}) {
     if (typeof posthog !== 'undefined') {
@@ -254,7 +266,7 @@
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
-      <span>جاري الرفع...</span>
+      <span>${LINKEDIN_TRANSLATIONS.uploading}</span>
     `;
 
     try {
@@ -280,12 +292,12 @@
         pollStatus(data.id);
       } else {
         trackLinkedInEvent('linkedin_import_upload_failed', { error: data.error });
-        showError(data.error || 'حدث خطأ أثناء رفع الملف');
+        showError(data.error || LINKEDIN_TRANSLATIONS.upload_error);
       }
     } catch (error) {
       console.error('Upload error:', error);
       trackLinkedInEvent('linkedin_import_upload_failed', { error: error.message });
-      showError('حدث خطأ أثناء رفع الملف');
+      showError(LINKEDIN_TRANSLATIONS.upload_error);
     }
   });
 
@@ -304,14 +316,14 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         `;
-        document.getElementById('step-ai-text').textContent = 'تحليل الذكاء الاصطناعي';
+        document.getElementById('step-ai-text').textContent = LINKEDIN_TRANSLATIONS.ai_analysis;
         
         document.getElementById('step-editor-icon').outerHTML = `
           <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         `;
-        document.getElementById('step-editor-text').textContent = 'جاهز!';
+        document.getElementById('step-editor-text').textContent = LINKEDIN_TRANSLATIONS.ready;
         document.getElementById('step-editor-text').classList.remove('text-gray-400', 'dark:text-gray-500');
         
         // Redirect to editor after a short delay
@@ -320,7 +332,7 @@
         }, 500);
       } else if (data.failed) {
         trackLinkedInEvent('linkedin_import_processing_failed', { import_id: importId, error: data.error_message });
-        showError(data.error_message || 'فشل في معالجة الملف');
+        showError(data.error_message || LINKEDIN_TRANSLATIONS.processing_failed);
       } else {
         // Still processing, poll again
         setTimeout(() => pollStatus(importId), 2000);
@@ -358,7 +370,7 @@
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
       </svg>
-      <span>ابدأ الاستيراد</span>
+      <span>${LINKEDIN_TRANSLATIONS.start_import}</span>
     `;
     
     // Reset processing step icons (in case user comes back)
@@ -370,7 +382,7 @@
         </svg>
       `;
     }
-    document.getElementById('step-ai-text').textContent = 'تحليل الذكاء الاصطناعي...';
+    document.getElementById('step-ai-text').textContent = LINKEDIN_TRANSLATIONS.step_ai;
     
     const stepEditorIcon = document.getElementById('step-editor-icon');
     if (stepEditorIcon) {
@@ -381,7 +393,7 @@
       `;
     }
     const stepEditorText = document.getElementById('step-editor-text');
-    stepEditorText.textContent = 'تجهيز المحرر';
+    stepEditorText.textContent = LINKEDIN_TRANSLATIONS.preparing_editor;
     stepEditorText.classList.add('text-gray-400', 'dark:text-gray-500');
   }
 </script>

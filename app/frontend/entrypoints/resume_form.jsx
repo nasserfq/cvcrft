@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import MultiStepResumeForm from "../components/MultiStepResumeForm";
 import "../lib/posthog"; // Initialize PostHog analytics
+import "../lib/i18n"; // Initialize i18n for translations (uses initReactI18next)
 
 // Track root instances by container
 const rootMap = new WeakMap();

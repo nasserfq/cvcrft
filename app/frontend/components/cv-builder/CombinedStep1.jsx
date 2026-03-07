@@ -1,5 +1,9 @@
 import React, { memo } from "react";
 import { inputClassName } from "./FormUtils";
+import i18n from "../../lib/i18n";
+
+// Simple translation function
+const t = (key, options) => i18n.t(key, options);
 
 // Error display component
 const FieldError = ({ error }) => error ? (
@@ -55,55 +59,55 @@ const CombinedStep1 = ({
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
           <UserIcon />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">المعلومات الشخصية والملخص المهني</h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">ابدأ بإدخال معلوماتك الأساسية وملخصك المهني</p>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('step1.title')}</h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">{t('step1.subtitle')}</p>
       </div>
 
       {/* Personal Info Section */}
       <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">1</span>
-          المعلومات الشخصية
+          {t('step1.personal_section')}
         </h3>
         <div className="grid gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الاسم الكامل <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.full_name')} <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={formData.complete_name}
               onChange={(e) => handleInputChange("complete_name", e.target.value)}
               className={getInputClassName(validationErrors.complete_name)}
-              placeholder="مثال: Ahmed Ali"
+              placeholder={t('personal.full_name_placeholder')}
             />
             <FieldError error={validationErrors.complete_name} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">البريد الإلكتروني <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.email')} <span className="text-red-500">*</span></label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 className={getInputClassName(validationErrors.email)}
-                placeholder="ahmed@example.com"
+                placeholder={t('personal.email_placeholder')}
               />
               <FieldError error={validationErrors.email} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">رقم الهاتف <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.phone')} <span className="text-red-500">*</span></label>
               <input
                 type="tel"
                 value={formData.phone_number}
                 onChange={(e) => handleInputChange("phone_number", e.target.value)}
                 className={getInputClassName(validationErrors.phone_number)}
-                placeholder="+966501234567"
+                placeholder={t('personal.phone_placeholder')}
               />
               <FieldError error={validationErrors.phone_number} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">المدينة <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.city')} <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.city}
@@ -114,7 +118,7 @@ const CombinedStep1 = ({
               <FieldError error={validationErrors.city} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الدولة <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.country')} <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={formData.country}
@@ -132,21 +136,21 @@ const CombinedStep1 = ({
       <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">2</span>
-          الملخص المهني
+          {t('step1.summary_section')}
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الملخص المهني (بالعربية) <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('step1.summary_arabic')} <span className="text-red-500">*</span></label>
             <textarea
               value={formData.professional_summary}
               onChange={(e) => handleInputChange("professional_summary", e.target.value)}
               rows={4}
               className={`w-full rounded-xl ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-[#E6E8F0] dark:border-white/10 focus:ring-[#7C6CF2]/40 focus:border-[#7C6CF2]'} bg-white/70 dark:bg-[#27273A]/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none`}
-              placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك..."
+              placeholder={t('personal.summary_placeholder')}
             />
             <FieldError error={validationErrors.professional_summary} />
             <p className="mt-2 text-xs text-[#7C6CF2] bg-[#7C6CF2]/10 p-2 rounded-lg border border-[#7C6CF2]/20">
-              💡 سيقوم النظام بترجمة النص العربي إلى الإنجليزية وإنشاء ملخص مهني محسن
+              {t('step1.summary_hint')}
             </p>
           </div>
 
@@ -161,12 +165,12 @@ const CombinedStep1 = ({
               {isTranslating ? (
                 <>
                   <Spinner />
-                  جاري الترجمة...
+                  {t('step1.translating')}
                 </>
               ) : (
                 <>
                   <TranslateIcon />
-                  ترجم وأنشئ ملخص مهني ({remainingSummaryTranslations} متبقي)
+                  {t('step1.translate_summary', { remaining: remainingSummaryTranslations })}
                 </>
               )}
             </button>
@@ -180,7 +184,7 @@ const CombinedStep1 = ({
 
           {formData.professional_summary_english && (
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">الملخص المهني (بالإنجليزية)</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('step1.summary_english')}</label>
               <div className="p-4 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/50 dark:bg-white/5">
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-left" dir="ltr">{formData.professional_summary_english}</p>
               </div>

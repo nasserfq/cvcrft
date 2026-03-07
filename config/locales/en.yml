@@ -1,31 +1,536 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
+# English translations for CVCraft
 en:
   hello: "Hello world"
+  
+  # Site-wide
+  site:
+    name: "CVCraft"
+    tagline: "Craft Your Professional Future with AI"
+    description: "Create your professional resume easily with CVCraft. Import from LinkedIn or start from scratch."
+  
+  # Navigation
+  nav:
+    my_cv: "My Resume"
+    features: "Features"
+    how_it_works: "How It Works"
+    templates: "Templates"
+    login: "Login"
+    logout: "Logout"
+    logout_full: "Sign Out"
+    build_cv: "Build Your CV Now"
+    pricing: "Pricing"
+  
+  # Common actions
+  actions:
+    save: "Save"
+    cancel: "Cancel"
+    delete: "Delete"
+    edit: "Edit"
+    create: "Create"
+    update: "Update"
+    back: "Back"
+    next: "Next"
+    previous: "Previous"
+    submit: "Submit"
+    download: "Download"
+    preview: "Preview"
+    close: "Close"
+    confirm: "Confirm"
+    loading: "Loading..."
+    generating: "Generating..."
+    processing: "Processing..."
+  
+  # Authentication
+  auth:
+    login_required: "Please log in first"
+    login_title: "Sign In"
+    register_title: "Create Account"
+    email: "Email"
+    password: "Password"
+    password_confirmation: "Confirm Password"
+    name: "Name"
+    remember_me: "Remember me"
+    forgot_password: "Forgot password?"
+    no_account: "Don't have an account?"
+    have_account: "Already have an account?"
+    register_now: "Sign up"
+    login_now: "Sign in"
+    or_continue_with: "Or continue with"
+    login_success: "Signed in successfully"
+    logout_success: "Signed out successfully"
+    register_success: "Account created successfully"
+    secure_login: "Secure Login"
+    welcome: "Welcome to"
+    otp_instruction: "Enter your email to receive verification code"
+    email_placeholder: "Enter your email"
+    send_code: "Send Verification Code"
+    code_sent: "Verification code sent"
+    code_sent_to: "to %{email} • Valid for 10 minutes"
+    verification_code: "Verification Code"
+    terms_agreement: "By clicking \"Sign In\" you agree to our"
+    terms_of_service: "Terms of Service"
+    privacy_policy: "Privacy Policy"
+    and: "and"
+    page_title: "Login"
+    page_description: "Sign in to the AI resume builder"
+  
+  # Profile
+  profile:
+    title: "Profile"
+    account_info: "Account Information"
+    my_resumes: "My Resumes"
+    statistics: "Statistics"
+    delete_account: "Delete Account"
+    delete_confirm: "Are you sure you want to delete your account? This action cannot be undone."
+    home: "Home"
+    my_cv: "My Resume"
+    new_resume: "New Resume"
+    member_since: "Member since %{date}"
+    completed_resumes: "Completed Resumes"
+    drafts_in_progress: "Drafts in Progress"
+    pdf_files: "PDF Files"
+    ai_translations: "AI Translations"
+    resumes: "Resumes"
+    create_new_resume: "Create New Resume"
+    no_name: "Unnamed"
+    view: "View"
+    edit: "Edit"
+    download_pdf: "Download PDF"
+    delete: "Delete"
+    delete_resume_confirm: "Are you sure you want to delete this resume?"
+    no_resumes_yet: "No resumes yet"
+    start_creating: "Start creating your professional resume now"
+    create_first_resume: "Create First Resume"
+    drafts: "Drafts"
+    draft_no_name: "Unnamed Draft"
+    last_edited: "Last edited: %{date}"
+    continue_editing: "Continue Editing"
+    delete_draft_confirm: "Are you sure you want to delete this draft?"
+    generation_credits: "Generation Credits"
+    cv_builder_generation: "CV Builder Generation"
+    job_based_generation: "Job Description Generation"
+    translation_credits: "Translation Credits"
+    professional_summary: "Professional Summary"
+    job_descriptions: "Job Descriptions"
+    pdf_history: "PDF History"
+    status_completed: "Completed"
+    status_failed: "Failed"
+    danger_zone: "Danger Zone"
+    danger_warning: "Deleting your account will permanently remove all your data. This action cannot be undone."
+    delete_my_account: "Delete My Account Permanently"
+    delete_account_warning: "⚠️ Warning!\n\nAre you sure you want to permanently delete your account?\n\nThe following will be deleted:\n• All resumes\n• All drafts\n• All translations\n• All PDF files\n\nThis action cannot be undone!"
+    delete_final_confirm: "⚠️ Final confirmation: Do you want to delete your account? This cannot be undone!"
+  
+  # Resume/CV
+  resume:
+    title: "Resume"
+    new: "New Resume"
+    edit: "Edit Resume"
+    my_resumes: "My Resumes"
+    no_resumes: "You haven't created any resumes yet"
+    create_first: "Start by creating your first resume"
+    download_pdf: "Download PDF"
+    generate_pdf: "Generate PDF"
+    optimize_ats: "Optimize for ATS"
+    save_draft: "Save as Draft"
+    new_title: "Create a New Resume"
+    new_description: "Start building your professional resume by filling in the basic information below. We will guide you through the process step by step."
+    edit_title: "Edit Your Resume"
+    edit_description: "Update your resume information below."
+    
+    # Personal info
+    personal_info: "Personal Information"
+    full_name: "Full Name"
+    job_title: "Job Title"
+    phone: "Phone Number"
+    location: "Location"
+    linkedin: "LinkedIn Profile"
+    website: "Website"
+    summary: "Summary"
+    
+    # Work experience
+    work_experience: "Work Experience"
+    add_experience: "Add Experience"
+    company: "Company"
+    position: "Position"
+    start_date: "Start Date"
+    end_date: "End Date"
+    present: "Present"
+    description: "Description"
+    achievements: "Achievements"
+    
+    # Education
+    education: "Education"
+    add_education: "Add Education"
+    institution: "Institution"
+    degree: "Degree"
+    field_of_study: "Field of Study"
+    graduation_date: "Graduation Date"
+    gpa: "GPA"
+    
+    # Skills
+    skills: "Skills"
+    add_skill: "Add Skill"
+    skill_name: "Skill Name"
+    skill_level: "Skill Level"
+    
+    # Languages
+    languages: "Languages"
+    add_language: "Add Language"
+    language_name: "Language"
+    proficiency: "Proficiency"
+    native: "Native"
+    fluent: "Fluent"
+    advanced: "Advanced"
+    intermediate: "Intermediate"
+    beginner: "Beginner"
+    
+    # Certifications
+    certifications: "Certifications"
+    add_certification: "Add Certification"
+    certification_name: "Certification Name"
+    issuer: "Issuer"
+    issue_date: "Issue Date"
+    expiry_date: "Expiry Date"
+    credential_id: "Credential ID"
+    
+    # Projects
+    projects: "Projects"
+    add_project: "Add Project"
+    project_name: "Project Name"
+    project_url: "Project URL"
+    
+    # Show page
+    back_to_list: "Return to list"
+    no_name: "Unnamed"
+    professional_summary_title: "Professional Summary"
+    work_experience_title: "Work Experience"
+    education_title: "Education"
+    skills_title: "Skills"
+    certifications_title: "Certifications"
+    languages_title: "Languages"
+    last_updated: "Last updated:"
+    created: "Created:"
+    
+    # Index page
+    my_resume: "My Resume"
+    manage_resumes: "Manage and edit your resumes"
+    create_new: "Create new resume"
+    total_resumes: "Total Resumes"
+    drafts: "Drafts"
+    completed: "Completed"
+    ai_generated: "AI Generated"
+    all: "All"
+    drafts_in_progress: "Drafts in Progress"
+    draft: "Draft"
+    step_of: "Step %{step}/4"
+    in_progress: "In Progress"
+    no_name_draft: "Unnamed resume"
+    email_not_entered: "Email not entered"
+    creation_progress: "Creation progress"
+    experiences_count: "%{count} experiences"
+    education_count: "%{count} education"
+    skills_count: "%{count} skills"
+    certificates_count: "%{count} certificates"
+    continue: "Continue"
+    delete_draft_confirm: "Are you sure you want to delete this draft?"
+    completed_resumes: "Completed Resumes"
+    view_details: "View details"
+    edit_resume: "Edit Resume"
+    delete_resume_confirm: "Are you sure you want to delete this resume?"
+    ai_generated_title: "AI Generated"
+    artificial_intelligence: "AI"
+    cv_number: "Resume #%{id}"
+    target_job: "Target job:"
+    generated_content: "Generated content:"
+    pdf_ready: "PDF ready for download"
+    auto_generated: "Auto generated"
+    delete_generated_confirm: "Are you sure you want to delete this generated resume?"
+    no_resumes_yet: "No resumes yet"
+    start_journey: "Start your career journey by creating a professional resume that helps you land your dream job"
+    create_new_resume: "Create new resume"
+    generate_with_ai: "Generate with AI"
+    uncategorized: "Uncategorized"
+    location_separator: ", "
+  
+  # Import
+  import:
+    linkedin: "Import from LinkedIn"
+    cv_file: "Import from File"
+    upload_cv: "Upload Your Resume"
+    drag_drop: "Drag and drop file here"
+    or_click: "or click to select"
+    supported_formats: "Supported formats: PDF, DOCX"
+    importing: "Importing..."
+    import_success: "Import successful"
+    import_error: "An error occurred while importing"
+  
+  # LinkedIn Import Page
+  linkedin_import:
+    badge: "Easy Import"
+    title: "Import Your Resume from LinkedIn"
+    description: "Upload your LinkedIn PDF file and we'll convert it into a professional resume you can edit directly"
+    how_to_title: "How to get your PDF from LinkedIn?"
+    step1: "Open your account on"
+    step2: "Go to your profile page"
+    step2_profile: '"Profile"'
+    step3: "Below your profile photo, click on"
+    step3_resources: '"Resources"'
+    step4: "Choose"
+    step4_save_pdf: '"Save to PDF"'
+    step5: "Save the file to your device and upload it here"
+    drop_title: "Drag and drop file here"
+    drop_subtitle: "or click to select PDF file"
+    file_selected: "Click to select another file"
+    start_import: "Start Import"
+    feature_fast: "Fast"
+    feature_fast_desc: "Automatic data extraction in seconds"
+    feature_editable: "Editable"
+    feature_editable_desc: "Edit all details as you want"
+    feature_pdf: "PDF Export"
+    feature_pdf_desc: "Professional ATS-compatible export"
+    processing_title: "Analyzing your resume"
+    processing_desc: "We use AI to extract data from your file. This may take up to a minute."
+    step_upload: "File uploaded"
+    step_extract: "Extracting text"
+    step_ai: "AI analysis..."
+    step_editor: "Opening editor"
+    preparing_editor: "Preparing editor"
+    cancel_upload_another: "Cancel and upload another file"
+    error_occurred: "An error occurred"
+    processing_failed: "Failed to process file"
+    upload_another: "Upload another file"
+    uploading: "Uploading..."
+    upload_error: "An error occurred while uploading the file"
+    ai_analysis: "AI analysis"
+    ready: "Ready!"
+
+  # CV Generation Page
+  cv_generation:
+    badge: "AI Resume Builder"
+    title: "Create a Professional Resume"
+    description: "Use AI to create a customized professional summary based on the job description"
+    page_title: "AI Resume Builder — CV•AI"
+    page_description: "Create a professional resume in minutes using AI. Modern templates, automatic bullet point optimization, and high-quality PDF export."
+    job_description_label: "Job Description"
+    job_description_placeholder: "Enter the job description you want to apply for..."
+    select_resume_label: "Select Resume"
+    no_resumes: "No resumes available"
+    create_resume: "Create Resume"
+    error_occurred: "Sorry, an error occurred"
+    unknown_error: "Unknown error"
+    render_error: "Sorry, a rendering error occurred"
+    generating: "Generating..."
+    max_reached: "Maximum reached (%{max})"
+    generating_cv: "Generating your resume..."
+    please_wait: "Please wait while we generate your resume..."
+    selected: "Selected"
+    job_description_prefix: "Job description:"
+    cv_created_success: "Resume created successfully!"
+    delete: "Delete"
+    pdf_ready: "PDF Ready"
+    new_professional_summary: "New Professional Summary:"
+    preview_pdf: "Preview PDF"
+    download_pdf: "Download PDF"
+    pdf_not_available: "PDF not available"
+    pdf_not_generated: "PDF was not generated for this resume. Please try again."
+    error_prefix: "Error:"
+    cv_preview: "Resume Preview"
+    close: "Close"
+    loading_pdf: "Loading PDF..."
+    open_in_new_window: "Open in new window"
+    download_failed: "Failed to download file. Please try again."
+    generated_cv_name: "Generated Resume #%{id}"
+    not_specified: "Not specified"
+    ai_generated_content: "AI-generated content"
+    delete_confirm: "Are you sure you want to delete this resume? This action cannot be undone."
+    delete_failed: "Failed to delete resume."
+    delete_error: "An error occurred while deleting the resume."
+    delete_generated_confirm: "Are you sure you want to delete this generated resume?"
+    delete_generated_failed: "Failed to delete generated resume."
+    delete_generated_error: "An error occurred while deleting the generated resume."
+    max_limit_reached: "You have reached the maximum limit for resume generation (%{max}). Please try again later."
+    loading_data: "Loading data..."
+    ai_generated: "AI Generated"
+    last_generated: "Last generated:"
+    pdf_available: "PDF available"
+    processing: "Processing"
+    generation_failed: "Generation failed"
+    professional_summary: "Professional Summary:"
+    cv_builder_resume: "CV Builder resume"
+    ready_to_enhance: "Ready to enhance"
+    created_on: "Created:"
+    basic_resume: "Basic resume"
+    preview: "Preview"
+    download: "Download PDF"
+
+  # CV Analysis Page
+  cv_analysis:
+    title: "Resume Analysis"
+    analyze: "Analyze"
+    analyzing: "Analyzing..."
+    analysis_complete: "Analysis Complete"
+    score: "Score"
+    suggestions: "Suggestions"
+    strengths: "Strengths"
+    weaknesses: "Areas for Improvement"
+    badge: "AI-Powered Analysis"
+    page_title: "Analyze Your Resume"
+    description: "Get a comprehensive evaluation of your resume with strengths, improvement suggestions, and tips for ATS compatibility"
+    what_you_get: "What You'll Get?"
+    overall_score: "Overall Score (0-100)"
+    score_desc: "Points for each section of the resume"
+    strengths_title: "Strengths"
+    strengths_desc: "What makes your resume stand out"
+    improvements: "Improvement Opportunities"
+    improvements_desc: "Suggestions to improve your resume"
+    ats_tips: "ATS Tips"
+    ats_tips_desc: "Improve compatibility with recruiting systems"
+    drop_title: "Drag and drop your resume file here"
+    drop_subtitle: "or click to select PDF file"
+    optional_title: "Additional Options (Optional)"
+    target_job: "Target Job"
+    target_job_placeholder: "Example: Software Engineer"
+    industry: "Industry/Field"
+    industry_placeholder: "Example: Technology"
+    analysis_language: "Analysis Language"
+    arabic: "Arabic"
+    start_analysis: "Start Analysis"
+    click_select_another: "Click to select another file"
+    feature_smart: "Smart"
+    feature_smart_desc: "Advanced AI analysis"
+    feature_secure: "Secure"
+    feature_secure_desc: "Your data is protected and not shared"
+    feature_fast: "Fast"
+    feature_fast_desc: "Instant results in seconds"
+    back_to_home: "← Back to Home"
+    analyzing_title: "Analyzing your resume..."
+    analyzing_desc: "AI is analyzing the content and evaluating each section"
+    step_file_uploaded: "File uploaded"
+    step_extracting_text: "Extracting text..."
+    step_analyzing_content: "Analyzing content..."
+    step_creating_report: "Creating report..."
+    error_occurred: "An error occurred"
+    error_message: "An error occurred during analysis. Please try again."
+    try_again: "Try again"
+    upload_error: "An error occurred while uploading the file"
+    analysis_error: "An error occurred during analysis"
+    text_extracted: "Text extracted"
+  
+  # Templates
+  templates:
+    title: "Templates"
+    select_template: "Select a Template"
+    modern: "Modern"
+    classic: "Classic"
+    minimal: "Minimal"
+    professional: "Professional"
+    creative: "Creative"
+  
+  # Home page
+  home:
+    # Navigation
+    logo_letter: "C"
+    
+    # Hero section
+    hero_badge: "Powered by AI"
+    hero_title_1: "Your professional resume,"
+    hero_title_2: "ready in minutes."
+    hero_description: "\"CVCraft\" is the smart assistant for building ATS-compatible resumes. Tailor your resume to job descriptions, translate your experience, and import your data from LinkedIn."
+    trusted_by: "Trusted by %{count}+ job seekers"
+    
+    # Action buttons
+    resume_builder: "Resume Builder"
+    generate_by_job: "Generate by Job"
+    analyze_resume: "Analyze Resume"
+    import_from_linkedin: "Import from LinkedIn"
+    
+    # Mockup
+    job_analysis: "Job Analysis"
+    enhanced_by_ai: "Enhanced by AI"
+    score: "Score"
+    
+    # Features section
+    features_title: "Tools Designed for Your Success"
+    features_subtitle: "Everything you need to create a resume that convinces recruiters."
+    
+    feature_job_gen_title: "Generate by Job"
+    feature_job_gen_desc: "Paste the job description for the position you're targeting, and AI will craft your skills and professional summary to match its requirements perfectly."
+    
+    feature_translate_title: "Professional Instant Translation"
+    feature_translate_desc: "Write your experience in Arabic, and we'll translate and format it into professional English with one click, ready for global companies."
+    
+    feature_linkedin_title: "Import from LinkedIn"
+    feature_linkedin_desc: "No need to start from scratch. Upload your LinkedIn PDF, and we'll convert it into an editable resume instantly."
+    
+    # How it works section
+    how_title: "Resume Building Journey"
+    
+    step1_short: "Enter Info"
+    step1_title: "Enter or Import Your Information"
+    step1_desc: "Start by entering your basic information, or save time by importing your LinkedIn PDF."
+    
+    step2_short: "AI"
+    step2_title: "AI Working for You"
+    step2_desc: "Choose your target job description. The system will craft your \"About Me\" section and enhance your experience descriptions."
+    
+    step3_short: "Download"
+    step3_title: "Download and Send"
+    step3_desc: "Preview the result in our professional template, and download the file as a PDF ready to send."
+    
+    # Templates section
+    templates_label: "Templates"
+    templates_title: "Simplicity is the Key to Acceptance"
+    templates_desc: "We currently focus on providing a globally-recognized template to efficiently pass ATS systems."
+    templates_coming_soon: "More Creative Templates Coming Soon"
+    
+    # CTA section
+    cta_title: "Ready to Get Your Next Job?"
+    cta_description: "Join the many who have advanced their careers using CVCraft. The experience is completely free."
+    cta_button: "Start Now"
+    cta_no_card: "No credit card required"
+    
+    # Stats (old - keeping for compatibility)
+    hero_title: "Craft Your Professional Future"
+    hero_subtitle: "with AI"
+    start_free: "Start Free"
+    watch_demo: "Watch Demo"
+    users_count: "Users"
+    cvs_created: "Resumes Created"
+    companies_hired: "Companies Hired Our Users"
+    testimonials_title: "What Our Users Say"
+  
+  # Footer
+  footer:
+    about: "About CVCraft"
+    contact: "Contact Us"
+    privacy: "Privacy Policy"
+    terms: "Terms of Service"
+    copyright: "All rights reserved"
+    made_with_love: "Made with love"
+  
+  # Errors
+  errors:
+    general: "Something went wrong"
+    not_found: "Page not found"
+    unauthorized: "You are not authorized"
+    server_error: "Server error"
+    try_again: "Please try again"
+    required_field: "This field is required"
+    invalid_email: "Invalid email address"
+    password_too_short: "Password is too short"
+  
+  # Success messages
+  success:
+    saved: "Saved successfully"
+    updated: "Updated successfully"
+    deleted: "Deleted successfully"
+    created: "Created successfully"
+  
+  # Language switcher
+  language:
+    switch: "Change Language"
+    ar: "العربية"
+    en: "English"
+    current: "Current Language"
+

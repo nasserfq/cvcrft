@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="scroll-smooth">
+<html lang="<%= current_locale %>" dir="<%= text_direction %>" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>سيرة | اصنع مستقبلك المهني بالذكاء الاصطناعي</title>
+    <title><%= t('site.name') %> | <%= t('site.tagline') %></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -141,9 +141,9 @@
             <span
               class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"
             >
-              س
+              <%= t('home.logo_letter') %>
             </span>
-            سيرة
+            <%= t('site.name') %>
           </a>
         </div>
 
@@ -153,22 +153,29 @@
         >
           <% if user_signed_in? %>
             <%= link_to resumes_path, class: "hover:text-primary transition-colors" do %>
-              سيرتي الذاتية
+              <%= t('nav.my_cv') %>
             <% end %>
           <% end %>
           <a href="#features" class="hover:text-primary transition-colors">
-            المميزات
+            <%= t('nav.features') %>
           </a>
           <a href="#how-it-works" class="hover:text-primary transition-colors">
-            كيف يعمل
+            <%= t('nav.how_it_works') %>
           </a>
           <a href="#templates" class="hover:text-primary transition-colors">
-            القوالب
+            <%= t('nav.templates') %>
           </a>
         </div>
 
         <!-- Actions -->
         <div class="hidden md:flex items-center gap-4">
+          <!-- Language Toggle -->
+          <% target_locale = current_locale == 'ar' ? 'en' : 'ar' %>
+          <%= button_to locale_path(target_locale), method: :patch, class: "p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400 flex items-center gap-1 text-sm", title: t('language.switch') do %>
+            <iconify-icon icon="solar:global-linear" width="20" height="20" class="pointer-events-none"></iconify-icon>
+            <span class="font-medium"><%= target_locale == 'ar' ? 'ع' : 'EN' %></span>
+          <% end %>
+          
           <button
             id="themeToggle"
             onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}"
@@ -196,7 +203,7 @@
             <%= form_with url: "/auth/logout", method: :delete, class: "inline-flex" do |f| %>
               <button type="submit" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors">
                 <iconify-icon icon="solar:logout-2-linear" width="20"></iconify-icon>
-                <span>خروج</span>
+                <span><%= t('nav.logout') %></span>
               </button>
             <% end %>
           <% end %>
@@ -205,7 +212,7 @@
             href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
             class="flex items-center justify-center px-5 py-2 rounded-full bg-primary hover:bg-primaryHover text-white text-sm font-normal transition-all shadow-glow hover:shadow-lg"
           >
-            ابنِ سيرتك الآن
+            <%= t('nav.build_cv') %>
           </a>
         </div>
 
@@ -259,17 +266,24 @@
           <span
             class="bg-primary text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"
           >
-            س
+            <%= t('home.logo_letter') %>
           </span>
           <span
             class="text-xl font-medium tracking-tight text-darkBase dark:text-white"
           >
-            سيرة
+            <%= t('site.name') %>
           </span>
         </div>
 
         <!-- Actions -->
         <div class="flex items-center gap-3">
+          <!-- Language Toggle -->
+          <% target_locale_mobile = current_locale == 'ar' ? 'en' : 'ar' %>
+          <%= button_to locale_path(target_locale_mobile), method: :patch, class: "p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400 flex items-center gap-1 text-sm", title: t('language.switch') do %>
+            <iconify-icon icon="solar:global-linear" width="20" height="20" class="pointer-events-none"></iconify-icon>
+            <span class="font-medium"><%= target_locale_mobile == 'ar' ? 'ع' : 'EN' %></span>
+          <% end %>
+          
           <button
             id="themeToggleMobileInside"
             onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}"
@@ -309,7 +323,7 @@
       >
         <% if user_signed_in? %>
           <%= link_to resumes_path, class: "mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight" do %>
-            سيرتي الذاتية
+            <%= t('nav.my_cv') %>
           <% end %>
         <% end %>
         <a
@@ -317,21 +331,21 @@
           onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='features'; }, 50); return false;"
           class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
         >
-          المميزات
+          <%= t('nav.features') %>
         </a>
         <a
           href="#how-it-works"
           onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='how-it-works'; }, 50); return false;"
           class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
         >
-          كيف يعمل
+          <%= t('nav.how_it_works') %>
         </a>
         <a
           href="#templates"
           onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='templates'; }, 50); return false;"
           class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
         >
-          القوالب
+          <%= t('nav.templates') %>
         </a>
 
         <div class="pt-6 border-t border-borderLight dark:border-borderDark w-full max-w-[280px] space-y-4">
@@ -343,13 +357,13 @@
             <%= form_with url: "/auth/logout", method: :delete, class: "w-full" do |f| %>
               <button type="submit" class="w-full flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
                 <iconify-icon icon="solar:logout-2-linear" width="24"></iconify-icon>
-                <span>تسجيل الخروج</span>
+                <span><%= t('nav.logout_full') %></span>
               </button>
             <% end %>
           <% else %>
             <a href="/login" class="mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
               <iconify-icon icon="solar:login-2-linear" width="24"></iconify-icon>
-              <span>تسجيل الدخول</span>
+              <span><%= t('nav.login') %></span>
             </a>
           <% end %>
         </div>
@@ -358,7 +372,7 @@
           href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
           class="w-full max-w-[280px] py-4 rounded-2xl bg-primary hover:bg-primaryHover text-white text-lg font-medium shadow-glow text-center transition-all mt-6"
         >
-          ابنِ سيرتك الآن
+          <%= t('nav.build_cv') %>
         </a>
       </div>
     </div>
@@ -388,24 +402,22 @@
             <span
               class="text-primary dark:text-action text-xs md:text-sm font-normal tracking-wide"
             >
-              مدعوم بالذكاء الاصطناعي
+              <%= t('home.hero_badge') %>
             </span>
           </div>
 
           <h1
             class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium leading-[1.15] md:leading-[1.1] tracking-tight text-darkBase dark:text-white"
           >
-            سيرتك الذاتية الاحترافية،
+            <%= t('home.hero_title_1') %>
             <br />
-            <span class="gradient-text">جاهزة في دقائق.</span>
+            <span class="gradient-text"><%= t('home.hero_title_2') %></span>
           </h1>
 
           <p
             class="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0"
           >
-            "سيرة" هو المساعد الذكي لبناء سير ذاتية متوافقة مع أنظمة ATS. صمم
-            سيرتك لتناسب الوصف الوظيفي، ترجم خبراتك، واستورد بياناتك من
-            LinkedIn.
+            <%= t('home.hero_description') %>
           </p>
 
           <!-- Buttons Grid -->
@@ -417,7 +429,7 @@
               href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
               class="flex items-center justify-between p-4 rounded-xl bg-primary text-white hover:bg-primaryHover hover:shadow-glow transition-all group"
             >
-              <span class="font-medium text-base">منشئ السيرة الذاتية</span>
+              <span class="font-medium text-base"><%= t('home.resume_builder') %></span>
               <iconify-icon
                 icon="solar:document-add-linear"
                 width="24"
@@ -430,7 +442,7 @@
               href="<%= user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path) %>"
               class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-action dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
             >
-              <span class="font-medium text-base">توليد حسب الوظيفة</span>
+              <span class="font-medium text-base"><%= t('home.generate_by_job') %></span>
               <iconify-icon
                 icon="solar:magic-stick-3-linear"
                 width="24"
@@ -443,7 +455,7 @@
               href="<%= user_signed_in? ? cv_analysis_path : login_path(return_to: cv_analysis_path) %>"
               class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-orange-500 dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
             >
-              <span class="font-medium text-base">تحليل السيرة الذاتية</span>
+              <span class="font-medium text-base"><%= t('home.analyze_resume') %></span>
               <iconify-icon
                 icon="solar:scanner-linear"
                 width="24"
@@ -456,7 +468,7 @@
               href="<%= user_signed_in? ? linkedin_import_path : login_path(return_to: linkedin_import_path) %>"
               class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-blue-500 dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
             >
-              <span class="font-medium text-base">استيراد من LinkedIn</span>
+              <span class="font-medium text-base"><%= t('home.import_from_linkedin') %></span>
               <iconify-icon
                 icon="solar:upload-square-linear"
                 width="24"
@@ -485,7 +497,7 @@
                 KW
               </div>
             </div>
-            <p>موثوق من قبل <%= number_with_delimiter(@users_count) %>+ باحث عن عمل</p>
+            <p><%= t('home.trusted_by', count: number_with_delimiter(@users_count)) %></p>
           </div>
         </div>
 
@@ -560,7 +572,7 @@
                   <div
                     class="text-[10px] md:text-xs text-action-800 dark:text-action mb-1 md:mb-2 font-medium"
                   >
-                    تحليل الوظيفة
+                    <%= t('home.job_analysis') %>
                   </div>
                   <div
                     class="h-1 md:h-1.5 w-full bg-action/20 dark:bg-action/10 rounded"
@@ -604,7 +616,7 @@
                       class="text-primary w-3 h-3 md:w-4 md:h-4"
                     ></iconify-icon>
                     <span class="text-[10px] text-primary font-semibold">
-                      تم التحسين بواسطة الذكاء الاصطناعي
+                      <%= t('home.enhanced_by_ai') %>
                     </span>
                   </div>
                   <div
@@ -634,7 +646,7 @@
                 <div
                   class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400"
                 >
-                  النتيجة
+                  <%= t('home.score') %>
                 </div>
                 <div
                   class="text-sm md:text-base font-semibold text-darkBase dark:text-white"
@@ -655,12 +667,12 @@
           <h2
             class="text-3xl md:text-4xl lg:text-5xl font-medium text-darkBase dark:text-white mb-4 md:mb-6 tracking-tight"
           >
-            أدوات مصممة لنجاحك
+            <%= t('home.features_title') %>
           </h2>
           <p
             class="text-lg md:text-xl text-gray-600 dark:text-gray-500 max-w-3xl mx-auto font-normal px-4"
           >
-            كل ما تحتاجه لإنشاء سيرة ذاتية تقنع مسؤولي التوظيف.
+            <%= t('home.features_subtitle') %>
           </p>
         </div>
 
@@ -683,13 +695,12 @@
             <h3
               class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
             >
-              توليد حسب الوظيفة
+              <%= t('home.feature_job_gen_title') %>
             </h3>
             <p
               class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
             >
-              ألصق الوصف الوظيفي للوظيفة التي تستهدفها، وسيقوم الذكاء الاصطناعي
-              بصياغة المهارات والملخص المهني ليتطابق مع متطلباتها تماماً.
+              <%= t('home.feature_job_gen_desc') %>
             </p>
           </div>
 
@@ -708,13 +719,12 @@
             <h3
               class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
             >
-              ترجمة فورية احترافية
+              <%= t('home.feature_translate_title') %>
             </h3>
             <p
               class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
             >
-              اكتب خبراتك بالعربية، وسنقوم بترجمتها وصياغتها إلى الإنجليزية
-              المهنية بضغطة زر، جاهزة للشركات العالمية.
+              <%= t('home.feature_translate_desc') %>
             </p>
           </div>
 
@@ -736,13 +746,12 @@
             <h3
               class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
             >
-              استيراد من LinkedIn
+              <%= t('home.feature_linkedin_title') %>
             </h3>
             <p
               class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
             >
-              لا داعي للبدء من الصفر. حمل ملف PDF من حسابك في لينكد إن، وسنقوم
-              بتحويله إلى سيرة ذاتية قابلة للتعديل فوراً.
+              <%= t('home.feature_linkedin_desc') %>
             </p>
           </div>
         </div>
@@ -759,7 +768,7 @@
           <h2
             class="text-2xl md:text-3xl font-medium text-darkBase dark:text-white"
           >
-            رحلة بناء السيرة الذاتية
+            <%= t('home.how_title') %>
           </h2>
         </div>
 
@@ -789,19 +798,18 @@
                     1
                   </span>
                   <h4 class="text-lg font-medium text-darkBase dark:text-white">
-                    أدخل معلوماتك
+                    <%= t('home.step1_short') %>
                   </h4>
                 </div>
                 <h4
                   class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
                 >
-                  أدخل معلوماتك أو استوردها
+                  <%= t('home.step1_title') %>
                 </h4>
                 <p
                   class="text-sm md:text-base text-gray-600 dark:text-gray-400"
                 >
-                  ابدأ بإدخال بياناتك الأساسية، أو وفر الوقت باستيراد ملف PDF
-                  الخاص بـ LinkedIn.
+                  <%= t('home.step1_desc') %>
                 </p>
               </div>
             </div>
@@ -825,19 +833,18 @@
                     2
                   </span>
                   <h4 class="text-lg font-medium text-darkBase dark:text-white">
-                    الذكاء الاصطناعي
+                    <%= t('home.step2_short') %>
                   </h4>
                 </div>
                 <h4
                   class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
                 >
-                  الذكاء الاصطناعي يعمل لأجلك
+                  <%= t('home.step2_title') %>
                 </h4>
                 <p
                   class="text-sm md:text-base text-gray-600 dark:text-gray-400"
                 >
-                  اختر الوصف الوظيفي المستهدف. سيقوم النظام بصياغة "نبذة عني"
-                  وتحسين وصف الخبرات.
+                  <%= t('home.step2_desc') %>
                 </p>
               </div>
             </div>
@@ -861,19 +868,18 @@
                     3
                   </span>
                   <h4 class="text-lg font-medium text-darkBase dark:text-white">
-                    حمل وارسل
+                    <%= t('home.step3_short') %>
                   </h4>
                 </div>
                 <h4
                   class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
                 >
-                  حمل وارسل
+                  <%= t('home.step3_title') %>
                 </h4>
                 <p
                   class="text-sm md:text-base text-gray-600 dark:text-gray-400"
                 >
-                  استعرض النتيجة في قالبنا الاحترافي، وحمل الملف بصيغة PDF جاهزة
-                  للإرسال.
+                  <%= t('home.step3_desc') %>
                 </p>
               </div>
             </div>
@@ -888,23 +894,22 @@
         <span
           class="text-primary dark:text-action text-xs font-semibold tracking-wider uppercase mb-3 block"
         >
-          القوالب
+          <%= t('home.templates_label') %>
         </span>
         <h2
           class="text-3xl md:text-4xl font-medium text-darkBase dark:text-white mb-4 md:mb-6"
         >
-          البساطة هي سر القبول
+          <%= t('home.templates_title') %>
         </h2>
         <p
           class="md:text-xl dark:text-gray-400 md:mb-12 text-lg text-gray-600 mb-10"
         >
-          نركز حالياً على تقديم قالب معتمد عالمياً لتجاوز أنظمة الـ ATS بكفاءة
-          عالية.
+          <%= t('home.templates_desc') %>
           <br class="hidden sm:block" />
           <span
             class="text-primary mt-3 inline-block text-xs md:text-sm font-medium bg-primary/10 px-3 py-1.5 rounded-full"
           >
-            قوالب إبداعية إضافية قريباً
+            <%= t('home.templates_coming_soon') %>
           </span>
         </p>
 
@@ -956,28 +961,47 @@
             <h2
               class="text-3xl md:text-5xl font-medium mb-6 md:mb-8 tracking-tight"
             >
-              جاهز للحصول على وظيفتك القادمة؟
+              <%= t('home.cta_title') %>
             </h2>
             <p
               class="text-base md:text-xl font-normal text-gray-300 max-w-2xl mr-auto mb-8 md:mb-10 ml-auto"
             >
-              انضم للكثير ممن طوروا مسارهم المهني باستخدام سيرة. التجربة مجانية
-              بالكامل.
+              <%= t('home.cta_description') %>
             </p>
 
             <a
               href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
               class="inline-block px-8 py-4 md:px-10 md:py-5 rounded-xl bg-primary hover:bg-primaryHover text-white font-medium shadow-glow transition-all text-base md:text-lg"
             >
-              ابدأ الآن
+              <%= t('home.cta_button') %>
             </a>
             <p class="mt-4 md:mt-6 text-xs md:text-sm text-gray-400">
-              لا نطلب بطاقة ائتمان للتجربة
+              <%= t('home.cta_no_card') %>
             </p>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-borderLight dark:border-borderDark bg-gray-50 dark:bg-darkBase pt-12 md:pt-16 pb-8 md:pb-10 px-4 sm:px-6">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
+        <div class="flex items-center gap-3">
+          <span class="bg-primary text-white w-6 h-6 rounded flex items-center justify-center text-xs font-bold"><%= I18n.locale == :ar ? 'س' : 'C' %></span>
+          <span class="font-medium text-lg md:text-xl text-darkBase dark:text-white"><%= I18n.locale == :ar ? 'سيرة' : 'CVCraft' %></span>
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-6 md:gap-8 text-sm md:text-base text-gray-500">
+          <a href="#" class="hover:text-primary transition-colors"><%= t('footer.terms') %></a>
+          <a href="<%= privacy_path %>" class="hover:text-primary transition-colors"><%= t('footer.privacy') %></a>
+          <a href="#" class="hover:text-primary transition-colors"><%= t('footer.contact') %></a>
+        </div>
+
+        <div class="text-xs md:text-sm text-gray-500">
+          © <%= Time.current.year %> <%= I18n.locale == :ar ? 'سيرة' : 'CVCraft' %>. <%= t('footer.copyright') %>
+        </div>
+      </div>
+    </footer>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {

@@ -1,5 +1,9 @@
 import React, { memo } from "react";
 import MobileDatePicker from "./MobileDatePicker";
+import i18n from "../../lib/i18n";
+
+// Simple translation function
+const t = (key, options) => i18n.t(key, options);
 
 // Helper to safely get responsibilities as an array
 const getResponsibilitiesArray = (responsibilities) => {
@@ -86,15 +90,15 @@ const CombinedStep2 = ({
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
           <BriefcaseIcon />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">التعليم والخبرات العملية</h2>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">أضف معلوماتك التعليمية وخبراتك العملية</p>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('step2.title')}</h2>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">{t('step2.subtitle')}</p>
       </div>
 
       {/* Education Section */}
       <div className={`p-4 sm:p-6 border ${validationErrors.education ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">1</span>
-          التعليم
+          {t('education.title')}
           <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.education} />
@@ -102,9 +106,9 @@ const CombinedStep2 = ({
           {formData.education.map((edu, index) => (
             <div key={index} className="p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50 overflow-hidden">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">التعليم {index + 1}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('education.education_n', { n: index + 1 })}</span>
                 {formData.education.length > 1 && (
-                  <button type="button" onClick={() => removeEducation(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
+                  <button type="button" onClick={() => removeEducation(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">{t('actions.delete')}</button>
                 )}
               </div>
               <div className="grid gap-3">
@@ -114,7 +118,7 @@ const CombinedStep2 = ({
                     value={edu.degree}
                     onChange={(e) => handleEducationChange(index, "degree", e.target.value)}
                     className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`education_degree_${index}`])}
-                    placeholder="الدرجة العلمية (Bachelor of...)"
+                    placeholder={t('education.degree_placeholder')}
                   />
                   <FieldError error={validationErrors[`education_degree_${index}`]} />
                 </div>
@@ -124,23 +128,23 @@ const CombinedStep2 = ({
                     value={edu.institution}
                     onChange={(e) => handleEducationChange(index, "institution", e.target.value)}
                     className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-sm", validationErrors[`education_institution_${index}`])}
-                    placeholder="المؤسسة التعليمية"
+                    placeholder={t('education.institution_placeholder')}
                   />
                   <FieldError error={validationErrors[`education_institution_${index}`]} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <MobileDatePicker value={edu.start_date} onChange={(value) => handleEducationChange(index, "start_date", value)} placeholder="البداية" />
-                  <MobileDatePicker value={edu.end_date} onChange={(value) => handleEducationChange(index, "end_date", value)} disabled={edu.is_current} placeholder="النهاية" />
+                  <MobileDatePicker value={edu.start_date} onChange={(value) => handleEducationChange(index, "start_date", value)} placeholder={t('experience.start_date')} />
+                  <MobileDatePicker value={edu.end_date} onChange={(value) => handleEducationChange(index, "end_date", value)} disabled={edu.is_current} placeholder={t('experience.end_date')} />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={edu.is_current} onChange={(e) => handleEducationChange(index, "is_current", e.target.checked)} className="w-4 h-4 text-[#7C6CF2] rounded" />
-                  <span className="text-xs text-gray-700 dark:text-gray-300">دراسة حالية</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300">{t('education.current_study')}</span>
                 </label>
               </div>
             </div>
           ))}
           <button type="button" onClick={addEducation} className="w-full py-3 text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-[#7C6CF2]/30 rounded-xl hover:bg-[#7C6CF2]/10 active:bg-[#7C6CF2]/20 active:scale-[0.99] transition-all touch-manipulation">
-            + إضافة تعليم آخر
+            + {t('education.add_another')}
           </button>
         </div>
       </div>
@@ -149,7 +153,7 @@ const CombinedStep2 = ({
       <div className={`p-4 sm:p-6 border ${validationErrors.work_experience ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">2</span>
-          الخبرات العملية
+          {t('experience.title')}
           <span className="text-xs text-red-500 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.work_experience} />
@@ -157,9 +161,9 @@ const CombinedStep2 = ({
           {formData.work_experience.map((work, index) => (
             <div key={index} className="p-3 sm:p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">الخبرة {index + 1}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('experience.experience_n', { n: index + 1 })}</span>
                 {formData.work_experience.length > 1 && (
-                  <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">حذف</button>
+                  <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">{t('actions.delete')}</button>
                 )}
               </div>
               <div className="space-y-3">
@@ -169,7 +173,7 @@ const CombinedStep2 = ({
                     value={work.job_title}
                     onChange={(e) => handleWorkExperienceChange(index, "job_title", e.target.value)}
                     className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-base", validationErrors[`work_job_title_${index}`])}
-                    placeholder="المسمى الوظيفي"
+                    placeholder={t('experience.position_placeholder')}
                     style={{ fontSize: "16px" }}
                   />
                   <FieldError error={validationErrors[`work_job_title_${index}`]} />
@@ -180,25 +184,25 @@ const CombinedStep2 = ({
                     value={work.company}
                     onChange={(e) => handleWorkExperienceChange(index, "company", e.target.value)}
                     className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 text-base", validationErrors[`work_company_${index}`])}
-                    placeholder="اسم الشركة"
+                    placeholder={t('experience.company_placeholder')}
                     style={{ fontSize: "16px" }}
                   />
                   <FieldError error={validationErrors[`work_company_${index}`]} />
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <MobileDatePicker value={work.start_date} onChange={(value) => handleWorkExperienceChange(index, "start_date", value)} placeholder="البداية" />
+                    <MobileDatePicker value={work.start_date} onChange={(value) => handleWorkExperienceChange(index, "start_date", value)} placeholder={t('experience.start_date')} />
                   </div>
                   <div className="flex-1">
-                    <MobileDatePicker value={work.end_date} onChange={(value) => handleWorkExperienceChange(index, "end_date", value)} disabled={work.is_current} placeholder="النهاية" />
+                    <MobileDatePicker value={work.end_date} onChange={(value) => handleWorkExperienceChange(index, "end_date", value)} disabled={work.is_current} placeholder={t('experience.end_date')} />
                   </div>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer py-1">
                   <input type="checkbox" checked={work.is_current} onChange={(e) => handleWorkExperienceChange(index, "is_current", e.target.checked)} className="w-5 h-5 text-[#7C6CF2] rounded" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">عمل حالي</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('experience.current_job')}</span>
                 </label>
                 <div className="pt-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المسؤوليات والإنجازات</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('experience.responsibilities')}</label>
                   <div className="space-y-2">
                     {work.responsibilities.map((resp, respIndex) => (
                       <div key={respIndex} className="flex items-start gap-2">
@@ -208,7 +212,7 @@ const CombinedStep2 = ({
                           onChange={(e) => handleResponsibilityChange(index, respIndex, e.target.value)}
                           rows={2}
                           className="flex-1 min-w-0 rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 resize-none"
-                          placeholder="اكتب مسؤولية أو إنجاز..."
+                          placeholder={t('experience.responsibility_placeholder')}
                           style={{ fontSize: "16px" }}
                         />
                         {work.responsibilities.length > 1 && (
@@ -216,12 +220,12 @@ const CombinedStep2 = ({
                         )}
                       </div>
                     ))}
-                    <button type="button" onClick={() => addResponsibility(index)} className="text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium py-2 px-3 rounded active:bg-[#7C6CF2]/10 transition-all touch-manipulation">+ إضافة مسؤولية</button>
+                    <button type="button" onClick={() => addResponsibility(index)} className="text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium py-2 px-3 rounded active:bg-[#7C6CF2]/10 transition-all touch-manipulation">+ {t('experience.add_responsibility')}</button>
                   </div>
                   {/* Show original Arabic if translation was done */}
                   {work.responsibilities_arabic?.length > 0 && (
                     <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                      <label className="block text-xs font-medium text-amber-700 mb-1">📝 النص الأصلي (العربي)</label>
+                      <label className="block text-xs font-medium text-amber-700 mb-1">{t('step2.original_arabic')}</label>
                       <ul className="space-y-0.5">
                         {work.responsibilities_arabic.filter(r => r?.trim()).map((respAr, respIdx) => (
                           <li key={respIdx} className="text-xs text-amber-800 flex items-start gap-1">
@@ -237,7 +241,7 @@ const CombinedStep2 = ({
             </div>
           ))}
           <button type="button" onClick={addWorkExperience} className="w-full py-3 text-[#7C6CF2] hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-[#7C6CF2]/30 rounded-xl hover:bg-[#7C6CF2]/10 active:bg-[#7C6CF2]/20 active:scale-[0.99] transition-all touch-manipulation">
-            + إضافة خبرة عمل أخرى
+            + {t('experience.add_another')}
           </button>
 
           {/* AI Translation Button for all job descriptions */}
@@ -246,7 +250,7 @@ const CombinedStep2 = ({
             {isTranslatingJobs ? (
               <>
                 <p className="text-sm text-[#7C6CF2] mb-3 text-center">
-                  ⏳ جاري ترجمة المسؤوليات...
+                  ⏳ {t('step2.translating_responsibilities')}
                 </p>
                 <button
                   type="button"
@@ -257,13 +261,13 @@ const CombinedStep2 = ({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  جاري الترجمة...
+                  {t('step1.translating')}
                 </button>
               </>
             ) : jobTranslationSuccess || hasTranslatedResponsibilities ? (
               <>
                 <p className="text-sm text-green-700 mb-3 text-center">
-                  ✅ تم ترجمة المسؤوليات بنجاح! يمكنك رؤية الترجمة أعلاه في كل خبرة عمل.
+                  {t('step2.translation_success')}
                 </p>
                 <button
                   type="button"
@@ -275,16 +279,16 @@ const CombinedStep2 = ({
                       : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                   }`}
                 >
-                  🔄 إعادة الترجمة ({safeRemainingJobsTranslations} متبقي)
+                  🔄 {t('step2.retranslate', { remaining: safeRemainingJobsTranslations })}
                 </button>
                 {safeRemainingJobsTranslations <= 0 && (
-                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع ترجمات الوظائف المتاحة</p>
+                  <p className="text-xs text-amber-600 mt-2 text-center">{t('step2.translations_exhausted')}</p>
                 )}
               </>
             ) : (
               <>
                 <p className="text-sm text-[#7C6CF2] mb-3 text-center">
-                  💡 سيقوم النظام بترجمة جميع المسؤوليات والإنجازات إلى الإنجليزية
+                  💡 {t('step2.translate_hint')}
                 </p>
                 <button
                   type="button"
@@ -296,13 +300,13 @@ const CombinedStep2 = ({
                       : "bg-[#2ED3B7] text-white hover:bg-[#28C4A8] active:bg-[#24B09A]"
                   }`}
                 >
-                  🌐 ترجم جميع المسؤوليات إلى الإنجليزية ({safeRemainingJobsTranslations} متبقي)
+                  🌐 {t('step2.translate_all', { remaining: safeRemainingJobsTranslations })}
                 </button>
                 {!hasResponsibilities && (
-                  <p className="text-xs text-gray-500 mt-2 text-center">أضف مسؤوليات أولاً للترجمة</p>
+                  <p className="text-xs text-gray-500 mt-2 text-center">{t('step2.add_responsibilities_first')}</p>
                 )}
                 {safeRemainingJobsTranslations <= 0 && (
-                  <p className="text-xs text-amber-600 mt-2 text-center">⚠️ لقد استخدمت جميع ترجمات الوظائف المتاحة</p>
+                  <p className="text-xs text-amber-600 mt-2 text-center">{t('step2.translations_exhausted')}</p>
                 )}
               </>
             )}

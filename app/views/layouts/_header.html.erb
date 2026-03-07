@@ -4,8 +4,8 @@
         <!-- Logo -->
         <div class="flex items-center gap-2 z-50">
             <a href="/" class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2">
-                <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
-                سيرة
+                <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"><%= current_locale == 'ar' ? 'س' : 'C' %></span>
+                <%= t('site.name') %>
             </a>
         </div>
 
@@ -13,16 +13,23 @@
         <div class="hidden md:flex items-center gap-8 text-sm font-normal text-gray-500 dark:text-gray-400">
             <% if user_signed_in? %>
                 <%= link_to resumes_path, class: "hover:text-primary transition-colors" do %>
-                    سيرتي الذاتية
+                    <%= t('nav.my_cv') %>
                 <% end %>
             <% end %>
-            <a href="/#features" class="hover:text-primary transition-colors">المميزات</a>
-            <a href="/#how-it-works" class="hover:text-primary transition-colors">كيف يعمل</a>
-            <a href="/#templates" class="hover:text-primary transition-colors">القوالب</a>
+            <a href="/#features" class="hover:text-primary transition-colors"><%= t('nav.features') %></a>
+            <a href="/#how-it-works" class="hover:text-primary transition-colors"><%= t('nav.how_it_works') %></a>
+            <a href="/#templates" class="hover:text-primary transition-colors"><%= t('nav.templates') %></a>
         </div>
 
         <!-- Actions -->
         <div class="hidden md:flex items-center gap-4">
+            <!-- Language Toggle -->
+            <% target_locale = current_locale == 'ar' ? 'en' : 'ar' %>
+            <%= button_to locale_path(target_locale), method: :patch, class: "p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400 flex items-center gap-1 text-sm", title: t('language.switch') do %>
+                <iconify-icon icon="solar:global-linear" width="20" height="20" class="pointer-events-none"></iconify-icon>
+                <span class="font-medium"><%= target_locale == 'ar' ? 'ع' : 'EN' %></span>
+            <% end %>
+            
             <button id="themeToggle" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
                 <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block pointer-events-none"></iconify-icon>
                 <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden pointer-events-none"></iconify-icon>
@@ -36,18 +43,18 @@
                 <%= form_with url: "/auth/logout", method: :delete, class: "inline-flex" do |f| %>
                     <button type="submit" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors">
                         <iconify-icon icon="solar:logout-2-linear" width="20"></iconify-icon>
-                        <span>خروج</span>
+                        <span><%= t('nav.logout') %></span>
                     </button>
                 <% end %>
             <% else %>
                 <a href="/login" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
                     <iconify-icon icon="solar:login-2-linear" width="20"></iconify-icon>
-                    <span>تسجيل الدخول</span>
+                    <span><%= t('nav.login') %></span>
                 </a>
             <% end %>
             
             <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "flex items-center justify-center px-5 py-2 rounded-full bg-primary hover:bg-primaryHover text-white text-sm font-normal transition-all shadow-glow hover:shadow-lg" do %>
-                ابنِ سيرتك الآن
+                <%= t('nav.build_cv') %>
             <% end %>
         </div>
 
@@ -70,12 +77,19 @@
     <div class="flex items-center justify-between px-4 sm:px-6 h-16 shrink-0 border-b border-borderLight dark:border-borderDark">
         <!-- Logo -->
         <div class="flex items-center gap-2">
-            <span class="bg-primary text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
-            <span class="text-xl font-medium tracking-tight text-darkBase dark:text-white">سيرة</span>
+            <span class="bg-primary text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"><%= current_locale == 'ar' ? 'س' : 'C' %></span>
+            <span class="text-xl font-medium tracking-tight text-darkBase dark:text-white"><%= t('site.name') %></span>
         </div>
         
         <!-- Actions -->
         <div class="flex items-center gap-3">
+            <!-- Language Toggle -->
+            <% target_locale_mobile = current_locale == 'ar' ? 'en' : 'ar' %>
+            <%= button_to locale_path(target_locale_mobile), method: :patch, class: "p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400 flex items-center gap-1 text-sm", title: t('language.switch') do %>
+                <iconify-icon icon="solar:global-linear" width="20" height="20" class="pointer-events-none"></iconify-icon>
+                <span class="font-medium"><%= target_locale_mobile == 'ar' ? 'ع' : 'EN' %></span>
+            <% end %>
+            
             <button id="themeToggleMobileInside" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
                 <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block pointer-events-none"></iconify-icon>
                 <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden pointer-events-none"></iconify-icon>
@@ -90,12 +104,12 @@
     <div class="flex-1 flex flex-col items-center justify-center gap-8 p-6 overflow-y-auto">
         <% if user_signed_in? %>
             <%= link_to resumes_path, onclick: "document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';", class: "mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight" do %>
-                سيرتي الذاتية
+                <%= t('nav.my_cv') %>
             <% end %>
         <% end %>
-        <a href="/#features" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#features'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">المميزات</a>
-        <a href="/#how-it-works" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#how-it-works'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">كيف يعمل</a>
-        <a href="/#templates" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#templates'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight">القوالب</a>
+        <a href="/#features" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#features'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"><%= t('nav.features') %></a>
+        <a href="/#how-it-works" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#how-it-works'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"><%= t('nav.how_it_works') %></a>
+        <a href="/#templates" onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.href='/#templates'; }, 50); return false;" class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"><%= t('nav.templates') %></a>
         
         <div class="pt-6 border-t border-borderLight dark:border-borderDark w-full max-w-[280px] space-y-4">
             <% if user_signed_in? %>
@@ -106,19 +120,19 @@
                 <%= form_with url: "/auth/logout", method: :delete, class: "w-full" do |f| %>
                     <button type="submit" class="w-full flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
                         <iconify-icon icon="solar:logout-2-linear" width="24"></iconify-icon>
-                        <span>تسجيل الخروج</span>
+                        <span><%= t('nav.logout_full') %></span>
                     </button>
                 <% end %>
             <% else %>
                 <a href="/login" onclick="document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';" class="mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
                     <iconify-icon icon="solar:login-2-linear" width="24"></iconify-icon>
-                    <span>تسجيل الدخول</span>
+                    <span><%= t('nav.login') %></span>
                 </a>
             <% end %>
         </div>
         
         <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), onclick: "document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';", class: "w-full max-w-[280px] py-4 rounded-2xl bg-primary hover:bg-primaryHover text-white text-lg font-medium shadow-glow text-center transition-all mt-6" do %>
-            ابنِ سيرتك الآن
+            <%= t('nav.build_cv') %>
         <% end %>
     </div>
 </div>

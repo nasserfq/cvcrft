@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   # Health check route for Kamal
   get "/up", to: "application#health_check"
 
+  # Locale switching route
+  patch "/locale/:locale", to: "locales#update", as: :locale
+
   # Devise routes (for authentication helpers)
   devise_for :users, skip: [ :registrations, :sessions, :passwords, :confirmations, :unlocks ]
 

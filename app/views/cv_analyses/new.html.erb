@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-darkBase dark:via-darkBase dark:to-darkBase py-12 transition-colors duration-300" dir="rtl">
+<div class="min-h-screen bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-darkBase dark:via-darkBase dark:to-darkBase py-12 transition-colors duration-300" dir="<%= I18n.locale == :ar ? 'rtl' : 'ltr' %>">
   <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
     
     <!-- Upload Section (shown initially) -->
@@ -9,13 +9,13 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
-          <span>تحليل بالذكاء الاصطناعي</span>
+          <span><%= t('cv_analysis.badge') %></span>
         </div>
         <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
-          حلل سيرتك الذاتية
+          <%= t('cv_analysis.page_title') %>
         </h1>
         <p class="text-gray-600 dark:text-gray-300 leading-7 max-w-xl mx-auto">
-          احصل على تقييم شامل لسيرتك الذاتية مع نقاط القوة والتحسينات المقترحة ونصائح لتحسين التوافق مع أنظمة تتبع المتقدمين (ATS)
+          <%= t('cv_analysis.description') %>
         </p>
       </div>
 
@@ -25,7 +25,7 @@
           <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
           </svg>
-          ماذا ستحصل عليه؟
+          <%= t('cv_analysis.what_you_get') %>
         </h2>
         <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-300">
           <div class="flex items-start gap-3">
@@ -33,8 +33,8 @@
               <span class="text-primary font-bold text-xs">%</span>
             </div>
             <div>
-              <p class="font-medium text-gray-900 dark:text-white">تقييم شامل (0-100)</p>
-              <p class="text-gray-500 dark:text-gray-400">نقاط لكل قسم من أقسام السيرة</p>
+              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.overall_score') %></p>
+              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.score_desc') %></p>
             </div>
           </div>
           <div class="flex items-start gap-3">
@@ -44,8 +44,8 @@
               </svg>
             </div>
             <div>
-              <p class="font-medium text-gray-900 dark:text-white">نقاط القوة</p>
-              <p class="text-gray-500 dark:text-gray-400">ما يميز سيرتك الذاتية</p>
+              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.strengths_title') %></p>
+              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.strengths_desc') %></p>
             </div>
           </div>
           <div class="flex items-start gap-3">
@@ -55,8 +55,8 @@
               </svg>
             </div>
             <div>
-              <p class="font-medium text-gray-900 dark:text-white">فرص التحسين</p>
-              <p class="text-gray-500 dark:text-gray-400">اقتراحات لتحسين سيرتك</p>
+              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.improvements') %></p>
+              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.improvements_desc') %></p>
             </div>
           </div>
           <div class="flex items-start gap-3">
@@ -66,8 +66,8 @@
               </svg>
             </div>
             <div>
-              <p class="font-medium text-gray-900 dark:text-white">نصائح ATS</p>
-              <p class="text-gray-500 dark:text-gray-400">تحسين التوافق مع أنظمة التوظيف</p>
+              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.ats_tips') %></p>
+              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.ats_tips_desc') %></p>
             </div>
           </div>
         </div>
@@ -92,15 +92,15 @@
             <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
             </svg>
-            <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">اسحب ملف السيرة الذاتية وأفلته هنا</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">أو اضغط لاختيار ملف PDF</p>
+            <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2"><%= t('cv_analysis.drop_title') %></p>
+            <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('cv_analysis.drop_subtitle') %></p>
           </div>
           <div id="file-selected" class="hidden">
             <svg class="w-16 h-16 text-action mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <p class="text-lg font-medium text-action mb-2" id="selected-filename"></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">اضغط لاختيار ملف آخر</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('cv_analysis.click_select_another') %></p>
           </div>
         </div>
 
@@ -111,38 +111,38 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            خيارات إضافية (اختياري)
+            <%= t('cv_analysis.optional_title') %>
           </h3>
           
           <div class="grid md:grid-cols-2 gap-4">
             <div>
-              <label for="target_job" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الوظيفة المستهدفة</label>
+              <label for="target_job" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('cv_analysis.target_job') %></label>
               <input 
                 type="text" 
                 name="target_job" 
                 id="target_job"
-                placeholder="مثال: مهندس برمجيات"
+                placeholder="<%= t('cv_analysis.target_job_placeholder') %>"
                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
             <div>
-              <label for="target_industry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">المجال/الصناعة</label>
+              <label for="target_industry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('cv_analysis.industry') %></label>
               <input 
                 type="text" 
                 name="target_industry" 
                 id="target_industry"
-                placeholder="مثال: التقنية"
+                placeholder="<%= t('cv_analysis.industry_placeholder') %>"
                 class="w-full px-4 py-2.5 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">لغة التحليل</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><%= t('cv_analysis.analysis_language') %></label>
             <div class="flex gap-4">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="language" value="ar" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 dark:border-white/30">
-                <span class="text-sm text-gray-700 dark:text-gray-300">العربية</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('cv_analysis.arabic') %></span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="language" value="en" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 dark:border-white/30">
@@ -161,7 +161,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
-          <span>حلل سيرتي الذاتية</span>
+          <span><%= t('cv_analysis.start_analysis') %></span>
         </button>
       <% end %>
 
@@ -173,8 +173,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">ذكي</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">تحليل بالذكاء الاصطناعي المتقدم</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('cv_analysis.feature_smart') %></h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('cv_analysis.feature_smart_desc') %></p>
         </div>
         <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
           <div class="w-12 h-12 bg-action/10 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -182,8 +182,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">آمن</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">بياناتك محمية ولا تُشارك</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('cv_analysis.feature_secure') %></h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('cv_analysis.feature_secure_desc') %></p>
         </div>
         <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
           <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -191,15 +191,15 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2">سريع</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">نتائج فورية خلال ثوانٍ</p>
+          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('cv_analysis.feature_fast') %></h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('cv_analysis.feature_fast_desc') %></p>
         </div>
       </div>
 
       <!-- Back Link -->
       <div class="text-center mt-8">
         <a href="<%= root_path %>" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-          ← العودة للصفحة الرئيسية
+          <%= t('cv_analysis.back_to_home') %>
         </a>
       </div>
     </div>
@@ -214,8 +214,8 @@
           <div class="absolute inset-3 border-4 border-transparent border-t-action rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
         </div>
         
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">جاري تحليل سيرتك الذاتية...</h2>
-        <p class="text-gray-600 dark:text-gray-300 mb-8">يقوم الذكاء الاصطناعي بتحليل المحتوى وتقييم كل قسم</p>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4"><%= t('cv_analysis.analyzing_title') %></h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-8"><%= t('cv_analysis.analyzing_desc') %></p>
         
         <!-- Progress Steps -->
         <div class="max-w-md mx-auto space-y-3" id="progress-steps">
@@ -225,25 +225,25 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            <span class="text-sm text-gray-700 dark:text-gray-300">تم رفع الملف</span>
+            <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('cv_analysis.step_file_uploaded') %></span>
           </div>
           <div class="flex items-center gap-3 text-right" id="step-extract">
             <div class="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
               <div class="w-3 h-3 bg-primary rounded-full"></div>
             </div>
-            <span class="text-sm text-gray-500 dark:text-gray-400">استخراج النص...</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400"><%= t('cv_analysis.step_extracting_text') %></span>
           </div>
           <div class="flex items-center gap-3 text-right" id="step-analyze">
             <div class="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
               <div class="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
             </div>
-            <span class="text-sm text-gray-400 dark:text-gray-500">تحليل المحتوى...</span>
+            <span class="text-sm text-gray-400 dark:text-gray-500"><%= t('cv_analysis.step_analyzing_content') %></span>
           </div>
           <div class="flex items-center gap-3 text-right" id="step-complete">
             <div class="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
               <div class="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
             </div>
-            <span class="text-sm text-gray-400 dark:text-gray-500">إنشاء التقرير...</span>
+            <span class="text-sm text-gray-400 dark:text-gray-500"><%= t('cv_analysis.step_creating_report') %></span>
           </div>
         </div>
       </div>
@@ -257,8 +257,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </div>
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">حدث خطأ</h2>
-        <p class="text-gray-600 dark:text-gray-300 mb-8" id="error-message">حدث خطأ أثناء التحليل. يرجى المحاولة مرة أخرى.</p>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4"><%= t('cv_analysis.error_occurred') %></h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-8" id="error-message"><%= t('cv_analysis.error_message') %></p>
         <button 
           onclick="location.reload()" 
           class="inline-flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-6 py-3 rounded-xl font-semibold transition-all"
@@ -266,7 +266,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
-          <span>حاول مرة أخرى</span>
+          <span><%= t('cv_analysis.try_again') %></span>
         </button>
       </div>
     </div>
@@ -354,12 +354,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Start polling for status
         pollStatus(data.analysis_id);
       } else {
-        showError(data.error || 'حدث خطأ أثناء رفع الملف');
+        showError(data.error || CV_ANALYSIS_TRANSLATIONS.upload_error);
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      showError('حدث خطأ أثناء رفع الملف');
+      showError(CV_ANALYSIS_TRANSLATIONS.upload_error);
     });
   });
 
@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
           window.location.href = '<%= cv_analysis_show_path(":id") %>'.replace(':id', analysisId);
         } else if (data.status === 'failed') {
           clearInterval(poll);
-          showError(data.error_message || 'حدث خطأ أثناء التحليل');
+          showError(data.error_message || CV_ANALYSIS_TRANSLATIONS.analysis_error);
         }
       })
       .catch(error => {
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
       stepExtract.querySelector('div').innerHTML = '<svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
       stepExtract.querySelector('span').classList.remove('text-gray-500', 'dark:text-gray-400');
       stepExtract.querySelector('span').classList.add('text-gray-700', 'dark:text-gray-300');
-      stepExtract.querySelector('span').textContent = 'تم استخراج النص';
+      stepExtract.querySelector('span').textContent = CV_ANALYSIS_TRANSLATIONS.text_extracted;
 
       stepAnalyze.querySelector('div').classList.remove('bg-gray-100', 'dark:bg-white/10');
       stepAnalyze.querySelector('div').classList.add('animate-pulse');
@@ -426,4 +426,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('error-message').textContent = message;
   }
 });
+</script>
+
+<!-- Translations for JavaScript -->
+<script>
+  const CV_ANALYSIS_TRANSLATIONS = {
+    upload_error: "<%= j t('cv_analysis.upload_error') %>",
+    analysis_error: "<%= j t('cv_analysis.analysis_error') %>",
+    text_extracted: "<%= j t('cv_analysis.text_extracted') %>"
+  };
 </script>

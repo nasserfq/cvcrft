@@ -1,6 +1,6 @@
-<% content_for :title, "الملف الشخصي" %>
+<% content_for :title, t('profile.title') %>
 
-<div dir="rtl" class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-darkBase dark:via-darkBase dark:to-darkBase transition-colors duration-300">
+<div dir="<%= text_direction %>" class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-darkBase dark:via-darkBase dark:to-darkBase transition-colors duration-300">
   <!-- Top Navigation Bar -->
   <div class="bg-white dark:bg-white/5 border-b border-gray-200 dark:border-white/10 sticky top-0 z-10 backdrop-blur-sm">
     <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -10,14 +10,14 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
             </svg>
-            <span class="font-medium">الرئيسية</span>
+            <span class="font-medium"><%= t('profile.home') %></span>
           <% end %>
           <span class="text-gray-300 dark:text-gray-600">|</span>
           <%= link_to resumes_path, class: "flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" do %>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-            <span class="font-medium">سيرتي الذاتية</span>
+            <span class="font-medium"><%= t('profile.my_cv') %></span>
           <% end %>
         </div>
         <div class="flex items-center gap-3">
@@ -25,7 +25,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            سيرة جديدة
+            <%= t('profile.new_resume') %>
           <% end %>
         </div>
       </div>
@@ -58,7 +58,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                عضو منذ <%= @user.created_at.strftime("%B %Y") %>
+                <%= t('profile.member_since', date: @user.created_at.strftime("%B %Y")) %>
               </span>
             </div>
           </div>
@@ -74,7 +74,7 @@
             </svg>
           </div>
           <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_resumes] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">سير ذاتية مكتملة</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.completed_resumes') %></p>
         </div>
         <div class="p-6 text-center border-b lg:border-b-0 border-gray-100 dark:border-white/10 hover:bg-amber-50/50 dark:hover:bg-amber-500/10 transition-colors">
           <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 mb-3">
@@ -83,7 +83,7 @@
             </svg>
           </div>
           <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_drafts] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">مسودات قيد العمل</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.drafts_in_progress') %></p>
         </div>
         <div class="p-6 text-center border-l border-gray-100 dark:border-white/10 hover:bg-action/5 dark:hover:bg-action/10 transition-colors">
           <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-action/10 text-action mb-3">
@@ -92,7 +92,7 @@
             </svg>
           </div>
           <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_cv_generations] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">ملفات PDF</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.pdf_files') %></p>
         </div>
         <div class="p-6 text-center hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
           <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-3">
@@ -101,7 +101,7 @@
             </svg>
           </div>
           <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_translations] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">ترجمات AI</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.ai_translations') %></p>
         </div>
       </div>
     </div>
@@ -119,14 +119,14 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
               </span>
-              السير الذاتية
+              <%= t('profile.resumes') %>
               <span class="text-sm font-normal text-gray-400 dark:text-gray-500">(<%= @resumes.count %>)</span>
             </h2>
             <%= link_to new_resume_path, class: "inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primaryHover text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]" do %>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
               </svg>
-              إنشاء سيرة جديدة
+              <%= t('profile.create_new_resume') %>
             <% end %>
           </div>
           
@@ -136,7 +136,7 @@
                 <% @resumes.each do |resume| %>
                   <div class="group flex items-center justify-between p-5 bg-gradient-to-l from-gray-50 to-white dark:from-white/5 dark:to-transparent rounded-xl border border-gray-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-primary/30 hover:shadow-md transition-all">
                     <div class="flex-1 min-w-0">
-                      <h3 class="font-semibold text-gray-900 dark:text-white text-lg truncate"><%= resume.complete_name.presence || "بدون اسم" %></h3>
+                      <h3 class="font-semibold text-gray-900 dark:text-white text-lg truncate"><%= resume.complete_name.presence || t('profile.no_name') %></h3>
                       <p class="text-gray-500 dark:text-gray-400 text-sm truncate"><%= resume.email %></p>
                       <div class="flex items-center gap-3 mt-2 text-xs text-gray-400 dark:text-gray-500">
                         <span class="flex items-center gap-1">
@@ -148,23 +148,23 @@
                       </div>
                     </div>
                     <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <%= link_to resume_path(resume), class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors", title: "عرض" do %>
+                      <%= link_to resume_path(resume), class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors", title: t('profile.view') do %>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                       <% end %>
-                      <%= link_to edit_resume_path(resume), class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-action hover:bg-action/10 rounded-lg transition-colors", title: "تعديل" do %>
+                      <%= link_to edit_resume_path(resume), class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-action hover:bg-action/10 rounded-lg transition-colors", title: t('profile.edit') do %>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                         </svg>
                       <% end %>
-                      <%= link_to "/api/export_pdf?resume_id=#{resume.id}", class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors", title: "تحميل PDF" do %>
+                      <%= link_to "/api/export_pdf?resume_id=#{resume.id}", class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors", title: t('profile.download_pdf') do %>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                       <% end %>
-                      <%= button_to resume_path(resume), method: :delete, class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors", title: "حذف", data: { turbo_confirm: "هل أنت متأكد من حذف هذه السيرة الذاتية؟" } do %>
+                      <%= button_to resume_path(resume), method: :delete, class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors", title: t('profile.delete'), data: { turbo_confirm: t('profile.delete_resume_confirm') } do %>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
@@ -180,13 +180,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
                 </div>
-                <p class="text-gray-500 dark:text-gray-400 text-lg mb-2">لا توجد سير ذاتية بعد</p>
-                <p class="text-gray-400 dark:text-gray-500 text-sm mb-6">ابدأ بإنشاء سيرتك الذاتية الاحترافية الآن</p>
+                <p class="text-gray-500 dark:text-gray-400 text-lg mb-2"><%= t('profile.no_resumes_yet') %></p>
+                <p class="text-gray-400 dark:text-gray-500 text-sm mb-6"><%= t('profile.start_creating') %></p>
                 <%= link_to new_resume_path, class: "inline-flex items-center gap-3 px-8 py-4 bg-action hover:bg-action/90 text-white text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]" do %>
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                   </svg>
-                  إنشاء أول سيرة ذاتية
+                  <%= t('profile.create_first_resume') %>
                 <% end %>
               </div>
             <% end %>
@@ -203,7 +203,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                   </svg>
                 </span>
-                المسودات
+                <%= t('profile.drafts') %>
                 <span class="text-sm font-normal text-gray-400 dark:text-gray-500">(<%= @drafts.count %>)</span>
               </h2>
             </div>
@@ -211,17 +211,17 @@
               <% @drafts.each do |draft| %>
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-gradient-to-l from-amber-50 to-white dark:from-amber-500/10 dark:to-transparent rounded-xl border border-amber-200 dark:border-amber-500/20 hover:border-amber-300 dark:hover:border-amber-500/30 hover:shadow-md transition-all">
                   <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-gray-900 dark:text-white truncate text-base"><%= draft.complete_name.presence || "مسودة بدون اسم" %></p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">آخر تعديل: <%= draft.updated_at.strftime("%Y-%m-%d %H:%M") %></p>
+                    <p class="font-semibold text-gray-900 dark:text-white truncate text-base"><%= draft.complete_name.presence || t('profile.draft_no_name') %></p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.last_edited', date: draft.updated_at.strftime("%Y-%m-%d %H:%M")) %></p>
                   </div>
                   <div class="flex items-center gap-3">
                     <%= link_to edit_resume_path(draft), class: "inline-flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]" do %>
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
-                      متابعة التحرير
+                      <%= t('profile.continue_editing') %>
                     <% end %>
-                    <%= button_to resume_path(draft), method: :delete, class: "p-3 text-gray-400 dark:text-gray-500 hover:text-red-600 bg-white dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl border border-gray-200 dark:border-white/10 hover:border-red-200 dark:hover:border-red-500/30 transition-all shadow-sm", data: { turbo_confirm: "هل أنت متأكد من حذف هذه المسودة؟" } do %>
+                    <%= button_to resume_path(draft), method: :delete, class: "p-3 text-gray-400 dark:text-gray-500 hover:text-red-600 bg-white dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl border border-gray-200 dark:border-white/10 hover:border-red-200 dark:hover:border-red-500/30 transition-all shadow-sm", data: { turbo_confirm: t('profile.delete_draft_confirm') } do %>
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                       </svg>
@@ -243,14 +243,14 @@
               <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              رصيد الإنشاء
+              <%= t('profile.generation_credits') %>
             </h2>
           </div>
           <div class="p-6 space-y-5">
             <!-- CV Builder Credits -->
             <div class="p-4 bg-gradient-to-l from-action/10 to-white dark:from-action/20 dark:to-transparent rounded-xl border border-action/20">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">إنشاء السيرة الذاتية</span>
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.cv_builder_generation') %></span>
                 <span class="text-sm font-bold text-action"><%= @stats[:cv_builder_remaining] %>/<%= @stats[:cv_builder_max] %></span>
               </div>
               <div class="w-full bg-action/20 rounded-full h-2.5">
@@ -261,7 +261,7 @@
             <!-- Job-Based CV Credits -->
             <div class="p-4 bg-gradient-to-l from-amber-50 to-white dark:from-amber-500/10 dark:to-transparent rounded-xl border border-amber-100 dark:border-amber-500/20">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">إنشاء من وصف الوظيفة</span>
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.job_based_generation') %></span>
                 <span class="text-sm font-bold text-amber-600 dark:text-amber-400"><%= @stats[:job_based_remaining] %>/<%= @stats[:job_based_max] %></span>
               </div>
               <div class="w-full bg-amber-100 dark:bg-amber-500/20 rounded-full h-2.5">
@@ -278,14 +278,14 @@
               <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
               </svg>
-              رصيد الترجمات
+              <%= t('profile.translation_credits') %>
             </h2>
           </div>
           <div class="p-6 space-y-5">
             <!-- Summary Translations -->
             <div class="p-4 bg-gradient-to-l from-primary/10 to-white dark:from-primary/20 dark:to-transparent rounded-xl border border-primary/20">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">الملخص المهني</span>
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.professional_summary') %></span>
                 <span class="text-sm font-bold text-primary"><%= @stats[:remaining_summary_translations] %>/5</span>
               </div>
               <div class="w-full bg-primary/20 rounded-full h-2.5">
@@ -296,7 +296,7 @@
             <!-- Jobs Translations -->
             <div class="p-4 bg-gradient-to-l from-primary/10 to-white dark:from-primary/20 dark:to-transparent rounded-xl border border-primary/20">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">وصف الوظائف</span>
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.job_descriptions') %></span>
                 <span class="text-sm font-bold text-primary"><%= @stats[:remaining_jobs_translations] %>/5</span>
               </div>
               <div class="w-full bg-primary/20 rounded-full h-2.5">
@@ -314,7 +314,7 @@
                 <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                 </svg>
-                سجل PDF
+                <%= t('profile.pdf_history') %>
               </h2>
             </div>
             <div class="divide-y divide-gray-100 dark:divide-white/10">
@@ -326,9 +326,9 @@
                   </div>
                   <div class="flex items-center gap-2">
                     <% if gen.status == "completed" %>
-                      <span class="px-2.5 py-1 bg-action/10 text-action text-xs font-medium rounded-full">مكتمل</span>
+                      <span class="px-2.5 py-1 bg-action/10 text-action text-xs font-medium rounded-full"><%= t('profile.status_completed') %></span>
                     <% elsif gen.status == "failed" %>
-                      <span class="px-2.5 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-medium rounded-full">فشل</span>
+                      <span class="px-2.5 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-medium rounded-full"><%= t('profile.status_failed') %></span>
                     <% else %>
                       <span class="px-2.5 py-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full"><%= gen.status %></span>
                     <% end %>
@@ -355,27 +355,26 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
               </span>
-              منطقة الخطر
+              <%= t('profile.danger_zone') %>
             </h2>
           </div>
           <div class="p-6">
             <p class="text-gray-600 dark:text-gray-300 text-base mb-5 leading-relaxed">
-              حذف حسابك سيؤدي إلى إزالة جميع بياناتك بشكل دائم. لا يمكن التراجع عن هذا الإجراء.
+              <%= t('profile.danger_warning') %>
             </p>
             <%= button_to profile_path, 
                 method: :delete, 
                 class: "w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-red-600 hover:bg-red-700 text-white text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]",
                 form: { 
                   data: { 
-                    turbo_confirm: "⚠️ تحذير!\n\nهل أنت متأكد أنك تريد حذف حسابك نهائياً؟\n\nسيتم حذف:\n• جميع السير الذاتية\n• جميع المسودات\n• جميع الترجمات\n• جميع ملفات PDF\n\nهذا الإجراء لا يمكن التراجع عنه!",
+                    turbo_confirm: t('profile.delete_account_warning'),
                     controller: "confirm-delete"
-                  },
-                  onsubmit: "return confirm('⚠️ تأكيد نهائي: هل تريد حذف حسابك ؟ لا يمكن التراجع!')"
+                  }
                 } do %>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
-              حذف حسابي نهائياً
+              <%= t('profile.delete_my_account') %>
             <% end %>
           </div>
         </div>
