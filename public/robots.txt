@@ -1,1 +1,27 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# See https://www.robotstxt.org/robotstxt.html for documentation
+# Robots.txt for cvcrft.com
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /auth/
+Disallow: /profile
+Disallow: /resumes/*/edit
+
+# Sitemap location
+Sitemap: https://cvcrft.com/sitemap.xml
+
+# Optional: Block AI training bots but allow Google AI features
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+# Allow Google-Extended for AI Overview appearances
+User-agent: Google-Extended
+Allow: /

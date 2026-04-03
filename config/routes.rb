@@ -18,8 +18,12 @@ Rails.application.routes.draw do
   # Root route
   root "home#index"
 
+  # Sitemap for SEO
+  get "/sitemap.xml", to: "sitemaps#index", as: :sitemap, defaults: { format: :xml }
+
   # Static pages
   get "/privacy", to: "pages#privacy", as: :privacy
+  get "/terms", to: "pages#terms", as: :terms
 
   # User profile route
   resource :profile, only: [ :show, :destroy ]

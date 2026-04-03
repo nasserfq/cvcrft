@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>الشروط والأحكام — سيرة</title>
+    <meta name="description" content="الشروط والأحكام لاستخدام موقع سيرة - منشئ السيرة الذاتية بالذكاء الاصطناعي" />
+    <meta name="theme-color" content="#7B2FF7" />
+    <link rel="canonical" href="https://cvcrft.com/terms" />
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= render 'shared/posthog' %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            },
+            colors: {
+              primary: '#7B2FF7',
+              primaryHover: '#5A1EDB',
+              action: '#2EF2A3',
+              actionHover: '#1BCB86',
+              darkBase: '#121217',
+              darkCard: '#1C1C21',
+              canvas: '#FFFFFF',
+              borderLight: 'rgba(0,0,0,0.08)',
+              borderDark: 'rgba(255,255,255,0.08)',
+            },
+            boxShadow: {
+              'glow': '0 0 40px -10px rgba(123, 47, 247, 0.3)',
+              'glow-mint': '0 0 40px -10px rgba(46, 242, 163, 0.2)',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .dark .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+      }
+    </style>
+  </head>
+  <body class="antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen flex flex-col">
+    <!-- Background Accents -->
+    <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
+      <div class="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-action/20 blur-[100px]"></div>
+      <div class="absolute bottom-1/4 left-1/4 w-72 h-72 rounded-full bg-primary/10 blur-[80px]"></div>
+    </div>
+
+    <!-- Header -->
+    <%= render 'layouts/header' %>
+
+    <!-- Main Content -->
+    <main class="flex-1 pt-24 pb-12 sm:pt-28 sm:pb-16">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <!-- Page Header -->
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-sm font-medium mb-6">
+            <iconify-icon icon="solar:document-text-bold" width="16"></iconify-icon>
+            اتفاقية الاستخدام
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            الشروط <span class="bg-gradient-to-l from-primary to-action bg-clip-text text-transparent">والأحكام</span>
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400">
+            آخر تحديث: <%= Date.today.strftime("%d/%m/%Y") %>
+          </p>
+        </div>
+
+        <!-- Terms Content -->
+        <div class="glass-card rounded-2xl border border-gray-200 dark:border-white/10 shadow-xl p-6 sm:p-8 lg:p-10 space-y-8">
+          
+          <!-- Introduction -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">1</span>
+              مقدمة
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-8">
+              مرحبًا بك في "سيرة". باستخدامك لموقعنا وخدماتنا، فإنك توافق على الالتزام بهذه الشروط والأحكام. يرجى قراءتها بعناية قبل استخدام الخدمة.
+            </p>
+          </section>
+
+          <!-- Service Description -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">2</span>
+              وصف الخدمة
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">"سيرة" هي منصة لإنشاء السير الذاتية باستخدام الذكاء الاصطناعي، وتقدم الخدمات التالية:</p>
+            <ul class="space-y-4 text-gray-600 dark:text-gray-300">
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <iconify-icon icon="solar:document-add-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <span>إنشاء سير ذاتية احترافية بتنسيقات متعددة</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <iconify-icon icon="solar:magic-stick-3-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <span>تحسين المحتوى باستخدام الذكاء الاصطناعي</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <iconify-icon icon="solar:import-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <span>استيراد البيانات من LinkedIn</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <iconify-icon icon="solar:chart-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <span>تحليل التوافق مع أنظمة ATS</span>
+              </li>
+            </ul>
+          </section>
+
+          <!-- User Responsibilities -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">3</span>
+              مسؤوليات المستخدم
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">بصفتك مستخدمًا للخدمة، فإنك توافق على:</p>
+            <ul class="space-y-4 text-gray-600 dark:text-gray-300">
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <span class="mt-1 w-2 h-2 rounded-full bg-action flex-shrink-0"></span>
+                <span>تقديم معلومات صحيحة ودقيقة في سيرتك الذاتية</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <span class="mt-1 w-2 h-2 rounded-full bg-action flex-shrink-0"></span>
+                <span>الحفاظ على سرية بيانات حسابك وعدم مشاركتها</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <span class="mt-1 w-2 h-2 rounded-full bg-action flex-shrink-0"></span>
+                <span>عدم استخدام الخدمة لأي أغراض غير قانونية</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <span class="mt-1 w-2 h-2 rounded-full bg-action flex-shrink-0"></span>
+                <span>احترام حقوق الملكية الفكرية</span>
+              </li>
+            </ul>
+          </section>
+
+          <!-- Intellectual Property -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">4</span>
+              الملكية الفكرية
+            </h2>
+            <div class="space-y-4">
+              <div class="p-5 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
+                <p class="text-gray-600 dark:text-gray-300 leading-8">
+                  <strong class="text-gray-900 dark:text-white">محتواك:</strong> تحتفظ بملكية كاملة لجميع المعلومات والمحتوى الذي تدخله في سيرتك الذاتية.
+                </p>
+              </div>
+              <div class="p-5 rounded-xl bg-action/5 dark:bg-action/10 border border-action/20">
+                <p class="text-gray-600 dark:text-gray-300 leading-8">
+                  <strong class="text-gray-900 dark:text-white">خدمتنا:</strong> جميع عناصر الموقع من تصميم وشعارات وقوالب هي ملك لـ "سيرة" ومحمية بحقوق الملكية الفكرية.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Limitation of Liability -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">5</span>
+              حدود المسؤولية
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">نسعى لتقديم أفضل خدمة ممكنة، ولكن:</p>
+            <ul class="space-y-4 text-gray-600 dark:text-gray-300">
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <iconify-icon icon="solar:info-circle-bold" width="20" class="text-primary flex-shrink-0 mt-0.5"></iconify-icon>
+                <span>الخدمة مقدمة "كما هي" دون ضمانات صريحة أو ضمنية</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <iconify-icon icon="solar:info-circle-bold" width="20" class="text-primary flex-shrink-0 mt-0.5"></iconify-icon>
+                <span>لا نتحمل مسؤولية نتائج استخدام السيرة الذاتية في التقدم للوظائف</span>
+              </li>
+              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <iconify-icon icon="solar:info-circle-bold" width="20" class="text-primary flex-shrink-0 mt-0.5"></iconify-icon>
+                <span>قد تتعرض الخدمة لانقطاعات مؤقتة للصيانة أو أسباب تقنية</span>
+              </li>
+            </ul>
+          </section>
+
+          <!-- Account Termination -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">6</span>
+              إنهاء الحساب
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-8">
+              يمكنك إنهاء حسابك في أي وقت من خلال إعدادات الحساب. كما نحتفظ بحق تعليق أو إنهاء الحسابات التي تنتهك هذه الشروط أو تُستخدم بشكل غير قانوني.
+            </p>
+          </section>
+
+          <!-- Changes to Terms -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">7</span>
+              تعديل الشروط
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-8">
+              نحتفظ بحق تعديل هذه الشروط في أي وقت. سنقوم بإخطارك بأي تغييرات جوهرية عبر البريد الإلكتروني أو من خلال إشعار على الموقع. استمرارك في استخدام الخدمة بعد التعديلات يعني موافقتك عليها.
+            </p>
+          </section>
+
+          <!-- Contact -->
+          <section>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">8</span>
+              التواصل معنا
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">
+              إذا كانت لديك أي أسئلة حول هذه الشروط، يسعدنا التواصل معك:
+            </p>
+            <div class="p-5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+              <div class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                <iconify-icon icon="solar:mailbox-bold" width="24" class="text-primary"></iconify-icon>
+                <span>support@cvcrft.com</span>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Back to Home -->
+        <div class="mt-8 text-center">
+          <a href="/" class="inline-flex items-center gap-2 text-primary hover:text-primaryHover transition-colors">
+            <iconify-icon icon="solar:arrow-right-bold" width="20"></iconify-icon>
+            العودة للصفحة الرئيسية
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <%= render 'layouts/footer' %>
+
+    <script>
+      // Theme Logic
+      const html = document.documentElement;
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+    </script>
+  </body>
+</html>

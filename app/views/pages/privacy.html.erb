@@ -6,12 +6,17 @@
     <title>سياسة الخصوصية — سيرة</title>
     <meta name="description" content="سياسة الخصوصية لموقع سيرة - منشئ السيرة الذاتية بالذكاء الاصطناعي" />
     <meta name="theme-color" content="#7B2FF7" />
+    <link rel="canonical" href="https://cvcrft.com/privacy" />
+    <link rel="icon" href="/icon.png" type="image/png" />
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
     <%= render 'shared/posthog' %>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
