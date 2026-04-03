@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="<%= current_locale %>" dir="<%= text_direction %>" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @page_title %></title>
+  <meta name="description" content="<%= @meta_description %>">
+  <meta name="theme-color" content="#7B2FF7">
+  <link rel="canonical" href="https://cvcrft.com/jobs">
+  <link rel="icon" href="/icon.png" type="image/png">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cvcrft.com/jobs">
+  <meta property="og:title" content="<%= @page_title %>">
+  <meta property="og:description" content="<%= @meta_description %>">
+  <meta property="og:image" content="https://cvcrft.com/og-image.png">
+  
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= render 'shared/posthog' %>
+  
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "<%= @page_title %>",
+    "description": "<%= @meta_description %>",
+    "url": "https://cvcrft.com/jobs",
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": <%= @cities.size %>,
+      "itemListElement": [
+        <% @cities.each_with_index do |city, index| %>
+        {
+          "@type": "ListItem",
+          "position": <%= index + 1 %>,
+          "url": "https://cvcrft.com/jobs/<%= city['slug'] %>",
+          "name": "<%= I18n.locale == :ar ? city['name_ar'] : city['name_en'] %>"
+        }<%= index < @cities.size - 1 ? ',' : '' %>
+        <% end %>
+      ]
+    }
+  }
+  </script>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['IBM Plex Sans Arabic', 'sans-serif'] },
+          colors: {
+            primary: '#7B2FF7',
+            primaryHover: '#5A1EDB',
+            action: '#2EF2A3',
+            actionHover: '#1BCB86',
+            darkBase: '#121217',
+            darkCard: '#1C1C21',
+          },
+        }
+      }
+    }
+  </script>
+</head>
+<body class="antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen">
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
+    <div class="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-action/20 blur-[100px]"></div>
+  </div>
+
+  <%= render 'layouts/header' %>
+
+  <main class="pt-24 pb-16">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Hero -->
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-action/10 text-action text-sm font-medium mb-6">
+          <iconify-icon icon="solar:globe-bold" width="16"></iconify-icon>
+          <%= I18n.locale == :ar ? '10 مدن في الشرق الأوسط' : '10 Cities in the Middle East' %>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+          <%= I18n.locale == :ar ? 'اختر' : 'Choose Your' %>
+          <span class="bg-gradient-to-l from-primary to-action bg-clip-text text-transparent">
+            <%= I18n.locale == :ar ? 'مدينتك' : 'City' %>
+          </span>
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <%= I18n.locale == :ar ? 
+            "قوالب سيرة ذاتية مُحسّنة لسوق العمل في كل مدينة. أكثر من #{@job_count} قالب لكل مدينة." :
+            "CV templates optimized for each city's job market. #{@job_count}+ templates per city." %>
+        </p>
+      </div>
+
+      <!-- Cities Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% @cities.each do |city| %>
+          <a href="/jobs/<%= city['slug'] %>" 
+             class="group relative p-8 bg-white dark:bg-white/5 rounded-3xl border border-gray-200 dark:border-white/10 hover:border-primary/50 hover:shadow-xl transition-all overflow-hidden">
+            <!-- Background decoration -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-action/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+            
+            <div class="relative">
+              <div class="w-14 h-14 bg-gradient-to-br from-primary to-action rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
+                <iconify-icon icon="solar:map-point-wave-bold" class="text-white" width="28"></iconify-icon>
+              </div>
+              
+              <h2 class="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
+                <%= I18n.locale == :ar ? city['name_ar'] : city['name_en'] %>
+              </h2>
+              
+              <p class="text-gray-500 dark:text-gray-400 mb-4">
+                <%= I18n.locale == :ar ? city['country_ar'] : city['country_en'] %>
+              </p>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-400">
+                  <%= I18n.locale == :ar ? "#{@job_count} قالب" : "#{@job_count} templates" %>
+                </span>
+                <iconify-icon icon="solar:arrow-left-bold" class="text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" width="20"></iconify-icon>
+              </div>
+            </div>
+          </a>
+        <% end %>
+      </div>
+
+      <!-- Stats -->
+      <div class="mt-16 grid grid-cols-3 gap-6 p-8 bg-gradient-to-br from-primary/5 to-action/5 rounded-3xl border border-primary/10">
+        <div class="text-center">
+          <p class="text-3xl font-bold text-primary"><%= @cities.size %></p>
+          <p class="text-sm text-gray-500"><%= I18n.locale == :ar ? 'مدن' : 'Cities' %></p>
+        </div>
+        <div class="text-center">
+          <p class="text-3xl font-bold text-action"><%= @job_count %></p>
+          <p class="text-sm text-gray-500"><%= I18n.locale == :ar ? 'مهنة' : 'Professions' %></p>
+        </div>
+        <div class="text-center">
+          <p class="text-3xl font-bold bg-gradient-to-r from-primary to-action bg-clip-text text-transparent"><%= @cities.size * @job_count %></p>
+          <p class="text-sm text-gray-500"><%= I18n.locale == :ar ? 'صفحة' : 'Pages' %></p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="mt-16 text-center">
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          <%= I18n.locale == :ar ? 
+            'لا تجد مدينتك؟ استخدم القوالب العامة:' :
+            "Don't see your city? Use our general templates:" %>
+        </p>
+        <a href="/cv-templates" class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium rounded-full transition-colors">
+          <iconify-icon icon="solar:document-text-bold" width="20"></iconify-icon>
+          <%= I18n.locale == :ar ? 'عرض جميع القوالب' : 'View All Templates' %>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <%= render 'layouts/footer' %>
+
+  <script>
+    const html = document.documentElement;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+  </script>
+</body>
+</html>

@@ -21,9 +21,14 @@ Rails.application.routes.draw do
   # Sitemap for SEO
   get "/sitemap.xml", to: "sitemaps#index", as: :sitemap, defaults: { format: :xml }
 
-  # Programmatic SEO pages
+  # Programmatic SEO pages - Job Templates
   get "/cv-templates", to: "seo#cv_templates_index", as: :cv_templates
+  get "/cv-templates/:city_slug/:job_slug", to: "seo#cv_template_location", as: :cv_template_location
   get "/cv-templates/:slug", to: "seo#cv_template", as: :cv_template
+
+  # Programmatic SEO pages - Cities
+  get "/jobs", to: "seo#cities_index", as: :cities
+  get "/jobs/:city_slug", to: "seo#city_jobs", as: :city_jobs
 
   # Static pages
   get "/privacy", to: "pages#privacy", as: :privacy

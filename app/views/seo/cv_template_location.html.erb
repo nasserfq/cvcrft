@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="<%= current_locale %>" dir="<%= text_direction %>" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @page_title %></title>
+  <meta name="description" content="<%= @meta_description %>">
+  <meta name="keywords" content="<%= @keywords %>">
+  <meta name="theme-color" content="#7B2FF7">
+  <link rel="canonical" href="https://cvcrft.com/cv-templates/<%= @city['slug'] %>/<%= @job['slug'] %>">
+  <link rel="icon" href="/icon.png" type="image/png">
+  
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ar" href="https://cvcrft.com/ar/cv-templates/<%= @city['slug'] %>/<%= @job['slug'] %>">
+  <link rel="alternate" hreflang="en" href="https://cvcrft.com/en/cv-templates/<%= @city['slug'] %>/<%= @job['slug'] %>">
+  <link rel="alternate" hreflang="x-default" href="https://cvcrft.com/cv-templates/<%= @city['slug'] %>/<%= @job['slug'] %>">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://cvcrft.com/cv-templates/<%= @city['slug'] %>/<%= @job['slug'] %>">
+  <meta property="og:title" content="<%= @page_title %>">
+  <meta property="og:description" content="<%= @meta_description %>">
+  <meta property="og:image" content="https://cvcrft.com/og-image.png">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= @page_title %>">
+  <meta name="twitter:description" content="<%= @meta_description %>">
+  
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= render 'shared/posthog' %>
+  
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "<%= @page_title %>",
+    "description": "<%= @meta_description %>",
+    "url": "https://cvcrft.com/cv-templates/<%= @city['slug'] %>/<%= @job['slug'] %>",
+    "about": {
+      "@type": "Occupation",
+      "name": "<%= I18n.locale == :ar ? @job['title_ar'] : @job['title_en'] %>",
+      "occupationLocation": {
+        "@type": "City",
+        "name": "<%= I18n.locale == :ar ? @city['name_ar'] : @city['name_en'] %>",
+        "containedInPlace": {
+          "@type": "Country",
+          "name": "<%= I18n.locale == :ar ? @city['country_ar'] : @city['country_en'] %>"
+        }
+      }
+    },
+    "mainEntity": {
+      "@type": "HowTo",
+      "name": "<%= I18n.locale == :ar ? "كيفية إنشاء سيرة ذاتية لـ #{@job['title_ar']} في #{@city['name_ar']}" : "How to Create a #{@job['title_en']} CV in #{@city['name_en']}" %>",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "<%= I18n.locale == :ar ? 'اختر القالب المناسب' : 'Choose the Right Template' %>"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "<%= I18n.locale == :ar ? 'أضف معلوماتك' : 'Add Your Information' %>"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "<%= I18n.locale == :ar ? 'راجع واطبع' : 'Review and Download' %>"
+        }
+      ]
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "<%= I18n.locale == :ar ? 'الرئيسية' : 'Home' %>", "item": "https://cvcrft.com"},
+        {"@type": "ListItem", "position": 2, "name": "<%= I18n.locale == :ar ? 'قوالب السيرة الذاتية' : 'CV Templates' %>", "item": "https://cvcrft.com/cv-templates"},
+        {"@type": "ListItem", "position": 3, "name": "<%= I18n.locale == :ar ? @city['name_ar'] : @city['name_en'] %>", "item": "https://cvcrft.com/jobs/<%= @city['slug'] %>"},
+        {"@type": "ListItem", "position": 4, "name": "<%= I18n.locale == :ar ? @job['title_ar'] : @job['title_en'] %>"}
+      ]
+    }
+  }
+  </script>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['IBM Plex Sans Arabic', 'sans-serif'] },
+          colors: {
+            primary: '#7B2FF7',
+            primaryHover: '#5A1EDB',
+            action: '#2EF2A3',
+            actionHover: '#1BCB86',
+            darkBase: '#121217',
+            darkCard: '#1C1C21',
+          },
+        }
+      }
+    }
+  </script>
+</head>
+<body class="antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen">
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
+    <div class="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-action/20 blur-[100px]"></div>
+  </div>
+
+  <%= render 'layouts/header' %>
+
+  <main class="pt-24 pb-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Breadcrumb -->
+      <nav class="mb-8" aria-label="Breadcrumb">
+        <ol class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
+          <li><a href="/" class="hover:text-primary"><%= I18n.locale == :ar ? 'الرئيسية' : 'Home' %></a></li>
+          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li><a href="/cv-templates" class="hover:text-primary"><%= I18n.locale == :ar ? 'قوالب السيرة الذاتية' : 'CV Templates' %></a></li>
+          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li><a href="/jobs/<%= @city['slug'] %>" class="hover:text-primary"><%= I18n.locale == :ar ? @city['name_ar'] : @city['name_en'] %></a></li>
+          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li class="text-gray-900 dark:text-white font-medium"><%= I18n.locale == :ar ? @job['title_ar'] : @job['title_en'] %></li>
+        </ol>
+      </nav>
+
+      <!-- Hero with Location Badge -->
+      <header class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-action/10 text-action rounded-full text-sm font-medium">
+            <iconify-icon icon="solar:map-point-bold" width="16"></iconify-icon>
+            <%= I18n.locale == :ar ? @city['name_ar'] : @city['name_en'] %>, <%= I18n.locale == :ar ? @city['country_ar'] : @city['country_en'] %>
+          </span>
+        </div>
+        
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-primary to-action rounded-2xl flex items-center justify-center shadow-lg shadow-primary/25">
+            <iconify-icon icon="solar:user-id-bold" class="text-white" width="32"></iconify-icon>
+          </div>
+          <div>
+            <% category = @categories.find { |c| c['slug'] == @job['category'] } %>
+            <p class="text-sm text-primary font-medium mb-1">
+              <%= I18n.locale == :ar ? category&.dig('name_ar') : category&.dig('name_en') %>
+            </p>
+            <h1 class="text-3xl md:text-4xl font-bold">
+              <%= I18n.locale == :ar ? 
+                "قالب سيرة ذاتية #{@job['title_ar']}" : 
+                "#{@job['title_en']} CV Template" %>
+            </h1>
+          </div>
+        </div>
+        
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          <%= I18n.locale == :ar ? 
+            "قالب سيرة ذاتية احترافي لوظائف #{@job['title_ar']} في #{@city['name_ar']}. مُحسّن لسوق العمل في #{@city['country_ar']} وأنظمة ATS." :
+            "Professional CV template for #{@job['title_en']} jobs in #{@city['name_en']}. Optimized for the #{@city['country_en']} job market and ATS systems." %>
+        </p>
+      </header>
+
+      <!-- Location-specific Tips -->
+      <section class="mb-12 p-6 bg-gradient-to-br from-action/5 to-primary/5 rounded-2xl border border-action/20">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <iconify-icon icon="solar:map-point-wave-bold" class="text-action" width="24"></iconify-icon>
+          <%= I18n.locale == :ar ? 
+            "نصائح للتوظيف في #{@city['name_ar']}" : 
+            "Job Tips for #{@city['name_en']}" %>
+        </h2>
+        <ul class="space-y-3 text-gray-600 dark:text-gray-400">
+          <% if I18n.locale == :ar %>
+            <li class="flex items-start gap-2">
+              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <span>تأكد من أن سيرتك الذاتية متوافقة مع متطلبات سوق العمل في <%= @city['name_ar'] %></span>
+            </li>
+            <li class="flex items-start gap-2">
+              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <span>أضف خبراتك المحلية والشهادات المعترف بها في <%= @city['country_ar'] %></span>
+            </li>
+            <li class="flex items-start gap-2">
+              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <span>استخدم الكلمات المفتاحية الشائعة في إعلانات الوظائف المحلية</span>
+            </li>
+          <% else %>
+            <li class="flex items-start gap-2">
+              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <span>Ensure your CV meets <%= @city['name_en'] %> job market requirements</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <span>Include local experience and certifications recognized in <%= @city['country_en'] %></span>
+            </li>
+            <li class="flex items-start gap-2">
+              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <span>Use keywords common in local job postings</span>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+
+      <!-- Skills -->
+      <section class="mb-12 p-6 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <iconify-icon icon="solar:star-bold" class="text-primary" width="24"></iconify-icon>
+          <%= I18n.locale == :ar ? 'المهارات المطلوبة' : 'Required Skills' %>
+        </h2>
+        <div class="flex flex-wrap gap-2">
+          <% @job['skills'].each do |skill| %>
+            <span class="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium"><%= skill %></span>
+          <% end %>
+        </div>
+      </section>
+
+      <!-- Content -->
+      <article class="prose dark:prose-invert max-w-none mb-12">
+        <h2><%= I18n.locale == :ar ? 
+          "كيف تكتب سيرة ذاتية لـ #{@job['title_ar']} في #{@city['name_ar']}؟" : 
+          "How to Write a #{@job['title_en']} CV for #{@city['name_en']}?" %></h2>
+        
+        <% if I18n.locale == :ar %>
+          <p>
+            سوق العمل في <%= @city['name_ar'] %> يتطلب سيرة ذاتية احترافية ومُحسّنة.
+            كـ <%= @job['title_ar'] %>، يجب أن تبرز مهاراتك في <%= @job['skills'].first(3).join('، ') %> 
+            لتتناسب مع متطلبات أصحاب العمل في <%= @city['country_ar'] %>.
+          </p>
+          
+          <h3>نصائح خاصة بسوق <%= @city['name_ar'] %>:</h3>
+          <ul>
+            <li>أضف صورة شخصية احترافية إذا كان ذلك شائعاً في <%= @city['country_ar'] %></li>
+            <li>اذكر إتقانك للغات المطلوبة في السوق المحلي</li>
+            <li>وضّح إقامتك أو تأشيرة العمل إن وُجدت</li>
+            <li>استخدم تنسيقاً واضحاً ومتوافقاً مع أنظمة ATS</li>
+          </ul>
+        <% else %>
+          <p>
+            The <%= @city['name_en'] %> job market requires a professional, optimized CV.
+            As a <%= @job['title_en'] %>, you should highlight your skills in <%= @job['skills'].first(3).join(', ') %> 
+            to match employer requirements in <%= @city['country_en'] %>.
+          </p>
+          
+          <h3><%= @city['name_en'] %> Market Tips:</h3>
+          <ul>
+            <li>Add a professional photo if common in <%= @city['country_en'] %></li>
+            <li>Mention language proficiency relevant to the local market</li>
+            <li>Clarify your residency or work visa status if applicable</li>
+            <li>Use a clean format compatible with ATS systems</li>
+          </ul>
+        <% end %>
+      </article>
+
+      <!-- CTA -->
+      <div class="p-8 bg-gradient-to-br from-primary/10 to-action/10 rounded-3xl border border-primary/20 text-center mb-12">
+        <h2 class="text-2xl font-bold mb-4">
+          <%= I18n.locale == :ar ? 
+            "أنشئ سيرتك الذاتية لـ #{@city['name_ar']} الآن" : 
+            "Create Your #{@city['name_en']} CV Now" %>
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-xl mx-auto">
+          <%= I18n.locale == :ar ? 
+            "استخدم أداة سيرة المدعومة بالذكاء الاصطناعي لإنشاء سيرة ذاتية مُحسّنة لسوق #{@city['name_ar']}." :
+            "Use our AI-powered tool to create a CV optimized for the #{@city['name_en']} market." %>
+        </p>
+        <a href="<%= new_resume_path %>" class="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25 text-lg">
+          <iconify-icon icon="solar:magic-stick-3-bold" width="24"></iconify-icon>
+          <%= I18n.locale == :ar ? 'ابدأ الآن مجاناً' : 'Start Free Now' %>
+        </a>
+      </div>
+
+      <!-- Same Job in Other Cities -->
+      <% if @other_cities&.any? %>
+        <section class="mb-12">
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <iconify-icon icon="solar:map-bold" class="text-primary" width="24"></iconify-icon>
+            <%= I18n.locale == :ar ? 
+              "#{@job['title_ar']} في مدن أخرى" : 
+              "#{@job['title_en']} in Other Cities" %>
+          </h2>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <% @other_cities.each do |city| %>
+              <a href="/cv-templates/<%= city['slug'] %>/<%= @job['slug'] %>" 
+                 class="group p-4 bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 hover:border-primary/50 transition-all text-center">
+                <iconify-icon icon="solar:map-point-bold" class="text-action mb-2" width="24"></iconify-icon>
+                <p class="font-medium group-hover:text-primary transition-colors">
+                  <%= I18n.locale == :ar ? city['name_ar'] : city['name_en'] %>
+                </p>
+                <p class="text-xs text-gray-500"><%= I18n.locale == :ar ? city['country_ar'] : city['country_en'] %></p>
+              </a>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+
+      <!-- Related Jobs in Same City -->
+      <% if @related_jobs&.any? %>
+        <section>
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <iconify-icon icon="solar:link-bold" class="text-primary" width="24"></iconify-icon>
+            <%= I18n.locale == :ar ? 
+              "وظائف أخرى في #{@city['name_ar']}" : 
+              "Other Jobs in #{@city['name_en']}" %>
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <% @related_jobs.each do |job| %>
+              <a href="/cv-templates/<%= @city['slug'] %>/<%= job['slug'] %>" 
+                 class="group p-5 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 hover:border-primary/50 hover:shadow-lg transition-all">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-semibold group-hover:text-primary transition-colors">
+                      <%= I18n.locale == :ar ? job['title_ar'] : job['title_en'] %>
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1"><%= job['skills'].first(3).join(' • ') %></p>
+                  </div>
+                  <iconify-icon icon="solar:arrow-left-bold" class="text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" width="18"></iconify-icon>
+                </div>
+              </a>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+    </div>
+  </main>
+
+  <%= render 'layouts/footer' %>
+
+  <script>
+    const html = document.documentElement;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+  </script>
+</body>
+</html>

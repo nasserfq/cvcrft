@@ -1,529 +1,647 @@
-# Programmatic SEO Data for CV Templates
-# Each job title generates a unique page at /cv-templates/:slug
-
-job_titles:
-  # Technology
-  - slug: software-engineer
-    title_ar: مهندس برمجيات
-    title_en: Software Engineer
-    category: technology
-    keywords_ar:
-      - سيرة ذاتية مهندس برمجيات
-      - نموذج CV مبرمج
-      - قالب سيرة ذاتية مطور
-    keywords_en:
-      - software engineer resume
-      - developer CV template
-      - programmer resume example
-    skills:
-      - JavaScript
-      - Python
-      - React
-      - Node.js
-      - SQL
-      - Git
-    description_ar: >
-      أنشئ سيرة ذاتية احترافية لمهندس برمجيات تبرز مهاراتك التقنية وخبراتك في تطوير البرمجيات.
-      قالب مُحسّن لأنظمة ATS يساعدك على اجتياز الفلترة الآلية والحصول على المقابلات.
-    description_en: >
-      Create a professional software engineer resume that highlights your technical skills and development experience.
-      ATS-optimized template helps you pass automated screening and land interviews.
-
-  - slug: data-scientist
-    title_ar: عالم بيانات
-    title_en: Data Scientist
-    category: technology
-    keywords_ar:
-      - سيرة ذاتية عالم بيانات
-      - CV تحليل البيانات
-      - نموذج سيرة ذاتية Data Scientist
-    keywords_en:
-      - data scientist resume
-      - data analyst CV
-      - machine learning resume
-    skills:
-      - Python
-      - R
-      - Machine Learning
-      - TensorFlow
-      - SQL
-      - Tableau
-    description_ar: >
-      صمم سيرة ذاتية متميزة لعالم بيانات تُظهر خبرتك في التحليل والتعلم الآلي.
-      قالب يركز على المشاريع والنتائج القابلة للقياس.
-    description_en: >
-      Design a standout data scientist resume showcasing your analytics and machine learning expertise.
-      Template focused on projects and measurable outcomes.
-
-  - slug: product-manager
-    title_ar: مدير منتج
-    title_en: Product Manager
-    category: technology
-    keywords_ar:
-      - سيرة ذاتية مدير منتج
-      - CV Product Manager
-      - نموذج سيرة مدير منتجات
-    keywords_en:
-      - product manager resume
-      - PM CV template
-      - product management resume
-    skills:
-      - Product Strategy
-      - Agile/Scrum
-      - User Research
-      - Roadmapping
-      - Data Analysis
-      - Stakeholder Management
-    description_ar: >
-      أنشئ سيرة ذاتية قوية لمدير منتج تُبرز قدرتك على قيادة المنتجات من الفكرة إلى الإطلاق.
-    description_en: >
-      Build a powerful product manager resume highlighting your ability to lead products from concept to launch.
-
-  - slug: ui-ux-designer
-    title_ar: مصمم واجهات وتجربة مستخدم
-    title_en: UI/UX Designer
-    category: technology
-    keywords_ar:
-      - سيرة ذاتية مصمم UX
-      - CV مصمم واجهات
-      - نموذج سيرة UI Designer
-    keywords_en:
-      - UI UX designer resume
-      - product designer CV
-      - UX resume template
-    skills:
-      - Figma
-      - Adobe XD
-      - User Research
-      - Prototyping
-      - Design Systems
-      - Usability Testing
-    description_ar: >
-      صمم سيرة ذاتية إبداعية لمصمم UI/UX تعكس مهاراتك في التصميم وفهمك لتجربة المستخدم.
-    description_en: >
-      Design a creative UI/UX resume reflecting your design skills and user experience understanding.
-
-  - slug: devops-engineer
-    title_ar: مهندس DevOps
-    title_en: DevOps Engineer
-    category: technology
-    keywords_ar:
-      - سيرة ذاتية DevOps
-      - CV مهندس عمليات
-      - نموذج سيرة DevOps Engineer
-    keywords_en:
-      - devops engineer resume
-      - cloud engineer CV
-      - SRE resume template
-    skills:
-      - AWS/Azure/GCP
-      - Docker
-      - Kubernetes
-      - CI/CD
-      - Terraform
-      - Linux
-    description_ar: >
-      أنشئ سيرة ذاتية تقنية لمهندس DevOps تُظهر خبرتك في البنية التحتية السحابية والأتمتة.
-    description_en: >
-      Create a technical DevOps resume showcasing your cloud infrastructure and automation expertise.
-
-  # Business & Finance
-  - slug: accountant
-    title_ar: محاسب
-    title_en: Accountant
-    category: finance
-    keywords_ar:
-      - سيرة ذاتية محاسب
-      - CV محاسبة
-      - نموذج سيرة ذاتية محاسب
-    keywords_en:
-      - accountant resume
-      - accounting CV
-      - bookkeeper resume
-    skills:
-      - Financial Reporting
-      - Excel
-      - QuickBooks
-      - Tax Preparation
-      - Auditing
-      - SAP
-    description_ar: >
-      أنشئ سيرة ذاتية احترافية للمحاسبين تُبرز خبرتك في المحاسبة والتقارير المالية.
-    description_en: >
-      Create a professional accountant resume highlighting your accounting and financial reporting expertise.
-
-  - slug: financial-analyst
-    title_ar: محلل مالي
-    title_en: Financial Analyst
-    category: finance
-    keywords_ar:
-      - سيرة ذاتية محلل مالي
-      - CV تحليل مالي
-      - نموذج سيرة Financial Analyst
-    keywords_en:
-      - financial analyst resume
-      - finance CV template
-      - investment analyst resume
-    skills:
-      - Financial Modeling
-      - Excel
-      - Bloomberg
-      - Valuation
-      - SQL
-      - PowerPoint
-    description_ar: >
-      صمم سيرة ذاتية متميزة لمحلل مالي تعكس قدراتك التحليلية وخبرتك في الأسواق المالية.
-    description_en: >
-      Design a standout financial analyst resume reflecting your analytical abilities and market expertise.
-
-  - slug: marketing-manager
-    title_ar: مدير تسويق
-    title_en: Marketing Manager
-    category: marketing
-    keywords_ar:
-      - سيرة ذاتية مدير تسويق
-      - CV تسويق
-      - نموذج سيرة Marketing Manager
-    keywords_en:
-      - marketing manager resume
-      - digital marketing CV
-      - marketing director resume
-    skills:
-      - Digital Marketing
-      - SEO/SEM
-      - Google Analytics
-      - Content Strategy
-      - Social Media
-      - Campaign Management
-    description_ar: >
-      أنشئ سيرة ذاتية قوية لمدير تسويق تُظهر نتائجك في زيادة المبيعات وبناء العلامة التجارية.
-    description_en: >
-      Build a powerful marketing manager resume showing your results in driving sales and brand building.
-
-  - slug: sales-representative
-    title_ar: مندوب مبيعات
-    title_en: Sales Representative
-    category: sales
-    keywords_ar:
-      - سيرة ذاتية مندوب مبيعات
-      - CV مبيعات
-      - نموذج سيرة Sales
-    keywords_en:
-      - sales representative resume
-      - sales CV template
-      - account executive resume
-    skills:
-      - CRM (Salesforce)
-      - Negotiation
-      - Cold Calling
-      - Pipeline Management
-      - Presentation
-      - Closing
-    description_ar: >
-      صمم سيرة ذاتية مقنعة لمندوب مبيعات تُبرز إنجازاتك في تحقيق الأهداف وبناء العلاقات.
-    description_en: >
-      Design a compelling sales resume highlighting your achievements in meeting targets and building relationships.
-
-  - slug: hr-manager
-    title_ar: مدير موارد بشرية
-    title_en: HR Manager
-    category: hr
-    keywords_ar:
-      - سيرة ذاتية مدير موارد بشرية
-      - CV HR
-      - نموذج سيرة Human Resources
-    keywords_en:
-      - HR manager resume
-      - human resources CV
-      - talent acquisition resume
-    skills:
-      - Recruitment
-      - Employee Relations
-      - HRIS
-      - Performance Management
-      - Labor Law
-      - Training & Development
-    description_ar: >
-      أنشئ سيرة ذاتية احترافية لمدير موارد بشرية تعكس خبرتك في إدارة المواهب وتطوير الموظفين.
-    description_en: >
-      Create a professional HR manager resume reflecting your talent management and employee development expertise.
-
-  # Healthcare
-  - slug: nurse
-    title_ar: ممرض/ممرضة
-    title_en: Nurse
-    category: healthcare
-    keywords_ar:
-      - سيرة ذاتية ممرض
-      - CV تمريض
-      - نموذج سيرة ممرضة
-    keywords_en:
-      - nurse resume
-      - nursing CV
-      - RN resume template
-    skills:
-      - Patient Care
-      - Medical Records
-      - IV Administration
-      - Emergency Response
-      - Team Collaboration
-      - Electronic Health Records
-    description_ar: >
-      صمم سيرة ذاتية مهنية للتمريض تُظهر مهاراتك في رعاية المرضى والعمل ضمن فريق طبي.
-    description_en: >
-      Design a professional nursing resume showing your patient care skills and medical team collaboration.
-
-  - slug: doctor
-    title_ar: طبيب
-    title_en: Doctor / Physician
-    category: healthcare
-    keywords_ar:
-      - سيرة ذاتية طبيب
-      - CV طب
-      - نموذج سيرة ذاتية دكتور
-    keywords_en:
-      - doctor resume
-      - physician CV
-      - medical doctor resume
-    skills:
-      - Patient Diagnosis
-      - Treatment Planning
-      - Medical Research
-      - Clinical Skills
-      - Team Leadership
-      - EMR Systems
-    description_ar: >
-      أنشئ سيرة ذاتية طبية احترافية تُبرز تخصصك وخبراتك السريرية والبحثية.
-    description_en: >
-      Create a professional medical CV highlighting your specialization and clinical/research experience.
-
-  # Engineering
-  - slug: mechanical-engineer
-    title_ar: مهندس ميكانيكي
-    title_en: Mechanical Engineer
-    category: engineering
-    keywords_ar:
-      - سيرة ذاتية مهندس ميكانيكي
-      - CV هندسة ميكانيكية
-      - نموذج سيرة مهندس
-    keywords_en:
-      - mechanical engineer resume
-      - engineering CV
-      - mechanical design resume
-    skills:
-      - AutoCAD
-      - SolidWorks
-      - MATLAB
-      - FEA Analysis
-      - Project Management
-      - Manufacturing Processes
-    description_ar: >
-      صمم سيرة ذاتية هندسية تُظهر مهاراتك في التصميم والتحليل الميكانيكي.
-    description_en: >
-      Design an engineering resume showcasing your mechanical design and analysis skills.
-
-  - slug: civil-engineer
-    title_ar: مهندس مدني
-    title_en: Civil Engineer
-    category: engineering
-    keywords_ar:
-      - سيرة ذاتية مهندس مدني
-      - CV هندسة مدنية
-      - نموذج سيرة مهندس إنشاءات
-    keywords_en:
-      - civil engineer resume
-      - construction engineer CV
-      - structural engineer resume
-    skills:
-      - AutoCAD Civil 3D
-      - Structural Analysis
-      - Project Management
-      - Site Supervision
-      - Building Codes
-      - Cost Estimation
-    description_ar: >
-      أنشئ سيرة ذاتية قوية لمهندس مدني تعكس خبرتك في المشاريع الإنشائية والتصميم الهيكلي.
-    description_en: >
-      Build a strong civil engineer resume reflecting your construction project and structural design experience.
-
-  - slug: electrical-engineer
-    title_ar: مهندس كهربائي
-    title_en: Electrical Engineer
-    category: engineering
-    keywords_ar:
-      - سيرة ذاتية مهندس كهربائي
-      - CV هندسة كهربائية
-      - نموذج سيرة مهندس كهرباء
-    keywords_en:
-      - electrical engineer resume
-      - EE CV template
-      - power systems engineer resume
-    skills:
-      - Circuit Design
-      - PLC Programming
-      - MATLAB/Simulink
-      - Power Systems
-      - AutoCAD Electrical
-      - Testing & Commissioning
-    description_ar: >
-      صمم سيرة ذاتية تقنية لمهندس كهربائي تُبرز خبرتك في أنظمة الطاقة والتصميم الكهربائي.
-    description_en: >
-      Design a technical electrical engineer resume highlighting your power systems and electrical design expertise.
-
-  # Education
-  - slug: teacher
-    title_ar: معلم/معلمة
-    title_en: Teacher
-    category: education
-    keywords_ar:
-      - سيرة ذاتية معلم
-      - CV تدريس
-      - نموذج سيرة معلمة
-    keywords_en:
-      - teacher resume
-      - teaching CV
-      - educator resume template
-    skills:
-      - Curriculum Development
-      - Classroom Management
-      - Student Assessment
-      - Educational Technology
-      - Parent Communication
-      - Differentiated Instruction
-    description_ar: >
-      أنشئ سيرة ذاتية تعليمية تُظهر شغفك بالتدريس وقدرتك على إلهام الطلاب.
-    description_en: >
-      Create an educational resume showing your teaching passion and ability to inspire students.
-
-  # Creative
-  - slug: graphic-designer
-    title_ar: مصمم جرافيك
-    title_en: Graphic Designer
-    category: creative
-    keywords_ar:
-      - سيرة ذاتية مصمم جرافيك
-      - CV تصميم
-      - نموذج سيرة مصمم
-    keywords_en:
-      - graphic designer resume
-      - design CV
-      - creative designer resume
-    skills:
-      - Adobe Creative Suite
-      - Typography
-      - Brand Identity
-      - Print Design
-      - Digital Design
-      - Motion Graphics
-    description_ar: >
-      صمم سيرة ذاتية إبداعية لمصمم جرافيك تعكس أسلوبك الفني ومشاريعك المميزة.
-    description_en: >
-      Design a creative graphic designer resume reflecting your artistic style and standout projects.
-
-  - slug: content-writer
-    title_ar: كاتب محتوى
-    title_en: Content Writer
-    category: creative
-    keywords_ar:
-      - سيرة ذاتية كاتب محتوى
-      - CV كتابة
-      - نموذج سيرة Content Writer
-    keywords_en:
-      - content writer resume
-      - copywriter CV
-      - writer resume template
-    skills:
-      - SEO Writing
-      - Copywriting
-      - Research
-      - Content Strategy
-      - Social Media
-      - Editing
-    description_ar: >
-      أنشئ سيرة ذاتية مقنعة لكاتب محتوى تُبرز مهاراتك الكتابية وقدرتك على جذب الجمهور.
-    description_en: >
-      Build a compelling content writer resume highlighting your writing skills and audience engagement ability.
-
-  # Operations & Admin
-  - slug: project-manager
-    title_ar: مدير مشاريع
-    title_en: Project Manager
-    category: operations
-    keywords_ar:
-      - سيرة ذاتية مدير مشاريع
-      - CV إدارة مشاريع
-      - نموذج سيرة Project Manager
-    keywords_en:
-      - project manager resume
-      - PMP CV
-      - program manager resume
-    skills:
-      - PMP
-      - Agile/Scrum
-      - MS Project
-      - Risk Management
-      - Stakeholder Management
-      - Budget Management
-    description_ar: >
-      أنشئ سيرة ذاتية قيادية لمدير مشاريع تُظهر قدرتك على تسليم المشاريع في الوقت والميزانية.
-    description_en: >
-      Create a leadership project manager resume showing your ability to deliver projects on time and budget.
-
-  - slug: executive-assistant
-    title_ar: مساعد تنفيذي
-    title_en: Executive Assistant
-    category: admin
-    keywords_ar:
-      - سيرة ذاتية مساعد تنفيذي
-      - CV سكرتارية
-      - نموذج سيرة Executive Assistant
-    keywords_en:
-      - executive assistant resume
-      - administrative assistant CV
-      - EA resume template
-    skills:
-      - Calendar Management
-      - Travel Coordination
-      - Microsoft Office
-      - Communication
-      - Event Planning
-      - Confidentiality
-    description_ar: >
-      صمم سيرة ذاتية احترافية لمساعد تنفيذي تعكس مهاراتك التنظيمية وقدرتك على دعم القيادة.
-    description_en: >
-      Design a professional executive assistant resume reflecting your organizational skills and leadership support ability.
+# SEO Data for Programmatic Pages
+# 50 job titles × 10 cities = 500 pages
 
 categories:
   - slug: technology
-    name_ar: التقنية والبرمجة
     name_en: Technology
-  - slug: finance
-    name_ar: المالية والمحاسبة
-    name_en: Finance & Accounting
-  - slug: marketing
-    name_ar: التسويق
-    name_en: Marketing
-  - slug: sales
-    name_ar: المبيعات
-    name_en: Sales
-  - slug: hr
-    name_ar: الموارد البشرية
-    name_en: Human Resources
+    name_ar: التقنية
   - slug: healthcare
-    name_ar: الرعاية الصحية
     name_en: Healthcare
+    name_ar: الرعاية الصحية
+  - slug: finance
+    name_en: Finance & Accounting
+    name_ar: المالية والمحاسبة
   - slug: engineering
-    name_ar: الهندسة
     name_en: Engineering
+    name_ar: الهندسة
+  - slug: marketing
+    name_en: Marketing & Sales
+    name_ar: التسويق والمبيعات
   - slug: education
-    name_ar: التعليم
     name_en: Education
+    name_ar: التعليم
+  - slug: legal
+    name_en: Legal
+    name_ar: القانون
   - slug: creative
-    name_ar: الإبداع والتصميم
     name_en: Creative & Design
+    name_ar: الإبداع والتصميم
+  - slug: hospitality
+    name_en: Hospitality & Tourism
+    name_ar: الضيافة والسياحة
   - slug: operations
-    name_ar: العمليات
-    name_en: Operations
-  - slug: admin
-    name_ar: الإدارة
-    name_en: Administration
+    name_en: Operations & Logistics
+    name_ar: العمليات واللوجستيات
+
+cities:
+  - slug: riyadh
+    name_en: Riyadh
+    name_ar: الرياض
+    country_en: Saudi Arabia
+    country_ar: السعودية
+  - slug: jeddah
+    name_en: Jeddah
+    name_ar: جدة
+    country_en: Saudi Arabia
+    country_ar: السعودية
+  - slug: dubai
+    name_en: Dubai
+    name_ar: دبي
+    country_en: UAE
+    country_ar: الإمارات
+  - slug: abu-dhabi
+    name_en: Abu Dhabi
+    name_ar: أبوظبي
+    country_en: UAE
+    country_ar: الإمارات
+  - slug: doha
+    name_en: Doha
+    name_ar: الدوحة
+    country_en: Qatar
+    country_ar: قطر
+  - slug: kuwait-city
+    name_en: Kuwait City
+    name_ar: الكويت
+    country_en: Kuwait
+    country_ar: الكويت
+  - slug: manama
+    name_en: Manama
+    name_ar: المنامة
+    country_en: Bahrain
+    country_ar: البحرين
+  - slug: muscat
+    name_en: Muscat
+    name_ar: مسقط
+    country_en: Oman
+    country_ar: عُمان
+  - slug: cairo
+    name_en: Cairo
+    name_ar: القاهرة
+    country_en: Egypt
+    country_ar: مصر
+  - slug: amman
+    name_en: Amman
+    name_ar: عمّان
+    country_en: Jordan
+    country_ar: الأردن
+
+job_titles:
+  # Technology (10)
+  - slug: software-engineer
+    title_en: Software Engineer
+    title_ar: مهندس برمجيات
+    category: technology
+    keywords_en: software development, coding, programming, algorithms
+    keywords_ar: تطوير البرمجيات، البرمجة، الخوارزميات
+    skills: [Python, JavaScript, Java, Git, SQL, APIs, Agile]
+    description_en: Build and maintain software applications using modern programming languages and frameworks.
+    description_ar: بناء وصيانة التطبيقات البرمجية باستخدام لغات البرمجة الحديثة.
+
+  - slug: frontend-developer
+    title_en: Frontend Developer
+    title_ar: مطور واجهات أمامية
+    category: technology
+    keywords_en: frontend, web development, UI, user interface
+    keywords_ar: الواجهات الأمامية، تطوير الويب
+    skills: [React, Vue.js, TypeScript, HTML, CSS, Tailwind, Figma]
+    description_en: Create responsive and interactive user interfaces for web applications.
+    description_ar: إنشاء واجهات مستخدم تفاعلية وسريعة الاستجابة لتطبيقات الويب.
+
+  - slug: backend-developer
+    title_en: Backend Developer
+    title_ar: مطور خلفي
+    category: technology
+    keywords_en: backend, server, database, APIs
+    keywords_ar: تطوير الخوادم، قواعد البيانات
+    skills: [Node.js, Python, Ruby, PostgreSQL, MongoDB, Redis, Docker]
+    description_en: Design and implement server-side logic, databases, and APIs.
+    description_ar: تصميم وتنفيذ منطق الخادم وقواعد البيانات وواجهات برمجة التطبيقات.
+
+  - slug: mobile-developer
+    title_en: Mobile App Developer
+    title_ar: مطور تطبيقات الجوال
+    category: technology
+    keywords_en: mobile development, iOS, Android, apps
+    keywords_ar: تطوير الجوال، تطبيقات الهاتف
+    skills: [React Native, Flutter, Swift, Kotlin, Firebase, REST APIs]
+    description_en: Develop native and cross-platform mobile applications for iOS and Android.
+    description_ar: تطوير تطبيقات الجوال الأصلية ومتعددة المنصات.
+
+  - slug: data-scientist
+    title_en: Data Scientist
+    title_ar: عالم بيانات
+    category: technology
+    keywords_en: data science, machine learning, analytics, AI
+    keywords_ar: علم البيانات، التعلم الآلي، الذكاء الاصطناعي
+    skills: [Python, R, TensorFlow, SQL, Pandas, Machine Learning, Statistics]
+    description_en: Extract insights from data using statistical analysis and machine learning.
+    description_ar: استخراج الرؤى من البيانات باستخدام التحليل الإحصائي والتعلم الآلي.
+
+  - slug: devops-engineer
+    title_en: DevOps Engineer
+    title_ar: مهندس DevOps
+    category: technology
+    keywords_en: DevOps, CI/CD, cloud, infrastructure
+    keywords_ar: DevOps، السحابة، البنية التحتية
+    skills: [AWS, Docker, Kubernetes, Jenkins, Terraform, Linux, Git]
+    description_en: Automate and optimize deployment pipelines and cloud infrastructure.
+    description_ar: أتمتة وتحسين خطوط النشر والبنية التحتية السحابية.
+
+  - slug: cybersecurity-analyst
+    title_en: Cybersecurity Analyst
+    title_ar: محلل أمن سيبراني
+    category: technology
+    keywords_en: cybersecurity, security, network security, penetration testing
+    keywords_ar: الأمن السيبراني، أمن الشبكات، اختبار الاختراق
+    skills: [SIEM, Penetration Testing, Firewalls, ISO 27001, Incident Response]
+    description_en: Protect organizations from cyber threats and security vulnerabilities.
+    description_ar: حماية المؤسسات من التهديدات السيبرانية والثغرات الأمنية.
+
+  - slug: cloud-architect
+    title_en: Cloud Architect
+    title_ar: مهندس سحابي
+    category: technology
+    keywords_en: cloud computing, AWS, Azure, architecture
+    keywords_ar: الحوسبة السحابية، البنية السحابية
+    skills: [AWS, Azure, GCP, Microservices, Serverless, Security, Cost Optimization]
+    description_en: Design and implement scalable cloud infrastructure solutions.
+    description_ar: تصميم وتنفيذ حلول البنية التحتية السحابية القابلة للتوسع.
+
+  - slug: ai-engineer
+    title_en: AI/ML Engineer
+    title_ar: مهندس ذكاء اصطناعي
+    category: technology
+    keywords_en: artificial intelligence, machine learning, deep learning, neural networks
+    keywords_ar: الذكاء الاصطناعي، التعلم العميق، الشبكات العصبية
+    skills: [Python, TensorFlow, PyTorch, NLP, Computer Vision, MLOps]
+    description_en: Develop and deploy artificial intelligence and machine learning models.
+    description_ar: تطوير ونشر نماذج الذكاء الاصطناعي والتعلم الآلي.
+
+  - slug: product-manager
+    title_en: Product Manager
+    title_ar: مدير منتج
+    category: technology
+    keywords_en: product management, roadmap, strategy, agile
+    keywords_ar: إدارة المنتجات، الاستراتيجية، أجايل
+    skills: [Product Strategy, Agile, Jira, User Research, A/B Testing, Roadmapping]
+    description_en: Define product vision and lead cross-functional teams to deliver value.
+    description_ar: تحديد رؤية المنتج وقيادة الفرق متعددة التخصصات لتقديم القيمة.
+
+  # Healthcare (5)
+  - slug: doctor
+    title_en: Medical Doctor
+    title_ar: طبيب
+    category: healthcare
+    keywords_en: physician, medical, healthcare, diagnosis
+    keywords_ar: طبيب، الرعاية الصحية، التشخيص
+    skills: [Patient Care, Diagnosis, Treatment Planning, Medical Records, Communication]
+    description_en: Diagnose and treat patients while providing comprehensive healthcare services.
+    description_ar: تشخيص وعلاج المرضى مع تقديم خدمات الرعاية الصحية الشاملة.
+
+  - slug: nurse
+    title_en: Registered Nurse
+    title_ar: ممرض/ة مسجل/ة
+    category: healthcare
+    keywords_en: nursing, patient care, healthcare, clinical
+    keywords_ar: التمريض، رعاية المرضى، السريري
+    skills: [Patient Care, Medication Administration, Vital Signs, EMR, Critical Thinking]
+    description_en: Provide direct patient care and coordinate healthcare services.
+    description_ar: تقديم الرعاية المباشرة للمرضى وتنسيق خدمات الرعاية الصحية.
+
+  - slug: pharmacist
+    title_en: Pharmacist
+    title_ar: صيدلي
+    category: healthcare
+    keywords_en: pharmacy, medications, prescriptions, drug interactions
+    keywords_ar: الصيدلة، الأدوية، الوصفات الطبية
+    skills: [Drug Knowledge, Prescription Review, Patient Counseling, Inventory Management]
+    description_en: Dispense medications and provide pharmaceutical care to patients.
+    description_ar: صرف الأدوية وتقديم الرعاية الصيدلانية للمرضى.
+
+  - slug: dentist
+    title_en: Dentist
+    title_ar: طبيب أسنان
+    category: healthcare
+    keywords_en: dental, oral health, dentistry, teeth
+    keywords_ar: طب الأسنان، صحة الفم
+    skills: [Dental Procedures, Patient Care, X-Ray Interpretation, Oral Surgery]
+    description_en: Provide dental care and maintain patients' oral health.
+    description_ar: تقديم رعاية الأسنان والحفاظ على صحة الفم للمرضى.
+
+  - slug: healthcare-administrator
+    title_en: Healthcare Administrator
+    title_ar: مدير إدارة صحية
+    category: healthcare
+    keywords_en: healthcare management, hospital administration, operations
+    keywords_ar: إدارة الرعاية الصحية، إدارة المستشفيات
+    skills: [Healthcare Management, Budgeting, Compliance, Staff Management, EHR Systems]
+    description_en: Manage healthcare facilities and ensure efficient operations.
+    description_ar: إدارة المرافق الصحية وضمان كفاءة العمليات.
+
+  # Finance & Accounting (5)
+  - slug: accountant
+    title_en: Accountant
+    title_ar: محاسب
+    category: finance
+    keywords_en: accounting, financial statements, bookkeeping, audit
+    keywords_ar: المحاسبة، القوائم المالية، التدقيق
+    skills: [Financial Reporting, Excel, QuickBooks, GAAP, Tax Preparation, Auditing]
+    description_en: Prepare financial statements and ensure accurate financial records.
+    description_ar: إعداد القوائم المالية وضمان دقة السجلات المالية.
+
+  - slug: financial-analyst
+    title_en: Financial Analyst
+    title_ar: محلل مالي
+    category: finance
+    keywords_en: financial analysis, investment, forecasting, valuation
+    keywords_ar: التحليل المالي، الاستثمار، التنبؤ
+    skills: [Financial Modeling, Excel, Bloomberg, Valuation, Forecasting, PowerBI]
+    description_en: Analyze financial data and provide investment recommendations.
+    description_ar: تحليل البيانات المالية وتقديم توصيات الاستثمار.
+
+  - slug: investment-banker
+    title_en: Investment Banker
+    title_ar: مصرفي استثماري
+    category: finance
+    keywords_en: investment banking, M&A, capital markets, deals
+    keywords_ar: الخدمات المصرفية الاستثمارية، الاندماج والاستحواذ
+    skills: [M&A, Financial Modeling, Due Diligence, Capital Markets, Pitchbooks]
+    description_en: Advise clients on mergers, acquisitions, and capital raising.
+    description_ar: تقديم المشورة للعملاء بشأن عمليات الاندماج والاستحواذ وجمع رأس المال.
+
+  - slug: auditor
+    title_en: Auditor
+    title_ar: مدقق حسابات
+    category: finance
+    keywords_en: auditing, compliance, internal audit, risk assessment
+    keywords_ar: التدقيق، الامتثال، تقييم المخاطر
+    skills: [Internal Audit, Risk Assessment, IFRS, SOX Compliance, Data Analytics]
+    description_en: Examine financial records and ensure regulatory compliance.
+    description_ar: فحص السجلات المالية وضمان الامتثال التنظيمي.
+
+  - slug: tax-consultant
+    title_en: Tax Consultant
+    title_ar: مستشار ضريبي
+    category: finance
+    keywords_en: tax planning, tax compliance, VAT, corporate tax
+    keywords_ar: التخطيط الضريبي، الامتثال الضريبي، ضريبة القيمة المضافة
+    skills: [Tax Planning, VAT, Corporate Tax, Tax Software, Compliance, Advisory]
+    description_en: Provide tax planning advice and ensure tax compliance.
+    description_ar: تقديم المشورة في التخطيط الضريبي وضمان الامتثال الضريبي.
+
+  # Engineering (5)
+  - slug: civil-engineer
+    title_en: Civil Engineer
+    title_ar: مهندس مدني
+    category: engineering
+    keywords_en: civil engineering, construction, infrastructure, structural
+    keywords_ar: الهندسة المدنية، البناء، البنية التحتية
+    skills: [AutoCAD, Structural Analysis, Project Management, Site Supervision, BIM]
+    description_en: Design and oversee construction of infrastructure projects.
+    description_ar: تصميم والإشراف على بناء مشاريع البنية التحتية.
+
+  - slug: mechanical-engineer
+    title_en: Mechanical Engineer
+    title_ar: مهندس ميكانيكي
+    category: engineering
+    keywords_en: mechanical engineering, HVAC, manufacturing, design
+    keywords_ar: الهندسة الميكانيكية، التصنيع، التصميم
+    skills: [SolidWorks, HVAC, Manufacturing, CAD, Thermodynamics, Quality Control]
+    description_en: Design and develop mechanical systems and equipment.
+    description_ar: تصميم وتطوير الأنظمة والمعدات الميكانيكية.
+
+  - slug: electrical-engineer
+    title_en: Electrical Engineer
+    title_ar: مهندس كهربائي
+    category: engineering
+    keywords_en: electrical engineering, power systems, circuits, electronics
+    keywords_ar: الهندسة الكهربائية، أنظمة الطاقة، الإلكترونيات
+    skills: [Circuit Design, Power Systems, PLC, MATLAB, AutoCAD Electrical]
+    description_en: Design electrical systems and ensure safe power distribution.
+    description_ar: تصميم الأنظمة الكهربائية وضمان توزيع الطاقة بشكل آمن.
+
+  - slug: petroleum-engineer
+    title_en: Petroleum Engineer
+    title_ar: مهندس بترول
+    category: engineering
+    keywords_en: petroleum, oil and gas, drilling, reservoir
+    keywords_ar: هندسة البترول، النفط والغاز، الحفر
+    skills: [Reservoir Engineering, Drilling, Production Optimization, PETREL, HSE]
+    description_en: Optimize oil and gas extraction and production processes.
+    description_ar: تحسين عمليات استخراج وإنتاج النفط والغاز.
+
+  - slug: project-engineer
+    title_en: Project Engineer
+    title_ar: مهندس مشاريع
+    category: engineering
+    keywords_en: project engineering, construction management, planning
+    keywords_ar: هندسة المشاريع، إدارة البناء، التخطيط
+    skills: [Project Management, Primavera, MS Project, Cost Control, Scheduling]
+    description_en: Coordinate engineering projects from planning to completion.
+    description_ar: تنسيق المشاريع الهندسية من التخطيط إلى الإنجاز.
+
+  # Marketing & Sales (5)
+  - slug: marketing-manager
+    title_en: Marketing Manager
+    title_ar: مدير تسويق
+    category: marketing
+    keywords_en: marketing strategy, brand management, campaigns, digital marketing
+    keywords_ar: استراتيجية التسويق، إدارة العلامة التجارية، الحملات
+    skills: [Marketing Strategy, Brand Management, Digital Marketing, Analytics, Budget Management]
+    description_en: Develop and execute marketing strategies to drive business growth.
+    description_ar: تطوير وتنفيذ استراتيجيات التسويق لدفع نمو الأعمال.
+
+  - slug: digital-marketing-specialist
+    title_en: Digital Marketing Specialist
+    title_ar: أخصائي تسويق رقمي
+    category: marketing
+    keywords_en: digital marketing, SEO, SEM, social media, content marketing
+    keywords_ar: التسويق الرقمي، تحسين محركات البحث، وسائل التواصل
+    skills: [SEO, Google Ads, Social Media Marketing, Content Strategy, Analytics]
+    description_en: Execute digital marketing campaigns across multiple channels.
+    description_ar: تنفيذ حملات التسويق الرقمي عبر قنوات متعددة.
+
+  - slug: sales-manager
+    title_en: Sales Manager
+    title_ar: مدير مبيعات
+    category: marketing
+    keywords_en: sales management, business development, revenue, team leadership
+    keywords_ar: إدارة المبيعات، تطوير الأعمال، الإيرادات
+    skills: [Sales Strategy, CRM, Team Leadership, Negotiation, Revenue Forecasting]
+    description_en: Lead sales teams and develop strategies to achieve revenue targets.
+    description_ar: قيادة فرق المبيعات وتطوير استراتيجيات لتحقيق أهداف الإيرادات.
+
+  - slug: business-development-manager
+    title_en: Business Development Manager
+    title_ar: مدير تطوير الأعمال
+    category: marketing
+    keywords_en: business development, partnerships, growth, strategy
+    keywords_ar: تطوير الأعمال، الشراكات، النمو
+    skills: [Partnership Development, Strategic Planning, Market Analysis, Negotiation]
+    description_en: Identify growth opportunities and build strategic partnerships.
+    description_ar: تحديد فرص النمو وبناء الشراكات الاستراتيجية.
+
+  - slug: content-marketing-manager
+    title_en: Content Marketing Manager
+    title_ar: مدير تسويق المحتوى
+    category: marketing
+    keywords_en: content marketing, content strategy, copywriting, brand voice
+    keywords_ar: تسويق المحتوى، استراتيجية المحتوى، كتابة الإعلانات
+    skills: [Content Strategy, SEO Writing, Editorial Planning, Analytics, Brand Voice]
+    description_en: Create and manage content strategies that engage and convert audiences.
+    description_ar: إنشاء وإدارة استراتيجيات المحتوى التي تجذب الجمهور وتحوله.
+
+  # Education (5)
+  - slug: teacher
+    title_en: Teacher
+    title_ar: معلم/ة
+    category: education
+    keywords_en: teaching, education, curriculum, classroom management
+    keywords_ar: التدريس، التعليم، المناهج، إدارة الفصل
+    skills: [Curriculum Development, Classroom Management, Student Assessment, EdTech]
+    description_en: Educate students and develop engaging learning experiences.
+    description_ar: تعليم الطلاب وتطوير تجارب تعليمية جذابة.
+
+  - slug: university-professor
+    title_en: University Professor
+    title_ar: أستاذ جامعي
+    category: education
+    keywords_en: professor, higher education, research, academic
+    keywords_ar: أستاذ جامعي، التعليم العالي، البحث الأكاديمي
+    skills: [Research, Academic Writing, Lecturing, Student Mentoring, Grant Writing]
+    description_en: Conduct research and teach at the university level.
+    description_ar: إجراء الأبحاث والتدريس على المستوى الجامعي.
+
+  - slug: training-manager
+    title_en: Training Manager
+    title_ar: مدير التدريب
+    category: education
+    keywords_en: corporate training, learning and development, L&D
+    keywords_ar: التدريب المؤسسي، التعلم والتطوير
+    skills: [Training Design, LMS, Needs Assessment, Facilitation, Performance Metrics]
+    description_en: Design and implement corporate training programs.
+    description_ar: تصميم وتنفيذ برامج التدريب المؤسسي.
+
+  - slug: instructional-designer
+    title_en: Instructional Designer
+    title_ar: مصمم تعليمي
+    category: education
+    keywords_en: instructional design, e-learning, course development
+    keywords_ar: التصميم التعليمي، التعلم الإلكتروني
+    skills: [Course Design, Articulate, Adobe Captivate, ADDIE, LMS]
+    description_en: Create engaging educational content and e-learning courses.
+    description_ar: إنشاء محتوى تعليمي جذاب ودورات التعلم الإلكتروني.
+
+  - slug: school-principal
+    title_en: School Principal
+    title_ar: مدير مدرسة
+    category: education
+    keywords_en: school administration, educational leadership, K-12
+    keywords_ar: إدارة المدرسة، القيادة التعليمية
+    skills: [Educational Leadership, Staff Management, Budget Management, Compliance]
+    description_en: Lead school operations and ensure educational excellence.
+    description_ar: قيادة عمليات المدرسة وضمان التميز التعليمي.
+
+  # Legal (5)
+  - slug: lawyer
+    title_en: Lawyer
+    title_ar: محامي
+    category: legal
+    keywords_en: law, legal advice, litigation, contracts
+    keywords_ar: القانون، المشورة القانونية، التقاضي، العقود
+    skills: [Legal Research, Contract Drafting, Litigation, Negotiation, Client Advisory]
+    description_en: Provide legal advice and represent clients in legal matters.
+    description_ar: تقديم المشورة القانونية وتمثيل العملاء في المسائل القانونية.
+
+  - slug: legal-counsel
+    title_en: Legal Counsel
+    title_ar: مستشار قانوني
+    category: legal
+    keywords_en: corporate law, legal compliance, in-house counsel
+    keywords_ar: قانون الشركات، الامتثال القانوني
+    skills: [Corporate Law, Contract Review, Compliance, Risk Management, M&A]
+    description_en: Provide in-house legal guidance to organizations.
+    description_ar: تقديم التوجيه القانوني الداخلي للمؤسسات.
+
+  - slug: compliance-officer
+    title_en: Compliance Officer
+    title_ar: مسؤول الامتثال
+    category: legal
+    keywords_en: compliance, regulatory, risk management, governance
+    keywords_ar: الامتثال، التنظيم، إدارة المخاطر
+    skills: [Regulatory Compliance, Risk Assessment, Policy Development, Auditing]
+    description_en: Ensure organizational compliance with laws and regulations.
+    description_ar: ضمان امتثال المؤسسة للقوانين واللوائح.
+
+  - slug: paralegal
+    title_en: Paralegal
+    title_ar: مساعد قانوني
+    category: legal
+    keywords_en: paralegal, legal research, document preparation
+    keywords_ar: مساعد قانوني، البحث القانوني، إعداد الوثائق
+    skills: [Legal Research, Document Drafting, Case Management, Filing, Westlaw]
+    description_en: Support lawyers with legal research and document preparation.
+    description_ar: دعم المحامين في البحث القانوني وإعداد الوثائق.
+
+  - slug: contract-manager
+    title_en: Contract Manager
+    title_ar: مدير العقود
+    category: legal
+    keywords_en: contract management, procurement, vendor management
+    keywords_ar: إدارة العقود، المشتريات، إدارة الموردين
+    skills: [Contract Negotiation, Vendor Management, Risk Analysis, CLM Software]
+    description_en: Manage contract lifecycle from negotiation to execution.
+    description_ar: إدارة دورة حياة العقود من التفاوض إلى التنفيذ.
+
+  # Creative & Design (5)
+  - slug: graphic-designer
+    title_en: Graphic Designer
+    title_ar: مصمم جرافيك
+    category: creative
+    keywords_en: graphic design, visual design, branding, Adobe Creative Suite
+    keywords_ar: التصميم الجرافيكي، التصميم المرئي، العلامة التجارية
+    skills: [Adobe Photoshop, Illustrator, InDesign, Branding, Typography]
+    description_en: Create visual content for brands and marketing materials.
+    description_ar: إنشاء محتوى مرئي للعلامات التجارية والمواد التسويقية.
+
+  - slug: ui-ux-designer
+    title_en: UI/UX Designer
+    title_ar: مصمم واجهات وتجربة مستخدم
+    category: creative
+    keywords_en: UI design, UX design, user experience, interface design
+    keywords_ar: تصميم الواجهات، تجربة المستخدم
+    skills: [Figma, Sketch, User Research, Prototyping, Design Systems, Usability Testing]
+    description_en: Design intuitive user interfaces and experiences for digital products.
+    description_ar: تصميم واجهات وتجارب مستخدم بديهية للمنتجات الرقمية.
+
+  - slug: video-editor
+    title_en: Video Editor
+    title_ar: محرر فيديو
+    category: creative
+    keywords_en: video editing, post-production, motion graphics
+    keywords_ar: تحرير الفيديو، الإنتاج، الرسوم المتحركة
+    skills: [Adobe Premiere, After Effects, DaVinci Resolve, Color Grading, Sound Design]
+    description_en: Edit and produce video content for various platforms.
+    description_ar: تحرير وإنتاج محتوى الفيديو لمختلف المنصات.
+
+  - slug: creative-director
+    title_en: Creative Director
+    title_ar: مدير إبداعي
+    category: creative
+    keywords_en: creative direction, brand strategy, design leadership
+    keywords_ar: الإدارة الإبداعية، استراتيجية العلامة التجارية
+    skills: [Creative Strategy, Team Leadership, Brand Development, Art Direction]
+    description_en: Lead creative teams and define visual brand direction.
+    description_ar: قيادة الفرق الإبداعية وتحديد التوجه المرئي للعلامة التجارية.
+
+  - slug: photographer
+    title_en: Photographer
+    title_ar: مصور فوتوغرافي
+    category: creative
+    keywords_en: photography, photo editing, commercial photography
+    keywords_ar: التصوير الفوتوغرافي، تحرير الصور
+    skills: [Photography, Lightroom, Photoshop, Lighting, Studio Management]
+    description_en: Capture and edit professional photographs for various purposes.
+    description_ar: التقاط وتحرير الصور الاحترافية لأغراض متنوعة.
+
+  # Hospitality & Tourism (5)
+  - slug: hotel-manager
+    title_en: Hotel Manager
+    title_ar: مدير فندق
+    category: hospitality
+    keywords_en: hotel management, hospitality, guest services
+    keywords_ar: إدارة الفنادق، الضيافة، خدمات الضيوف
+    skills: [Hotel Operations, Guest Relations, Revenue Management, Staff Training]
+    description_en: Oversee hotel operations and ensure exceptional guest experiences.
+    description_ar: الإشراف على عمليات الفندق وضمان تجارب استثنائية للضيوف.
+
+  - slug: chef
+    title_en: Executive Chef
+    title_ar: شيف تنفيذي
+    category: hospitality
+    keywords_en: culinary, chef, kitchen management, food preparation
+    keywords_ar: الطهي، الشيف، إدارة المطبخ
+    skills: [Culinary Arts, Menu Development, Kitchen Management, Food Safety, Cost Control]
+    description_en: Lead kitchen operations and create exceptional dining experiences.
+    description_ar: قيادة عمليات المطبخ وإنشاء تجارب طعام استثنائية.
+
+  - slug: event-manager
+    title_en: Event Manager
+    title_ar: مدير فعاليات
+    category: hospitality
+    keywords_en: event planning, event management, conferences, weddings
+    keywords_ar: تخطيط الفعاليات، إدارة المؤتمرات، حفلات الزفاف
+    skills: [Event Planning, Vendor Management, Budget Management, Logistics, Marketing]
+    description_en: Plan and execute memorable events and conferences.
+    description_ar: تخطيط وتنفيذ الفعاليات والمؤتمرات المميزة.
+
+  - slug: travel-consultant
+    title_en: Travel Consultant
+    title_ar: مستشار سفر
+    category: hospitality
+    keywords_en: travel planning, tourism, reservations, travel packages
+    keywords_ar: تخطيط السفر، السياحة، الحجوزات
+    skills: [Travel Planning, GDS Systems, Customer Service, Destination Knowledge]
+    description_en: Help clients plan and book travel experiences.
+    description_ar: مساعدة العملاء في تخطيط وحجز تجارب السفر.
+
+  - slug: restaurant-manager
+    title_en: Restaurant Manager
+    title_ar: مدير مطعم
+    category: hospitality
+    keywords_en: restaurant management, F&B, food service
+    keywords_ar: إدارة المطاعم، الأغذية والمشروبات
+    skills: [Restaurant Operations, Staff Management, Customer Service, POS Systems]
+    description_en: Manage restaurant operations and deliver excellent dining experiences.
+    description_ar: إدارة عمليات المطعم وتقديم تجارب طعام ممتازة.
+
+  # Operations & Logistics (5)
+  - slug: operations-manager
+    title_en: Operations Manager
+    title_ar: مدير العمليات
+    category: operations
+    keywords_en: operations management, process improvement, efficiency
+    keywords_ar: إدارة العمليات، تحسين العمليات، الكفاءة
+    skills: [Process Improvement, Team Management, KPIs, Lean Six Sigma, ERP]
+    description_en: Optimize business operations and improve organizational efficiency.
+    description_ar: تحسين العمليات التجارية وزيادة كفاءة المؤسسة.
+
+  - slug: supply-chain-manager
+    title_en: Supply Chain Manager
+    title_ar: مدير سلسلة الإمداد
+    category: operations
+    keywords_en: supply chain, logistics, procurement, inventory
+    keywords_ar: سلسلة الإمداد، اللوجستيات، المشتريات، المخزون
+    skills: [Supply Chain Management, Procurement, Inventory Management, SAP, Forecasting]
+    description_en: Manage end-to-end supply chain operations and logistics.
+    description_ar: إدارة عمليات سلسلة الإمداد واللوجستيات الشاملة.
+
+  - slug: logistics-coordinator
+    title_en: Logistics Coordinator
+    title_ar: منسق لوجستي
+    category: operations
+    keywords_en: logistics, shipping, transportation, warehousing
+    keywords_ar: اللوجستيات، الشحن، النقل، التخزين
+    skills: [Logistics Planning, Shipping Coordination, Warehouse Management, TMS]
+    description_en: Coordinate transportation and logistics operations.
+    description_ar: تنسيق عمليات النقل واللوجستيات.
+
+  - slug: procurement-specialist
+    title_en: Procurement Specialist
+    title_ar: أخصائي مشتريات
+    category: operations
+    keywords_en: procurement, purchasing, vendor management, sourcing
+    keywords_ar: المشتريات، إدارة الموردين، التوريد
+    skills: [Procurement, Vendor Negotiation, Contract Management, Cost Analysis]
+    description_en: Source and procure goods and services for organizations.
+    description_ar: توريد وشراء السلع والخدمات للمؤسسات.
+
+  - slug: warehouse-manager
+    title_en: Warehouse Manager
+    title_ar: مدير مستودع
+    category: operations
+    keywords_en: warehouse management, inventory, distribution
+    keywords_ar: إدارة المستودعات، المخزون، التوزيع
+    skills: [Warehouse Operations, Inventory Control, WMS, Safety Compliance, Team Leadership]
+    description_en: Manage warehouse operations and inventory control.
+    description_ar: إدارة عمليات المستودعات ومراقبة المخزون.
