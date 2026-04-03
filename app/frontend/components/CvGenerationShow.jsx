@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PdfViewer from "./PdfViewer";
 import PdfPreviewButton from "./PdfPreviewButton";
+import { trackEvent } from "../lib/posthog";
 
 const CvGenerationShow = ({ cvGenerationId }) => {
  const [cvGeneration, setCvGeneration] = useState(null);
@@ -13,6 +14,9 @@ const CvGenerationShow = ({ cvGenerationId }) => {
  useEffect(() => {
   fetchCvGeneration();
   fetchUserCvCount();
+  
+  // Track CV generation view
+  trackEvent("cv_generation_viewed", { cv_generation_id: cvGenerationId });
 
   // Auto-refresh every 3 seconds if status is processing
   const interval = setInterval(() => {
@@ -44,6 +48,13 @@ const CvGenerationShow = ({ cvGenerationId }) => {
    console.log("CvGenerationShow - Has PDF Data:", !!data.metadata?.pdf_data);
    setCvGeneration(data);
    setRefreshing(false);
+   
+   // Track status changes
+   if (data.status === "completed") {
+    trackEvent("cv_generation_completed", { cv_generation_id: cvGenerationId });
+   } else if (data.status === "failed") {
+    trackEvent("cv_generation_failed", { cv_generation_id: cvGenerationId });
+   }
   } catch (err) {
    console.error("Error fetching CV generation:", err);
    setError(err.message);

@@ -1,11 +1,15 @@
 import React from "react";
 import i18n from "../lib/i18n";
+import { trackEvent } from "../lib/posthog";
 
 // Simple translation function using i18n directly (avoids hook issues)
 const t = (key, options) => i18n.t(key, options);
 
 const PdfPreviewButton = ({ cvId }) => {
  const handlePreview = async () => {
+  // Track PDF preview click
+  trackEvent("pdf_preview_clicked", { cv_id: cvId });
+  
   // Get translations for popup window
   const translations = {
     title: t('preview.title'),
@@ -133,8 +137,12 @@ const PdfPreviewButton = ({ cvId }) => {
         </html>
       `);
    previewWindow.document.close();
+   
+   // Track successful PDF preview
+   trackEvent("pdf_preview_loaded", { cv_id: cvId });
   } catch (error) {
    console.error("Error previewing PDF:", error);
+   trackEvent("pdf_preview_failed", { cv_id: cvId, error: error.message });
    alert(translations.errorAlert);
   }
  };

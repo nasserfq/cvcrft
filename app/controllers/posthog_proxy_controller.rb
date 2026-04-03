@@ -3,9 +3,8 @@
 # PostHog Reverse Proxy Controller
 # Routes analytics requests through your domain to avoid ad blockers
 # https://posthog.com/docs/advanced/proxy/nextjs#optional-set-up-proxy
-class PosthogProxyController < ApplicationController
+class PosthogProxyController < ActionController::Base
   skip_before_action :verify_authenticity_token
-  skip_before_action :authenticate_user!, if: -> { respond_to?(:authenticate_user!) }
 
   POSTHOG_HOST = ENV.fetch("VITE_PUBLIC_POSTHOG_HOST", "https://us.i.posthog.com")
   POSTHOG_ASSETS_HOST = POSTHOG_HOST.gsub(".i.posthog.com", "-assets.i.posthog.com")

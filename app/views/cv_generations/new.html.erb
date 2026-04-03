@@ -12,6 +12,7 @@
       <meta name="description" content="<%= t('cv_generation.page_description', default: 'Create a professional resume in minutes using AI. Modern templates, automatic bullet point optimization, and high-quality PDF export.') %>" />
       <meta name="theme-color" content="#10b981" />
       <meta name="csrf-token" content="<%= form_authenticity_token %>" />
+      <%= render 'shared/posthog' %>
       <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
       <meta name="format-detection" content="telephone=no" />
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

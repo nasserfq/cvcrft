@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import CvAnalysisResults from "../components/CvAnalysisResults";
+import "../lib/posthog"; // Initialize PostHog analytics
 
 // Track root instances by container using WeakMap
 const rootMap = new WeakMap();

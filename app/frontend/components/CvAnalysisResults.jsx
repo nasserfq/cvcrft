@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { trackEvent } from "../lib/posthog";
 
 const translations = {
   ar: {
@@ -173,6 +174,17 @@ const CvAnalysisResults = ({ analysis, language, targetJob, targetIndustry }) =>
     detailed_feedback = {},
     keyword_analysis = {}
   } = analysis;
+
+  // Track when CV analysis results are viewed
+  useEffect(() => {
+    trackEvent("cv_analysis_viewed", {
+      overall_score,
+      target_job: targetJob,
+      target_industry: targetIndustry,
+      strengths_count: strengths.length,
+      improvements_count: improvements.length
+    });
+  }, []);
 
   const sectionLabels = {
     ats_compatibility: t.atsCompatibility,
