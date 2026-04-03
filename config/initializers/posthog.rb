@@ -1,13 +1,37 @@
 # PostHog Analytics Configuration
-# https://posthog.com/docs/libraries/ruby
+# https://posthog.com/docs/libraries/ruby-on-rails
 
-require 'posthog'
+# Core PostHog client initialization
+PostHog.init do |config|
+  # Required: Your PostHog API key
+  config.api_key = ENV["POSTHOG_API_KEY"] || Rails.application.credentials.dig(:posthog, :api_key) || "phc_hbgIlm0QjZDuhGEO7YYg2tuAQcMnLDsafnm8A0Dw5S6"
 
-POSTHOG = PostHog::Client.new({
-  api_key: Rails.application.credentials.dig(:posthog, :api_key) || ENV["POSTHOG_API_KEY"] || "phc_hbgIlm0QjZDuhGEO7YYg2tuAQcMnLDsafnm8A0Dw5S6",
-  host: "https://us.i.posthog.com",
-  on_error: Proc.new { |status, msg| Rails.logger.error("[PostHog] Error: #{status} - #{msg}") }
-})
+  # Your PostHog instance URL
+  config.host = "https://us.i.posthog.com"
 
-# Shutdown hook to flush events before app exits
-at_exit { POSTHOG.shutdown }
+  # Error callback to detect misconfiguration
+  config.on_error = proc { |status, msg|
+    Rails.logger.error("[PostHog] Error: #{msg} (status: #{status})")
+  }
+
+  # Test mode - don't send events in test environment
+  config.test_mode = Rails.env.test?
+end
+
+# Rails-specific configuration
+PostHog::Rails.configure do |config|
+  # Enable automatic exception capture
+  config.auto_capture_exceptions = true
+
+  # Report exceptions Rails rescues
+  config.report_rescued_exceptions = true
+
+  # Instrument ActiveJob background jobs
+  config.auto_instrument_active_job = true
+
+  # Include user info in exceptions
+  config.capture_user_context = true
+
+  # Method to get current user in controllers
+  config.current_user_method = :current_user
+end
