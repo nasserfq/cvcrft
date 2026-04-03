@@ -2,6 +2,13 @@ Rails.application.routes.draw do
   # Health check route for Kamal
   get "/up", to: "application#health_check"
 
+  # PostHog reverse proxy routes to avoid ad blockers
+  match "/ingest/*path", to: "posthog_proxy#ingest", via: :all
+  match "/ingest", to: "posthog_proxy#ingest", via: :all
+  match "/ph-static/*path", to: "posthog_proxy#static", via: :all
+  match "/decide/*path", to: "posthog_proxy#decide", via: :all
+  match "/decide", to: "posthog_proxy#decide", via: :all
+
   # Locale switching route
   patch "/locale/:locale", to: "locales#update", as: :locale
 
