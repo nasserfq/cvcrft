@@ -5,9 +5,15 @@
 # https://posthog.com/docs/advanced/proxy/nextjs#optional-set-up-proxy
 class PosthogProxyController < ActionController::Base
   skip_before_action :verify_authenticity_token
+  before_action :set_cors_headers
 
   POSTHOG_HOST = ENV.fetch("VITE_PUBLIC_POSTHOG_HOST", "https://us.i.posthog.com")
   POSTHOG_ASSETS_HOST = POSTHOG_HOST.gsub(".i.posthog.com", "-assets.i.posthog.com")
+
+  # Handle CORS preflight requests
+  def options
+    head :ok
+  end
 
   # Proxy ingest requests (events, identify, etc.)
   def ingest
@@ -25,6 +31,13 @@ class PosthogProxyController < ActionController::Base
   end
 
   private
+
+  def set_cors_headers
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    response.headers["Access-Control-Max-Age"] = "86400"
+  end
 
   def proxy_to_posthog(host)
     uri = URI.parse("#{host}#{posthog_path}")
