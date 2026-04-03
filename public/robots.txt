@@ -12,16 +12,47 @@ Disallow: /resumes/*/edit
 # Sitemap location
 Sitemap: https://cvcrft.com/sitemap.xml
 
-# Optional: Block AI training bots but allow Google AI features
+# AI Search Bots - Allow SEO pages, block user data
 User-agent: GPTBot
-Disallow: /
+Allow: /cv-templates
+Allow: /
+Disallow: /login
+Disallow: /auth/
+Disallow: /profile
+Disallow: /resumes/
+Disallow: /cv_generations/
+Disallow: /admin/
 
 User-agent: ClaudeBot
-Disallow: /
+Allow: /cv-templates
+Allow: /
+Disallow: /login
+Disallow: /auth/
+Disallow: /profile
+Disallow: /resumes/
+Disallow: /cv_generations/
+Disallow: /admin/
 
 User-agent: CCBot
-Disallow: /
+Allow: /cv-templates
+Allow: /
+Disallow: /login
+Disallow: /auth/
+Disallow: /profile
+Disallow: /resumes/
+Disallow: /cv_generations/
+Disallow: /admin/
 
-# Allow Google-Extended for AI Overview appearances
+User-agent: PerplexityBot
+Allow: /cv-templates
+Allow: /
+Disallow: /login
+Disallow: /auth/
+Disallow: /profile
+Disallow: /resumes/
+Disallow: /cv_generations/
+Disallow: /admin/
+
+# Google AI Overview
 User-agent: Google-Extended
 Allow: /

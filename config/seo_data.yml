@@ -1,0 +1,529 @@
+# Programmatic SEO Data for CV Templates
+# Each job title generates a unique page at /cv-templates/:slug
+
+job_titles:
+  # Technology
+  - slug: software-engineer
+    title_ar: مهندس برمجيات
+    title_en: Software Engineer
+    category: technology
+    keywords_ar:
+      - سيرة ذاتية مهندس برمجيات
+      - نموذج CV مبرمج
+      - قالب سيرة ذاتية مطور
+    keywords_en:
+      - software engineer resume
+      - developer CV template
+      - programmer resume example
+    skills:
+      - JavaScript
+      - Python
+      - React
+      - Node.js
+      - SQL
+      - Git
+    description_ar: >
+      أنشئ سيرة ذاتية احترافية لمهندس برمجيات تبرز مهاراتك التقنية وخبراتك في تطوير البرمجيات.
+      قالب مُحسّن لأنظمة ATS يساعدك على اجتياز الفلترة الآلية والحصول على المقابلات.
+    description_en: >
+      Create a professional software engineer resume that highlights your technical skills and development experience.
+      ATS-optimized template helps you pass automated screening and land interviews.
+
+  - slug: data-scientist
+    title_ar: عالم بيانات
+    title_en: Data Scientist
+    category: technology
+    keywords_ar:
+      - سيرة ذاتية عالم بيانات
+      - CV تحليل البيانات
+      - نموذج سيرة ذاتية Data Scientist
+    keywords_en:
+      - data scientist resume
+      - data analyst CV
+      - machine learning resume
+    skills:
+      - Python
+      - R
+      - Machine Learning
+      - TensorFlow
+      - SQL
+      - Tableau
+    description_ar: >
+      صمم سيرة ذاتية متميزة لعالم بيانات تُظهر خبرتك في التحليل والتعلم الآلي.
+      قالب يركز على المشاريع والنتائج القابلة للقياس.
+    description_en: >
+      Design a standout data scientist resume showcasing your analytics and machine learning expertise.
+      Template focused on projects and measurable outcomes.
+
+  - slug: product-manager
+    title_ar: مدير منتج
+    title_en: Product Manager
+    category: technology
+    keywords_ar:
+      - سيرة ذاتية مدير منتج
+      - CV Product Manager
+      - نموذج سيرة مدير منتجات
+    keywords_en:
+      - product manager resume
+      - PM CV template
+      - product management resume
+    skills:
+      - Product Strategy
+      - Agile/Scrum
+      - User Research
+      - Roadmapping
+      - Data Analysis
+      - Stakeholder Management
+    description_ar: >
+      أنشئ سيرة ذاتية قوية لمدير منتج تُبرز قدرتك على قيادة المنتجات من الفكرة إلى الإطلاق.
+    description_en: >
+      Build a powerful product manager resume highlighting your ability to lead products from concept to launch.
+
+  - slug: ui-ux-designer
+    title_ar: مصمم واجهات وتجربة مستخدم
+    title_en: UI/UX Designer
+    category: technology
+    keywords_ar:
+      - سيرة ذاتية مصمم UX
+      - CV مصمم واجهات
+      - نموذج سيرة UI Designer
+    keywords_en:
+      - UI UX designer resume
+      - product designer CV
+      - UX resume template
+    skills:
+      - Figma
+      - Adobe XD
+      - User Research
+      - Prototyping
+      - Design Systems
+      - Usability Testing
+    description_ar: >
+      صمم سيرة ذاتية إبداعية لمصمم UI/UX تعكس مهاراتك في التصميم وفهمك لتجربة المستخدم.
+    description_en: >
+      Design a creative UI/UX resume reflecting your design skills and user experience understanding.
+
+  - slug: devops-engineer
+    title_ar: مهندس DevOps
+    title_en: DevOps Engineer
+    category: technology
+    keywords_ar:
+      - سيرة ذاتية DevOps
+      - CV مهندس عمليات
+      - نموذج سيرة DevOps Engineer
+    keywords_en:
+      - devops engineer resume
+      - cloud engineer CV
+      - SRE resume template
+    skills:
+      - AWS/Azure/GCP
+      - Docker
+      - Kubernetes
+      - CI/CD
+      - Terraform
+      - Linux
+    description_ar: >
+      أنشئ سيرة ذاتية تقنية لمهندس DevOps تُظهر خبرتك في البنية التحتية السحابية والأتمتة.
+    description_en: >
+      Create a technical DevOps resume showcasing your cloud infrastructure and automation expertise.
+
+  # Business & Finance
+  - slug: accountant
+    title_ar: محاسب
+    title_en: Accountant
+    category: finance
+    keywords_ar:
+      - سيرة ذاتية محاسب
+      - CV محاسبة
+      - نموذج سيرة ذاتية محاسب
+    keywords_en:
+      - accountant resume
+      - accounting CV
+      - bookkeeper resume
+    skills:
+      - Financial Reporting
+      - Excel
+      - QuickBooks
+      - Tax Preparation
+      - Auditing
+      - SAP
+    description_ar: >
+      أنشئ سيرة ذاتية احترافية للمحاسبين تُبرز خبرتك في المحاسبة والتقارير المالية.
+    description_en: >
+      Create a professional accountant resume highlighting your accounting and financial reporting expertise.
+
+  - slug: financial-analyst
+    title_ar: محلل مالي
+    title_en: Financial Analyst
+    category: finance
+    keywords_ar:
+      - سيرة ذاتية محلل مالي
+      - CV تحليل مالي
+      - نموذج سيرة Financial Analyst
+    keywords_en:
+      - financial analyst resume
+      - finance CV template
+      - investment analyst resume
+    skills:
+      - Financial Modeling
+      - Excel
+      - Bloomberg
+      - Valuation
+      - SQL
+      - PowerPoint
+    description_ar: >
+      صمم سيرة ذاتية متميزة لمحلل مالي تعكس قدراتك التحليلية وخبرتك في الأسواق المالية.
+    description_en: >
+      Design a standout financial analyst resume reflecting your analytical abilities and market expertise.
+
+  - slug: marketing-manager
+    title_ar: مدير تسويق
+    title_en: Marketing Manager
+    category: marketing
+    keywords_ar:
+      - سيرة ذاتية مدير تسويق
+      - CV تسويق
+      - نموذج سيرة Marketing Manager
+    keywords_en:
+      - marketing manager resume
+      - digital marketing CV
+      - marketing director resume
+    skills:
+      - Digital Marketing
+      - SEO/SEM
+      - Google Analytics
+      - Content Strategy
+      - Social Media
+      - Campaign Management
+    description_ar: >
+      أنشئ سيرة ذاتية قوية لمدير تسويق تُظهر نتائجك في زيادة المبيعات وبناء العلامة التجارية.
+    description_en: >
+      Build a powerful marketing manager resume showing your results in driving sales and brand building.
+
+  - slug: sales-representative
+    title_ar: مندوب مبيعات
+    title_en: Sales Representative
+    category: sales
+    keywords_ar:
+      - سيرة ذاتية مندوب مبيعات
+      - CV مبيعات
+      - نموذج سيرة Sales
+    keywords_en:
+      - sales representative resume
+      - sales CV template
+      - account executive resume
+    skills:
+      - CRM (Salesforce)
+      - Negotiation
+      - Cold Calling
+      - Pipeline Management
+      - Presentation
+      - Closing
+    description_ar: >
+      صمم سيرة ذاتية مقنعة لمندوب مبيعات تُبرز إنجازاتك في تحقيق الأهداف وبناء العلاقات.
+    description_en: >
+      Design a compelling sales resume highlighting your achievements in meeting targets and building relationships.
+
+  - slug: hr-manager
+    title_ar: مدير موارد بشرية
+    title_en: HR Manager
+    category: hr
+    keywords_ar:
+      - سيرة ذاتية مدير موارد بشرية
+      - CV HR
+      - نموذج سيرة Human Resources
+    keywords_en:
+      - HR manager resume
+      - human resources CV
+      - talent acquisition resume
+    skills:
+      - Recruitment
+      - Employee Relations
+      - HRIS
+      - Performance Management
+      - Labor Law
+      - Training & Development
+    description_ar: >
+      أنشئ سيرة ذاتية احترافية لمدير موارد بشرية تعكس خبرتك في إدارة المواهب وتطوير الموظفين.
+    description_en: >
+      Create a professional HR manager resume reflecting your talent management and employee development expertise.
+
+  # Healthcare
+  - slug: nurse
+    title_ar: ممرض/ممرضة
+    title_en: Nurse
+    category: healthcare
+    keywords_ar:
+      - سيرة ذاتية ممرض
+      - CV تمريض
+      - نموذج سيرة ممرضة
+    keywords_en:
+      - nurse resume
+      - nursing CV
+      - RN resume template
+    skills:
+      - Patient Care
+      - Medical Records
+      - IV Administration
+      - Emergency Response
+      - Team Collaboration
+      - Electronic Health Records
+    description_ar: >
+      صمم سيرة ذاتية مهنية للتمريض تُظهر مهاراتك في رعاية المرضى والعمل ضمن فريق طبي.
+    description_en: >
+      Design a professional nursing resume showing your patient care skills and medical team collaboration.
+
+  - slug: doctor
+    title_ar: طبيب
+    title_en: Doctor / Physician
+    category: healthcare
+    keywords_ar:
+      - سيرة ذاتية طبيب
+      - CV طب
+      - نموذج سيرة ذاتية دكتور
+    keywords_en:
+      - doctor resume
+      - physician CV
+      - medical doctor resume
+    skills:
+      - Patient Diagnosis
+      - Treatment Planning
+      - Medical Research
+      - Clinical Skills
+      - Team Leadership
+      - EMR Systems
+    description_ar: >
+      أنشئ سيرة ذاتية طبية احترافية تُبرز تخصصك وخبراتك السريرية والبحثية.
+    description_en: >
+      Create a professional medical CV highlighting your specialization and clinical/research experience.
+
+  # Engineering
+  - slug: mechanical-engineer
+    title_ar: مهندس ميكانيكي
+    title_en: Mechanical Engineer
+    category: engineering
+    keywords_ar:
+      - سيرة ذاتية مهندس ميكانيكي
+      - CV هندسة ميكانيكية
+      - نموذج سيرة مهندس
+    keywords_en:
+      - mechanical engineer resume
+      - engineering CV
+      - mechanical design resume
+    skills:
+      - AutoCAD
+      - SolidWorks
+      - MATLAB
+      - FEA Analysis
+      - Project Management
+      - Manufacturing Processes
+    description_ar: >
+      صمم سيرة ذاتية هندسية تُظهر مهاراتك في التصميم والتحليل الميكانيكي.
+    description_en: >
+      Design an engineering resume showcasing your mechanical design and analysis skills.
+
+  - slug: civil-engineer
+    title_ar: مهندس مدني
+    title_en: Civil Engineer
+    category: engineering
+    keywords_ar:
+      - سيرة ذاتية مهندس مدني
+      - CV هندسة مدنية
+      - نموذج سيرة مهندس إنشاءات
+    keywords_en:
+      - civil engineer resume
+      - construction engineer CV
+      - structural engineer resume
+    skills:
+      - AutoCAD Civil 3D
+      - Structural Analysis
+      - Project Management
+      - Site Supervision
+      - Building Codes
+      - Cost Estimation
+    description_ar: >
+      أنشئ سيرة ذاتية قوية لمهندس مدني تعكس خبرتك في المشاريع الإنشائية والتصميم الهيكلي.
+    description_en: >
+      Build a strong civil engineer resume reflecting your construction project and structural design experience.
+
+  - slug: electrical-engineer
+    title_ar: مهندس كهربائي
+    title_en: Electrical Engineer
+    category: engineering
+    keywords_ar:
+      - سيرة ذاتية مهندس كهربائي
+      - CV هندسة كهربائية
+      - نموذج سيرة مهندس كهرباء
+    keywords_en:
+      - electrical engineer resume
+      - EE CV template
+      - power systems engineer resume
+    skills:
+      - Circuit Design
+      - PLC Programming
+      - MATLAB/Simulink
+      - Power Systems
+      - AutoCAD Electrical
+      - Testing & Commissioning
+    description_ar: >
+      صمم سيرة ذاتية تقنية لمهندس كهربائي تُبرز خبرتك في أنظمة الطاقة والتصميم الكهربائي.
+    description_en: >
+      Design a technical electrical engineer resume highlighting your power systems and electrical design expertise.
+
+  # Education
+  - slug: teacher
+    title_ar: معلم/معلمة
+    title_en: Teacher
+    category: education
+    keywords_ar:
+      - سيرة ذاتية معلم
+      - CV تدريس
+      - نموذج سيرة معلمة
+    keywords_en:
+      - teacher resume
+      - teaching CV
+      - educator resume template
+    skills:
+      - Curriculum Development
+      - Classroom Management
+      - Student Assessment
+      - Educational Technology
+      - Parent Communication
+      - Differentiated Instruction
+    description_ar: >
+      أنشئ سيرة ذاتية تعليمية تُظهر شغفك بالتدريس وقدرتك على إلهام الطلاب.
+    description_en: >
+      Create an educational resume showing your teaching passion and ability to inspire students.
+
+  # Creative
+  - slug: graphic-designer
+    title_ar: مصمم جرافيك
+    title_en: Graphic Designer
+    category: creative
+    keywords_ar:
+      - سيرة ذاتية مصمم جرافيك
+      - CV تصميم
+      - نموذج سيرة مصمم
+    keywords_en:
+      - graphic designer resume
+      - design CV
+      - creative designer resume
+    skills:
+      - Adobe Creative Suite
+      - Typography
+      - Brand Identity
+      - Print Design
+      - Digital Design
+      - Motion Graphics
+    description_ar: >
+      صمم سيرة ذاتية إبداعية لمصمم جرافيك تعكس أسلوبك الفني ومشاريعك المميزة.
+    description_en: >
+      Design a creative graphic designer resume reflecting your artistic style and standout projects.
+
+  - slug: content-writer
+    title_ar: كاتب محتوى
+    title_en: Content Writer
+    category: creative
+    keywords_ar:
+      - سيرة ذاتية كاتب محتوى
+      - CV كتابة
+      - نموذج سيرة Content Writer
+    keywords_en:
+      - content writer resume
+      - copywriter CV
+      - writer resume template
+    skills:
+      - SEO Writing
+      - Copywriting
+      - Research
+      - Content Strategy
+      - Social Media
+      - Editing
+    description_ar: >
+      أنشئ سيرة ذاتية مقنعة لكاتب محتوى تُبرز مهاراتك الكتابية وقدرتك على جذب الجمهور.
+    description_en: >
+      Build a compelling content writer resume highlighting your writing skills and audience engagement ability.
+
+  # Operations & Admin
+  - slug: project-manager
+    title_ar: مدير مشاريع
+    title_en: Project Manager
+    category: operations
+    keywords_ar:
+      - سيرة ذاتية مدير مشاريع
+      - CV إدارة مشاريع
+      - نموذج سيرة Project Manager
+    keywords_en:
+      - project manager resume
+      - PMP CV
+      - program manager resume
+    skills:
+      - PMP
+      - Agile/Scrum
+      - MS Project
+      - Risk Management
+      - Stakeholder Management
+      - Budget Management
+    description_ar: >
+      أنشئ سيرة ذاتية قيادية لمدير مشاريع تُظهر قدرتك على تسليم المشاريع في الوقت والميزانية.
+    description_en: >
+      Create a leadership project manager resume showing your ability to deliver projects on time and budget.
+
+  - slug: executive-assistant
+    title_ar: مساعد تنفيذي
+    title_en: Executive Assistant
+    category: admin
+    keywords_ar:
+      - سيرة ذاتية مساعد تنفيذي
+      - CV سكرتارية
+      - نموذج سيرة Executive Assistant
+    keywords_en:
+      - executive assistant resume
+      - administrative assistant CV
+      - EA resume template
+    skills:
+      - Calendar Management
+      - Travel Coordination
+      - Microsoft Office
+      - Communication
+      - Event Planning
+      - Confidentiality
+    description_ar: >
+      صمم سيرة ذاتية احترافية لمساعد تنفيذي تعكس مهاراتك التنظيمية وقدرتك على دعم القيادة.
+    description_en: >
+      Design a professional executive assistant resume reflecting your organizational skills and leadership support ability.
+
+categories:
+  - slug: technology
+    name_ar: التقنية والبرمجة
+    name_en: Technology
+  - slug: finance
+    name_ar: المالية والمحاسبة
+    name_en: Finance & Accounting
+  - slug: marketing
+    name_ar: التسويق
+    name_en: Marketing
+  - slug: sales
+    name_ar: المبيعات
+    name_en: Sales
+  - slug: hr
+    name_ar: الموارد البشرية
+    name_en: Human Resources
+  - slug: healthcare
+    name_ar: الرعاية الصحية
+    name_en: Healthcare
+  - slug: engineering
+    name_ar: الهندسة
+    name_en: Engineering
+  - slug: education
+    name_ar: التعليم
+    name_en: Education
+  - slug: creative
+    name_ar: الإبداع والتصميم
+    name_en: Creative & Design
+  - slug: operations
+    name_ar: العمليات
+    name_en: Operations
+  - slug: admin
+    name_ar: الإدارة
+    name_en: Administration
