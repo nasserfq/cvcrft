@@ -49,17 +49,46 @@ class ApplicationController < ActionController::Base
   # Set the locale based on: 1) logged-in user preference, 2) cookie, 3) default (ar)
   def set_locale
     locale = extract_locale
-    I18n.locale = locale if I18n.available_locales.map(&:to_s).include?(locale)
+    I18n.locale = locale if valid_locale?(locale)
+    persist_locale_preference(locale)
   end
 
   def extract_locale
-    if user_signed_in? && current_user.locale.present?
-      current_user.locale
-    elsif cookies[:locale].present?
-      cookies[:locale]
-    else
-      "ar" # Default to Arabic
+    requested_locale = params[:locale].to_s
+    return requested_locale if valid_locale?(requested_locale)
+
+    cookie_locale = cookies[:locale].to_s
+    return cookie_locale if valid_locale?(cookie_locale)
+
+    user_locale = current_user&.locale.to_s
+    return user_locale if valid_locale?(user_locale)
+
+    "ar" # Default to Arabic
+  end
+
+  def persist_locale_preference(locale)
+    return unless valid_locale?(locale)
+
+    if cookies[:locale] != locale
+      cookies[:locale] = {
+        value: locale,
+        expires: 1.year.from_now,
+        httponly: true
+      }
     end
+
+    return unless user_signed_in?
+    return if current_user.locale == locale
+
+    current_user.update_column(:locale, locale)
+  end
+
+  def valid_locale?(locale)
+    available_locale_strings.include?(locale)
+  end
+
+  def available_locale_strings
+    @available_locale_strings ||= I18n.available_locales.map(&:to_s)
   end
 
   def current_locale
