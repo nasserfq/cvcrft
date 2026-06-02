@@ -1,7 +1,6 @@
 require "prawn"
 require "fileutils"
 require "securerandom"
-require_relative "ats_style_presets/ats_style_catalog"
 
 class AtsTemplatePdfService
   DEFAULT_TEMPLATE = AtsStylePresets::STYLES.first.key

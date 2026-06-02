@@ -12,28 +12,36 @@ require_relative "clean_single_column"
 require_relative "business_admin_modern"
 
 module AtsStylePresets
-  STYLES = [
-    OriginalClassic,
-    HarvardClassic,
-    WhiteBlackEngineering,
-    SimpleCleanGray,
-    MinimalistRealEstate,
-    TwoColumnCorporate,
-    BlueMinimalProfessional,
-    BlackWhiteCorporate,
-    InfographicLight,
-    CleanSingleColumn,
-    BusinessAdminModern
-  ].freeze
+  module AtsStyleCatalog
+    STYLES = [
+      OriginalClassic,
+      HarvardClassic,
+      WhiteBlackEngineering,
+      SimpleCleanGray,
+      MinimalistRealEstate,
+      TwoColumnCorporate,
+      BlueMinimalProfessional,
+      BlackWhiteCorporate,
+      InfographicLight,
+      CleanSingleColumn,
+      BusinessAdminModern
+    ].freeze
+
+    def self.catalog
+      STYLES.map do |style|
+        {
+          key: style.key,
+          name: style.name,
+          description: style.description,
+          config: style.config
+        }
+      end
+    end
+  end
+
+  STYLES = AtsStyleCatalog::STYLES
 
   def self.catalog
-    STYLES.map do |style|
-      {
-        key: style.key,
-        name: style.name,
-        description: style.description,
-        config: style.config
-      }
-    end
+    AtsStyleCatalog.catalog
   end
 end
