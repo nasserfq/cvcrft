@@ -3,15 +3,17 @@ require "fileutils"
 require "securerandom"
 
 class AtsTemplatePdfService
-  DEFAULT_TEMPLATE = AtsStylePresets::STYLES.first.key
+  def self.default_template_key
+    AtsStylePresets::AtsStyleCatalog.styles.first.key
+  end
 
   def self.template_catalog
-    AtsStylePresets.catalog.map { |style| style.slice(:key, :name, :description) }
+    AtsStylePresets::AtsStyleCatalog.catalog.map { |style| style.slice(:key, :name, :description) }
   end
 
   def self.normalize_template_key(template_key)
     key = template_key.to_s
-    template_catalog.any? { |style| style[:key] == key } ? key : DEFAULT_TEMPLATE
+    template_catalog.any? { |style| style[:key] == key } ? key : default_template_key
   end
 
   def self.generate_pdf(resume, data, options = {})
@@ -22,7 +24,8 @@ class AtsTemplatePdfService
       return AtsPdfGenerator.generate_pdf(resume, data, template: "classic_01")
     end
 
-    style = AtsStylePresets.catalog.find { |item| item[:key] == template_key } || AtsStylePresets.catalog.first
+    catalog = AtsStylePresets::AtsStyleCatalog.catalog
+    style = catalog.find { |item| item[:key] == template_key } || catalog.first
     config = style[:config]
 
     filename = resume.complete_name.present? ? "#{resume.complete_name.parameterize}_resume.pdf" : "resume_#{SecureRandom.hex(6)}.pdf"
