@@ -2,61 +2,97 @@ require "prawn"
 require "prawn/table"
 require "fileutils"
 require "securerandom"
+require_relative "ats_templates/base"
+require_relative "ats_templates/classic_01"
+require_relative "ats_templates/classic_02"
+require_relative "ats_templates/classic_03"
+require_relative "ats_templates/classic_04"
+require_relative "ats_templates/classic_05"
+require_relative "ats_templates/classic_06"
+require_relative "ats_templates/classic_07"
+require_relative "ats_templates/classic_08"
+require_relative "ats_templates/classic_09"
+require_relative "ats_templates/classic_10"
 
 class AtsPdfGenerator
-  def self.generate_pdf(resume, data)
+  TEMPLATES = [
+    AtsTemplates::Classic01,
+    AtsTemplates::Classic02,
+    AtsTemplates::Classic03,
+    AtsTemplates::Classic04,
+    AtsTemplates::Classic05,
+    AtsTemplates::Classic06,
+    AtsTemplates::Classic07,
+    AtsTemplates::Classic08,
+    AtsTemplates::Classic09,
+    AtsTemplates::Classic10
+  ].freeze
+
+  def self.template_catalog
+    TEMPLATES.map { |template| { key: template.key, name: template.name, description: template.description } }
+  end
+
+  def self.normalize_template_key(template_key)
+    key = template_key.to_s
+    template_catalog.any? { |template| template[:key] == key } ? key : AtsTemplates::Classic01.key
+  end
+
+  def self.generate_pdf(resume, data, options = {})
+    template_key = normalize_template_key(options[:template] || options["template"])
+    template = template_for(template_key).config
     Rails.logger.info "=== ATS PDF GENERATOR STARTED ==="
     Rails.logger.info "Resume: #{resume.inspect}"
+    Rails.logger.info "Template: #{template_key}"
 
     filename = resume.complete_name.present? ? "#{resume.complete_name.parameterize}_resume.pdf" : "resume_#{SecureRandom.hex(6)}.pdf"
     pdf_path = Rails.root.join("tmp", "pdfs", "generated", filename)
     FileUtils.mkdir_p(File.dirname(pdf_path))
 
     # Set strict encoding to prevent issues with special characters
-    Prawn::Document.generate(pdf_path, force_encoding: true) do |pdf|
+    Prawn::Document.generate(pdf_path, force_encoding: true, margin: template[:margin]) do |pdf|
       # Use core PDF font with encoding set
       pdf.font "Helvetica", enable_smart_quotes: false do
         # Header Section
-        pdf.text resume.complete_name.to_s.strip, size: 20, style: :bold, align: :center
-        pdf.text "#{resume.email} | #{resume.phone_number} | #{[ resume.city, resume.country ].compact.join(', ')}", size: 10, align: :center
-        pdf.move_down 20
+        pdf.text resume.complete_name.to_s.strip, size: template[:name_size], style: :bold, align: :center
+        pdf.text "#{resume.email} | #{resume.phone_number} | #{[ resume.city, resume.country ].compact.join(', ')}", size: template[:contact_size], align: :center
+        pdf.move_down template[:header_gap]
 
         # Professional Summary
-        pdf.text "PROFESSIONAL SUMMARY", size: 13, style: :bold
+        pdf.text "PROFESSIONAL SUMMARY", size: template[:section_title_size], style: :bold
         pdf.stroke_horizontal_rule
-        pdf.move_down 10
+        pdf.move_down template[:title_gap]
         # Use the AI-generated summary first (from data), then fallback to stored resume
         summary = data[:professional_summary].to_s.strip.presence ||
                  resume.professional_summary_english.presence ||
                  resume.professional_summary.presence ||
                  "No professional summary available"
-        pdf.text summary, size: 10
-        pdf.move_down 20
+        pdf.text summary, size: template[:body_size], leading: template[:body_leading]
+        pdf.move_down template[:section_gap]
 
         # Education Section
-        pdf.text "EDUCATION", size: 13, style: :bold
+        pdf.text "EDUCATION", size: template[:section_title_size], style: :bold
         pdf.stroke_horizontal_rule
-        pdf.move_down 10
+        pdf.move_down template[:title_gap]
         Array(data[:educations]).each do |education|
           # Draw degree and date on the same line
           degree = education[:degree].to_s.strip
           date_text = "#{education[:start_date]} - #{education[:end_date]}"
 
           pdf.float do
-            pdf.text date_text, size: 10, align: :right
+            pdf.text date_text, size: template[:meta_size], align: :right
           end
-          pdf.text degree, size: 11, style: :bold
+          pdf.text degree, size: template[:subheading_size], style: :bold
 
           # Institution on next line
-          pdf.text education[:institution].to_s.strip, size: 10
-          pdf.move_down 5
+          pdf.text education[:institution].to_s.strip, size: template[:body_size]
+          pdf.move_down template[:item_gap]
         end
 
         # Work Experience Section - Only show if there are work experiences
         if resume.work_experiences.present? && resume.work_experiences.any?
-          pdf.text "WORK EXPERIENCE", size: 13, style: :bold
+          pdf.text "WORK EXPERIENCE", size: template[:section_title_size], style: :bold
           pdf.stroke_horizontal_rule
-          pdf.move_down 10
+          pdf.move_down template[:title_gap]
 
           # Sort experiences by start_date in reverse chronological order
           sorted_experiences = Array(resume.work_experiences).sort_by do |exp|
@@ -84,15 +120,15 @@ class AtsPdfGenerator
           # Display date in top right corner
           date_text = "#{experience.start_date} - #{experience.is_current ? 'Present' : experience.end_date}"
           pdf.float do
-            pdf.text date_text, size: 10, align: :right
+            pdf.text date_text, size: template[:meta_size], align: :right
           end
 
           # Display job title in bold with proper spacing - preserve original case
-          pdf.text experience.job_title.to_s.strip, size: 11, style: :bold
-          pdf.move_down 2  # Reduced space between title and company
+          pdf.text experience.job_title.to_s.strip, size: template[:subheading_size], style: :bold
+          pdf.move_down template[:title_company_gap]
           # Display company name under job title - preserve original case
-          pdf.text experience.company.to_s.strip, size: 10
-          pdf.move_down 4  # Space between company and responsibilities
+          pdf.text experience.company.to_s.strip, size: template[:body_size]
+          pdf.move_down template[:company_bullet_gap]
 
           # Get responsibilities from the work experience
           raw_responsibilities = experience.responsibilities.presence || []
@@ -111,28 +147,28 @@ class AtsPdfGenerator
           end
 
           # Add bullet points to each responsibility
-          pdf.move_down 5  # Space before responsibilities
+          pdf.move_down template[:bullet_block_gap]
           responsibilities.each do |responsibility|
             next if responsibility.blank?
 
-            pdf.indent(6) do  # Indent for bullet points
+            pdf.indent(template[:bullet_indent]) do
               pdf.formatted_text([
-                { text: "• ", size: 10 },
-                { text: responsibility.to_s.strip, size: 10 }  # Clean up and use exactly as entered
+                { text: "• ", size: template[:body_size] },
+                { text: responsibility.to_s.strip, size: template[:body_size] }
               ])
             end
-            pdf.move_down 4  # Space between bullet points
+            pdf.move_down template[:bullet_gap]
           end
 
-          pdf.move_down 12  # Space between different work experiences
+          pdf.move_down template[:experience_gap]
         end
         end  # End of work experience section if statement
 
         # Skills Section
-        pdf.move_down 15
-        pdf.text "SKILLS", size: 13, style: :bold
+        pdf.move_down template[:section_gap]
+        pdf.text "SKILLS", size: template[:section_title_size], style: :bold
         pdf.stroke_horizontal_rule
-        pdf.move_down 8
+        pdf.move_down template[:title_gap]
 
         Array(data[:skills]).each do |skill|
           category = skill[:category].to_s.strip
@@ -141,28 +177,28 @@ class AtsPdfGenerator
           unless category.empty? && details.empty?
             # Draw the category name in bold with a colon
             pdf.font("Helvetica-Bold") do
-              pdf.text "#{category}:", size: 10, align: :left
+              pdf.text "#{category}:", size: template[:body_size], align: :left
             end
 
             # Add details on the next line with proper indentation
-            pdf.move_down 2
-            pdf.indent(15) do
+            pdf.move_down template[:detail_gap]
+            pdf.indent(template[:details_indent]) do
               pdf.text details,
-                      size: 10,
+                      size: template[:body_size],
                       align: :left,
-                      leading: 2
+                      leading: template[:body_leading]
             end
 
             # Add space between skill categories
-            pdf.move_down 6
+            pdf.move_down template[:item_gap]
           end
         end
 
         # Certifications Section
-        pdf.move_down 15
-        pdf.text "CERTIFICATIONS", size: 13, style: :bold
+        pdf.move_down template[:section_gap]
+        pdf.text "CERTIFICATIONS", size: template[:section_title_size], style: :bold
         pdf.stroke_horizontal_rule
-        pdf.move_down 8
+        pdf.move_down template[:title_gap]
 
         Array(data[:certifications]).each do |certification|
           name = certification[:name].to_s.strip
@@ -173,39 +209,39 @@ class AtsPdfGenerator
             # Date aligned to right
             if date.present?
               pdf.float do
-                pdf.text date, size: 10, align: :right
+                pdf.text date, size: template[:meta_size], align: :right
               end
             end
 
             # Name in bold, then organization in regular font on same line
-            pdf.font("Helvetica-Bold") { pdf.text "#{name}  ", size: 10, inline_format: false }
+            pdf.font("Helvetica-Bold") { pdf.text "#{name}  ", size: template[:body_size], inline_format: false }
             if org.present?
-              pdf.move_up 11.5
-              name_width = pdf.width_of("#{name}", size: 10) + 25  # Add 25pt spacing
+              pdf.move_up(template[:cert_line_up])
+              name_width = pdf.width_of("#{name}", size: template[:body_size]) + template[:cert_org_indent]
               pdf.indent(name_width) do
-                pdf.font("Helvetica") { pdf.text org, size: 10 }
+                pdf.font("Helvetica") { pdf.text org, size: template[:body_size] }
               end
             end
 
-            pdf.move_down 4  # Space between certifications
+            pdf.move_down template[:item_gap]
           end
         end        # Languages Section
-        pdf.move_down 15
-        pdf.text "LANGUAGES", size: 13, style: :bold
+        pdf.move_down template[:section_gap]
+        pdf.text "LANGUAGES", size: template[:section_title_size], style: :bold
         pdf.stroke_horizontal_rule
-        pdf.move_down 8
+        pdf.move_down template[:title_gap]
         Array(data[:languages]).each do |language|
           lang = language[:language].to_s.strip
           prof = language[:proficiency].to_s.strip
           unless lang.empty? && prof.empty?
             # Add proficiency level aligned to the right
             pdf.float do
-              pdf.text prof, size: 10, align: :right
+              pdf.text prof, size: template[:meta_size], align: :right
             end
             # Add language name in bold
-            pdf.font("Helvetica-Bold") { pdf.text lang, size: 10 }
+            pdf.font("Helvetica-Bold") { pdf.text lang, size: template[:body_size] }
           end
-          pdf.move_down 2  # Small space between languages
+          pdf.move_down template[:detail_gap]
         end
       end
     end
@@ -216,6 +252,10 @@ class AtsPdfGenerator
   end
 
   private
+
+  def self.template_for(template_key)
+    TEMPLATES.find { |template| template.key == template_key } || AtsTemplates::Classic01
+  end
 
   def self.generate_section_title(pdf, title)
     pdf.move_down 10

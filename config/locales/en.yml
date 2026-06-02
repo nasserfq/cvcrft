@@ -314,7 +314,43 @@ en:
     page_description: "Create a professional resume in minutes using AI. Modern templates, automatic bullet point optimization, and high-quality PDF export."
     job_description_label: "Job Description"
     job_description_placeholder: "Enter the job description you want to apply for..."
+    ats_template_label: "Choose ATS template for export"
+    select_resume_and_job: "Please select a resume, enter a job description, and choose a template."
     select_resume_label: "Select Resume"
+    ats:
+      original_classic:
+        name: "Original Classic (Legacy)"
+        description: "Your previous default ATS template style"
+      harvard_classic:
+        name: "Harvard Classic"
+        description: "Traditional academic hierarchy with generous spacing"
+      white_black_engineering:
+        name: "White/Black Engineering"
+        description: "Dense technical resume style with compact spacing"
+      simple_clean_gray:
+        name: "Simple Clean Gray"
+        description: "Balanced one-column layout with soft visual rhythm"
+      minimalist_real_estate:
+        name: "Minimalist Real Estate"
+        description: "Minimal profile-forward layout for business roles"
+      two_column_corporate:
+        name: "Two Column Corporate"
+        description: "Structured executive style with side-information emphasis"
+      blue_minimal_professional:
+        name: "Blue Minimal Professional"
+        description: "Professional ATS layout inspired by blue-accent resumes"
+      black_white_corporate:
+        name: "Black/White Corporate"
+        description: "Formal monochrome resume style for senior roles"
+      infographic_light:
+        name: "Infographic Light"
+        description: "Readable modern layout with ATS-safe typography"
+      clean_single_column:
+        name: "Clean Single Column"
+        description: "Simple modern one-column ATS template"
+      business_admin_modern:
+        name: "Business Admin Modern"
+        description: "Executive summary-led style for administration profiles"
     no_resumes: "No resumes available"
     create_resume: "Create Resume"
     error_occurred: "Sorry, an error occurred"
@@ -481,8 +517,8 @@ en:
     # Templates section
     templates_label: "Templates"
     templates_title: "Simplicity is the Key to Acceptance"
-    templates_desc: "We currently focus on providing a globally-recognized template to efficiently pass ATS systems."
-    templates_coming_soon: "More Creative Templates Coming Soon"
+    templates_desc: "Choose from multiple ATS-optimized templates—from Harvard classic to two-column corporate and minimalist layouts—each built to pass applicant tracking systems."
+    templates_coming_soon: "11 professional ATS layouts · pick yours at export"
     
     # CTA section
     cta_title: "Ready to Get Your Next Job?"

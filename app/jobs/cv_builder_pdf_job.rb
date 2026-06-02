@@ -18,6 +18,7 @@ class CvBuilderPdfJob
     job_token = options["job_token"]
     callback_url = options["callback_url"]
     direct_download = options["direct_download"] || false
+    template = options["template"]
 
     Rails.logger.info "Processing PDF job with: user_id=#{user_id}, resume_id=#{resume_id || 'none'}, job_token=#{job_token}"
 
@@ -26,7 +27,7 @@ class CvBuilderPdfJob
       resume = fetch_or_create_resume(resume_id, resume_params, user_id)
 
       # Generate the PDF
-      pdf_result = generate_pdf(resume, job_token)
+      pdf_result = generate_pdf(resume, job_token, template)
 
       # Store the PDF in Redis
       store_pdf_in_redis(user_id, job_token, pdf_result[:path])
@@ -77,7 +78,7 @@ class CvBuilderPdfJob
     end
   end
 
-  def generate_pdf(resume, job_token)
+  def generate_pdf(resume, job_token, template = nil)
     Rails.logger.info "Generating PDF for resume ID: #{resume.id}"
 
     # Always use the latest AI summary for PDF generation and persist it
@@ -87,7 +88,7 @@ class CvBuilderPdfJob
       Rails.logger.info "Ensured resume##{resume.id} professional_summary_english is up-to-date for PDF preview"
     end
 
-    # Use AtsPdfGenerator for consistent PDF generation
+    # Use template-based generator service
     data = {
       professional_summary: summary_to_use,
       educations: resume.educations.map { |e| { degree: e.degree, institution: e.institution, start_date: e.start_date, end_date: (e.respond_to?(:is_current) && e.is_current) ? "Present" : e.end_date, gpa: e.gpa } },
@@ -97,7 +98,7 @@ class CvBuilderPdfJob
       languages: resume.languages.map { |l| { language: l.language, proficiency: l.proficiency } }
     }
 
-    pdf_result = AtsPdfGenerator.generate_pdf(resume, data)
+    pdf_result = AtsTemplatePdfService.generate_pdf(resume, data, template: template)
     Rails.logger.info "PDF generated at #{pdf_result[:path]}"
 
     pdf_result

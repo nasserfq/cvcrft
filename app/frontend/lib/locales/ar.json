@@ -3,7 +3,25 @@
     "english_only": "يرجى الكتابة باللغة الإنجليزية",
     "required": "هذا الحقل مطلوب",
     "invalid_email": "البريد الإلكتروني غير صالح",
-    "invalid_url": "الرابط غير صالح"
+    "invalid_url": "الرابط غير صالح",
+    "name_required": "الاسم الكامل مطلوب",
+    "email_required": "البريد الإلكتروني مطلوب",
+    "phone_required": "رقم الهاتف مطلوب",
+    "phone_invalid": "رقم الهاتف يجب أن يحتوي على أرقام فقط (مع علامة + اختيارية)",
+    "city_required": "المدينة مطلوبة",
+    "country_required": "الدولة مطلوبة",
+    "summary_required": "الملخص المهني مطلوب",
+    "summary_min_length": "الملخص المهني يجب أن يكون 5 أحرف على الأقل",
+    "education_required": "يجب إضافة مؤهل تعليمي واحد على الأقل",
+    "experience_required": "يجب إضافة خبرة عمل واحدة على الأقل",
+    "skills_required": "يجب إضافة مهارة واحدة على الأقل",
+    "languages_required": "يجب إضافة لغة واحدة على الأقل",
+    "education_entry_english": "التعليم {{n}}: {{field}} — {{message}}",
+    "experience_entry_english": "الخبرة {{n}}: {{field}} — {{message}}",
+    "skill_entry_english": "المهارة {{n}}: {{field}} — {{message}}",
+    "skill_name_english": "المهارة {{n}}: \"{{value}}\" — {{message}}",
+    "cert_entry_english": "الشهادة {{n}}: {{field}} — {{message}}",
+    "language_entry_english": "اللغة {{n}}: {{field}} — {{message}}"
   },
   "steps": {
     "personal_info": "المعلومات الشخصية",
@@ -34,7 +52,9 @@
     "website": "الموقع الإلكتروني",
     "website_placeholder": "www.example.com",
     "summary": "نبذة مختصرة",
-    "summary_placeholder": "اكتب نبذة مختصرة عن نفسك وخبراتك..."
+    "summary_placeholder": "اكتب نبذة مختصرة عن نفسك وخبراتك...",
+    "city": "المدينة",
+    "country": "الدولة"
   },
   "experience": {
     "title": "الخبرة العملية",
@@ -75,6 +95,7 @@
     "gpa": "المعدل",
     "gpa_placeholder": "مثال: 4.5/5",
     "education_n": "التعليم {{n}}",
+    "current_study": "أدرس حالياً",
     "add_another": "إضافة تعليم آخر"
   },
   "skills": {
@@ -88,8 +109,7 @@
     "skill_name": "اسم المهارة",
     "skill_placeholder": "مثال: Python",
     "no_skills": "لم تقم بإضافة أي مهارات بعد",
-    "skill_n": "المهارة {{n}}",
-    "add_another": "إضافة مهارة أخرى"
+    "add_another_category": "إضافة فئة مهارات أخرى"
   },
   "languages": {
     "title": "اللغات",
@@ -105,6 +125,7 @@
     "intermediate": "متوسط",
     "beginner": "مبتدئ",
     "language_n": "اللغة {{n}}",
+    "select_proficiency": "اختر مستوى الإتقان",
     "add_another": "إضافة لغة أخرى"
   },
   "certifications": {
@@ -121,6 +142,7 @@
     "credential_id": "رقم الشهادة",
     "credential_placeholder": "اختياري",
     "certification_n": "الشهادة {{n}}",
+    "optional": "(اختياري)",
     "add_another": "إضافة شهادة أخرى"
   },
   "review": {
@@ -132,6 +154,16 @@
     "generating": "جاري الإنشاء...",
     "preview": "معاينة"
   },
+  "preview": {
+    "title": "معاينة السيرة الذاتية",
+    "button": "معاينة السيرة الذاتية",
+    "loading": "جاري تحميل معاينة PDF...",
+    "error": "تعذر عرض ملف PDF.",
+    "resume_required_for_live": "احفظ هذه السيرة أولاً لتفعيل المعاينة الحية لملف PDF.",
+    "open_full": "فتح PDF كاملاً",
+    "download_file": "تنزيل الملف",
+    "error_alert": "حدث خطأ أثناء محاولة معاينة السيرة الذاتية. حاول مرة أخرى."
+  },
   "import": {
     "title": "استيراد السيرة الذاتية",
     "from_linkedin": "استيراد من لينكد إن",
@@ -139,18 +171,115 @@
     "from_file_short": "استيراد",
     "from_file_long": "استيراد من ملف",
     "drag_drop": "اسحب وأفلت الملف هنا",
+    "drag_drop_pdf": "اسحب وأفلت ملف PDF هنا",
+    "or": "أو",
     "or_click": "أو انقر للاختيار",
+    "select_file": "اختر ملفاً",
     "supported_formats": "PDF, DOCX",
+    "pdf_only_max": "PDF فقط • بحد أقصى 10 ميجابايت",
     "importing": "جاري الاستيراد...",
+    "uploading": "جاري الرفع...",
+    "import_button": "استيراد",
     "success": "تم الاستيراد بنجاح",
-    "error": "حدث خطأ أثناء الاستيراد"
+    "error": "حدث خطأ أثناء الاستيراد",
+    "note": "ملاحظة",
+    "note_text": "يجب أن تكون السيرة الذاتية بالإنجليزية. سيتم تحليل الملف واستخراج البيانات تلقائياً.",
+    "pdf_only_error": "يرجى رفع ملف PDF فقط",
+    "file_too_large": "حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت",
+    "processing_failed": "فشل معالجة السيرة الذاتية",
+    "upload_failed": "فشل رفع الملف",
+    "connection_error": "خطأ في الاتصال. يرجى المحاولة مرة أخرى",
+    "remove_file": "إزالة الملف",
+    "analyzing": "جاري تحليل السيرة الذاتية...",
+    "ai_extracting": "يتم استخدام الذكاء الاصطناعي لاستخراج البيانات. قد يستغرق ذلك بضع ثوانٍ."
   },
   "templates": {
     "title": "اختر قالباً",
+    "ats_picker_label": "اختر قالب ATS للتصدير",
     "modern": "عصري",
     "classic": "كلاسيكي",
     "minimal": "بسيط",
-    "professional": "احترافي"
+    "professional": "احترافي",
+    "ats": {
+      "original_classic": {
+        "name": "الكلاسيكي الأصلي (قديم)",
+        "description": "نمط القالب الافتراضي السابق لديك"
+      },
+      "harvard_classic": {
+        "name": "هارفارد الكلاسيكي",
+        "description": "تسلسل أكاديمي تقليدي مع مسافات واسعة"
+      },
+      "white_black_engineering": {
+        "name": "هندسة أبيض/أسود",
+        "description": "نمط سيرة تقنية مكثف بمسافات مضغوطة"
+      },
+      "simple_clean_gray": {
+        "name": "رمادي بسيط ونظيف",
+        "description": "تخطيط عمود واحد متوازن بإيقاع بصري هادئ"
+      },
+      "minimalist_real_estate": {
+        "name": "عقارات بسيط",
+        "description": "تخطيط بسيط يركز على الملف الشخصي للأدوار التجارية"
+      },
+      "two_column_corporate": {
+        "name": "شركات عمودين",
+        "description": "نمط تنفيذي منظم مع معلومات جانبية"
+      },
+      "blue_minimal_professional": {
+        "name": "احترافي أزرق بسيط",
+        "description": "تخطيط ATS احترافي مستوحى من السير ذات اللمسة الزرقاء"
+      },
+      "black_white_corporate": {
+        "name": "شركات أبيض وأسود",
+        "description": "نمط رسمي أحادي للأدوار العليا"
+      },
+      "infographic_light": {
+        "name": "إنفوجرافيك خفيف",
+        "description": "تخطيط عصري مقروء بخطوط آمنة لأنظمة ATS"
+      },
+      "clean_single_column": {
+        "name": "عمود واحد نظيف",
+        "description": "قالب ATS عصري بسيط بعمود واحد"
+      },
+      "business_admin_modern": {
+        "name": "إدارة أعمال عصري",
+        "description": "نمط يبدأ بملخص تنفيذي للملفات الإدارية"
+      }
+    }
+  },
+  "translation": {
+    "summary_required": "يرجى إدخال الملخص المهني أولاً",
+    "summary_min_chars": "يجب أن يحتوي الملخص المهني على 5 أحرف على الأقل",
+    "summary_limit_reached": "لقد وصلت إلى الحد الأقصى من ترجمات الملخص المهني ({{max}}). يرجى المحاولة لاحقاً.",
+    "jobs_limit_reached": "لقد وصلت إلى الحد الأقصى من ترجمات الوظائف ({{max}}). يرجى المحاولة لاحقاً.",
+    "generic_error": "حدث خطأ في الترجمة. يرجى المحاولة مرة أخرى.",
+    "unexpected_api": "حدث خطأ غير متوقع في الترجمة",
+    "no_responsibilities": "لا توجد مسؤوليات للترجمة",
+    "failed": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
+    "timeout": "انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى."
+  },
+  "export": {
+    "cv_builder_limit": "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (5). يرجى الترقية للحصول على المزيد.",
+    "name_email_required": "يرجى ملء الاسم الكامل والبريد الإلكتروني قبل التصدير",
+    "pdf_failed": "فشل إنشاء ملف PDF. يرجى المحاولة مرة أخرى لاحقاً.",
+    "pdf_timeout": "انتهت مهلة إنشاء ملف PDF. يرجى المحاولة مرة أخرى لاحقاً.",
+    "pdf_error": "حدث خطأ في تصدير PDF. يرجى المحاولة مرة أخرى."
+  },
+  "draft": {
+    "saved_success": "تم حفظ المسودة بنجاح في الخطوة {{step}}! يمكنك العودة إليها لاحقاً.",
+    "save_error": "حدث خطأ أثناء حفظ المسودة",
+    "save_error_detail": "حدث خطأ أثناء حفظ المسودة: {{message}}"
+  },
+  "alerts": {
+    "fill_required": "يرجى ملء جميع الحقول المطلوبة",
+    "education_required": "يرجى إدخال معلومات تعليمية واحدة على الأقل",
+    "experience_required": "يرجى إدخال خبرة عمل واحدة على الأقل",
+    "skills_required": "يرجى إدخال مهارة واحدة على الأقل",
+    "certification_required": "يرجى إدخال شهادة واحدة على الأقل",
+    "languages_required": "يرجى إدخال لغة واحدة على الأقل"
+  },
+  "security": {
+    "csrf_missing": "رمز الأمان غير موجود. يرجى تحديث الصفحة."
   },
   "actions": {
     "save": "حفظ",
@@ -212,5 +341,24 @@
   },
   "common": {
     "close": "إغلاق"
+  },
+  "dates": {
+    "select_title": "اختر التاريخ",
+    "year_label": "السنة (اسحب لرؤية المزيد)",
+    "month_label": "الشهر",
+    "months": {
+      "1": "يناير",
+      "2": "فبراير",
+      "3": "مارس",
+      "4": "أبريل",
+      "5": "مايو",
+      "6": "يونيو",
+      "7": "يوليو",
+      "8": "أغسطس",
+      "9": "سبتمبر",
+      "10": "أكتوبر",
+      "11": "نوفمبر",
+      "12": "ديسمبر"
+    }
   }
 }

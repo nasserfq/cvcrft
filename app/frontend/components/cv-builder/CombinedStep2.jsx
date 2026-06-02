@@ -1,9 +1,6 @@
 import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
 import MobileDatePicker from "./MobileDatePicker";
-import i18n from "../../lib/i18n";
-
-// Simple translation function
-const t = (key, options) => i18n.t(key, options);
 
 // Helper to safely get responsibilities as an array
 const getResponsibilitiesArray = (responsibilities) => {
@@ -70,6 +67,8 @@ const CombinedStep2 = ({
   jobTranslationSuccess = false,
   remainingJobsTranslations = 5,
 }) => {
+  const { t } = useTranslation();
+
   // Ensure remainingJobsTranslations is always a valid number
   const safeRemainingJobsTranslations = typeof remainingJobsTranslations === 'number' ? remainingJobsTranslations : 5;
   

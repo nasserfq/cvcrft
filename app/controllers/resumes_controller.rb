@@ -1,4 +1,5 @@
 class ResumesController < ApplicationController
+  ATS_TEMPLATE_FALLBACK = "harvard_classic".freeze
   before_action :authenticate_user!
   before_action :set_resume, only: [ :show, :edit, :update, :destroy, :generate_pdf, :optimize_ats, :resume_draft, :experiences, :skills_section, :educations, :certifications_section, :languages_section ]
 
@@ -197,8 +198,9 @@ class ResumesController < ApplicationController
 
   def generate_pdf
     begin
+      selected_template = normalize_ats_template(params[:template])
       # Generate ATS-optimized PDF
-      pdf_result = ResumePdfService.generate_pdf(@resume)
+      pdf_result = ResumePdfService.generate_pdf(@resume, template: selected_template)
 
       # Preview vs download
       disposition = params[:preview] == "true" ? "inline" : "attachment"
@@ -351,6 +353,10 @@ class ResumesController < ApplicationController
   end
 
   private
+
+  def normalize_ats_template(template_key)
+    AtsTemplatePdfService.normalize_template_key(template_key.presence || ATS_TEMPLATE_FALLBACK)
+  end
 
   def set_resume
     @resume = current_user.resumes.find(params[:id])

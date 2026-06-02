@@ -206,8 +206,12 @@
           created_on: "<%= j t('cv_generation.created_on') %>",
           basic_resume: "<%= j t('cv_generation.basic_resume') %>",
           preview: "<%= j t('cv_generation.preview') %>",
-          download: "<%= j t('cv_generation.download') %>"
+          download: "<%= j t('cv_generation.download') %>",
+          ats_template_label: "<%= j t('cv_generation.ats_template_label') %>",
+          select_resume_and_job: "<%= j t('cv_generation.select_resume_and_job') %>"
         };
+        window.CV_ATS_TEMPLATES = <%= raw ats_template_options_for_cv_generation.to_json %>;
+        window.CV_DEFAULT_ATS_TEMPLATE = <%= raw @default_ats_template.to_json %>;
       </script>
       <!-- React Libraries -->
       <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -268,6 +272,10 @@
           // Form state
           const [jobDescription, setJobDescription] = useState('');
           const [selectedResumeId, setSelectedResumeId] = useState('');
+          const [selectedAtsTemplate, setSelectedAtsTemplate] = useState(
+            window.CV_DEFAULT_ATS_TEMPLATE || 'harvard_classic'
+          );
+          const atsTemplates = window.CV_ATS_TEMPLATES || [];
           const [isGenerating, setIsGenerating] = useState(false);
           const [isLoading, setIsLoading] = useState(true);
 
@@ -562,8 +570,8 @@
           const handleSubmit = async (e) => {
             e.preventDefault();
 
-            if (!selectedResumeId || !jobDescription.trim()) {
-              alert('Please select a resume and enter a job description');
+            if (!selectedResumeId || !jobDescription.trim() || !selectedAtsTemplate) {
+              alert(t.select_resume_and_job);
               return;
             }
 
@@ -582,6 +590,7 @@
               const formData = new URLSearchParams();
               formData.append('cv_generation[job_description]', jobDescription.trim());
               formData.append('cv_generation[resume_id]', selectedResumeId);
+              formData.append('cv_generation[ats_template]', selectedAtsTemplate);
               formData.append('cv_generation[temperature]', '0.7');
               formData.append('cv_generation[max_tokens]', '15000');
               formData.append('cv_generation[complete_name]', '');
@@ -702,6 +711,37 @@
                   className="w-full px-4 py-3 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
                   rows="4"
                 />
+              </div>
+
+              {/* ATS Template Selection */}
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  {t.ats_template_label}
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 max-h-[min(50vh,28rem)] sm:max-h-none overflow-y-auto overscroll-contain pr-0.5">
+                  {atsTemplates.map((template) => {
+                    const isSelected = selectedAtsTemplate === template.key;
+                    return (
+                      <button
+                        key={template.key}
+                        type="button"
+                        onClick={() => setSelectedAtsTemplate(template.key)}
+                        className={`text-start p-3 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
+                          isSelected
+                            ? 'border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/25'
+                            : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-primary/40'
+                        }`}
+                      >
+                        <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug">
+                          {template.name}
+                        </span>
+                        <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                          {template.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Resume Selection */}
@@ -933,7 +973,7 @@
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={isGenerating || !selectedResumeId || !jobDescription.trim() || userCvCount >= maxCvGenerations}
+                  disabled={isGenerating || !selectedResumeId || !jobDescription.trim() || !selectedAtsTemplate || userCvCount >= maxCvGenerations}
                   className="w-full bg-action text-white px-6 py-3 rounded-lg font-medium hover:bg-action/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isGenerating ? t.generating :

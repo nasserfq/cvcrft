@@ -1,9 +1,6 @@
 import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
 import MobileDatePicker from "./MobileDatePicker";
-import i18n from "../../lib/i18n";
-
-// Simple translation function
-const t = (key, options) => i18n.t(key, options);
 
 // Error display component
 const SectionError = ({ error }) => error ? (
@@ -56,6 +53,8 @@ const CombinedStep3 = ({
   renderSaveDraftButton,
   validationErrors = {},
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-8">
       {/* Section Header */}

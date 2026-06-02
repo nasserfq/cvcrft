@@ -312,7 +312,43 @@ ar:
     page_description: "أنشئ سيرة ذاتية احترافية خلال دقائق باستخدام الذكاء الاصطناعي. قوالب حديثة، تحسين تلقائي للنقاط، وتصدير PDF بجودة عالية."
     job_description_label: "وصف الوظيفة"
     job_description_placeholder: "أدخل وصف الوظيفة التي تريد التقدم إليها..."
+    ats_template_label: "اختر قالب ATS للتصدير"
+    select_resume_and_job: "يرجى اختيار سيرة ذاتية وإدخال وصف الوظيفة واختيار قالب."
     select_resume_label: "اختيار السيرة الذاتية"
+    ats:
+      original_classic:
+        name: "الكلاسيكي الأصلي (قديم)"
+        description: "نمط القالب الافتراضي السابق لديك"
+      harvard_classic:
+        name: "هارفارد الكلاسيكي"
+        description: "تسلسل أكاديمي تقليدي مع مسافات واسعة"
+      white_black_engineering:
+        name: "هندسة أبيض/أسود"
+        description: "نمط سيرة تقنية مكثف بمسافات مضغوطة"
+      simple_clean_gray:
+        name: "رمادي بسيط ونظيف"
+        description: "تخطيط عمود واحد متوازن بإيقاع بصري هادئ"
+      minimalist_real_estate:
+        name: "عقارات بسيط"
+        description: "تخطيط بسيط يركز على الملف الشخصي للأدوار التجارية"
+      two_column_corporate:
+        name: "شركات عمودين"
+        description: "نمط تنفيذي منظم مع معلومات جانبية"
+      blue_minimal_professional:
+        name: "احترافي أزرق بسيط"
+        description: "تخطيط ATS احترافي مستوحى من السير ذات اللمسة الزرقاء"
+      black_white_corporate:
+        name: "شركات أبيض وأسود"
+        description: "نمط رسمي أحادي للأدوار العليا"
+      infographic_light:
+        name: "إنفوجرافيك خفيف"
+        description: "تخطيط عصري مقروء بخطوط آمنة لأنظمة ATS"
+      clean_single_column:
+        name: "عمود واحد نظيف"
+        description: "قالب ATS عصري بسيط بعمود واحد"
+      business_admin_modern:
+        name: "إدارة أعمال عصري"
+        description: "نمط يبدأ بملخص تنفيذي للملفات الإدارية"
     no_resumes: "لا توجد سير ذاتية متاحة"
     create_resume: "إنشاء السيرة الذاتية"
     error_occurred: "عذراً، حدث خطأ ما"
@@ -479,8 +515,8 @@ ar:
     # Templates section
     templates_label: "القوالب"
     templates_title: "البساطة هي سر القبول"
-    templates_desc: "نركز حالياً على تقديم قالب معتمد عالمياً لتجاوز أنظمة الـ ATS بكفاءة عالية."
-    templates_coming_soon: "قوالب إبداعية إضافية قريباً"
+    templates_desc: "اختر من بين عدة قوالب ATS احترافية — من الكلاسيكي إلى التنفيذي وعمودين — كلها مصممة لتجاوز أنظمة التتبع بكفاءة عالية."
+    templates_coming_soon: "١١ نمط ATS احترافي · اختر قالبك عند التصدير"
     
     # CTA section
     cta_title: "جاهز للحصول على وظيفتك القادمة؟"

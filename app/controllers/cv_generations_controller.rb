@@ -53,6 +53,7 @@ class CvGenerationsController < ApplicationController
     @resumes = current_user.resumes.limit(10)  # Show user's resumes for selection
     @recent_cv_generations = current_user.cv_generations.where(status: "completed").recent.limit(3)
     @recent_resumes = current_user.resumes.recent.limit(3)
+    @default_ats_template = AtsTemplatePdfService.normalize_template_key(params[:template])
   end
 
   def create
@@ -100,6 +101,8 @@ class CvGenerationsController < ApplicationController
     service = AzureOpenaiService.new(user_id, cv_generation_params[:resume_id])
 
     # Generate CV
+    ats_template = AtsTemplatePdfService.normalize_template_key(cv_generation_params[:ats_template])
+
     result = service.generate_cv(
       cv_generation_params[:job_description],
       {
@@ -107,6 +110,7 @@ class CvGenerationsController < ApplicationController
         email: cv_generation_params[:email],
         temperature: cv_generation_params[:temperature] || 0.7,
         max_tokens: cv_generation_params[:max_tokens] || 15000,
+        ats_template: ats_template,
         force_pdf_regeneration: true,  # Always regenerate PDF when user creates a new CV
         source: "job_description"  # Track the source for limit counting
       }
@@ -212,7 +216,7 @@ class CvGenerationsController < ApplicationController
 
         # Get options from existing metadata
         options = @cv_generation.metadata.slice(
-          "complete_name", "email", "temperature", "max_tokens"
+          "complete_name", "email", "temperature", "max_tokens", "ats_template"
         ).merge({
           "force_pdf_regeneration" => true,
           "pdf_cache_hours" => 0  # Bypass cache completely
@@ -296,7 +300,7 @@ class CvGenerationsController < ApplicationController
 
         # Get options from existing metadata
         options = @cv_generation.metadata.slice(
-          "complete_name", "email", "temperature", "max_tokens"
+          "complete_name", "email", "temperature", "max_tokens", "ats_template"
         ).merge({
           "force_pdf_regeneration" => true,
           "pdf_cache_hours" => 0  # Bypass cache completely
@@ -488,7 +492,7 @@ class CvGenerationsController < ApplicationController
   def cv_generation_params
     params.require(:cv_generation).permit(
       :job_description, :resume_id, :complete_name, :email,
-      :temperature, :max_tokens
+      :temperature, :max_tokens, :ats_template
     )
   end
 

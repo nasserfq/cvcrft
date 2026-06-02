@@ -22,7 +22,7 @@ class ResumePdfService
       end
     end
 
-    AtsPdfGenerator.generate_pdf(resume, {
+    AtsTemplatePdfService.generate_pdf(resume, {
       professional_summary: resume.professional_summary,
       work_experiences: resume.work_experiences.map(&:attributes),
       # Build skills details from stored structure (skill_names array or legacy fields)
@@ -42,6 +42,6 @@ class ResumePdfService
         date: c.date
       } },
       languages: resume.languages.map { |l| { language: l.language, proficiency: l.proficiency } }
-    })
+    }, template: options[:template])
   end
 end

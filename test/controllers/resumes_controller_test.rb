@@ -83,4 +83,22 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to resumes_url
   end
+
+  test "generate_pdf passes selected ATS template" do
+    ResumePdfService.expects(:generate_pdf).with(@resume, has_entry(template: "minimalist_real_estate")).returns("%PDF-1.4")
+
+    get generate_pdf_resume_url(@resume), params: { template: "minimalist_real_estate" }
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+  end
+
+  test "generate_pdf falls back to default template for invalid key" do
+    ResumePdfService.expects(:generate_pdf).with(@resume, has_entry(template: "harvard_classic")).returns("%PDF-1.4")
+
+    get generate_pdf_resume_url(@resume), params: { template: "not_valid" }
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+  end
 end

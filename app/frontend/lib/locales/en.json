@@ -15,7 +15,13 @@
     "education_required": "At least one education entry is required",
     "experience_required": "At least one work experience is required",
     "skills_required": "At least one skill is required",
-    "languages_required": "At least one language is required"
+    "languages_required": "At least one language is required",
+    "education_entry_english": "Education {{n}}: {{field}} — {{message}}",
+    "experience_entry_english": "Experience {{n}}: {{field}} — {{message}}",
+    "skill_entry_english": "Skill {{n}}: {{field}} — {{message}}",
+    "skill_name_english": "Skill {{n}}: \"{{value}}\" — {{message}}",
+    "cert_entry_english": "Certification {{n}}: {{field}} — {{message}}",
+    "language_entry_english": "Language {{n}}: {{field}} — {{message}}"
   },
   "steps": {
     "personal_info": "Personal Information",
@@ -153,6 +159,8 @@
     "button": "Preview Resume",
     "loading": "Loading CV preview...",
     "error": "Unable to display PDF file.",
+    "resume_required_for_live": "Save this resume first to enable live PDF preview.",
+    "open_full": "Open full PDF",
     "download_file": "Download file",
     "error_alert": "An error occurred while trying to preview the CV. Please try again."
   },
@@ -187,10 +195,91 @@
   },
   "templates": {
     "title": "Select a Template",
+    "ats_picker_label": "Choose ATS template for export",
     "modern": "Modern",
     "classic": "Classic",
     "minimal": "Minimal",
-    "professional": "Professional"
+    "professional": "Professional",
+    "ats": {
+      "original_classic": {
+        "name": "Original Classic (Legacy)",
+        "description": "Your previous default ATS template style"
+      },
+      "harvard_classic": {
+        "name": "Harvard Classic",
+        "description": "Traditional academic hierarchy with generous spacing"
+      },
+      "white_black_engineering": {
+        "name": "White/Black Engineering",
+        "description": "Dense technical resume style with compact spacing"
+      },
+      "simple_clean_gray": {
+        "name": "Simple Clean Gray",
+        "description": "Balanced one-column layout with soft visual rhythm"
+      },
+      "minimalist_real_estate": {
+        "name": "Minimalist Real Estate",
+        "description": "Minimal profile-forward layout for business roles"
+      },
+      "two_column_corporate": {
+        "name": "Two Column Corporate",
+        "description": "Structured executive style with side-information emphasis"
+      },
+      "blue_minimal_professional": {
+        "name": "Blue Minimal Professional",
+        "description": "Professional ATS layout inspired by blue-accent resumes"
+      },
+      "black_white_corporate": {
+        "name": "Black/White Corporate",
+        "description": "Formal monochrome resume style for senior roles"
+      },
+      "infographic_light": {
+        "name": "Infographic Light",
+        "description": "Readable modern layout with ATS-safe typography"
+      },
+      "clean_single_column": {
+        "name": "Clean Single Column",
+        "description": "Simple modern one-column ATS template"
+      },
+      "business_admin_modern": {
+        "name": "Business Admin Modern",
+        "description": "Executive summary-led style for administration profiles"
+      }
+    }
+  },
+  "translation": {
+    "summary_required": "Please enter your professional summary first",
+    "summary_min_chars": "Professional summary must be at least 5 characters",
+    "summary_limit_reached": "You have reached the maximum professional summary translations ({{max}}). Please try again later.",
+    "jobs_limit_reached": "You have reached the maximum job description translations ({{max}}). Please try again later.",
+    "generic_error": "Translation failed. Please try again.",
+    "unexpected_api": "Unexpected response from translation service",
+    "no_responsibilities": "No responsibilities to translate",
+    "failed": "Translation failed. Please try again.",
+    "timeout": "Translation timed out. Please try again."
+  },
+  "export": {
+    "cv_builder_limit": "You have used all CV builder credits (5). Please upgrade for more.",
+    "name_email_required": "Please fill in full name and email before exporting",
+    "pdf_failed": "PDF generation failed. Please try again later.",
+    "pdf_timeout": "PDF generation timed out. Please try again later.",
+    "pdf_error": "An error occurred while exporting PDF. Please try again."
+  },
+  "draft": {
+    "saved_success": "Draft saved successfully at step {{step}}! You can return to it later.",
+    "save_error": "An error occurred while saving the draft",
+    "save_error_detail": "An error occurred while saving the draft: {{message}}"
+  },
+  "alerts": {
+    "fill_required": "Please fill in all required fields",
+    "education_required": "Please add at least one education entry",
+    "experience_required": "Please add at least one work experience",
+    "skills_required": "Please add at least one skill",
+    "certification_required": "Please add at least one certification",
+    "languages_required": "Please add at least one language"
+  },
+  "security": {
+    "csrf_missing": "Security token is missing. Please refresh the page."
   },
   "actions": {
     "save": "Save",
@@ -252,5 +341,24 @@
   },
   "common": {
     "close": "Close"
+  },
+  "dates": {
+    "select_title": "Select date",
+    "year_label": "Year (scroll for more)",
+    "month_label": "Month",
+    "months": {
+      "1": "January",
+      "2": "February",
+      "3": "March",
+      "4": "April",
+      "5": "May",
+      "6": "June",
+      "7": "July",
+      "8": "August",
+      "9": "September",
+      "10": "October",
+      "11": "November",
+      "12": "December"
+    }
   }
 }

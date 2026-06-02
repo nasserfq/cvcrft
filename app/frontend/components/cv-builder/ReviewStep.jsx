@@ -1,270 +1,121 @@
 import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
 
-const ReviewStep = ({ formData, renderSaveDraftButton }) => {
+const ReviewStep = ({
+  renderSaveDraftButton,
+  selectedTemplate,
+  onTemplateChange,
+  templateOptions,
+  resumeId,
+  pdfPreviewUrl,
+  isPdfPreviewLoading,
+  pdfPreviewError,
+  onPdfPreviewLoaded,
+  onPdfPreviewError,
+}) => {
+  const { t } = useTranslation();
+
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          معاينة السيرة الذاتية
+    <div className="space-y-4 sm:space-y-6 -mx-1 sm:mx-0">
+      <div className="text-center mb-4 sm:mb-6 px-1">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+          {t("review.title")}
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          تصفح السيرة الذاتية التي قمت بإنشائها للتأكد من أن كل المعلومات صحيحة.
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
+          {t("review.subtitle")}
         </p>
       </div>
 
-      {/* Resume Preview */}
-      <div
-        className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 max-w-4xl mx-auto"
-        dir="ltr"
-        style={{
-          fontFamily: "Arial, sans-serif",
-          fontSize: "11pt",
-          lineHeight: "1.3",
-        }}
-      >
-        {/* Header */}
-        <div className="text-center mb-4 pb-2 border-b border-gray-900">
-          <h1
-            className="text-2xl font-bold text-gray-900 mb-1"
-            style={{ fontSize: "18pt" }}
-          >
-            {formData.complete_name || "Your Name"}
-          </h1>
-          <div className="text-gray-600" style={{ fontSize: "11pt" }}>
-            {formData.email && `${formData.email}`}
-            {formData.phone_number && ` | ${formData.phone_number}`}
-            {formData.city && formData.country && ` | ${formData.city}, ${formData.country}`}
-          </div>
+      <div className="w-full max-w-4xl mx-auto p-3 sm:p-4 bg-white/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          {t("templates.ats_picker_label")}
+        </label>
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 max-h-[min(50vh,28rem)] sm:max-h-none overflow-y-auto overscroll-contain pr-0.5 sm:pr-0 sm:overflow-visible"
+          role="listbox"
+          aria-label={t("templates.ats_picker_label")}
+        >
+          {templateOptions.map((template) => {
+            const isSelected = selectedTemplate === template.key;
+            return (
+              <button
+                key={template.key}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => onTemplateChange(template.key)}
+                className={`text-start p-3 sm:p-3.5 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
+                  isSelected
+                    ? "border-[#7C6CF2] bg-[#7C6CF2]/10 dark:bg-[#7C6CF2]/20 ring-2 ring-[#7C6CF2]/25"
+                    : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#1E1E2F] hover:border-[#7C6CF2]/40 active:scale-[0.99]"
+                }`}
+              >
+                <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug">
+                  {template.name}
+                </span>
+                <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                  {template.description}
+                </span>
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Professional Summary */}
-        {(formData.professional_summary_english || formData.professional_summary) && (
-          <div className="mb-4">
-            <h2
-              className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
-              style={{ fontSize: "12pt" }}
+      <div className="w-full max-w-4xl mx-auto bg-white dark:bg-[#1E1E2F] border border-gray-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
+        {resumeId && pdfPreviewUrl && (
+          <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-white/5">
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+              {t("preview.title")}
+            </span>
+            <a
+              href={pdfPreviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium text-[#7C6CF2] hover:text-[#6A5AE0] touch-manipulation"
             >
-              Professional Summary
-            </h2>
-            <p className="text-gray-700 leading-relaxed text-left" style={{ fontSize: "11pt" }}>
-              {formData.professional_summary_english || formData.professional_summary}
-            </p>
+              {t("preview.open_full")}
+            </a>
           </div>
         )}
 
-        {/* Education */}
-        {formData.education.some((edu) => edu.degree && edu.institution) && (
-          <div className="mb-4">
-            <h2
-              className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
-              style={{ fontSize: "12pt" }}
-            >
-              Education
-            </h2>
-            <div className="space-y-2">
-              {formData.education.map(
-                (edu, index) =>
-                  edu.degree && edu.institution && (
-                    <div key={index} className="flex justify-between items-start">
-                      <div className="text-left">
-                        <div className="font-semibold text-gray-900" style={{ fontSize: "11pt" }}>
-                          {edu.degree}
-                        </div>
-                        <div className="text-gray-600" style={{ fontSize: "10pt" }}>
-                          {edu.institution}
-                        </div>
-                      </div>
-                      <div className="text-right text-gray-500" style={{ fontSize: "10pt" }}>
-                        {edu.start_date && (
-                          <>
-                            {edu.start_date}
-                            {edu.end_date && !edu.is_current && ` - ${edu.end_date}`}
-                            {edu.is_current && " - Present"}
-                          </>
-                        )}
-                        {edu.gpa && <div className="mt-1">(GPA: {edu.gpa})</div>}
-                      </div>
-                    </div>
-                  )
-              )}
-            </div>
+        {isPdfPreviewLoading && (
+          <div className="p-4 text-sm text-gray-600 dark:text-gray-400 text-center">{t("preview.loading")}</div>
+        )}
+        {pdfPreviewError && (
+          <div className="p-4 text-sm text-red-600 text-center break-words px-3">{pdfPreviewError}</div>
+        )}
+        {!resumeId && !pdfPreviewError && (
+          <div className="p-4 text-sm text-gray-600 dark:text-gray-400 text-center px-3">
+            {t("preview.resume_required_for_live")}
           </div>
         )}
 
-        {/* Work Experience */}
-        {formData.work_experience.some((work) => work.job_title && work.company) && (
-          <div className="mb-4">
-            <h2
-              className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
-              style={{ fontSize: "12pt" }}
-            >
-              Work Experience
-            </h2>
-            <div className="space-y-2">
-              {formData.work_experience
-                .filter((work) => work.job_title && work.company)
-                .sort((a, b) => {
-                  if (!a.start_date && !b.start_date) return 0;
-                  if (!a.start_date) return 1;
-                  if (!b.start_date) return -1;
-                  const aIsCurrent = a.is_current || !a.end_date;
-                  const bIsCurrent = b.is_current || !b.end_date;
-                  if (aIsCurrent && !bIsCurrent) return -1;
-                  if (!aIsCurrent && bIsCurrent) return 1;
-                  return new Date(b.start_date) - new Date(a.start_date);
-                })
-                .map((work, index) => (
-                  <div key={index} className="mb-2">
-                    <div className="flex justify-between items-start mb-1">
-                      <div className="text-left font-semibold text-gray-900" style={{ fontSize: "11pt" }}>
-                        {work.job_title}
-                      </div>
-                      <div className="text-right text-gray-500" style={{ fontSize: "10pt" }}>
-                        {work.start_date && (
-                          <>
-                            {work.start_date}
-                            {work.end_date && !work.is_current && ` - ${work.end_date}`}
-                            {work.is_current && " - Present"}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-left text-gray-600 mb-1" style={{ fontSize: "10pt" }}>
-                      {work.company}
-                    </div>
-                    {work.responsibilities.some((resp) => resp.trim()) && (
-                      <div
-                        className="text-gray-700 text-left"
-                        style={{ fontSize: "10pt", lineHeight: "1.1", margin: "1pt 0" }}
-                      >
-                        {work.responsibilities
-                          .filter((resp) => resp.trim())
-                          .map((resp, respIndex) => (
-                            <div
-                              key={respIndex}
-                              className="bullet-point"
-                              style={{
-                                marginBottom: "1pt",
-                                fontSize: "10pt",
-                                lineHeight: "1.1",
-                                wordWrap: "break-word",
-                                overflowWrap: "break-word",
-                                hyphens: "auto",
-                                maxWidth: "100%",
-                                clear: "both",
-                                textAlign: "justify",
-                                paddingLeft: "0pt",
-                                marginLeft: "0pt",
-                                textIndent: "0pt",
-                              }}
-                            >
-                              • {resp}
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* Skills */}
-        {formData.skills.some(
-          (skill) => skill.category && skill.skill_names.some((name) => name.trim())
-        ) && (
-          <div className="mb-4">
-            <h2
-              className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
-              style={{ fontSize: "12pt" }}
-            >
-              Skills
-            </h2>
-            <div className="space-y-1">
-              {formData.skills.map(
-                (skill, index) =>
-                  skill.category && skill.skill_names.some((name) => name.trim()) && (
-                    <div key={index} className="mb-1 text-left">
-                      <span className="font-semibold text-gray-900" style={{ fontSize: "10pt" }}>
-                        {skill.category}:
-                      </span>
-                      <span
-                        className="text-gray-700 ml-2"
-                        style={{ fontSize: "10pt", lineHeight: "1.2" }}
-                      >
-                        {skill.skill_names.filter((name) => name.trim()).join(", ")}
-                      </span>
-                    </div>
-                  )
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Certificates */}
-        {formData.certifications.some((cert) => cert.name && cert.organization) && (
-          <div className="mb-4">
-            <h2
-              className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
-              style={{ fontSize: "12pt" }}
-            >
-              Certificates
-            </h2>
-            <div className="space-y-1">
-              {formData.certifications.map(
-                (cert, index) =>
-                  cert.name && cert.organization && (
-                    <div key={index} className="flex justify-between items-start">
-                      <div className="text-left">
-                        <span className="font-semibold text-gray-900" style={{ fontSize: "11pt" }}>
-                          {cert.name}
-                        </span>
-                        <span className="text-gray-600 ml-2" style={{ fontSize: "10pt" }}>
-                          {cert.organization}
-                        </span>
-                      </div>
-                      <span className="text-right text-gray-500" style={{ fontSize: "10pt" }}>
-                        {cert.date}
-                      </span>
-                    </div>
-                  )
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Languages */}
-        {formData.languages.some((lang) => lang.language && lang.proficiency) && (
-          <div className="mb-4">
-            <h2
-              className="text-lg font-bold text-gray-900 mb-1 pb-1 border-b border-gray-900 text-left uppercase tracking-wide"
-              style={{ fontSize: "12pt" }}
-            >
-              Languages
-            </h2>
-            <div className="space-y-1">
-              {formData.languages.map(
-                (lang, index) =>
-                  lang.language && lang.proficiency && (
-                    <div key={index} className="flex justify-between items-start">
-                      <span
-                        className="text-left font-semibold text-gray-900"
-                        style={{ fontSize: "10pt" }}
-                      >
-                        {lang.language}
-                      </span>
-                      <span className="text-right text-gray-500" style={{ fontSize: "10pt" }}>
-                        {lang.proficiency}
-                      </span>
-                    </div>
-                  )
-              )}
-            </div>
+        {resumeId && pdfPreviewUrl && (
+          <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-[#151520]">
+            {isPdfPreviewLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-[#1E1E2F]/80">
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t("preview.loading")}</span>
+              </div>
+            )}
+            <iframe
+              key={pdfPreviewUrl}
+              src={pdfPreviewUrl}
+              title={t("preview.title")}
+              className="w-full max-w-full block"
+              style={{
+                border: 0,
+                height: "clamp(320px, 60vh, 900px)",
+                minHeight: "320px",
+              }}
+              onLoad={onPdfPreviewLoaded}
+              onError={onPdfPreviewError}
+            />
           </div>
         )}
       </div>
 
-      {renderSaveDraftButton(4)}
+      <div className="pt-2">{renderSaveDraftButton(4)}</div>
     </div>
   );
 };

@@ -64,16 +64,20 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create cv_generation" do
-    # Stub the job
-    CvGeneratorJob.stubs(:perform_later).returns(nil)
+    CvGeneratorJob.stubs(:perform_async).returns(nil)
 
     assert_difference("CvGeneration.count") do
       post cv_generations_url, params: {
         cv_generation: {
-          job_description: "New job description for testing that meets minimum length requirements"
+          job_description: "New job description for testing that meets minimum length requirements",
+          resume_id: @resume.id,
+          ats_template: "minimalist_real_estate"
         }
       }
     end
+
+    created = CvGeneration.order(:id).last
+    assert_equal "minimalist_real_estate", created.metadata["ats_template"]
   end
 
   test "should get status as json" do

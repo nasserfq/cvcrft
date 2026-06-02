@@ -3,6 +3,24 @@ class AiTranslationJob
 
   sidekiq_options retry: 3, backtrace: true
 
+  class OpenAIRequestError < StandardError
+    attr_reader :status_code, :response_body, :request_id
+
+    def initialize(message, status_code: nil, response_body: nil, request_id: nil)
+      super(message)
+      @status_code = status_code
+      @response_body = response_body
+      @request_id = request_id
+    end
+
+    def retryable?
+      return true if status_code.nil?
+      return true if [ 408, 409, 425, 429 ].include?(status_code)
+
+      status_code >= 500
+    end
+  end
+
   def perform(arabic_text, user_id, resume_id = nil, options = {})
     @arabic_text = arabic_text
     @user_id = user_id
@@ -26,6 +44,13 @@ class AiTranslationJob
       # Extract and create skills if requested
       create_skills_from_translation(result[:skills_extracted]) if result[:skills_extracted]
 
+    rescue OpenAIRequestError => e
+      if e.retryable?
+        mark_translation_retryable(e)
+        raise
+      end
+
+      handle_translation_error(e)
     rescue => e
       # Handle errors
       handle_translation_error(e)
@@ -111,8 +136,17 @@ class AiTranslationJob
     if response.code == "200"
       JSON.parse(response.body)
     else
-      raise "OpenAI API request failed: #{response.code} - #{response.body}"
+      status_code = response.code.to_i
+      request_id = response["x-request-id"] || response["apim-request-id"]
+      raise OpenAIRequestError.new(
+        "OpenAI API request failed: #{status_code} - #{response.body}",
+        status_code: status_code,
+        response_body: response.body,
+        request_id: request_id
+      )
     end
+  rescue Timeout::Error, Errno::ECONNRESET, Errno::ECONNREFUSED, SocketError, Net::ReadTimeout, Net::OpenTimeout => e
+    raise OpenAIRequestError.new("OpenAI network error: #{e.class} - #{e.message}")
   end
 
   def build_system_prompt
@@ -341,7 +375,27 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     )
 
     # Log the error
-    Rails.logger.error "AI Translation failed for user #{@user_id}: #{error.message}"
+    Rails.logger.error "AI Translation failed for user #{@user_id}, jid=#{jid}: #{error.message}"
+    if error.respond_to?(:status_code)
+      Rails.logger.error "OpenAI status=#{error.status_code} request_id=#{error.request_id}"
+    end
     Rails.logger.error error.backtrace.join("\n")
+  end
+
+  def mark_translation_retryable(error)
+    @translation.update!(
+      status: "processing",
+      metadata: @translation.metadata.merge({
+        retryable_error: true,
+        last_error: error.message,
+        provider_status: error.status_code,
+        request_id: error.request_id
+      }.compact)
+    )
+
+    Rails.logger.warn(
+      "AI Translation transient failure for user #{@user_id}, jid=#{jid}, " \
+      "status=#{error.status_code || 'n/a'}, request_id=#{error.request_id || 'n/a'}"
+    )
   end
 end

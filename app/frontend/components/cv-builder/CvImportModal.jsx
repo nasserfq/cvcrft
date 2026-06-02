@@ -1,7 +1,9 @@
 import React, { useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
+  const { t } = useTranslation();
   const [isDragOver, setIsDragOver] = useState(false);
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -21,37 +23,42 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    const droppedFile = e.dataTransfer.files[0];
-    validateAndSetFile(droppedFile);
-  }, []);
+  const validateAndSetFile = useCallback(
+    (selectedFile) => {
+      setError("");
 
-  const handleFileSelect = useCallback((e) => {
-    const selectedFile = e.target.files[0];
-    validateAndSetFile(selectedFile);
-  }, []);
+      if (!selectedFile) return;
 
-  const validateAndSetFile = (file) => {
-    setError("");
-    
-    if (!file) return;
+      if (selectedFile.type !== "application/pdf") {
+        setError(t("import.pdf_only_error"));
+        return;
+      }
 
-    // Check file type
-    if (file.type !== "application/pdf") {
-      setError("يرجى تحميل ملف PDF فقط");
-      return;
-    }
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setError(t("import.file_too_large"));
+        return;
+      }
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError("حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت");
-      return;
-    }
+      setFile(selectedFile);
+    },
+    [t]
+  );
 
-    setFile(file);
-  };
+  const handleDrop = useCallback(
+    (e) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      validateAndSetFile(e.dataTransfer.files[0]);
+    },
+    [validateAndSetFile]
+  );
+
+  const handleFileSelect = useCallback(
+    (e) => {
+      validateAndSetFile(e.target.files[0]);
+    },
+    [validateAndSetFile]
+  );
 
   const pollStatus = async (importId, statusUrl) => {
     try {
@@ -66,9 +73,8 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
       } else if (data.failed) {
         clearInterval(pollingRef.current);
         setIsProcessing(false);
-        setError(data.error_message || "فشل في معالجة السيرة الذاتية");
+        setError(data.error_message || t("import.processing_failed"));
       }
-      // Still processing, continue polling
     } catch (err) {
       console.error("Polling error:", err);
     }
@@ -85,7 +91,6 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
     formData.append("pdf_file", file);
 
     try {
-      // Get CSRF token
       const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
         ?.getAttribute("content");
@@ -101,27 +106,23 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        setError(data.error || "فشل في تحميل الملف");
+        setError(data.error || t("import.upload_failed"));
         setIsUploading(false);
         return;
       }
 
-      // File uploaded successfully, now poll for processing status
       setIsUploading(false);
       setIsProcessing(true);
       setUploadProgress(100);
 
-      // Start polling for status
       pollingRef.current = setInterval(() => {
         pollStatus(data.id, data.status_url);
       }, 2000);
 
-      // Also do an immediate check
       setTimeout(() => pollStatus(data.id, data.status_url), 500);
-
     } catch (err) {
       console.error("Upload error:", err);
-      setError("حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى");
+      setError(t("import.connection_error"));
       setIsUploading(false);
     }
   };
@@ -141,7 +142,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget && !isUploading && !isProcessing) {
@@ -149,19 +150,20 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
         }
       }}
     >
-      <div 
+      <div
         className="bg-white dark:bg-[#27273A] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-white/10">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            استيراد سيرة ذاتية
+            {t("import.title")}
           </h2>
           <button
+            type="button"
             onClick={handleClose}
             disabled={isUploading || isProcessing}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+            aria-label={t("actions.close")}
           >
             <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -169,36 +171,30 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6">
-          {/* Info Alert */}
           <div className="mb-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
             <div className="flex gap-3">
               <svg className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="text-sm text-blue-700 dark:text-blue-300">
-                <p className="font-medium mb-1">ملاحظة</p>
-                <p>يجب أن تكون السيرة الذاتية باللغة الإنجليزية. سيتم تحليل الملف واستخراج البيانات تلقائياً.</p>
+                <p className="font-medium mb-1">{t("import.note")}</p>
+                <p>{t("import.note_text")}</p>
               </div>
             </div>
           </div>
 
-          {/* Error Alert */}
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <div className="flex gap-3">
                 <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div className="text-sm text-red-700 dark:text-red-300">
-                  {error}
-                </div>
+                <div className="text-sm text-red-700 dark:text-red-300">{error}</div>
               </div>
             </div>
           )}
 
-          {/* Drop Zone */}
           {!isProcessing && (
             <div
               className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
@@ -238,7 +234,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                     onClick={() => setFile(null)}
                     className="text-sm text-red-500 hover:text-red-600"
                   >
-                    إزالة الملف
+                    {t("import.remove_file")}
                   </button>
                 </div>
               ) : (
@@ -250,11 +246,9 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white mb-1">
-                      اسحب وأفلت ملف PDF هنا
+                      {t("import.drag_drop_pdf")}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                      أو
-                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t("import.or")}</p>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
@@ -263,18 +257,15 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                       </svg>
-                      اختيار ملف
+                      {t("import.select_file")}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
-                    PDF فقط • الحد الأقصى 10 ميجابايت
-                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{t("import.pdf_only_max")}</p>
                 </div>
               )}
             </div>
           )}
 
-          {/* Processing State */}
           {isProcessing && (
             <div className="text-center py-8">
               <div className="w-16 h-16 mx-auto mb-4 relative">
@@ -283,17 +274,12 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <p className="font-medium text-gray-900 dark:text-white mb-2">
-                جاري تحليل السيرة الذاتية...
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                يتم استخدام الذكاء الاصطناعي لاستخراج البيانات. قد يستغرق هذا بضع ثوانٍ.
-              </p>
+              <p className="font-medium text-gray-900 dark:text-white mb-2">{t("import.analyzing")}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("import.ai_extracting")}</p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
         {!isProcessing && (
           <div className="flex gap-3 px-6 py-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
             <button
@@ -302,7 +288,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
               disabled={isUploading}
               className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-white/20 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
             >
-              إلغاء
+              {t("actions.cancel")}
             </button>
             <button
               type="button"
@@ -316,14 +302,14 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  جاري التحميل...
+                  {t("import.uploading")}
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
-                  استيراد
+                  {t("import.import_button")}
                 </>
               )}
             </button>

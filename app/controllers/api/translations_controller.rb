@@ -219,6 +219,7 @@ class Api::TranslationsController < ApplicationController
   def export_pdf
     begin
       Rails.logger.info "Export PDF request: params=#{params.inspect}, direct_download=#{params[:direct_download]}, token=#{params[:token]}"
+      selected_template = AtsTemplatePdfService.normalize_template_key(params[:template])
 
       # Track PDF export event
       track_event("pdf_exported", { resume_id: params[:resume_id] })
@@ -265,7 +266,8 @@ class Api::TranslationsController < ApplicationController
           "resume_id" => params[:resume_id],
           "view_in_browser" => params[:view_in_browser] == "true",
           "resume_params" => request.post? ? resume_params.as_json : nil,
-          "callback_url" => params[:callback_url]
+          "callback_url" => params[:callback_url],
+          "template" => selected_template
         }
 
         job = CvBuilderPdfJob.new
@@ -332,7 +334,8 @@ class Api::TranslationsController < ApplicationController
           options = {
             "user_id" => current_user.id,
             "resume_id" => @resume.id,
-            "view_in_browser" => params[:view_in_browser] == "true"
+            "view_in_browser" => params[:view_in_browser] == "true",
+            "template" => selected_template
           }
 
           job = CvBuilderPdfJob.new

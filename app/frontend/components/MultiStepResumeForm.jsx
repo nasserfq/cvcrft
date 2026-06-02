@@ -1,4 +1,5 @@
-import React, { useState, useEffect, Suspense, lazy, memo } from "react";
+import React, { useState, useEffect, useMemo, Suspense, lazy, memo } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import i18n from "../lib/i18n";
 import { trackEvent } from "../lib/posthog";
@@ -61,9 +62,33 @@ const StepLoadingSkeleton = memo(() => (
  </div>
 ));
 
+const ATS_TEMPLATE_KEYS = [
+ "original_classic",
+ "harvard_classic",
+ "white_black_engineering",
+ "simple_clean_gray",
+ "minimalist_real_estate",
+ "two_column_corporate",
+ "blue_minimal_professional",
+ "black_white_corporate",
+ "infographic_light",
+ "clean_single_column",
+ "business_admin_modern",
+];
+
 const MultiStepResumeForm = ({ resume, onSubmit }) => {
- // Get translated validation message
- const ENGLISH_VALIDATION_MSG = t('validation.english_only');
+ const { t: translate, i18n: i18nInstance } = useTranslation();
+ const ENGLISH_VALIDATION_MSG = translate("validation.english_only");
+
+ const templateOptions = useMemo(
+  () =>
+   ATS_TEMPLATE_KEYS.map((key) => ({
+    key,
+    name: translate(`templates.ats.${key}.name`),
+    description: translate(`templates.ats.${key}.description`),
+   })),
+  [translate, i18nInstance.language]
+ );
  
  // Clean skills data to remove empty skill names
  const cleanSkillsData = (skills) => {
@@ -501,6 +526,29 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [validationErrors, setValidationErrors] = useState({});
  const [touchedFields, setTouchedFields] = useState({}); // Track which fields user has interacted with
  const [showImportModal, setShowImportModal] = useState(false); // CV Import modal state
+ const [pdfPreviewUrl, setPdfPreviewUrl] = useState("");
+ const [isPdfPreviewLoading, setIsPdfPreviewLoading] = useState(false);
+ const [pdfPreviewError, setPdfPreviewError] = useState("");
+ const [selectedAtsTemplate, setSelectedAtsTemplate] = useState("harvard_classic");
+
+ useEffect(() => {
+  if (currentStep !== 4) return;
+  if (!resume?.id) {
+   setPdfPreviewUrl("");
+   setPdfPreviewError(t("preview.resume_required_for_live"));
+   return;
+  }
+
+  setIsPdfPreviewLoading(true);
+  setPdfPreviewError("");
+
+  const timer = setTimeout(() => {
+   const url = `/resumes/${resume.id}/generate_pdf?preview=true&template=${encodeURIComponent(selectedAtsTemplate)}&_ts=${Date.now()}`;
+   setPdfPreviewUrl(url);
+  }, 250);
+
+  return () => clearTimeout(timer);
+ }, [currentStep, resume?.id, selectedAtsTemplate]);
 
  // Mark a field as touched
  const markFieldTouched = (fieldName) => {
@@ -514,40 +562,40 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   const errors = {};
   
   if (!formData.complete_name?.trim()) {
-   errors.complete_name = "الاسم الكامل مطلوب";
+   errors.complete_name = translate("validation.name_required");
   } else if (!isEnglishText(formData.complete_name)) {
    errors.complete_name = ENGLISH_VALIDATION_MSG;
   }
   
   if (!formData.email?.trim()) {
-   errors.email = "البريد الإلكتروني مطلوب";
+   errors.email = translate("validation.email_required");
   } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email.trim())) {
-   errors.email = "البريد الإلكتروني غير صالح";
+   errors.email = translate("validation.invalid_email");
   }
   
   if (!formData.phone_number?.trim()) {
-   errors.phone_number = "رقم الهاتف مطلوب";
+   errors.phone_number = translate("validation.phone_required");
   } else if (!/^\+?[0-9]+$/.test(formData.phone_number.trim())) {
-   errors.phone_number = "رقم الهاتف يجب أن يحتوي على أرقام فقط (مع علامة + اختيارية)";
+   errors.phone_number = translate("validation.phone_invalid");
   }
   
   if (!formData.city?.trim()) {
-   errors.city = "المدينة مطلوبة";
+   errors.city = translate("validation.city_required");
   } else if (!isEnglishText(formData.city)) {
    errors.city = ENGLISH_VALIDATION_MSG;
   }
   
   if (!formData.country?.trim()) {
-   errors.country = "الدولة مطلوبة";
+   errors.country = translate("validation.country_required");
   } else if (!isEnglishText(formData.country)) {
    errors.country = ENGLISH_VALIDATION_MSG;
   }
   
   // Professional summary - NO English validation (Arabic allowed)
   if (!formData.professional_summary?.trim()) {
-   errors.professional_summary = "الملخص المهني مطلوب";
+   errors.professional_summary = translate("validation.summary_required");
   } else if (formData.professional_summary.trim().length < 5) {
-   errors.professional_summary = "الملخص المهني يجب أن يكون 5 حروف على الأقل";
+   errors.professional_summary = translate("validation.summary_min_length");
   }
   
   return errors;
@@ -561,17 +609,25 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    edu => edu.degree?.trim() && edu.institution?.trim() && edu.start_date?.trim()
   );
   if (validEducation.length === 0) {
-   errors.education = "يجب إضافة مؤهل تعليمي واحد على الأقل";
+   errors.education = translate("validation.education_required");
   } else {
    // Check English validation for education fields
    for (let i = 0; i < formData.education.length; i++) {
     const edu = formData.education[i];
     if (edu.degree?.trim() && !isEnglishText(edu.degree)) {
-     errors.education = `التعليم ${i + 1}: الدرجة العلمية - ${ENGLISH_VALIDATION_MSG}`;
+     errors.education = translate("validation.education_entry_english", {
+      n: i + 1,
+      field: translate("education.degree"),
+      message: ENGLISH_VALIDATION_MSG,
+     });
      break;
     }
     if (edu.institution?.trim() && !isEnglishText(edu.institution)) {
-     errors.education = `التعليم ${i + 1}: المؤسسة التعليمية - ${ENGLISH_VALIDATION_MSG}`;
+     errors.education = translate("validation.education_entry_english", {
+      n: i + 1,
+      field: translate("education.institution"),
+      message: ENGLISH_VALIDATION_MSG,
+     });
      break;
     }
    }
@@ -582,17 +638,25 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    exp => exp.job_title?.trim() && exp.company?.trim() && exp.start_date?.trim()
   );
   if (validWorkExp.length === 0) {
-   errors.work_experience = "يجب إضافة خبرة عمل واحدة على الأقل";
+   errors.work_experience = translate("validation.experience_required");
   } else {
    // Check English validation for work experience fields (NOT responsibilities)
    for (let i = 0; i < formData.work_experience.length; i++) {
     const exp = formData.work_experience[i];
     if (exp.job_title?.trim() && !isEnglishText(exp.job_title)) {
-     errors.work_experience = `الخبرة ${i + 1}: المسمى الوظيفي - ${ENGLISH_VALIDATION_MSG}`;
+     errors.work_experience = translate("validation.experience_entry_english", {
+      n: i + 1,
+      field: translate("experience.position"),
+      message: ENGLISH_VALIDATION_MSG,
+     });
      break;
     }
     if (exp.company?.trim() && !isEnglishText(exp.company)) {
-     errors.work_experience = `الخبرة ${i + 1}: اسم الشركة - ${ENGLISH_VALIDATION_MSG}`;
+     errors.work_experience = translate("validation.experience_entry_english", {
+      n: i + 1,
+      field: translate("experience.company"),
+      message: ENGLISH_VALIDATION_MSG,
+     });
      break;
     }
     // Note: responsibilities are NOT validated for English (Arabic allowed)
@@ -610,19 +674,27 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    skill => skill.category?.trim() && skill.skill_names?.some(name => name?.trim())
   );
   if (validSkills.length === 0) {
-   errors.skills = "يجب إضافة مهارة واحدة على الأقل";
+   errors.skills = translate("validation.skills_required");
   } else {
    // Check English validation for skills
    for (let i = 0; i < formData.skills.length; i++) {
     const skill = formData.skills[i];
     if (skill.category?.trim() && !isEnglishText(skill.category)) {
-     errors.skills = `المهارة ${i + 1}: اسم الفئة - ${ENGLISH_VALIDATION_MSG}`;
+     errors.skills = translate("validation.skill_entry_english", {
+      n: i + 1,
+      field: translate("skills.category"),
+      message: ENGLISH_VALIDATION_MSG,
+     });
      break;
     }
     // Check each skill name
     const nonEnglishSkill = skill.skill_names?.find(name => name?.trim() && !isEnglishText(name));
     if (nonEnglishSkill) {
-     errors.skills = `المهارة ${i + 1}: "${nonEnglishSkill}" - ${ENGLISH_VALIDATION_MSG}`;
+     errors.skills = translate("validation.skill_name_english", {
+      n: i + 1,
+      value: nonEnglishSkill,
+      message: ENGLISH_VALIDATION_MSG,
+     });
      break;
     }
    }
@@ -632,11 +704,19 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   for (let i = 0; i < (formData.certifications || []).length; i++) {
    const cert = formData.certifications[i];
    if (cert.name?.trim() && !isEnglishText(cert.name)) {
-    errors.certifications = `الشهادة ${i + 1}: اسم الشهادة - ${ENGLISH_VALIDATION_MSG}`;
+    errors.certifications = translate("validation.cert_entry_english", {
+     n: i + 1,
+     field: translate("certifications.name"),
+     message: ENGLISH_VALIDATION_MSG,
+    });
     break;
    }
    if (cert.organization?.trim() && !isEnglishText(cert.organization)) {
-    errors.certifications = `الشهادة ${i + 1}: المنظمة - ${ENGLISH_VALIDATION_MSG}`;
+    errors.certifications = translate("validation.cert_entry_english", {
+     n: i + 1,
+     field: translate("certifications.issuer"),
+     message: ENGLISH_VALIDATION_MSG,
+    });
     break;
    }
   }
@@ -646,13 +726,17 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    lang => lang.language?.trim() && lang.proficiency?.trim()
   );
   if (validLanguages.length === 0) {
-   errors.languages = "يجب إضافة لغة واحدة على الأقل";
+   errors.languages = translate("validation.languages_required");
   } else {
    // Check English validation for language names
    for (let i = 0; i < formData.languages.length; i++) {
     const lang = formData.languages[i];
     if (lang.language?.trim() && !isEnglishText(lang.language)) {
-     errors.languages = `اللغة ${i + 1}: اسم اللغة - ${ENGLISH_VALIDATION_MSG}`;
+     errors.languages = translate("validation.language_entry_english", {
+      n: i + 1,
+      field: translate("languages.name"),
+      message: ENGLISH_VALIDATION_MSG,
+     });
      break;
     }
    }
@@ -689,39 +773,39 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   // Step 1 fields
   if (fieldName === 'complete_name') {
    if (!value?.trim()) {
-    error = "الاسم الكامل مطلوب";
+    error = translate("validation.name_required");
    } else if (!isEnglishText(value)) {
     error = ENGLISH_VALIDATION_MSG;
    }
   } else if (fieldName === 'email') {
    if (!value?.trim()) {
-    error = "البريد الإلكتروني مطلوب";
+    error = translate("validation.email_required");
    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value.trim())) {
-    error = "البريد الإلكتروني غير صالح";
+    error = translate("validation.invalid_email");
    }
   } else if (fieldName === 'phone_number') {
    if (!value?.trim()) {
-    error = "رقم الهاتف مطلوب";
+    error = translate("validation.phone_required");
    } else if (!/^\+?[0-9]+$/.test(value.trim())) {
-    error = "رقم الهاتف يجب أن يحتوي على أرقام فقط";
+    error = translate("validation.phone_invalid");
    }
   } else if (fieldName === 'city') {
    if (!value?.trim()) {
-    error = "المدينة مطلوبة";
+    error = translate("validation.city_required");
    } else if (!isEnglishText(value)) {
     error = ENGLISH_VALIDATION_MSG;
    }
   } else if (fieldName === 'country') {
    if (!value?.trim()) {
-    error = "الدولة مطلوبة";
+    error = translate("validation.country_required");
    } else if (!isEnglishText(value)) {
     error = ENGLISH_VALIDATION_MSG;
    }
   } else if (fieldName === 'professional_summary') {
    if (!value?.trim()) {
-    error = "الملخص المهني مطلوب";
+    error = translate("validation.summary_required");
    } else if (value.trim().length < 5) {
-    error = "الملخص المهني يجب أن يكون 5 حروف على الأقل";
+    error = translate("validation.summary_min_length");
    }
    // No English check for professional_summary
   }
@@ -1245,20 +1329,20 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const translateProfessionalSummary = async () => {
   if (!formData.professional_summary.trim()) {
-   setTranslationError("يرجى إدخال الملخص المهني أولاً");
+   setTranslationError(translate("translation.summary_required"));
    return;
   }
 
   // Minimum 5 characters required
   if (formData.professional_summary.trim().length < 5) {
-   setTranslationError("يجب أن يحتوي الملخص المهني على 5 أحرف على الأقل");
+   setTranslationError(translate("translation.summary_min_chars"));
    return;
   }
 
   // Check translation limit for summary
   if (remainingSummaryTranslations <= 0) {
    setTranslationError(
-    `لقد وصلت إلى الحد الأقصى من ترجمات الملخص المهني (${maxSummaryTranslations}). يرجى المحاولة لاحقاً.`
+    translate("translation.summary_limit_reached", { max: maxSummaryTranslations })
    );
    return;
   }
@@ -1294,12 +1378,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      // Poll for completion
      pollTranslationStatus(result.job_id);
     } else {
-     setTranslationError("Unexpected response format from translation API");
+     setTranslationError(translate("translation.unexpected_api"));
      setIsTranslating(false);
     }
    } else if (response.status === 429) {
     const result = await response.json();
-    setTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من ترجمات الملخص المهني (${maxSummaryTranslations}).`);
+    setTranslationError(
+     result.error || translate("translation.summary_limit_reached", { max: maxSummaryTranslations })
+    );
     setRemainingSummaryTranslations(0);
     setIsTranslating(false);
    } else {
@@ -1307,7 +1393,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    }
   } catch (error) {
    console.error("Translation error:", error);
-   setTranslationError("حدث خطأ في الترجمة. يرجى المحاولة مرة أخرى.");
+   setTranslationError(translate("translation.generic_error"));
    setIsTranslating(false);
   }
  };
@@ -1325,14 +1411,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    .filter(job => job.responsibilities.length > 0);
 
   if (jobsWithResponsibilities.length === 0) {
-   setJobTranslationError("لا توجد مسؤوليات للترجمة");
+   setJobTranslationError(translate("translation.no_responsibilities"));
    return;
   }
 
   // Check translation limit for job descriptions
   if (remainingJobsTranslations <= 0) {
    setJobTranslationError(
-    `لقد وصلت إلى الحد الأقصى من ترجمات الوظائف (${maxJobsTranslations}). يرجى المحاولة لاحقاً.`
+    translate("translation.jobs_limit_reached", { max: maxJobsTranslations })
    );
    return;
   }
@@ -1369,12 +1455,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      // Poll for completion
      pollJobTranslationStatus(result.job_id, jobsWithResponsibilities);
     } else {
-     setJobTranslationError("حدث خطأ غير متوقع في الترجمة");
+     setJobTranslationError(translate("translation.unexpected_api"));
      setIsTranslatingJobs(false);
     }
    } else if (response.status === 429) {
     const result = await response.json();
-    setJobTranslationError(result.error || `لقد وصلت إلى الحد الأقصى من ترجمات الوظائف (${maxJobsTranslations}).`);
+    setJobTranslationError(
+     result.error || translate("translation.jobs_limit_reached", { max: maxJobsTranslations })
+    );
     setRemainingJobsTranslations(0);
     setIsTranslatingJobs(false);
    } else {
@@ -1382,7 +1470,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    }
   } catch (error) {
    console.error("Job translation error:", error);
-   setJobTranslationError("حدث خطأ في الترجمة. يرجى المحاولة مرة أخرى.");
+   setJobTranslationError(translate("translation.generic_error"));
    setIsTranslatingJobs(false);
   }
  };
@@ -1471,7 +1559,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       setJobTranslationSuccess(true);
       return;
      } else if (status.status === "failed") {
-      setJobTranslationError("فشلت الترجمة. يرجى المحاولة مرة أخرى.");
+      setJobTranslationError(translate("translation.failed"));
       setIsTranslatingJobs(false);
       return;
      }
@@ -1481,7 +1569,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     if (attempts < maxAttempts) {
      setTimeout(poll, 1000);
     } else {
-     setJobTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setJobTranslationError(translate("translation.timeout"));
      setIsTranslatingJobs(false);
     }
    } catch (error) {
@@ -1490,7 +1578,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     if (attempts < maxAttempts) {
      setTimeout(poll, 1000);
     } else {
-     setJobTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setJobTranslationError(translate("translation.timeout"));
      setIsTranslatingJobs(false);
     }
    }
@@ -1504,17 +1592,17 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
   // Validate required fields
   if (!formData.complete_name?.trim()) {
-   throw new Error("الاسم الكامل مطلوب");
+   throw new Error(translate("validation.name_required"));
   }
   if (!formData.email?.trim()) {
-   throw new Error("البريد الإلكتروني مطلوب");
+   throw new Error(translate("validation.email_required"));
   }
 
   const csrfToken = document
    .querySelector('meta[name="csrf-token"]')
    ?.getAttribute("content");
   if (!csrfToken) {
-   throw new Error("رمز الأمان غير موجود");
+   throw new Error(translate("security.csrf_missing"));
   }
 
   // Prepare resume data with all fields
@@ -1762,7 +1850,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const exportToPDF = async () => {
   // Check CV Builder limit first
   if (remainingCvBuilderGenerations <= 0) {
-   setTranslationError("لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (5). يرجى الترقية للحصول على المزيد.");
+   setTranslationError(translate("export.cv_builder_limit"));
    return;
   }
   
@@ -1770,7 +1858,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   setTranslationError("");
 
   // Track PDF export attempt
-  trackEvent("pdf_export_started", { resume_id: resume?.id });
+  trackEvent("pdf_export_started", { resume_id: resume?.id, template: selectedAtsTemplate });
 
   try {
 
@@ -1786,7 +1874,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
     // Validate required fields for PDF generation even if save fails
     if (!formData.complete_name?.trim() || !formData.email?.trim()) {
-     alert("يرجى ملء الاسم الكامل والبريد الإلكتروني قبل التصدير");
+     alert(translate("export.name_email_required"));
      setIsExporting(false);
      return;
     }
@@ -1801,7 +1889,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     // Use saved resume - attempt direct download first
     try {
      // Create a download link and trigger it directly - most reliable method
-     const downloadUrl = `/api/export_pdf?resume_id=${resumeId}&direct_download=true&t=${Date.now()}`;
+     const downloadUrl = `/api/export_pdf?resume_id=${resumeId}&direct_download=true&template=${selectedAtsTemplate}&t=${Date.now()}`;
 
      // Use fetch + Blob approach which is more reliable for binary data
      const response = await fetch(downloadUrl);
@@ -1836,7 +1924,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      console.error("Direct download failed, falling back to JSON response:", e);
      // Fall back to the fetch + Blob approach which is more reliable in modern browsers
      response = await fetch(
-      `/api/export_pdf?resume_id=${resumeId}&direct_download=true`,
+      `/api/export_pdf?resume_id=${resumeId}&direct_download=true&template=${selectedAtsTemplate}`,
       {
        method: "GET",
        headers: {
@@ -1878,6 +1966,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        ?.getAttribute("content"),
      },
      body: JSON.stringify({
+      template: selectedAtsTemplate,
       resume: {
        complete_name: formData.complete_name,
        email: formData.email,
@@ -2010,9 +2099,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          // Job failed
          clearInterval(pollingInterval);
          setExportStatus("failed");
-         setTranslationError(
-          "فشل إنشاء ملف PDF. يرجى المحاولة مرة أخرى لاحقًا."
-         );
+         setTranslationError(translate("export.pdf_failed"));
          setIsExporting(false);
         }
         // Otherwise continue polling
@@ -2032,9 +2119,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       clearInterval(pollingInterval);
       if (setExportStatus === "processing") {
        setExportStatus("timeout");
-       setTranslationError(
-        "انتهت مهلة إنشاء ملف PDF. يرجى المحاولة مرة أخرى لاحقًا."
-       );
+       setTranslationError(translate("export.pdf_timeout"));
        setIsExporting(false);
       }
      }, 120000);
@@ -2047,7 +2132,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    }
   } catch (error) {
    console.error("PDF export error:", error);
-   setTranslationError("حدث خطأ في تصدير PDF. يرجى المحاولة مرة أخرى.");
+   setTranslationError(translate("export.pdf_error"));
   } finally {
    setIsExporting(false);
   }
@@ -2097,7 +2182,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      // Reset status after 3 seconds
      setTimeout(() => setAutoSaveStatus("idle"), 3000);
     } else {
-     alert(`تم حفظ المسودة بنجاح في الخطوة ${stepNumber}! يمكنك العودة إليها لاحقاً.`);
+     alert(translate("draft.saved_success", { step: stepNumber }));
     }
    } else {
     console.error("❌ Failed to save draft");
@@ -2105,7 +2190,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      setAutoSaveStatus("error");
      setTimeout(() => setAutoSaveStatus("idle"), 3000);
     } else {
-     alert("حدث خطأ أثناء حفظ المسودة");
+     alert(translate("draft.save_error"));
     }
    }
   } catch (error) {
@@ -2114,7 +2199,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     setAutoSaveStatus("error");
     setTimeout(() => setAutoSaveStatus("idle"), 3000);
    } else {
-    alert("حدث خطأ أثناء حفظ المسودة: " + error.message);
+    alert(translate("draft.save_error_detail", { message: error.message }));
    }
   } finally {
    setIsSavingDraft(false);
@@ -2225,7 +2310,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       if (status.remaining_summary !== undefined) {
        setRemainingSummaryTranslations(status.remaining_summary);
       }
-      setTranslationError("فشلت الترجمة. يرجى المحاولة مرة أخرى.");
+      setTranslationError(translate("translation.failed"));
       setIsTranslating(false);
       return;
      }
@@ -2235,7 +2320,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     if (attempts < maxAttempts) {
      setTimeout(poll, 1000); // Poll every second
     } else {
-     setTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setTranslationError(translate("translation.timeout"));
      setIsTranslating(false);
     }
    } catch (error) {
@@ -2244,7 +2329,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     if (attempts < maxAttempts) {
      setTimeout(poll, 1000);
     } else {
-     setTranslationError("انتهت مهلة الترجمة. يرجى المحاولة مرة أخرى.");
+     setTranslationError(translate("translation.timeout"));
      setIsTranslating(false);
     }
    }
@@ -2417,7 +2502,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    !formData.country ||
    !formData.professional_summary
   ) {
-   alert("يرجى ملء جميع الحقول المطلوبة");
+   alert(translate("alerts.fill_required"));
    return;
   }
 
@@ -2427,7 +2512,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
 
   if (!hasValidEducation) {
-   alert("يرجى إدخال معلومات تعليمية واحدة على الأقل");
+   alert(translate("alerts.education_required"));
    return;
   }
 
@@ -2437,7 +2522,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
 
   if (!hasValidWorkExperience) {
-   alert("يرجى إدخال خبرة عمل واحدة على الأقل");
+   alert(translate("alerts.experience_required"));
    return;
   }
 
@@ -2448,7 +2533,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
 
   if (!hasValidSkills) {
-   alert("يرجى إدخال مهارة واحدة على الأقل");
+   alert(translate("alerts.skills_required"));
    return;
   }
 
@@ -2458,7 +2543,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
 
   if (!hasValidCertifications) {
-   alert("يرجى إدخال شهادة واحدة على الأقل");
+   alert(translate("alerts.certification_required"));
    return;
   }
 
@@ -2468,7 +2553,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   );
 
   if (!hasValidLanguages) {
-   alert("يرجى إدخال لغة واحدة على الأقل");
+   alert(translate("alerts.languages_required"));
    return;
   }
 
@@ -2609,6 +2694,18 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    handleLanguageChange,
    addLanguage,
    removeLanguage,
+   selectedTemplate: selectedAtsTemplate,
+   onTemplateChange: setSelectedAtsTemplate,
+   templateOptions,
+   resumeId: resume?.id,
+   pdfPreviewUrl,
+   isPdfPreviewLoading,
+   pdfPreviewError,
+   onPdfPreviewLoaded: () => setIsPdfPreviewLoading(false),
+   onPdfPreviewError: () => {
+    setIsPdfPreviewLoading(false);
+    setPdfPreviewError(t("preview.error"));
+   },
   };
 
   return (

@@ -732,21 +732,22 @@ class CvGeneratorJob
 
       # Always regenerate on first run or when needed
       if first_generation || should_regenerate
-        # Use the AtsPdfGenerator service for better ATS compliance
-        result = AtsPdfGenerator.generate_pdf(resume, generated_data)
+        template_key = selected_ats_template_key
+        result = AtsTemplatePdfService.generate_pdf(resume, generated_data, template: template_key)
         pdf = File.read(result[:path])
         filename = result[:filename]
 
         # Store PDF with version information and timestamp
         @cv_generation.update!(
           metadata: @cv_generation.metadata.merge({
+            ats_template: template_key,
             pdf_generated: true,
             pdf_filename: filename,
             pdf_size: pdf.bytesize,
             pdf_data: Base64.encode64(pdf),
             pdf_version: PDF_VERSION,
             pdf_generated_at: Time.now.to_i,
-            pdf_cache_key: generate_pdf_cache_key(resume, generated_data)
+            pdf_cache_key: generate_pdf_cache_key(resume, generated_data, template_key)
           })
         )
         Rails.logger.info "PDF data stored in database (Base64 encoded)"
@@ -1239,11 +1240,31 @@ class CvGeneratorJob
     pdf_age_hours > (@options[:pdf_cache_hours] || 24)
   end
 
-  def generate_pdf_cache_key(resume, data)
+  def selected_ats_template_key
+    AtsTemplatePdfService.normalize_template_key(
+      @options[:ats_template] || @options["ats_template"] || @cv_generation.metadata["ats_template"]
+    )
+  end
+
+  def pdf_regeneration_needed?
+    return true if @options[:force_pdf_regeneration]
+    return true if pdf_cache_expired?
+
+    resume = @resume_id ? Resume.find(@resume_id) : @cv_generation.resume
+    generated_data = (@cv_generation.metadata["generated_data"] || {}).deep_symbolize_keys
+    template_key = selected_ats_template_key
+    current_cache_key = generate_pdf_cache_key(resume, generated_data, template_key)
+
+    @cv_generation.metadata["pdf_cache_key"] != current_cache_key
+  end
+
+  def generate_pdf_cache_key(resume, data, template_key = nil)
+    template_key ||= selected_ats_template_key
     key_parts = [
       resume.complete_name.to_s,
       resume.updated_at.to_i,
       PDF_VERSION,
+      template_key,
       Digest::MD5.hexdigest(data.to_json)
     ]
     Digest::MD5.hexdigest(key_parts.join("|"))

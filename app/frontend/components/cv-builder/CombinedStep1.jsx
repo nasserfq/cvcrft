@@ -1,9 +1,6 @@
 import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
 import { inputClassName } from "./FormUtils";
-import i18n from "../../lib/i18n";
-
-// Simple translation function
-const t = (key, options) => i18n.t(key, options);
 
 // Error display component
 const FieldError = ({ error }) => error ? (
@@ -52,6 +49,8 @@ const CombinedStep1 = ({
   renderSaveDraftButton,
   validationErrors = {},
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-8">
       {/* Section Header */}
