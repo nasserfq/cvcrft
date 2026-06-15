@@ -104,7 +104,6 @@ Rails.application.routes.draw do
     resources :certifications
     resources :educations
     resources :languages
-    resources :coupons
 
     # Email load testing routes
     resources :email_load_test, only: [ :index ] do

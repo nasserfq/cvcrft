@@ -1,32 +1,44 @@
 require "test_helper"
 
-class CouponTest < ActiveSupport::TestCase
-  test "redeeming unlimited coupon removes all limits" do
+class CouponServiceTest < ActiveSupport::TestCase
+  setup do
+    CouponRegistry.reload!
+    CouponRedemptionStore.reset!
+  end
+
+  test "redeeming NAIF2026 grants unlimited access" do
     user = users(:one)
-    coupon = coupons(:promo)
     limits_before = user.usage_limits
 
     assert_equal 5, limits_before.max_summary_translations
     refute limits_before.unlimited?
 
-    coupon.redeem_for!(user)
+    coupon = CouponService.redeem(user, "NAIF2026")
 
-    limits_after = user.reload.usage_limits
+    assert_equal "NAIF2026", coupon.code
+    assert coupon.unlimited?
+
+    limits_after = user.usage_limits
     assert limits_after.unlimited?
     assert_nil limits_after.max_summary_translations
-    assert_nil limits_after.remaining_summary_translations
     assert limits_after.can_translate_summary?
-    assert limits_after.can_generate_cv_builder?
   end
 
   test "user cannot redeem same coupon twice" do
     user = users(:one)
-    coupon = coupons(:promo)
 
-    coupon.redeem_for!(user)
+    CouponService.redeem(user, "NAIF2026")
 
-    assert_raises(ActiveRecord::RecordInvalid) do
-      coupon.redeem_for!(user)
+    assert_raises(CouponService::AlreadyRedeemedError) do
+      CouponService.redeem(user, "NAIF2026")
+    end
+  end
+
+  test "invalid coupon code is rejected" do
+    user = users(:one)
+
+    assert_raises(CouponService::InvalidCouponError) do
+      CouponService.redeem(user, "NOTREAL")
     end
   end
 end

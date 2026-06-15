@@ -1,0 +1,10 @@
+# Promo coupons — edit here and redeploy (no database migration required).
+coupons:
+  NAIF2026:
+    description: Unlimited access promo
+    active: true
+    unlimited: true
+    bonus_summary_translations: 0
+    bonus_jobs_translations: 0
+    bonus_cv_builder_generations: 0
+    bonus_job_based_generations: 0

@@ -9,10 +9,7 @@ class UserUsageLimits
   end
 
   def unlimited?
-    @user.coupon_redemptions
-      .joins(:coupon)
-      .merge(Coupon.active.where(unlimited: true))
-      .exists?
+    redeemed_coupons.any?(&:unlimited?)
   end
 
   def max_summary_translations
@@ -130,10 +127,13 @@ class UserUsageLimits
 
   private
 
+  def redeemed_coupons
+    CouponRedemptionStore.redeemed_codes_for(@user.id).filter_map do |code|
+      CouponRegistry.find(code)
+    end
+  end
+
   def coupon_bonus(field)
-    @user.coupon_redemptions
-      .joins(:coupon)
-      .merge(Coupon.active)
-      .sum("coupons.#{field}")
+    redeemed_coupons.sum { |coupon| coupon.public_send(field) }
   end
 end

@@ -11,8 +11,6 @@ class User < ApplicationRecord
   has_many :linkedin_imports, dependent: :destroy
   has_many :cv_imports, dependent: :destroy
   has_many :cv_analyses, dependent: :destroy
-  has_many :coupon_redemptions, dependent: :destroy
-  has_many :coupons, through: :coupon_redemptions
 
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }

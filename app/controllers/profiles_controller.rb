@@ -45,21 +45,14 @@ class ProfilesController < ApplicationController
       redirect_to profile_path, alert: t("coupons.code_required") and return
     end
 
-    coupon = Coupon.find_by(code: code.upcase)
-    unless coupon&.redeemable?
-      redirect_to profile_path, alert: t("coupons.invalid_or_expired") and return
-    end
+    coupon = CouponService.redeem(current_user, code)
 
-    if current_user.coupon_redemptions.exists?(coupon: coupon)
-      redirect_to profile_path, alert: t("coupons.already_redeemed") and return
-    end
-
-    coupon.redeem_for!(current_user)
-
-    track_event("coupon_redeemed", { coupon_code: coupon.code })
+    track_event("coupon_redeemed", { coupon_code: coupon.code, unlimited: coupon.unlimited? })
 
     redirect_to profile_path, notice: t("coupons.redeemed_success")
-  rescue ActiveRecord::RecordInvalid
+  rescue CouponService::AlreadyRedeemedError
+    redirect_to profile_path, alert: t("coupons.already_redeemed")
+  rescue CouponService::InvalidCouponError
     redirect_to profile_path, alert: t("coupons.invalid_or_expired")
   end
 
