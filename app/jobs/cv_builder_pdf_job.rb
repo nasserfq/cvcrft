@@ -82,7 +82,9 @@ class CvBuilderPdfJob
     Rails.logger.info "Generating PDF for resume ID: #{resume.id}"
 
     # Always use the latest AI summary for PDF generation and persist it
-    summary_to_use = resume.professional_summary_english.presence || resume.professional_summary
+    summary_to_use = ProfessionalSummaryText.normalize(
+      resume.professional_summary_english.presence || resume.professional_summary
+    )
     if summary_to_use.present? && resume.respond_to?(:persisted?) && resume.persisted?
       resume.update_column(:professional_summary_english, summary_to_use)
       Rails.logger.info "Ensured resume##{resume.id} professional_summary_english is up-to-date for PDF preview"

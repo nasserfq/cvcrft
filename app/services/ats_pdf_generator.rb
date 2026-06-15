@@ -62,10 +62,11 @@ class AtsPdfGenerator
         pdf.stroke_horizontal_rule
         pdf.move_down template[:title_gap]
         # Use the AI-generated summary first (from data), then fallback to stored resume
-        summary = data[:professional_summary].to_s.strip.presence ||
-                 resume.professional_summary_english.presence ||
-                 resume.professional_summary.presence ||
-                 "No professional summary available"
+        summary = ProfessionalSummaryText.normalize(
+          data[:professional_summary].to_s.strip.presence ||
+          resume.professional_summary_english.presence ||
+          resume.professional_summary.presence
+        ) || "No professional summary available"
         pdf.text summary, size: template[:body_size], leading: template[:body_leading]
         pdf.move_down template[:section_gap]
 

@@ -242,6 +242,7 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
 
   def parse_openai_response(response)
     content = response["choices"][0]["message"]["content"]
+    content = ProfessionalSummaryText.extract_from_markdown_fence(content) || content.to_s.strip
 
     begin
       # Try to parse as JSON first
@@ -260,7 +261,7 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
       else
         # Professional summary format
         {
-          english_text: parsed_content["english_text"],
+          english_text: ProfessionalSummaryText.normalize(parsed_content["english_text"]),
           skills_extracted: parsed_content["skills_extracted"] || [],
           translation_notes: parsed_content["translation_notes"],
           tokens_used: response["usage"]["total_tokens"],
@@ -268,9 +269,9 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
         }
       end
     rescue JSON::ParserError
-      # If not JSON, treat as plain text
+      # If not JSON, treat as plain text (also unwrap embedded JSON blobs)
       {
-        english_text: content,
+        english_text: ProfessionalSummaryText.normalize(content),
         skills_extracted: [],
         translation_notes: "Response was not in expected JSON format",
         tokens_used: response["usage"]["total_tokens"],
@@ -304,9 +305,9 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     # Only update professional summary for professional summary translations
     if @options[:professional_summary] && result[:english_text].present?
       # Truncate to 1000 characters if needed
-      english_text = result[:english_text].to_s[0, 1000]
+      english_text = ProfessionalSummaryText.normalize(result[:english_text]).to_s[0, 1000]
       resume.update!(
-        professional_summary: english_text,
+        professional_summary_english: english_text,
         summary: english_text
       )
     end

@@ -266,10 +266,11 @@ class AtsTemplatePdfService
 
   def self.render_summary(pdf, resume, data, config)
     render_section_title(pdf, "PROFESSIONAL SUMMARY", config)
-    summary = data[:professional_summary].to_s.strip.presence ||
-              resume.professional_summary_english.presence ||
-              resume.professional_summary.presence ||
-              "No professional summary available"
+    summary = ProfessionalSummaryText.normalize(
+      data[:professional_summary].to_s.strip.presence ||
+      resume.professional_summary_english.presence ||
+      resume.professional_summary.presence
+    ) || "No professional summary available"
     pdf.text summary, size: config[:body_size] || 10, leading: config[:body_leading] || 2
     pdf.move_down(config[:section_gap] || 12)
   end
@@ -382,10 +383,11 @@ class AtsTemplatePdfService
 
   def self.render_summary_clean(pdf, resume, data, config)
     render_section_title_clean(pdf, "Professional Summary", config)
-    summary = data[:professional_summary].to_s.strip.presence ||
-              resume.professional_summary_english.presence ||
-              resume.professional_summary.presence ||
-              "No professional summary available"
+    summary = ProfessionalSummaryText.normalize(
+      data[:professional_summary].to_s.strip.presence ||
+      resume.professional_summary_english.presence ||
+      resume.professional_summary.presence
+    ) || "No professional summary available"
     pdf.text summary, size: config[:body_size] || 10, leading: config[:body_leading] || 2
     pdf.move_down(10)
   end
