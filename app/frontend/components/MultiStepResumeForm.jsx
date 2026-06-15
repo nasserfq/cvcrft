@@ -207,10 +207,14 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     if (response.ok) {
      const data = await response.json();
      // Use separate limits for summary and job descriptions
-     setRemainingSummaryTranslations(data.remaining_summary ?? 5);
-     setRemainingJobsTranslations(data.remaining_jobs ?? 5);
+     setUnlimitedUsage(data.unlimited ?? false);
+     setRemainingSummaryTranslations(data.unlimited ? null : (data.remaining_summary ?? 5));
+     setRemainingJobsTranslations(data.unlimited ? null : (data.remaining_jobs ?? 5));
+     setMaxSummaryTranslations(data.unlimited ? null : (data.max_summary ?? 5));
+     setMaxJobsTranslations(data.unlimited ? null : (data.max_jobs ?? 5));
      // CV Builder generation limit
-     setRemainingCvBuilderGenerations(data.remaining_cv_builder ?? 5);
+     setRemainingCvBuilderGenerations(data.unlimited ? null : (data.remaining_cv_builder ?? 5));
+     setMaxCvBuilderGenerations(data.unlimited ? null : (data.max_cv_builder ?? 5));
      setTranslationLimitLoaded(true);
     }
    } catch (e) {
@@ -515,12 +519,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  // Separate translation limits for summary and job descriptions
  const [remainingSummaryTranslations, setRemainingSummaryTranslations] = useState(5);
  const [remainingJobsTranslations, setRemainingJobsTranslations] = useState(5);
- const [maxSummaryTranslations] = useState(5);
- const [maxJobsTranslations] = useState(5);
+ const [maxSummaryTranslations, setMaxSummaryTranslations] = useState(5);
+ const [maxJobsTranslations, setMaxJobsTranslations] = useState(5);
+ const [unlimitedUsage, setUnlimitedUsage] = useState(false);
  const [translationLimitLoaded, setTranslationLimitLoaded] = useState(false);
  // CV Builder generation limit
  const [remainingCvBuilderGenerations, setRemainingCvBuilderGenerations] = useState(5);
- const [maxCvBuilderGenerations] = useState(5);
+ const [maxCvBuilderGenerations, setMaxCvBuilderGenerations] = useState(5);
  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
  const [lastSavedAt, setLastSavedAt] = useState(null);
  const [validationErrors, setValidationErrors] = useState({});
@@ -1340,7 +1345,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
 
   // Check translation limit for summary
-  if (remainingSummaryTranslations <= 0) {
+  if (!unlimitedUsage && remainingSummaryTranslations <= 0) {
    setTranslationError(
     translate("translation.summary_limit_reached", { max: maxSummaryTranslations })
    );
@@ -1372,7 +1377,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     const result = await response.json();
     if (result.status === "queued" && result.job_id) {
      // Update remaining summary translations from server
-     if (result.remaining_summary !== undefined) {
+     if (result.unlimited) {
+      setUnlimitedUsage(true);
+     } else if (result.remaining_summary !== undefined) {
       setRemainingSummaryTranslations(result.remaining_summary);
      }
      // Poll for completion
@@ -1416,7 +1423,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
 
   // Check translation limit for job descriptions
-  if (remainingJobsTranslations <= 0) {
+  if (!unlimitedUsage && remainingJobsTranslations <= 0) {
    setJobTranslationError(
     translate("translation.jobs_limit_reached", { max: maxJobsTranslations })
    );
@@ -1449,7 +1456,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     const result = await response.json();
     if (result.status === "queued" && result.job_id) {
      // Update remaining job translations from server
-     if (result.remaining_jobs !== undefined) {
+     if (result.unlimited) {
+      setUnlimitedUsage(true);
+     } else if (result.remaining_jobs !== undefined) {
       setRemainingJobsTranslations(result.remaining_jobs);
      }
      // Poll for completion
@@ -1849,7 +1858,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  const exportToPDF = async () => {
   // Check CV Builder limit first
-  if (remainingCvBuilderGenerations <= 0) {
+  if (!unlimitedUsage && remainingCvBuilderGenerations <= 0) {
    setTranslationError(translate("export.cv_builder_limit"));
    return;
   }
@@ -2658,6 +2667,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    // Separate translation limits for each type
    remainingSummaryTranslations,
    maxSummaryTranslations,
+   unlimitedUsage,
    remainingJobsTranslations,
    maxJobsTranslations,
    renderSaveDraftButton,

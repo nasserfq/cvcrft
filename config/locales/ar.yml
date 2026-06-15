@@ -38,6 +38,12 @@ ar:
     generating: "جاري الإنشاء..."
     processing: "جاري المعالجة..."
   
+  coupons:
+    code_required: "يرجى إدخال كود الخصم."
+    invalid_or_expired: "كود الخصم غير صالح أو منتهي الصلاحية."
+    already_redeemed: "لقد استخدمت هذا الكود مسبقاً."
+    redeemed_success: "تم تطبيق الكود! تم زيادة حدود الاستخدام."
+
   # Authentication
   auth:
     login_required: "يرجى تسجيل الدخول أولاً"
@@ -118,6 +124,10 @@ ar:
     delete_my_account: "حذف حسابي نهائياً"
     delete_account_warning: "⚠️ تحذير!\n\nهل أنت متأكد أنك تريد حذف حسابك نهائياً؟\n\nسيتم حذف:\n• جميع السير الذاتية\n• جميع المسودات\n• جميع الترجمات\n• جميع ملفات PDF\n\nهذا الإجراء لا يمكن التراجع عنه!"
     delete_final_confirm: "⚠️ تأكيد نهائي: هل تريد حذف حسابك ؟ لا يمكن التراجع!"
+    coupon_code: "كود الخصم"
+    coupon_hint: "أدخل كود الخصم للحصول على ترجمات وإنشاءات إضافية."
+    apply_coupon: "تطبيق الكود"
+    unlimited: "غير محدود"
   
   # Resume/CV
   resume:

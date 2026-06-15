@@ -66,11 +66,12 @@ const CombinedStep2 = ({
   jobTranslationError = "",
   jobTranslationSuccess = false,
   remainingJobsTranslations = 5,
+  unlimitedUsage = false,
 }) => {
   const { t } = useTranslation();
 
-  // Ensure remainingJobsTranslations is always a valid number
-  const safeRemainingJobsTranslations = typeof remainingJobsTranslations === 'number' ? remainingJobsTranslations : 5;
+  const jobsLimitReached = !unlimitedUsage && remainingJobsTranslations <= 0;
+  const safeRemainingJobsTranslations = typeof remainingJobsTranslations === 'number' ? remainingJobsTranslations : 0;
   
   // Check if there are any responsibilities to translate
   const hasResponsibilities = formData.work_experience.some(
@@ -271,16 +272,18 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={!hasResponsibilities || safeRemainingJobsTranslations <= 0}
+                  disabled={!hasResponsibilities || jobsLimitReached}
                   className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    !hasResponsibilities || safeRemainingJobsTranslations <= 0
+                    !hasResponsibilities || jobsLimitReached
                       ? "bg-green-300 text-white cursor-not-allowed"
                       : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                   }`}
                 >
-                  🔄 {t('step2.retranslate', { remaining: safeRemainingJobsTranslations })}
+                  🔄 {unlimitedUsage
+                    ? t('step2.retranslate_unlimited')
+                    : t('step2.retranslate', { remaining: safeRemainingJobsTranslations })}
                 </button>
-                {safeRemainingJobsTranslations <= 0 && (
+                {jobsLimitReached && (
                   <p className="text-xs text-amber-600 mt-2 text-center">{t('step2.translations_exhausted')}</p>
                 )}
               </>
@@ -292,14 +295,16 @@ const CombinedStep2 = ({
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
-                  disabled={!hasResponsibilities || safeRemainingJobsTranslations <= 0}
+                  disabled={!hasResponsibilities || jobsLimitReached}
                   className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    !hasResponsibilities || safeRemainingJobsTranslations <= 0
+                    !hasResponsibilities || jobsLimitReached
                       ? "bg-[#2ED3B7]/50 text-white cursor-not-allowed"
                       : "bg-[#2ED3B7] text-white hover:bg-[#28C4A8] active:bg-[#24B09A]"
                   }`}
                 >
-                  🌐 {t('step2.translate_all', { remaining: safeRemainingJobsTranslations })}
+                  🌐 {unlimitedUsage
+                    ? t('step2.translate_all_unlimited')
+                    : t('step2.translate_all', { remaining: safeRemainingJobsTranslations })}
                 </button>
                 {!hasResponsibilities && (
                   <p className="text-xs text-gray-500 mt-2 text-center">{t('step2.add_responsibilities_first')}</p>

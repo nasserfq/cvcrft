@@ -40,6 +40,12 @@ en:
     generating: "Generating..."
     processing: "Processing..."
   
+  coupons:
+    code_required: "Please enter a coupon code."
+    invalid_or_expired: "This coupon is invalid or has expired."
+    already_redeemed: "You have already used this coupon."
+    redeemed_success: "Coupon applied! Your limits have been increased."
+
   # Authentication
   auth:
     login_required: "Please log in first"
@@ -120,6 +126,10 @@ en:
     delete_my_account: "Delete My Account Permanently"
     delete_account_warning: "⚠️ Warning!\n\nAre you sure you want to permanently delete your account?\n\nThe following will be deleted:\n• All resumes\n• All drafts\n• All translations\n• All PDF files\n\nThis action cannot be undone!"
     delete_final_confirm: "⚠️ Final confirmation: Do you want to delete your account? This cannot be undone!"
+    coupon_code: "Promo Code"
+    coupon_hint: "Enter a coupon code to unlock extra translations and CV generations."
+    apply_coupon: "Apply Coupon"
+    unlimited: "Unlimited"
   
   # Resume/CV
   resume:

@@ -4,20 +4,13 @@ class Api::TranslationsController < ApplicationController
   # Skip CSRF protection for API endpoints
   skip_before_action :verify_authenticity_token
 
-  # Separate limits for each translation type
-  MAX_SUMMARY_TRANSLATIONS = 5
-  MAX_JOB_DESCRIPTIONS_TRANSLATIONS = 5
-
-  # Limit for CV Builder PDF generation
-  MAX_CV_BUILDER_GENERATIONS = 5
-
   def translate_professional_summary
     begin
       # Check translation limit for professional summary
-      remaining = remaining_summary_translations
-      if remaining <= 0
+      remaining = usage_limits.remaining_summary_translations
+      unless usage_limits.can_translate_summary?
         render json: {
-          error: "لقد استخدمت جميع ترجمات الملخص المهني المتاحة (#{MAX_SUMMARY_TRANSLATIONS})",
+          error: "لقد استخدمت جميع ترجمات الملخص المهني المتاحة (#{usage_limits.max_summary_translations || '∞'})",
           limit_reached: true,
           remaining: 0
         }, status: :too_many_requests
@@ -56,14 +49,15 @@ class Api::TranslationsController < ApplicationController
       track_event("translation_requested", {
         type: "professional_summary",
         resume_id: resume_id,
-        remaining: remaining - 1
+        remaining: projected_remaining(remaining)
       })
 
       Rails.logger.info "[AI Translate] Job enqueued: #{job}, job_id: #{job_id}"
       render json: {
         job_id: job_id,
         status: "queued",
-        remaining_summary: remaining - 1,
+        remaining_summary: projected_remaining(remaining),
+        unlimited: usage_limits.unlimited?,
         message: "Translation job has been queued. Please poll for status."
       }
     rescue => e
@@ -76,10 +70,10 @@ class Api::TranslationsController < ApplicationController
   def translate_job_descriptions
     begin
       # Check translation limit for job descriptions
-      remaining = remaining_job_descriptions_translations
-      if remaining <= 0
+      remaining = usage_limits.remaining_jobs_translations
+      unless usage_limits.can_translate_jobs?
         render json: {
-          error: "لقد استخدمت جميع ترجمات الوظائف المتاحة (#{MAX_JOB_DESCRIPTIONS_TRANSLATIONS})",
+          error: "لقد استخدمت جميع ترجمات الوظائف المتاحة (#{usage_limits.max_jobs_translations || '∞'})",
           limit_reached: true,
           remaining: 0
         }, status: :too_many_requests
@@ -134,7 +128,7 @@ class Api::TranslationsController < ApplicationController
         type: "job_descriptions",
         resume_id: resume_id,
         job_count: valid_jobs.size,
-        remaining: remaining - 1
+        remaining: projected_remaining(remaining)
       })
 
       Rails.logger.info "[AI Translate Jobs] Job enqueued: #{job}, job_id: #{job_id}"
@@ -142,7 +136,8 @@ class Api::TranslationsController < ApplicationController
         job_id: job_id,
         status: "queued",
         job_count: valid_jobs.size,
-        remaining_jobs: remaining - 1,
+        remaining_jobs: projected_remaining(remaining),
+        unlimited: usage_limits.unlimited?,
         message: "Translation job has been queued for #{valid_jobs.size} job descriptions."
       }
     rescue => e
@@ -187,8 +182,8 @@ class Api::TranslationsController < ApplicationController
           job_descriptions: is_job_descriptions,
           job_indices: metadata["job_indices"] || [],
           # Include remaining counts so frontend can update after completion/failure
-          remaining_summary: remaining_summary_translations,
-          remaining_jobs: remaining_job_descriptions_translations
+          remaining_summary: usage_limits.remaining_summary_translations,
+          remaining_jobs: usage_limits.remaining_jobs_translations
         }
 
         # Parse jobs from english_text if this is a job descriptions translation
@@ -232,11 +227,10 @@ class Api::TranslationsController < ApplicationController
 
       # Check CV Builder generation limit (skip for direct downloads - those are re-downloads)
       unless params[:direct_download] == "true"
-        cv_builder_count = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").where(status: "completed").count
-        if cv_builder_count >= MAX_CV_BUILDER_GENERATIONS
-          Rails.logger.warn "User #{current_user.email} has reached CV Builder limit (#{cv_builder_count}/#{MAX_CV_BUILDER_GENERATIONS})"
+        unless usage_limits.can_generate_cv_builder?
+          Rails.logger.warn "User #{current_user.email} has reached CV Builder limit (#{usage_limits.cv_builder_generations_used}/#{usage_limits.max_cv_builder_generations || '∞'})"
           return render json: {
-            error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (#{MAX_CV_BUILDER_GENERATIONS}).",
+            error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (#{usage_limits.max_cv_builder_generations || '∞'}).",
             limit_reached: true,
             remaining: 0
           }, status: :too_many_requests
@@ -398,35 +392,20 @@ class Api::TranslationsController < ApplicationController
 
   # Endpoint to get translation limit info (must be above private)
   def translation_limit
-    # Calculate new generation limits (only count completed generations)
-    cv_builder_used = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").where(status: "completed").count
-    job_based_used = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").where(status: "completed").count
-
-    render json: {
-      # Summary translations
-      max_summary: MAX_SUMMARY_TRANSLATIONS,
-      used_summary: summary_translations_used,
-      remaining_summary: remaining_summary_translations,
-      # Job descriptions translations
-      max_jobs: MAX_JOB_DESCRIPTIONS_TRANSLATIONS,
-      used_jobs: job_descriptions_translations_used,
-      remaining_jobs: remaining_job_descriptions_translations,
-      # CV Builder generation limits
-      max_cv_builder: MAX_CV_BUILDER_GENERATIONS,
-      used_cv_builder: cv_builder_used,
-      remaining_cv_builder: [ MAX_CV_BUILDER_GENERATIONS - cv_builder_used, 0 ].max,
-      # Job-based generation limits
-      max_job_based: 5,  # Same as CvGenerationsController::MAX_JOB_BASED_GENERATIONS
-      used_job_based: job_based_used,
-      remaining_job_based: [ 5 - job_based_used, 0 ].max,
-      # Legacy fields for backward compatibility
-      max: MAX_SUMMARY_TRANSLATIONS + MAX_JOB_DESCRIPTIONS_TRANSLATIONS,
-      used: current_user.ai_translations.count,
-      remaining: remaining_summary_translations + remaining_job_descriptions_translations
-    }
+    render json: usage_limits.as_json
   end
 
   private
+
+  def usage_limits
+    current_user.usage_limits
+  end
+
+  def projected_remaining(current_remaining)
+    return nil if usage_limits.unlimited?
+
+    [ current_remaining - 1, 0 ].max
+  end
 
   # Build nested attributes for resume from POST data
   def build_nested_attributes(resume, resume_data)
@@ -515,27 +494,5 @@ class Api::TranslationsController < ApplicationController
       certifications_attributes: [ :name, :organization, :date ],
       languages_attributes: [ :language, :proficiency ]
     )
-  end
-
-  # Count summary translations used by querying metadata (only count completed translations)
-  def summary_translations_used
-    current_user.ai_translations.where("metadata->>'professional_summary' = ?", "true").where(status: "completed").count
-  end
-
-  # Count job descriptions translations used by querying metadata (only count completed translations)
-  def job_descriptions_translations_used
-    current_user.ai_translations.where("metadata->>'job_descriptions' = ?", "true").where(status: "completed").count
-  end
-
-  # Calculate remaining summary translations for current user
-  def remaining_summary_translations
-    used = summary_translations_used
-    [ MAX_SUMMARY_TRANSLATIONS - used, 0 ].max
-  end
-
-  # Calculate remaining job descriptions translations for current user
-  def remaining_job_descriptions_translations
-    used = job_descriptions_translations_used
-    [ MAX_JOB_DESCRIPTIONS_TRANSLATIONS - used, 0 ].max
   end
 end

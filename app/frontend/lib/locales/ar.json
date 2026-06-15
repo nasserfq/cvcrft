@@ -321,7 +321,8 @@
     "summary_english": "الملخص المهني (بالإنجليزية)",
     "summary_hint": "💡 سيقوم النظام بترجمة النص العربي إلى الإنجليزية وإنشاء ملخص مهني محسن",
     "translating": "جاري الترجمة...",
-    "translate_summary": "ترجم وأنشئ ملخص مهني ({{remaining}} متبقي)"
+    "translate_summary": "ترجم وأنشئ ملخص مهني ({{remaining}} متبقي)",
+    "translate_summary_unlimited": "ترجم وأنشئ ملخص مهني (غير محدود)"
   },
   "step2": {
     "title": "التعليم والخبرات العملية",
@@ -329,8 +330,10 @@
     "translate_hint": "سيقوم النظام بترجمة جميع المسؤوليات والإنجازات إلى الإنجليزية",
     "translating_responsibilities": "جاري ترجمة المسؤوليات...",
     "translate_all": "ترجم جميع المسؤوليات إلى الإنجليزية ({{remaining}} متبقي)",
+    "translate_all_unlimited": "ترجم جميع المسؤوليات إلى الإنجليزية (غير محدود)",
     "translation_success": "✅ تم ترجمة المسؤوليات بنجاح! يمكنك رؤية الترجمة أعلاه في كل خبرة عمل.",
     "retranslate": "إعادة الترجمة ({{remaining}} متبقي)",
+    "retranslate_unlimited": "إعادة الترجمة (غير محدود)",
     "add_responsibilities_first": "أضف مسؤوليات أولاً للترجمة",
     "translations_exhausted": "⚠️ لقد استخدمت جميع ترجمات الوظائف المتاحة",
     "original_arabic": "📝 النص الأصلي (العربي)"

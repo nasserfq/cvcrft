@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_05_233447) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_15_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,6 +39,34 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_05_233447) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["resume_id"], name: "index_certifications_on_resume_id"
+  end
+
+  create_table "coupon_redemptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "coupon_id", null: false
+    t.datetime "redeemed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["coupon_id"], name: "index_coupon_redemptions_on_coupon_id"
+    t.index ["user_id", "coupon_id"], name: "index_coupon_redemptions_on_user_id_and_coupon_id", unique: true
+    t.index ["user_id"], name: "index_coupon_redemptions_on_user_id"
+  end
+
+  create_table "coupons", force: :cascade do |t|
+    t.string "code", null: false
+    t.text "description"
+    t.integer "bonus_summary_translations", default: 0, null: false
+    t.integer "bonus_jobs_translations", default: 0, null: false
+    t.integer "bonus_cv_builder_generations", default: 0, null: false
+    t.integer "bonus_job_based_generations", default: 0, null: false
+    t.datetime "expires_at"
+    t.integer "max_redemptions"
+    t.integer "redemptions_count", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "unlimited", default: false, null: false
+    t.index "lower((code)::text)", name: "index_coupons_on_lower_code", unique: true
   end
 
   create_table "cv_analyses", force: :cascade do |t|
@@ -219,6 +247,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_05_233447) do
   add_foreign_key "ai_translations", "resumes"
   add_foreign_key "ai_translations", "users"
   add_foreign_key "certifications", "resumes"
+  add_foreign_key "coupon_redemptions", "coupons"
+  add_foreign_key "coupon_redemptions", "users"
   add_foreign_key "cv_analyses", "users"
   add_foreign_key "cv_generations", "resumes"
   add_foreign_key "cv_generations", "users"

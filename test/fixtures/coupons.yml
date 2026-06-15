@@ -1,0 +1,10 @@
+promo:
+  code: NAIF2026
+  description: Test promo coupon
+  unlimited: true
+  bonus_summary_translations: 0
+  bonus_jobs_translations: 0
+  bonus_cv_builder_generations: 0
+  bonus_job_based_generations: 0
+  redemptions_count: 0
+  active: true

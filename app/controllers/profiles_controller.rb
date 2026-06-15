@@ -2,37 +2,31 @@ class ProfilesController < ApplicationController
   before_action :authenticate_user!
   include PosthogTrackable
 
-  # Global limits
-  MAX_CV_BUILDER_GENERATIONS = 5
-  MAX_JOB_BASED_GENERATIONS = 5
-
   def show
     @user = current_user
     @resumes = current_user.resumes.not_drafts.recent.includes(:work_experiences, :skills)
     @drafts = current_user.resumes.drafts.recent
     @cv_generations = current_user.cv_generations.recent
     @ai_translations = current_user.ai_translations.recent.limit(10)
-    
-    # Count usage for new limits
-    cv_builder_used = current_user.cv_generations.where("metadata->>'source' = ?", "cv_builder").count
-    job_based_used = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").count
-    
-    # Calculate stats
+
+    limits = current_user.usage_limits
+
     @stats = {
+      unlimited: limits.unlimited?,
       total_resumes: @resumes.count,
       total_drafts: @drafts.count,
       total_cv_generations: @cv_generations.count,
       total_translations: current_user.ai_translations.count,
-      # Translation limits
-      remaining_summary_translations: 5 - current_user.ai_translations.where("metadata->>'professional_summary' = ?", "true").count,
-      remaining_jobs_translations: 5 - current_user.ai_translations.where("metadata->>'job_descriptions' = ?", "true").count,
-      # New generation limits
-      cv_builder_used: cv_builder_used,
-      cv_builder_remaining: [MAX_CV_BUILDER_GENERATIONS - cv_builder_used, 0].max,
-      cv_builder_max: MAX_CV_BUILDER_GENERATIONS,
-      job_based_used: job_based_used,
-      job_based_remaining: [MAX_JOB_BASED_GENERATIONS - job_based_used, 0].max,
-      job_based_max: MAX_JOB_BASED_GENERATIONS
+      remaining_summary_translations: limits.remaining_summary_translations,
+      summary_translations_max: limits.max_summary_translations,
+      remaining_jobs_translations: limits.remaining_jobs_translations,
+      jobs_translations_max: limits.max_jobs_translations,
+      cv_builder_used: limits.cv_builder_generations_used,
+      cv_builder_remaining: limits.remaining_cv_builder_generations,
+      cv_builder_max: limits.max_cv_builder_generations,
+      job_based_used: limits.job_based_generations_used,
+      job_based_remaining: limits.remaining_job_based_generations,
+      job_based_max: limits.max_job_based_generations
     }
     
     # Track profile view
@@ -43,6 +37,30 @@ class ProfilesController < ApplicationController
       cv_builder_remaining: @stats[:cv_builder_remaining],
       job_based_remaining: @stats[:job_based_remaining]
     })
+  end
+
+  def redeem_coupon
+    code = params[:code].to_s.strip
+    if code.blank?
+      redirect_to profile_path, alert: t("coupons.code_required") and return
+    end
+
+    coupon = Coupon.find_by(code: code.upcase)
+    unless coupon&.redeemable?
+      redirect_to profile_path, alert: t("coupons.invalid_or_expired") and return
+    end
+
+    if current_user.coupon_redemptions.exists?(coupon: coupon)
+      redirect_to profile_path, alert: t("coupons.already_redeemed") and return
+    end
+
+    coupon.redeem_for!(current_user)
+
+    track_event("coupon_redeemed", { coupon_code: coupon.code })
+
+    redirect_to profile_path, notice: t("coupons.redeemed_success")
+  rescue ActiveRecord::RecordInvalid
+    redirect_to profile_path, alert: t("coupons.invalid_or_expired")
   end
 
   def destroy

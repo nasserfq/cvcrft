@@ -317,7 +317,8 @@
     "summary_english": "Professional Summary (in English)",
     "summary_hint": "💡 The system will translate the Arabic text to English and create an optimized professional summary",
     "translating": "Translating...",
-    "translate_summary": "Translate and create professional summary ({{remaining}} remaining)"
+    "translate_summary": "Translate and create professional summary ({{remaining}} remaining)",
+    "translate_summary_unlimited": "Translate and create professional summary (unlimited)"
   },
   "step2": {
     "title": "Education & Work Experience",
@@ -325,8 +326,10 @@
     "translate_hint": "💡 The system will translate all responsibilities and achievements to English",
     "translating_responsibilities": "Translating responsibilities...",
     "translate_all": "Translate all responsibilities to English ({{remaining}} remaining)",
+    "translate_all_unlimited": "Translate all responsibilities to English (unlimited)",
     "translation_success": "✅ Responsibilities translated successfully! You can see the translation above in each work experience.",
     "retranslate": "Re-translate ({{remaining}} remaining)",
+    "retranslate_unlimited": "Re-translate (unlimited)",
     "add_responsibilities_first": "Add responsibilities first to translate",
     "translations_exhausted": "⚠️ You have used all available job translations",
     "original_arabic": "📝 Original text (Arabic)"

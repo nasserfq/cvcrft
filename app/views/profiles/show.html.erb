@@ -236,6 +236,25 @@
 
       <!-- Sidebar (1/3) -->
       <div class="space-y-8">
+        <!-- Coupon Redemption Card -->
+        <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
+          <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+              </svg>
+              <%= t('profile.coupon_code') %>
+            </h2>
+          </div>
+          <div class="p-6">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4"><%= t('profile.coupon_hint') %></p>
+            <%= form_with url: redeem_coupon_profile_path, method: :post, local: true, class: "flex flex-col gap-3" do |f| %>
+              <%= f.text_field :code, placeholder: random_coupon_code_placeholder, class: "w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-[#27273A]/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary uppercase", autocomplete: "off" %>
+              <%= f.submit t('profile.apply_coupon'), class: "w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primaryHover text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98] cursor-pointer" %>
+            <% end %>
+          </div>
+        </div>
+
         <!-- Generation Credits Card -->
         <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
           <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
@@ -251,10 +270,16 @@
             <div class="p-4 bg-gradient-to-l from-action/10 to-white dark:from-action/20 dark:to-transparent rounded-xl border border-action/20">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.cv_builder_generation') %></span>
-                <span class="text-sm font-bold text-action"><%= @stats[:cv_builder_remaining] %>/<%= @stats[:cv_builder_max] %></span>
+                <span class="text-sm font-bold text-action">
+                  <% if @stats[:unlimited] %>
+                    <%= t('profile.unlimited') %>
+                  <% else %>
+                    <%= @stats[:cv_builder_remaining] %>/<%= @stats[:cv_builder_max] %>
+                  <% end %>
+                </span>
               </div>
               <div class="w-full bg-action/20 rounded-full h-2.5">
-                <div class="bg-action h-2.5 rounded-full transition-all" style="width: <%= (@stats[:cv_builder_remaining].to_f / @stats[:cv_builder_max] * 100).to_i %>%"></div>
+                <div class="bg-action h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:cv_builder_remaining].to_f / @stats[:cv_builder_max] * 100).to_i %>%"></div>
               </div>
             </div>
             
@@ -262,10 +287,16 @@
             <div class="p-4 bg-gradient-to-l from-amber-50 to-white dark:from-amber-500/10 dark:to-transparent rounded-xl border border-amber-100 dark:border-amber-500/20">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.job_based_generation') %></span>
-                <span class="text-sm font-bold text-amber-600 dark:text-amber-400"><%= @stats[:job_based_remaining] %>/<%= @stats[:job_based_max] %></span>
+                <span class="text-sm font-bold text-amber-600 dark:text-amber-400">
+                  <% if @stats[:unlimited] %>
+                    <%= t('profile.unlimited') %>
+                  <% else %>
+                    <%= @stats[:job_based_remaining] %>/<%= @stats[:job_based_max] %>
+                  <% end %>
+                </span>
               </div>
               <div class="w-full bg-amber-100 dark:bg-amber-500/20 rounded-full h-2.5">
-                <div class="bg-amber-500 h-2.5 rounded-full transition-all" style="width: <%= (@stats[:job_based_remaining].to_f / @stats[:job_based_max] * 100).to_i %>%"></div>
+                <div class="bg-amber-500 h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:job_based_remaining].to_f / @stats[:job_based_max] * 100).to_i %>%"></div>
               </div>
             </div>
           </div>
@@ -286,10 +317,16 @@
             <div class="p-4 bg-gradient-to-l from-primary/10 to-white dark:from-primary/20 dark:to-transparent rounded-xl border border-primary/20">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.professional_summary') %></span>
-                <span class="text-sm font-bold text-primary"><%= @stats[:remaining_summary_translations] %>/5</span>
+                <span class="text-sm font-bold text-primary">
+                  <% if @stats[:unlimited] %>
+                    <%= t('profile.unlimited') %>
+                  <% else %>
+                    <%= @stats[:remaining_summary_translations] %>/<%= @stats[:summary_translations_max] %>
+                  <% end %>
+                </span>
               </div>
               <div class="w-full bg-primary/20 rounded-full h-2.5">
-                <div class="bg-primary h-2.5 rounded-full transition-all" style="width: <%= (@stats[:remaining_summary_translations] / 5.0 * 100).to_i %>%"></div>
+                <div class="bg-primary h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:remaining_summary_translations].to_f / @stats[:summary_translations_max] * 100).to_i %>%"></div>
               </div>
             </div>
             
@@ -297,10 +334,16 @@
             <div class="p-4 bg-gradient-to-l from-primary/10 to-white dark:from-primary/20 dark:to-transparent rounded-xl border border-primary/20">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.job_descriptions') %></span>
-                <span class="text-sm font-bold text-primary"><%= @stats[:remaining_jobs_translations] %>/5</span>
+                <span class="text-sm font-bold text-primary">
+                  <% if @stats[:unlimited] %>
+                    <%= t('profile.unlimited') %>
+                  <% else %>
+                    <%= @stats[:remaining_jobs_translations] %>/<%= @stats[:jobs_translations_max] %>
+                  <% end %>
+                </span>
               </div>
               <div class="w-full bg-primary/20 rounded-full h-2.5">
-                <div class="bg-primary h-2.5 rounded-full transition-all" style="width: <%= (@stats[:remaining_jobs_translations] / 5.0 * 100).to_i %>%"></div>
+                <div class="bg-primary h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:remaining_jobs_translations].to_f / @stats[:jobs_translations_max] * 100).to_i %>%"></div>
               </div>
             </div>
           </div>

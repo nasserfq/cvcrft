@@ -35,7 +35,9 @@ Rails.application.routes.draw do
   get "/terms", to: "pages#terms", as: :terms
 
   # User profile route
-  resource :profile, only: [ :show, :destroy ]
+  resource :profile, only: [ :show, :destroy ] do
+    post :redeem_coupon, on: :member
+  end
 
   # Test Sidekiq route
   get "/test_sidekiq", to: "home#test_sidekiq"
@@ -102,6 +104,7 @@ Rails.application.routes.draw do
     resources :certifications
     resources :educations
     resources :languages
+    resources :coupons
 
     # Email load testing routes
     resources :email_load_test, only: [ :index ] do
@@ -173,5 +176,6 @@ Rails.application.routes.draw do
     get "export_pdf", to: "translations#export_pdf", as: :export_pdf_translations
     post "export_pdf", to: "translations#export_pdf", as: :export_pdf_post_translations
     get "pdf_status", to: "translations#pdf_status", as: :pdf_status_translations
+    post "redeem_coupon", to: "coupons#redeem"
   end
 end

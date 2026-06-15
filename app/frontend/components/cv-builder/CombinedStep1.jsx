@@ -46,6 +46,7 @@ const CombinedStep1 = ({
   translationError,
   remainingSummaryTranslations = 5,
   maxSummaryTranslations = 5,
+  unlimitedUsage = false,
   renderSaveDraftButton,
   validationErrors = {},
 }) => {
@@ -158,7 +159,7 @@ const CombinedStep1 = ({
             <button
               type="button"
               onClick={translateProfessionalSummary}
-              disabled={isTranslating || !formData.professional_summary.trim() || remainingSummaryTranslations <= 0}
+              disabled={isTranslating || !formData.professional_summary.trim() || (!unlimitedUsage && remainingSummaryTranslations <= 0)}
               className="inline-flex items-center gap-2 rounded-xl bg-[#2ED3B7] text-[#1E1E2F] px-6 py-3 text-sm font-medium hover:bg-[#25AB94] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(46,211,183,0.4)]"
             >
               {isTranslating ? (
@@ -169,7 +170,9 @@ const CombinedStep1 = ({
               ) : (
                 <>
                   <TranslateIcon />
-                  {t('step1.translate_summary', { remaining: remainingSummaryTranslations })}
+                  {unlimitedUsage
+                    ? t('step1.translate_summary_unlimited')
+                    : t('step1.translate_summary', { remaining: remainingSummaryTranslations })}
                 </>
               )}
             </button>

@@ -8,8 +8,8 @@ class CvGenerationsController < ApplicationController
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
 
-  # Global limit for job-based CV generation
-  MAX_JOB_BASED_GENERATIONS = 5
+  # Global limit for job-based CV generation (base; coupons may increase per user)
+  MAX_JOB_BASED_GENERATIONS = UserUsageLimits::BASE_JOB_BASED_GENERATIONS
 
   def index
     if params[:recent_with_pdf] == "true"
@@ -83,13 +83,13 @@ class CvGenerationsController < ApplicationController
       return
     end
 
-    # Check job-based generation limit (5 per user) - only count completed
-    job_based_count = current_user.cv_generations.where("metadata->>'source' = ?", "job_description").where(status: "completed").count
-    if job_based_count >= MAX_JOB_BASED_GENERATIONS
-      Rails.logger.warn "User #{current_user.email} has reached job-based generation limit (#{job_based_count}/#{MAX_JOB_BASED_GENERATIONS})"
+    # Check job-based generation limit (only count completed)
+    limits = current_user.usage_limits
+    unless limits.can_generate_job_based?
+      Rails.logger.warn "User #{current_user.email} has reached job-based generation limit (#{limits.job_based_generations_used}/#{limits.max_job_based_generations || '∞'})"
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{MAX_JOB_BASED_GENERATIONS})." }
-        format.json { render json: { error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{MAX_JOB_BASED_GENERATIONS}).", limit_reached: true, remaining: 0 }, status: :too_many_requests }
+        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{limits.max_job_based_generations || '∞'})." }
+        format.json { render json: { error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{limits.max_job_based_generations || '∞'}).", limit_reached: true, remaining: 0 }, status: :too_many_requests }
       end
       return
     end
