@@ -535,10 +535,17 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const [isPdfPreviewLoading, setIsPdfPreviewLoading] = useState(false);
  const [pdfPreviewError, setPdfPreviewError] = useState("");
  const [selectedAtsTemplate, setSelectedAtsTemplate] = useState("harvard_classic");
+ const [resumeId, setResumeId] = useState(resume?.id || null);
+
+ useEffect(() => {
+  if (resume?.id) {
+   setResumeId(resume.id);
+  }
+ }, [resume?.id]);
 
  useEffect(() => {
   if (currentStep !== 4) return;
-  if (!resume?.id) {
+  if (!resumeId) {
    setPdfPreviewUrl("");
    setPdfPreviewError(t("preview.resume_required_for_live"));
    return;
@@ -548,12 +555,12 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   setPdfPreviewError("");
 
   const timer = setTimeout(() => {
-   const url = `/resumes/${resume.id}/generate_pdf?preview=true&template=${encodeURIComponent(selectedAtsTemplate)}&_ts=${Date.now()}`;
+   const url = `/resumes/${resumeId}/generate_pdf?preview=true&template=${encodeURIComponent(selectedAtsTemplate)}&_ts=${Date.now()}`;
    setPdfPreviewUrl(url);
   }, 250);
 
   return () => clearTimeout(timer);
- }, [currentStep, resume?.id, selectedAtsTemplate]);
+ }, [currentStep, resumeId, selectedAtsTemplate]);
 
  // Mark a field as touched
  const markFieldTouched = (fieldName) => {
@@ -2171,7 +2178,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     saved_at: new Date().toISOString(),
    };
 
-   const response = await fetch(`/resumes/${resume?.id || "new"}/save_draft`, {
+   const response = await fetch(`/resumes/${resumeId || "new"}/save_draft`, {
     method: "POST",
     headers: {
      "Content-Type": "application/x-www-form-urlencoded",
@@ -2185,6 +2192,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
    if (response.ok) {
     const result = await response.json();
+    if (result.resume_id) {
+     setResumeId(result.resume_id);
+    }
     if (silent) {
      setAutoSaveStatus("saved");
      setLastSavedAt(new Date());
@@ -2387,7 +2397,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    setValidationErrors({});
    
    // Auto-save current step before moving to next
-   if (resume?.id) {
+   if (resumeId) {
     saveDraft(currentStep, true);
    }
    
@@ -2415,7 +2425,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  const prevStep = () => {
   if (currentStep > 1) {
    // Auto-save current step before moving back
-   if (resume?.id) {
+   if (resumeId) {
     saveDraft(currentStep, true);
    }
    

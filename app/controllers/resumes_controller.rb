@@ -7,6 +7,8 @@ class ResumesController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
 
   def index
+    ResumeDraftDeduplicator.call(current_user)
+
     # Eager load associations to prevent N+1 queries and use counter cache
     @resumes = current_user.resumes.not_drafts.recent
                            .includes(:work_experiences, :skills)
@@ -116,6 +118,14 @@ class ResumesController < ApplicationController
   end
 
   def new
+    ResumeDraftDeduplicator.call(current_user)
+
+    existing_starter = current_user.resumes.drafts.order(updated_at: :desc).find(&:empty_starter_draft?)
+    if existing_starter
+      redirect_to edit_resume_path(existing_starter, step: existing_starter.current_draft_step)
+      return
+    end
+
     # Create and save a draft resume immediately so auto-save works
     @resume = current_user.resumes.build(
       is_draft: true,
@@ -248,22 +258,9 @@ class ResumesController < ApplicationController
     Rails.logger.info "Draft data: #{params[:draft_data]}"
 
     begin
-      # If this is a new resume (id="new"), create it first
       if params[:id] == "new"
-        @resume = current_user.resumes.build(
-          complete_name: params[:complete_name],
-          email: params[:email],
-          phone_number: params[:phone_number],
-          city: params[:city],
-          country: params[:country],
-          professional_summary: params[:professional_summary_english],
-          professional_summary_english: params[:professional_summary_english]
-        )
-
-        # Save the resume first
-        if @resume.save
-          Rails.logger.info "✅ New resume created with ID: #{@resume.id}"
-        else
+        @resume = find_or_create_draft_resume
+        unless @resume.persisted?
           Rails.logger.error "❌ Failed to create resume: #{@resume.errors.full_messages}"
           respond_to do |format|
             format.json { render json: {
@@ -273,6 +270,7 @@ class ResumesController < ApplicationController
           end
           return
         end
+        Rails.logger.info "✅ Draft resume ready with ID: #{@resume.id}"
       else
         # For existing resumes, find the resume
         @resume = current_user.resumes.find(params[:id])
@@ -356,6 +354,29 @@ class ResumesController < ApplicationController
 
   def normalize_ats_template(template_key)
     AtsTemplatePdfService.normalize_template_key(template_key.presence || ATS_TEMPLATE_FALLBACK)
+  end
+
+  def find_or_create_draft_resume
+    existing_starter = current_user.resumes.drafts.order(updated_at: :desc).find(&:empty_starter_draft?)
+    resume = existing_starter || current_user.resumes.build(is_draft: true)
+
+    resume.assign_attributes(draft_resume_attributes)
+    resume.is_draft = true
+    resume.save(validate: false) unless resume.persisted?
+    resume.save(validate: false)
+    resume
+  end
+
+  def draft_resume_attributes
+    {
+      complete_name: params[:complete_name].presence || current_user.email&.split("@")&.first,
+      email: params[:email].presence || current_user.email,
+      phone_number: params[:phone_number],
+      city: params[:city],
+      country: params[:country],
+      professional_summary: params[:professional_summary_english],
+      professional_summary_english: params[:professional_summary_english]
+    }
   end
 
   def set_resume

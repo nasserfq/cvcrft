@@ -264,6 +264,45 @@ class ResumeTest < ActiveSupport::TestCase
     assert_equal form_data, resume.draft_data
   end
 
+  test "empty_starter_draft ignores default form placeholders in draft_data" do
+    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+
+    resume = Resume.new(
+      user: users(:test_user),
+      complete_name: "nonq70007",
+      email: "starter-placeholder@example.com",
+      is_draft: true,
+      draft_data: {
+        "current_step" => 1,
+        "work_experience" => [
+          {
+            "job_title" => "",
+            "company" => "",
+            "responsibilities" => [ "" ]
+          }
+        ].to_json
+      }
+    )
+
+    assert resume.empty_starter_draft?
+  end
+
+  test "draft_data_has_meaningful_content detects real work experience entries" do
+    resume = Resume.new(
+      draft_data: {
+        "work_experience" => [
+          {
+            "job_title" => "Engineer",
+            "company" => "",
+            "responsibilities" => [ "" ]
+          }
+        ].to_json
+      }
+    )
+
+    assert resume.draft_data_has_meaningful_content?
+  end
+
   # ============================================
   # NESTED ATTRIBUTES TESTS
   # ============================================

@@ -75,6 +75,28 @@ class Resume < ApplicationRecord
     is_draft?
   end
 
+  def current_draft_step
+    (draft_data&.dig("current_step") || draft_data&.dig("step") || 1).to_i
+  end
+
+  def empty_starter_draft?
+    return false unless draft?
+
+    current_draft_step <= 1 && !has_meaningful_draft_content?
+  end
+
+  def has_meaningful_draft_content?
+    return true if work_experiences.exists?
+    return true if educations.exists?
+    return true if skills.exists?
+    return true if certifications.exists?
+    return true if languages.exists?
+    return true if professional_summary_english.present?
+    return true if professional_summary.present?
+
+    draft_data_has_meaningful_content?
+  end
+
   def can_be_resumed?
     draft? || (created_at > 1.hour.ago && complete_name.blank?)
   end
@@ -98,6 +120,46 @@ class Resume < ApplicationRecord
       end
     end
     data
+  end
+
+  def draft_data_has_meaningful_content?
+    return false if draft_data.blank?
+
+    %w[education work_experience skills certifications languages].any? do |field|
+      draft_collection_has_content?(draft_data[field])
+    end
+  end
+
+  def draft_collection_has_content?(value)
+    parsed = parse_draft_json(value)
+    return false if parsed.blank?
+
+    Array(parsed).any? { |item| draft_item_has_content?(item) }
+  rescue JSON::ParserError
+    false
+  end
+
+  def draft_item_has_content?(item)
+    return false unless item.is_a?(Hash)
+
+    item.any? { |_key, entry| draft_field_has_content?(entry) }
+  end
+
+  def draft_field_has_content?(entry)
+    case entry
+    when Array
+      entry.any? { |nested| draft_field_has_content?(nested) }
+    when TrueClass, FalseClass
+      false
+    else
+      entry.present? && entry.to_s.strip.present?
+    end
+  end
+
+  def parse_draft_json(value)
+    return value unless value.is_a?(String)
+
+    JSON.parse(value)
   end
 
   def save_draft(form_data)

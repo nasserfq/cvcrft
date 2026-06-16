@@ -33,6 +33,47 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "new reuses existing empty starter draft" do
+    starter = Resume.create!(
+      user: @user,
+      complete_name: "starter",
+      email: @user.email,
+      is_draft: true,
+      draft_data: { "current_step" => 1 }
+    )
+
+    get new_resume_url
+
+    assert_redirected_to edit_resume_path(starter, step: 1)
+    assert_equal 1, @user.resumes.drafts.count
+  end
+
+  test "save_draft with new reuses existing empty starter draft" do
+    starter = Resume.create!(
+      user: @user,
+      complete_name: "starter",
+      email: @user.email,
+      is_draft: true,
+      draft_data: { "current_step" => 1 }
+    )
+
+    assert_no_difference("Resume.count") do
+      post save_draft_resume_path("new"), params: {
+        complete_name: "starter",
+        email: @user.email,
+        current_step: 1,
+        education: "[]",
+        work_experience: "[]",
+        skills: "[]",
+        certifications: "[]",
+        languages: "[]"
+      }, as: :json
+    end
+
+    assert_response :success
+    assert_equal starter.id, JSON.parse(response.body)["resume_id"]
+  end
+
   test "should create resume" do
     assert_difference("Resume.count") do
       post resumes_url, params: {
