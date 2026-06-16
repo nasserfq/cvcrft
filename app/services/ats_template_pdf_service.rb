@@ -38,7 +38,16 @@ class AtsTemplatePdfService
         when "harvard_classic"
           render_single_column_layout(pdf, resume, data, config)
         when "white_black_engineering"
-          render_two_column_layout(pdf, resume, data, config, left_width_ratio: 0.28, sidebar_title: "TECH PROFILE")
+          render_two_column_layout(
+            pdf,
+            resume,
+            data,
+            config,
+            left_width_ratio: 0.28,
+            sidebar_title: "TECH PROFILE",
+            sidebar_sections: [ :contact, :skills, :languages ],
+            main_sections: [ :summary, :education, :work_experience, :certifications ]
+          )
         when "simple_clean_gray"
           render_profile_band_layout(pdf, resume, data, config, band_color: "6B7280")
         when "minimalist_real_estate"
@@ -99,7 +108,16 @@ class AtsTemplatePdfService
     render_main_sections(pdf, resume, data, config)
   end
 
-  def self.render_two_column_layout(pdf, resume, data, config, left_width_ratio:, sidebar_title:, sidebar_sections:, main_sections:)
+  def self.render_two_column_layout(
+    pdf,
+    resume,
+    data,
+    config,
+    left_width_ratio:,
+    sidebar_title:,
+    sidebar_sections: [ :contact, :languages, :skills ],
+    main_sections: [ :summary, :education, :work_experience, :certifications ]
+  )
     render_header(pdf, resume, config, align: :left)
     pdf.move_down 8
 

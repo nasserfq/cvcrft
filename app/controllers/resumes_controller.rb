@@ -208,6 +208,11 @@ class ResumesController < ApplicationController
 
   def generate_pdf
     begin
+      if params[:preview] == "true" && @resume.draft_data.present?
+        ResumeDraftSync.sync!(@resume)
+        @resume.reload
+      end
+
       selected_template = normalize_ats_template(params[:template])
       # Generate ATS-optimized PDF
       pdf_result = ResumePdfService.generate_pdf(@resume, template: selected_template)
@@ -284,8 +289,8 @@ class ResumesController < ApplicationController
         phone_number: params[:phone_number],
         city: params[:city],
         country: params[:country],
-        professional_summary: params[:professional_summary_english],
-        professional_summary_english: params[:professional_summary_english],
+        professional_summary: params[:professional_summary].presence || params[:professional_summary_english],
+        professional_summary_english: params[:professional_summary_english].presence || params[:professional_summary],
         education: params[:education],
         work_experience: params[:work_experience],
         skills: params[:skills],

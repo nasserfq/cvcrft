@@ -551,15 +551,31 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    return;
   }
 
-  setIsPdfPreviewLoading(true);
-  setPdfPreviewError("");
+  let cancelled = false;
 
-  const timer = setTimeout(() => {
+  const loadPreview = async () => {
+   setIsPdfPreviewLoading(true);
+   setPdfPreviewError("");
+   setPdfPreviewUrl("");
+
+   const saved = await saveDraft(4, true);
+   if (cancelled) return;
+
+   if (!saved) {
+    setPdfPreviewError(t("preview.error"));
+    setIsPdfPreviewLoading(false);
+    return;
+   }
+
    const url = `/resumes/${resumeId}/generate_pdf?preview=true&template=${encodeURIComponent(selectedAtsTemplate)}&_ts=${Date.now()}`;
    setPdfPreviewUrl(url);
-  }, 250);
+  };
 
-  return () => clearTimeout(timer);
+  loadPreview();
+
+  return () => {
+   cancelled = true;
+  };
  }, [currentStep, resumeId, selectedAtsTemplate]);
 
  // Mark a field as touched
@@ -2203,6 +2219,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     } else {
      alert(translate("draft.saved_success", { step: stepNumber }));
     }
+    return true;
    } else {
     console.error("❌ Failed to save draft");
     if (silent) {
@@ -2211,6 +2228,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     } else {
      alert(translate("draft.save_error"));
     }
+    return false;
    }
   } catch (error) {
    console.error("❌ Error saving draft:", error);
@@ -2220,6 +2238,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    } else {
     alert(translate("draft.save_error_detail", { message: error.message }));
    }
+   return false;
   } finally {
    setIsSavingDraft(false);
   }
@@ -2379,7 +2398,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   }
  };
 
- const nextStep = () => {
+ const nextStep = async () => {
   if (currentStep < totalSteps) {
    // Validate current step before moving
    if (!validateCurrentStep()) {
@@ -2398,7 +2417,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    
    // Auto-save current step before moving to next
    if (resumeId) {
-    saveDraft(currentStep, true);
+    await saveDraft(currentStep, true);
    }
    
    const newStep = currentStep + 1;

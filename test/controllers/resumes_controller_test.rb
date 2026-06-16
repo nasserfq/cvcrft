@@ -126,9 +126,28 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "generate_pdf passes selected ATS template" do
+    ResumeDraftSync.expects(:sync!).never
     ResumePdfService.expects(:generate_pdf).with(@resume, has_entry(template: "minimalist_real_estate")).returns("%PDF-1.4")
 
     get generate_pdf_resume_url(@resume), params: { template: "minimalist_real_estate" }
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+  end
+
+  test "generate_pdf preview syncs draft data before rendering" do
+    @resume.update!(
+      draft_data: {
+        "complete_name" => "Preview Name",
+        "email" => @resume.email,
+        "work_experience" => [].to_json
+      }
+    )
+
+    ResumeDraftSync.expects(:sync!).with(@resume).returns(@resume)
+    ResumePdfService.expects(:generate_pdf).with(@resume, has_entry(template: "harvard_classic")).returns("%PDF-1.4")
+
+    get generate_pdf_resume_url(@resume), params: { preview: "true", template: "harvard_classic" }
 
     assert_response :success
     assert_equal "application/pdf", response.media_type
