@@ -150,7 +150,10 @@
         </div>
         <!-- React Component Container -->
         <div id="cv-generation-results">
-          <!-- React component will render here -->
+          <div id="cv-generation-bootstrapping" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p class="mt-4 text-gray-600 dark:text-gray-300"><%= t('cv_generation.loading_data') %></p>
+          </div>
         </div>
       </div>
       <!-- Pass translations to JavaScript -->
@@ -214,10 +217,10 @@
         window.CV_DEFAULT_ATS_TEMPLATE = <%= raw @default_ats_template.to_json %>;
       </script>
       <!-- React Libraries -->
-      <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-      <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-      <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-      <script type="text/babel">
+      <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+      <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+      <script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js"></script>
+      <script type="text/babel" data-presets="env,react">
         const { useState, useEffect } = React;
         const t = window.CV_TRANSLATIONS;
 
@@ -899,21 +902,21 @@
                               }}
                               className="flex-1 bg-primary hover:bg-primaryHover text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
-                              <i data-lucide="eye" class="w-3 h-3"></i>
+                              <i data-lucide="eye" className="w-3 h-3"></i>
                               {t.preview}
                             </button>
                             <button
                               onClick={() => handleDownload(`/cv_generations/${resume.latest_cv_generation.id}/download_pdf`, `cv_generated_${resume.latest_cv_generation.id}.pdf`)}
                               className="flex-1 bg-action hover:bg-action/90 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
-                              <i data-lucide="download" class="w-3 h-3"></i>
+                              <i data-lucide="download" className="w-3 h-3"></i>
                               {t.download}
                             </button>
                             <button
                               onClick={() => deleteCvGeneration(resume.latest_cv_generation.id)}
                               className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
-                              <i data-lucide="trash" class="w-3 h-3"></i>
+                              <i data-lucide="trash" className="w-3 h-3"></i>
                               {t.delete}
                             </button>
                           </div>
@@ -933,21 +936,21 @@
                               }}
                               className="flex-1 bg-primary hover:bg-primaryHover text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
-                              <i data-lucide="eye" class="w-3 h-3"></i>
+                              <i data-lucide="eye" className="w-3 h-3"></i>
                               {t.preview}
                             </button>
                             <button
                               onClick={() => handleDownload(`/resumes/${resume.id}/generate_pdf`, `${resume.complete_name || 'resume'}_${resume.id}.pdf`)}
                               className="flex-1 bg-action hover:bg-action/90 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
-                              <i data-lucide="download" class="w-3 h-3"></i>
+                              <i data-lucide="download" className="w-3 h-3"></i>
                               {t.download}
                             </button>
                             <button
                               onClick={() => deleteResume(resume.id)}
                               className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
                             >
-                              <i data-lucide="trash" class="w-3 h-3"></i>
+                              <i data-lucide="trash" className="w-3 h-3"></i>
                               {t.delete}
                             </button>
                           </div>
@@ -957,7 +960,7 @@
                       {selectedResumeId === resumeId.toString() && (
                         <div className="mt-3 flex items-center justify-center">
                           <div className="flex items-center gap-2 text-primary">
-                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <i data-lucide="check-circle" className="w-4 h-4"></i>
                             <span className="text-sm font-medium">{t.selected}</span>
                           </div>
                         </div>
@@ -1005,11 +1008,11 @@
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t.cv_created_success}</h3>
-                <div className="flex items-center gap-2 text-action">
-                  <i data-lucide="file-text" class="w-5 h-5"></i>
-                  <span className="text-sm font-medium">{t.pdf_ready}</span>
+                  <div className="flex items-center gap-2 text-action">
+                    <i data-lucide="file-text" className="w-5 h-5"></i>
+                    <span className="text-sm font-medium">{t.pdf_ready}</span>
+                  </div>
                 </div>
-              </div>
 
                 <div className="mb-4">
                   <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">{t.new_professional_summary}</h4>
@@ -1022,21 +1025,21 @@
                     onClick={() => setShowPdfModal(true)}
                     className="flex-1 bg-action text-white px-4 py-3 rounded-lg hover:bg-action/90 flex items-center justify-center gap-2 font-medium transition-colors"
                   >
-                    <i data-lucide="eye" class="w-4 h-4"></i>
+                    <i data-lucide="eye" className="w-4 h-4"></i>
                     {t.preview_pdf}
                   </button>
                   <button
                     onClick={downloadPdf}
                     className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-primaryHover flex items-center justify-center gap-2 font-medium transition-colors"
                   >
-                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <i data-lucide="download" className="w-4 h-4"></i>
                     {t.download_pdf}
                   </button>
                 </div>
               ) : (
                 <div className="bg-yellow-50 dark:bg-yellow-500/20 border border-yellow-200 dark:border-yellow-500/30 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <i data-lucide="alert-circle" className="w-5 h-5"></i>
                     <span className="font-medium">{t.pdf_not_available}</span>
                   </div>
                   <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
@@ -1167,11 +1170,22 @@
               </ErrorBoundary>
             );
 
+            container.dataset.mounted = 'true';
             console.log('✅ React app mounted successfully');
           } catch (error) {
             console.error('🔴 Error starting React app:', error);
+            const container = document.getElementById('cv-generation-results');
+            if (container) {
+              container.innerHTML = '<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-500/30 dark:bg-red-500/20 dark:text-red-300"><p className="font-medium">' + (t.render_error || 'Render error') + '</p><p className="mt-2 text-sm">' + error.message + '</p></div>';
+            }
           }
         };
+
+        window.addEventListener('error', function(event) {
+          const container = document.getElementById('cv-generation-results');
+          if (!container || container.dataset.mounted === 'true') return;
+          container.innerHTML = '<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-500/30 dark:bg-red-500/20 dark:text-red-300"><p className="font-medium">' + (t.render_error || 'Render error') + '</p><p className="mt-2 text-sm">' + (event.error?.message || event.message || 'Unknown error') + '</p></div>';
+        });
 
         // Initialize the app when the document is ready
         if (document.readyState === 'loading') {

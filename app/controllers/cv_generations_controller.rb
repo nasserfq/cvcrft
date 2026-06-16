@@ -497,9 +497,9 @@ class CvGenerationsController < ApplicationController
   end
 
   def ensure_user_has_resume
-    return unless current_user.resumes.empty?
+    return if current_user.resumes.not_drafts.exists?
 
-    Rails.logger.info "User #{current_user.email} has no resumes, redirecting to resume creation"
+    Rails.logger.info "User #{current_user.email} has no completed resumes, redirecting to resume creation"
 
     respond_to do |format|
       format.html { redirect_to resumes_path, alert: 'يجب عليك إنشاء سيرة ذاتية أولاً قبل إنشاء سير ذاتية مخصصة بناءً على وصف الوظيفة. انقر على "إنشاء سيرة ذاتية جديدة" في الصفحة التالية.' }
