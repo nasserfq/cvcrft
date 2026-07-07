@@ -16,7 +16,7 @@ proxy:
 ssh:
   user: ubuntu
   keys:
-    - "/Users/nasserfq/seera/seeraai.pem"
+    - "/Users/nasserfq/downloads/seera/seeraai.pem"
 
 registry:
   username: nasserfq
