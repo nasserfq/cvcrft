@@ -2,69 +2,58 @@ service: cvcraft
 image: nasserfq/cvcraft
 
 servers:
- web:
-  - 48.216.218.81
- worker:
-  hosts:
-   - 48.216.218.81 # Use the same host IP as your web server
-  cmd: bundle exec sidekiq -e production
+  web:
+    - 13.217.233.99
+  worker:
+    hosts:
+      - 13.217.233.99
+    cmd: bundle exec sidekiq -e production
 
-# Proxy (Traefik) configuration commented out for now, as requested.
-# You can uncomment this section later once the app and DB are working.
 proxy:
- ssl: true
- host: cvcrft.com
- # Use the actual IP address or domain name of your server
+  ssl: true
+  host: cvcrft.com
 
 ssh:
- user: nasserfq
- keys:
-  #- "/Users/Nasser/Downloads/hllelaiapp_key.pem"
-  - "/Users/nasserfq/Downloads/hllelaiapp_key.pem" # Correct SSH key path format
+  user: ubuntu
+  keys:
+    - "/Users/nasserfq/seera/seeraai.pem"
 
 registry:
- username: nasserfq
- password:
-  - KAMAL_REGISTRY_PASSWORD
+  username: nasserfq
+  password:
+    - KAMAL_REGISTRY_PASSWORD
 
 env:
- secret:
-  - RAILS_MASTER_KEY
-  - KAMAL_REGISTRY_PASSWORD
- clear:
-  # This points Rails to the new redis container, named 'trends-redis' below
-  REDIS_URL: redis://cvcraft-trends-redis:6379/1
-  # IMPORTANT FIX: Set DATABASE_HOST to the actual container name Kamal creates
-  DATABASE_HOST: cvcraft-trends-db # Corrected to match Kamal's automatic naming convention
-  DATABASE_USER: cvcraft
-  DATABASE_NAME: cvcraft_production
-  CVCRAFT_DATABASE_PASSWORD: wisconsinQ1413!
-  # PostHog Analytics
-  VITE_PUBLIC_POSTHOG_KEY: phc_hbgIlm0QjZDuhGEO7YYg2tuAQcMnLDsafnm8A0Dw5S6
-  VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+  secret:
+    - RAILS_MASTER_KEY
+    - KAMAL_REGISTRY_PASSWORD
+  clear:
+    REDIS_URL: redis://cvcraft-trends-redis:6379/1
+    DATABASE_HOST: cvcraft-trends-db
+    DATABASE_USER: cvcraft
+    DATABASE_NAME: cvcraft_production
+    CVCRAFT_DATABASE_PASSWORD: wisconsinQ1413!
+    VITE_PUBLIC_POSTHOG_KEY: phc_hbgIlm0QjZDuhGEO7YYg2tuAQcMnLDsafnm8A0Dw5S6
+    VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
 
 accessories:
- # The key 'trends-redis' IS the name of the accessory container
- trends-redis:
-  image: redis:7.2
-  host: 48.216.218.81 # Host where this accessory container runs
-  # No 'name:' key here, the key itself acts as the name
+  trends-redis:
+    image: redis:7.2
+    host: 13.217.233.99
 
- # The key 'trends-db' IS the name of the accessory container
- trends-db:
-  image: postgres:14
-  host: 48.216.218.81 # Host where this accessory container runs
-  port: 5432 # Port exposed by the postgres container
-  # No 'name:' key here, the key itself acts as the name
-  env:
-   clear:
-    POSTGRES_USER: cvcraft
-    POSTGRES_DB: cvcraft_production
-    POSTGRES_PASSWORD: wisconsinQ1413!
-  directories:
-   - data:/var/lib/postgresql/data # Ensure data persistence for PostgreSQL
+  trends-db:
+    image: postgres:14
+    host: 13.217.233.99
+    port: 5432
+    env:
+      clear:
+        POSTGRES_USER: cvcraft
+        POSTGRES_DB: cvcraft_production
+        POSTGRES_PASSWORD: wisconsinQ1413!
+    directories:
+      - data:/var/lib/postgresql/data
 
 asset_path: /rails/public/assets
 
 builder:
- arch: amd64
+  arch: amd64
