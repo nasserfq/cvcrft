@@ -4,29 +4,11 @@ require "fileutils"
 require "securerandom"
 require_relative "ats_templates/base"
 require_relative "ats_templates/classic_01"
-require_relative "ats_templates/classic_02"
-require_relative "ats_templates/classic_03"
-require_relative "ats_templates/classic_04"
-require_relative "ats_templates/classic_05"
-require_relative "ats_templates/classic_06"
-require_relative "ats_templates/classic_07"
-require_relative "ats_templates/classic_08"
-require_relative "ats_templates/classic_09"
-require_relative "ats_templates/classic_10"
 
 class AtsPdfGenerator
-  TEMPLATES = [
-    AtsTemplates::Classic01,
-    AtsTemplates::Classic02,
-    AtsTemplates::Classic03,
-    AtsTemplates::Classic04,
-    AtsTemplates::Classic05,
-    AtsTemplates::Classic06,
-    AtsTemplates::Classic07,
-    AtsTemplates::Classic08,
-    AtsTemplates::Classic09,
-    AtsTemplates::Classic10
-  ].freeze
+  # Only Classic01 is reachable: AtsTemplatePdfService calls this with a
+  # hardcoded template of "classic_01" for the "original_classic" preset.
+  TEMPLATES = [ AtsTemplates::Classic01 ].freeze
 
   def self.template_catalog
     TEMPLATES.map { |template| { key: template.key, name: template.name, description: template.description } }
