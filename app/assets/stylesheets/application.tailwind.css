@@ -1,1 +1,221 @@
 @import "tailwindcss";
+
+/* Dark mode is driven by a class on <html>, not the OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  Neo-brutalist design tokens.
+
+  Previously these lived only in an inline `tailwind.config` script next to
+  the Play CDN (cdn.tailwindcss.com), which compiled CSS in the visitor's
+  browser on every page load. They now live in the real build.
+
+  Every pre-existing token name (primary, action, canvas, darkBase, darkCard,
+  borderLight, …) is kept, so the ~1,900 utility usages across the views pick
+  up the new look without being edited. Only the values changed.
+*/
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand — saturated and flat. */
+  --color-primary: #7c3aed;
+  --color-primaryHover: #5b21b6;
+  --color-primary-soft: #ddd6fe;
+
+  --color-action: #2ef2a3;
+  --color-actionHover: #0fd98a;
+  /* The mint reads ~1.6:1 on white, so it is for fills only.
+     `action-ink` is the text-safe variant (~4.6:1). */
+  --color-action-ink: #046c4e;
+
+  /* Brutalist accent set. */
+  --color-brut-yellow: #ffd93d;
+  --color-brut-pink: #ff5c8a;
+  --color-brut-blue: #4d9de0;
+  --color-brut-orange: #ff8c42;
+
+  /* Surfaces — warm paper, not clinical white. */
+  --color-canvas: #fffdf5;
+  --color-surface: #fff8e7;
+  --color-surface-2: #ffefc9;
+  --color-darkBase: #16161a;
+  --color-darkCard: #212126;
+  --color-darkCard-2: #2c2c33;
+
+  /* Ink */
+  --color-ink: #000000;
+  --color-ink-muted: #3f3f46;
+  --color-ink-subtle: #52525b;
+
+  /* Borders are structural in brutalism: always hard, always black. */
+  --color-borderLight: #000000;
+  --color-borderDark: #ffffff;
+
+  /* Hard offset shadows — no blur, ever. */
+  --shadow-brut: 4px 4px 0 #000;
+  --shadow-brut-sm: 2px 2px 0 #000;
+  --shadow-brut-lg: 8px 8px 0 #000;
+  --shadow-glow: 4px 4px 0 #000;
+  --shadow-glow-mint: 4px 4px 0 #000;
+
+  --radius-card: 0.25rem;
+  --text-xxs: 0.625rem;
+}
+
+body {
+  font-feature-settings: "ss01", "ss02";
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--color-canvas);
+}
+
+/*
+  Neo-brutalist override layer.
+
+  These rules are intentionally unlayered, so they beat Tailwind's @layer
+  utilities in the cascade. That is what lets the existing markup — written
+  for a soft, glassy design — read as brutalist without touching 51 views.
+*/
+
+/* 1. Flatten the radii. Brutalism is square-ish, not pill-shaped. */
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  border-radius: 0.25rem;
+}
+
+/* Keep genuinely circular things circular: avatars, icon chips, toggles. */
+.rounded-full {
+  border-radius: 9999px;
+}
+
+/* 2. Replace every soft/blurred shadow with a hard offset one. */
+[class*="shadow-"]:not(.shadow-none) {
+  box-shadow: 4px 4px 0 #000;
+}
+.dark [class*="shadow-"]:not(.shadow-none) {
+  box-shadow: 4px 4px 0 #fff;
+}
+.shadow-none {
+  box-shadow: none;
+}
+
+/* 3. Blur is the opposite of brutalism. */
+.backdrop-blur,
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg,
+.backdrop-blur-xl,
+.backdrop-blur-2xl,
+.backdrop-blur-3xl {
+  backdrop-filter: none;
+}
+
+/* The landing page's decorative gradient blobs. */
+.blob {
+  filter: none !important;
+  opacity: 0.35;
+}
+
+/* 4. Hard black borders wherever a border is already declared. */
+[class*="border-gray-"],
+[class*="border-slate-"],
+[class*="border-white/"],
+[class*="border-black/"],
+.border-borderLight {
+  border-color: #000 !important;
+}
+.dark [class*="border-gray-"],
+.dark [class*="border-slate-"],
+.dark [class*="border-white/"],
+.dark [class*="border-black/"],
+.dark .border-borderLight {
+  border-color: #fff !important;
+}
+
+/* 5. Buttons and inputs: the signature treatment. */
+button:not(.btn-plain),
+a[role="button"],
+input[type="submit"],
+input[type="button"] {
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0 #000;
+  font-weight: 700;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.dark button:not(.btn-plain),
+.dark a[role="button"],
+.dark input[type="submit"],
+.dark input[type="button"] {
+  border-color: #fff;
+  box-shadow: 3px 3px 0 #fff;
+}
+
+/* Press-in on interaction: the shadow collapses as the element moves into it. */
+button:not(.btn-plain):active,
+a[role="button"]:active,
+input[type="submit"]:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 #000;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+input[type="date"],
+select,
+textarea {
+  border: 2px solid #000 !important;
+  border-radius: 0.25rem;
+}
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="tel"],
+.dark input[type="number"],
+.dark input[type="search"],
+.dark input[type="date"],
+.dark select,
+.dark textarea {
+  border-color: #fff !important;
+}
+
+/* Visible focus ring — brutalism is high-contrast, so keyboard focus should be too. */
+:focus-visible {
+  outline: 3px solid var(--color-brut-blue);
+  outline-offset: 2px;
+}
+
+/* 6. Headings carry the weight. */
+h1,
+h2,
+h3 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/*
+  The existing JS adds .js-hover-active on hover/touch for a soft lift with a
+  blurred shadow. Re-point it at the brutalist press instead.
+*/
+.js-hover-active {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0 #000 !important;
+}
+.dark .js-hover-active {
+  box-shadow: 6px 6px 0 #fff !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
