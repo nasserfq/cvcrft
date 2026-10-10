@@ -60,7 +60,7 @@ class CvGeneratorJob
         resume_id: @resume_id,
         job_description: @job_description,
         generated_content: nil,
-        ai_model: "gpt-4.1-mini",
+        ai_model: AiModel.default,
         status: "processing",
         tokens_used: nil,
         metadata: (@options || {})

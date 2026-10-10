@@ -40,5 +40,12 @@ module Cvcraft
     config.active_job.queue_adapter = :sidekiq
 
     # Session store is configured in config/initializers/session_store.rb
+
+    # Fall back to :en when a key is missing in :ar. Rails' own validation
+    # messages ("can't be blank" and friends) ship only for :en, so without
+    # this an Arabic request renders "Translation missing: ar.activerecord..."
+    # instead of an error message. Production already set this; test and
+    # development did not, which is why the suite showed 48 of these.
+    config.i18n.fallbacks = [ :en ]
   end
 end

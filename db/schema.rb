@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_15_130000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_10_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,7 +20,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_15_130000) do
     t.text "arabic_text"
     t.text "english_text"
     t.string "translation_quality"
-    t.string "ai_model", default: "gpt-4.1-mini"
+    t.string "ai_model"
     t.integer "tokens_used"
     t.string "status", default: "pending"
     t.datetime "created_at", null: false

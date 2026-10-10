@@ -43,7 +43,7 @@ class CvAnalysisJob
 
     {
       analysis: analysis_result,
-      model: "gpt-4.1-mini",
+      model: AiModel.default,
       tokens: tokens_used
     }
   end

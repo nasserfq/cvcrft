@@ -30,7 +30,7 @@ class AiTranslationTest < ActiveSupport::TestCase
   test "should not save ai_translation with arabic_text too short" do
     translation = AiTranslation.new(
       user: users(:test_user),
-      arabic_text: "short",
+      arabic_text: "abcd", # 4 chars; the minimum is 5
       ai_model: "gpt-4",
       status: "pending"
     )

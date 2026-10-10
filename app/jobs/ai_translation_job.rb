@@ -65,7 +65,7 @@ class AiTranslationJob
     user.ai_translations.create!(
       arabic_text: @arabic_text,
       resume_id: @resume_id,
-      ai_model: "gpt-4.1-mini",
+      ai_model: AiModel.default,
       status: "processing",
       metadata: @options
     )

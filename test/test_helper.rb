@@ -1,6 +1,13 @@
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
+require "sidekiq/testing"
+
+# Jobs enqueue to an array, not Redis. Without this, perform_async raises
+# RedisClient::CannotConnectError, controllers swallow it in their rescue
+# blocks, and the tests see a 422 instead of the real behaviour. CI has no
+# redis service either (it is commented out in .github/workflows/ci.yml).
+Sidekiq::Testing.fake!
 require "mocha/minitest"
 
 module ActiveSupport

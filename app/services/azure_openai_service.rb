@@ -166,7 +166,7 @@ class AzureOpenaiService
     cv_generation = user.cv_generations.create!(
       job_description: job_description,
       resume_id: @resume_id,
-      ai_model: "gpt-4.1-mini",
+      ai_model: AiModel.default,
       status: "processing",
       metadata: json_options
     )

@@ -154,7 +154,8 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "generate_pdf falls back to default template for invalid key" do
-    ResumePdfService.expects(:generate_pdf).with(@resume, has_entry(template: "harvard_classic")).returns("%PDF-1.4")
+    # The default is the first entry in AtsStyleCatalog, i.e. original_classic.
+    ResumePdfService.expects(:generate_pdf).with(@resume, has_entry(template: "original_classic")).returns("%PDF-1.4")
 
     get generate_pdf_resume_url(@resume), params: { template: "not_valid" }
 
