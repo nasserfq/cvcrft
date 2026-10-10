@@ -8,3 +8,13 @@ coupons:
     bonus_jobs_translations: 0
     bonus_cv_builder_generations: 0
     bonus_job_based_generations: 0
+
+  VIPATC9Z5J5:
+    description: Hand-distributed unlimited access (expires 2027-04-10)
+    active: true
+    unlimited: true
+    expires_at: "2027-04-10 23:59:59"
+    bonus_summary_translations: 0
+    bonus_jobs_translations: 0
+    bonus_cv_builder_generations: 0
+    bonus_job_based_generations: 0
