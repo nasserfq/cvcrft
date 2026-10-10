@@ -39,7 +39,8 @@ class CvImportsControllerTest < ActionDispatch::IntegrationTest
 
     get cv_import_status_path(import, format: :json)
 
-    assert_response :redirect
+    # JSON callers get 401, not a redirect to the HTML login page.
+    assert_response :unauthorized
   end
 
   # ============================================

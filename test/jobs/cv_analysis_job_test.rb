@@ -150,11 +150,10 @@ class CvAnalysisJobTest < ActiveSupport::TestCase
       "usage" => { "total_tokens" => 500 }
     }
 
-    mock_http_response = stub(code: "200", body: mock_response.to_json)
-    Net::HTTP.any_instance.stubs(:request).returns(mock_http_response)
+    stub_ai_response(mock_response.dig("choices", 0, "message", "content"))
   end
 
   def stub_azure_openai_failure
-    Net::HTTP.any_instance.stubs(:request).raises(StandardError.new("API Error"))
+    stub_ai_failure
   end
 end

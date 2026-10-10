@@ -11,6 +11,21 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # The AI jobs all call AiModel.complete, which returns a RubyLLM::Message.
+    # Stub that seam rather than Net::HTTP — the transport belongs to the
+    # client library, and mocking it breaks whenever the client changes.
+    def stub_ai_response(content, tokens: 800)
+      text = content.is_a?(String) ? content : content.to_json
+      usage = Struct.new(:input, :output).new(tokens / 2, tokens - (tokens / 2))
+      AiModel.stubs(:complete).returns(Struct.new(:content, :tokens).new(text, usage))
+    end
+
+    # RuntimeError by default: the hand-rolled client used to `raise "..."`,
+    # and the job tests assert on that so the failure path stays covered.
+    def stub_ai_failure(error = RuntimeError.new("API Error"))
+      AiModel.stubs(:complete).raises(error)
+    end
+
     # Add more helper methods to be used by all tests here...
 
     # Helper to check if a string contains Arabic characters
@@ -98,9 +113,11 @@ module ActionDispatch
   class IntegrationTest
     include Devise::Test::IntegrationHelpers
 
-    # HTTP Basic Auth credentials used by the app
-    BASIC_AUTH_USERNAME = ENV["BASIC_AUTH_USERNAME"] || "admin"
-    BASIC_AUTH_PASSWORD = ENV["BASIC_AUTH_PASSWORD"] || "cvcraft2024"
+    # HTTP Basic Auth credentials for the admin panel. These must match what
+    # Admin::ApplicationController reads, or any admin-route test gets the
+    # random fallback password and 401s.
+    BASIC_AUTH_USERNAME = ENV["ADMIN_USERNAME"] ||= "admin"
+    BASIC_AUTH_PASSWORD = ENV["ADMIN_PASSWORD"] ||= "test-only-admin-password"
 
     # Helper to get HTTP Basic Auth header
     def basic_auth_header
