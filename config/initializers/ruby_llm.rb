@@ -42,4 +42,22 @@ module AiModel
     chat = chat.with_max_output_tokens(max_tokens) if max_tokens
     chat
   end
+
+  # One completion. Returns the RubyLLM::Message, so callers get both
+  # `.content` (the text, which they parse as JSON) and `.tokens` (total
+  # usage, which two of them persist).
+  def self.complete(system:, user:, temperature: 0.7, max_tokens: nil)
+    chat(temperature: temperature, max_tokens: max_tokens)
+      .with_instructions(system.to_s)
+      .ask(user.to_s)
+  end
+
+  # `message.tokens` is a RubyLLM::Tokens value object with no #total; the
+  # tokens_used columns want a plain integer.
+  def self.token_count(message)
+    t = message.tokens
+    return nil if t.nil?
+
+    t.input.to_i + t.output.to_i
+  end
 end

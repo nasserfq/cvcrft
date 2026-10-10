@@ -117,47 +117,13 @@ class CvGeneratorJob
   end
 
   def call_azure_openai_api
-    api_key = Rails.application.credentials.azure[:openai_api_key] || ENV["AZURE_OPENAI_API_KEY"]
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt
-    response = make_openai_request(api_key, system_prompt, user_prompt)
+    response = AiModel.complete(system: system_prompt, user: user_prompt,
+                                temperature: (@options[:temperature] || 0.7).to_f, max_tokens: (@options[:max_tokens] || 15000).to_i)
     parse_openai_response(response)
   end
 
-  def make_openai_request(api_key, system_prompt, user_prompt)
-    uri = URI("https://craftcv.openai.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2025-01-01-preview")
-    request = Net::HTTP::Post.new(uri)
-    request["Content-Type"] = "application/json"
-    request["api-key"] = api_key
-
-    payload = {
-      messages: [
-        { role: "system", content: [ { type: "text", text: system_prompt } ] },
-        { role: "user", content: [ { type: "text", text: user_prompt } ] }
-      ],
-      temperature: (@options[:temperature] || 0.7).to_f,
-      top_p: (@options[:top_p] || 0.95).to_f,
-      max_tokens: (@options[:max_tokens] || 15000).to_i
-    }
-
-    request.body = payload.to_json
-
-    http = Net::HTTP.new(uri.hostname, uri.port)
-    http.use_ssl = true
-    http.open_timeout = 30
-    http.read_timeout = 120
-    # Use VERIFY_NONE to bypass CRL verification issues on macOS
-    # In production, consider using a proper SSL certificate store
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
-    response = http.request(request)
-
-    if response.code == "200"
-      JSON.parse(response.body)
-    else
-      raise "OpenAI API request failed: #{response.code} - #{response.body}"
-    end
-  end
 
   # The system prompt ensures the AI provides ALL necessary structured data for the CV
   def build_system_prompt
@@ -374,8 +340,16 @@ class CvGeneratorJob
   end
 
   def parse_openai_response(response)
-    content = response["choices"][0]["message"]["content"]
-    tokens_used = response["usage"]["total_tokens"]
+    content = response.content
+    tokens_used = AiModel.token_count(response)
+
+    # Models differ on whether they fence their JSON. gpt-4.1-mini returned it
+    # bare; Claude wraps it in ```json. Without this the parse raises and the
+    # rescue below dumps the whole raw response into professional_summary.
+    # The other four jobs already strip the fence.
+    if (fenced = content.match(/```(?:json)?\s*(.*?)\s*```/m))
+      content = fenced[1]
+    end
 
     begin
       parsed_content = JSON.parse(content)

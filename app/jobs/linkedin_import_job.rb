@@ -24,12 +24,12 @@ class LinkedinImportJob
   private
 
   def call_azure_openai_api(extracted_text)
-    api_key = Rails.application.credentials.azure[:openai_api_key] || ENV["AZURE_OPENAI_API_KEY"]
 
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt(extracted_text)
 
-    response = make_openai_request(api_key, system_prompt, user_prompt)
+    response = AiModel.complete(system: system_prompt, user: user_prompt,
+                                temperature: 0.3, max_tokens: 8000)
     parse_openai_response(response)
   end
 
@@ -121,42 +121,9 @@ class LinkedinImportJob
     PROMPT
   end
 
-  def make_openai_request(api_key, system_prompt, user_prompt)
-    uri = URI("https://craftcv.openai.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2025-01-01-preview")
-
-    request = Net::HTTP::Post.new(uri)
-    request["Content-Type"] = "application/json"
-    request["api-key"] = api_key
-
-    payload = {
-      messages: [
-        { role: "system", content: [ { type: "text", text: system_prompt } ] },
-        { role: "user", content: [ { type: "text", text: user_prompt } ] }
-      ],
-      temperature: 0.3,
-      top_p: 0.95,
-      max_tokens: 8000
-    }
-
-    request.body = payload.to_json
-
-    http = Net::HTTP.new(uri.hostname, uri.port)
-    http.use_ssl = true
-    http.open_timeout = 30
-    http.read_timeout = 120
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
-    response = http.request(request)
-
-    if response.code == "200"
-      JSON.parse(response.body)
-    else
-      raise "OpenAI API request failed: #{response.code} - #{response.body}"
-    end
-  end
 
   def parse_openai_response(response)
-    content = response["choices"][0]["message"]["content"]
+    content = response.content
 
     # Try to extract JSON from the response
     # Sometimes the model wraps it in ```json ... ```

@@ -32,16 +32,15 @@ class CvAnalysisJob
   private
 
   def analyze_cv
-    api_key = Rails.application.credentials.azure[:openai_api_key] || ENV["AZURE_OPENAI_API_KEY"]
-    raise "Azure OpenAI API key not found" unless api_key
 
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt(@analysis.extracted_text, @analysis.target_job, @analysis.target_industry)
 
-    response = make_openai_request(api_key, system_prompt, user_prompt)
+    response = AiModel.complete(system: system_prompt, user: user_prompt,
+                                temperature: 0.3, max_tokens: 4000)
     analysis_result = parse_openai_response(response)
 
-    tokens_used = response.dig("usage", "total_tokens") || 0
+    tokens_used = AiModel.token_count(response) || 0
 
     {
       analysis: analysis_result,
@@ -197,42 +196,9 @@ class CvAnalysisJob
     PROMPT
   end
 
-  def make_openai_request(api_key, system_prompt, user_prompt)
-    uri = URI("https://craftcv.openai.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2025-01-01-preview")
-
-    request = Net::HTTP::Post.new(uri)
-    request["Content-Type"] = "application/json"
-    request["api-key"] = api_key
-
-    payload = {
-      messages: [
-        { role: "system", content: [ { type: "text", text: system_prompt } ] },
-        { role: "user", content: [ { type: "text", text: user_prompt } ] }
-      ],
-      temperature: 0.3,
-      top_p: 0.95,
-      max_tokens: 4000
-    }
-
-    request.body = payload.to_json
-
-    http = Net::HTTP.new(uri.hostname, uri.port)
-    http.use_ssl = true
-    http.open_timeout = 30
-    http.read_timeout = 120
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
-    response = http.request(request)
-
-    if response.code == "200"
-      JSON.parse(response.body)
-    else
-      raise "OpenAI API request failed: #{response.code} - #{response.body}"
-    end
-  end
 
   def parse_openai_response(response)
-    content = response["choices"][0]["message"]["content"]
+    content = response.content
 
     # Try to extract JSON from the response
     json_match = content.match(/```json\s*(.*?)\s*```/m)
