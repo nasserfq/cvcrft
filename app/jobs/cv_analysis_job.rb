@@ -32,7 +32,6 @@ class CvAnalysisJob
   private
 
   def analyze_cv
-
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt(@analysis.extracted_text, @analysis.target_job, @analysis.target_industry)
 

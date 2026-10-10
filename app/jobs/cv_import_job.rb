@@ -24,7 +24,6 @@ class CvImportJob
   private
 
   def call_azure_openai_api(extracted_text)
-
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt(extracted_text)
 
