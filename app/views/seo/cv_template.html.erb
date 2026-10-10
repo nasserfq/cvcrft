@@ -95,34 +95,13 @@
   }
   </script>
   
-  <script src="https://cdn.tailwindcss.com"></script>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['IBM Plex Sans Arabic', 'sans-serif'] },
-          colors: {
-            primary: '#7B2FF7',
-            primaryHover: '#5A1EDB',
-            action: '#2EF2A3',
-            actionHover: '#1BCB86',
-            darkBase: '#121217',
-            darkCard: '#1C1C21',
-            canvas: '#FFFFFF',
-            borderLight: 'rgba(0,0,0,0.08)',
-            borderDark: 'rgba(255,255,255,0.08)',
-          },
-        }
-      }
-    }
-  </script>
   <style>
     body { font-feature-settings: "ss01", "ss02"; -webkit-font-smoothing: antialiased; }
     .prose h2 { @apply text-xl font-bold mt-8 mb-4; }

@@ -89,52 +89,13 @@
     }
     </script>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
 
-    <script>
-      tailwind.config = {
-          darkMode: 'class',
-          theme: {
-              extend: {
-                  fontFamily: {
-                      sans: ['IBM Plex Sans Arabic', 'sans-serif'],
-                  },
-                  colors: {
-                      primary: '#7C6CF2',
-                      primaryHover: '#6A5AE0',
-                      primaryAccent: '#9B8CFF',
-                      lavender: {
-                          50: '#F8F7FF',
-                          100: '#F1EEFF',
-                      },
-                      darkBase: '#1E1E2F',
-                      darkCard: '#27273A',
-                      action: '#2ED3B7',
-                      actionHover: '#25AB94',
-                      canvas: '#FFFFFF',
-                      borderLight: '#E6E8F0',
-                      borderDark: 'rgba(255,255,255,0.08)',
-                      gray: {
-                          500: '#5C5F73',
-                          600: '#5C5F73',
-                      }
-                  },
-                  boxShadow: {
-                      'glow': '0 0 40px -10px rgba(124, 108, 242, 0.3)',
-                      'glow-mint': '0 0 40px -10px rgba(46, 211, 183, 0.2)',
-                  },
-                  fontSize: {
-                      xxs: '0.625rem',
-                  }
-              }
-          }
-      }
-    </script>
     <style>
       body {
           font-feature-settings: "ss01", "ss02";

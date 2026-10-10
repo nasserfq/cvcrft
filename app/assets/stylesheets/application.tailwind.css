@@ -21,6 +21,10 @@
   --color-primary: #7c3aed;
   --color-primaryHover: #5b21b6;
   --color-primary-soft: #ddd6fe;
+  /* Used by the standalone landing/SEO pages, which carried their own config. */
+  --color-primaryAccent: #9b8cff;
+  --color-lavender-50: #f8f7ff;
+  --color-lavender-100: #f1eeff;
 
   --color-action: #2ef2a3;
   --color-actionHover: #0fd98a;
