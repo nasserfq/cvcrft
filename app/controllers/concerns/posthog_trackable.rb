@@ -5,8 +5,16 @@ module PosthogTrackable
 
   private
 
+  # Analytics consent is opt-in. The banner in app/views/shared/_posthog.html.erb
+  # writes this cookie; until the visitor accepts, nothing is sent — including
+  # from the server, which would otherwise ship email, name and IP to PostHog.
+  def analytics_consent?
+    cookies[:analytics_consent] == "granted"
+  end
+
   # Track an event for the current user
   def track_event(event_name, properties = {})
+    return unless analytics_consent?
     return unless current_user
 
     POSTHOG.capture({
@@ -20,6 +28,7 @@ module PosthogTrackable
 
   # Identify user with their properties (call on login/signup)
   def identify_user(user = current_user)
+    return unless analytics_consent?
     return unless user
 
     POSTHOG.identify({

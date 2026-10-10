@@ -579,4 +579,9 @@ en:
     ar: "العربية"
     en: "English"
     current: "Current Language"
-
+  consent:
+    title: "We'd like to measure how the site is used"
+    body: "We use PostHog to understand which features people use, so we can improve them. Nothing is collected unless you accept. Read our"
+    privacy_link: "privacy policy"
+    accept: "Accept"
+    decline: "Decline"
