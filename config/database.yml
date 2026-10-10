@@ -88,7 +88,7 @@ production:
  cache:
   <<: *primary_production
   database: cvcraft_production_cache
-  migrations_p: db/cache_migrate
+  migrations_paths: db/cache_migrate
  queue:
   <<: *primary_production
   database: cvcraft_production_queue
