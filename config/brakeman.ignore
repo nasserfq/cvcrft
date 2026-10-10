@@ -1,0 +1,34 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "7888b43eb2b18c211a0991ed7d17659bccfca96f7997e60a7c6cd3fd4237f162",
+      "check_name": "SendFile",
+      "file": "app/controllers/api/translations_controller.rb",
+      "line": 272,
+      "note": "Reviewed 2026-10-10. send_file path comes from CvBuilderPdfJob#perform, not from the request. The filename is resume.complete_name.parameterize (only [a-z0-9-]) under Rails.root/tmp/pdfs/generated, so no path traversal is possible; the resume is ownership-checked (raise unless resume.user_id == user_id) so no IDOR. params[:resume_id] only selects which of the caller's own resumes to render."
+    },
+    {
+      "fingerprint": "5aec15b38301f8652c718562ffeabb24abdfaa6497b6b43777bb530995bdfd11",
+      "check_name": "SendFile",
+      "file": "app/controllers/api/translations_controller.rb",
+      "line": 292,
+      "note": "Reviewed 2026-10-10. The path is a Redis VALUE written server-side by CvBuilderPdfJob; params[:token] is only part of the KEY, namespaced under current_user.id (cv_builder:pdf:<user_id>:<token>), so a caller can neither supply a path nor read another user's entry."
+    },
+    {
+      "fingerprint": "3717fdf3e79f3bfbe6691fb23049249fde6293e0b76d23bb7e798210e360bf0e",
+      "check_name": "SendFile",
+      "file": "app/controllers/api/translations_controller.rb",
+      "line": 340,
+      "note": "Reviewed 2026-10-10. Same sink as line 272: path produced by CvBuilderPdfJob from a parameterized filename under tmp/pdfs/generated; the resume is built on current_user.resumes so it cannot belong to anyone else."
+    },
+    {
+      "fingerprint": "23ebe1823a12cd16f9c334b8d7b345fc4331d85e09dff73ac15c96a0add2ad9d",
+      "check_name": "FileAccess",
+      "file": "app/jobs/cv_generator_job.rb",
+      "line": 711,
+      "note": "Reviewed 2026-10-10. File.read of the path AtsTemplatePdfService just wrote: Rails.root/tmp/pdfs/generated/<complete_name.parameterize>_resume.pdf. parameterize strips everything but [a-z0-9-], so the model attribute cannot introduce separators or '..'."
+    }
+  ],
+  "updated": "2026-10-10 21:00:00 +0300",
+  "brakeman_version": "8.1.0"
+}
