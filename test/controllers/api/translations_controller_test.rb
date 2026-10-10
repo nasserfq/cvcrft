@@ -64,4 +64,28 @@ class Api::TranslationsControllerTest < ActionDispatch::IntegrationTest
     # Should redirect or return unauthorized
     assert_includes [ 302, 401 ], response.status
   end
+
+  # Regression: pdf_status called an undefined CvBuilderPdfJob method, so every
+  # poll from the export flow 500'd.
+  test "pdf_status returns a download url once the PDF path is in Redis" do
+    pdf = Tempfile.new([ "resume", ".pdf" ])
+    Redis.stubs(:new).returns(stub(get: pdf.path))
+
+    get api_pdf_status_translations_url, params: { job_id: "job123", token: "tok123" }
+
+    assert_response :success
+    assert_equal "completed", json_response["status"]
+    assert_equal "/api/export_pdf?direct_download=true&token=tok123", json_response["download_url"]
+  ensure
+    pdf&.close!
+  end
+
+  test "pdf_status stays processing while the PDF is not in Redis yet" do
+    Redis.stubs(:new).returns(stub(get: nil))
+
+    get api_pdf_status_translations_url, params: { job_id: "job123", token: "tok123" }
+
+    assert_response :success
+    assert_equal "processing", json_response["status"]
+  end
 end

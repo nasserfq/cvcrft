@@ -64,6 +64,27 @@ class CvBuilderPdfJob
     Rails.logger.error e.backtrace.join("\n")
   end
 
+  # Status for the GET /api/pdf_status poller. store_pdf_in_redis keys the
+  # generated path by job token, so the token is what locates a finished PDF;
+  # resume_id is accepted because the endpoint allows it, but cannot locate one.
+  def self.check_pdf_status(user_id, job_id, token, _resume_id = nil)
+    key_token = token.presence || job_id.presence
+    return { status: "failed", message: "A job token is required to locate the PDF" } if key_token.blank?
+
+    redis = Redis.new(url: ENV["REDIS_URL"] || "redis://localhost:6379/1")
+    pdf_path = redis.get("cv_builder:pdf:#{user_id}:#{key_token}")
+
+    if pdf_path.present? && File.exist?(pdf_path)
+      { status: "completed",
+        download_url: Rails.application.routes.url_helpers.api_export_pdf_translations_path(direct_download: true, token: key_token) }
+    else
+      { status: "processing" }
+    end
+  rescue => e
+    Rails.logger.error "Error checking PDF status: #{e.message}"
+    { status: "failed", message: e.message }
+  end
+
   private
 
   def fetch_or_create_resume(resume_id, resume_params, user_id)
