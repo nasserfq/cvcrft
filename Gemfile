@@ -66,6 +66,9 @@ gem "redis", "~> 5.0"
 # Parallel processing for load testing
 gem "parallel"
 
+# Unified LLM client (Azure OpenAI today, Bedrock once IAM keys exist)
+gem "ruby_llm", "~> 2.1"
+
 # PDF generation
 gem "prawn"
 gem "prawn-table"

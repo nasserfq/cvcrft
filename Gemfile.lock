@@ -142,6 +142,16 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
+    faraday (2.14.4)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-multipart (1.2.0)
+      multipart-post (~> 2.0)
+    faraday-net_http (3.4.4)
+      net-http (~> 0.5)
+    faraday-retry (2.4.0)
+      faraday (~> 2.0)
     ffi (1.17.3-aarch64-linux-gnu)
     ffi (1.17.3-aarch64-linux-musl)
     ffi (1.17.3-arm-linux-gnu)
@@ -219,13 +229,17 @@ GEM
     mocha (3.0.1)
       ruby2_keywords (>= 0.0.5)
     msgpack (1.8.0)
+    multipart-post (2.4.1)
     mutex_m (0.3.0)
+    net-http (0.10.0)
+      net-protocol (>= 0.3.0)
+      uri (>= 0.11.1)
     net-imap (0.6.2)
       date
       net-protocol
     net-pop (0.1.2)
       net-protocol
-    net-protocol (0.2.2)
+    net-protocol (0.4.0)
       timeout
     net-scp (4.1.0)
       net-ssh (>= 2.6.5, < 8.0.0)
@@ -394,7 +408,18 @@ GEM
       ffi (~> 1.12)
       logger
     ruby2_keywords (0.0.5)
+    ruby_llm (2.1.0)
+      base64
+      faraday (>= 1.10.0)
+      faraday-multipart (>= 1)
+      faraday-net_http (>= 1)
+      faraday-retry (>= 1)
+      json (< 4)
+      marcel (>= 1.0, < 3)
+      schematist (~> 1.1)
+      zeitwerk (~> 2)
     rubyzip (3.2.2)
+    schematist (1.1.0)
     securerandom (0.4.1)
     selenium-webdriver (4.40.0)
       base64 (~> 0.2)
@@ -521,6 +546,7 @@ DEPENDENCIES
   rails (~> 8.0.2)
   redis (~> 5.0)
   rubocop-rails-omakase
+  ruby_llm (~> 2.1)
   selenium-webdriver
   sidekiq
   solid_cable
