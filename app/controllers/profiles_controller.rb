@@ -28,7 +28,7 @@ class ProfilesController < ApplicationController
       job_based_remaining: limits.remaining_job_based_generations,
       job_based_max: limits.max_job_based_generations
     }
-    
+
     # Track profile view
     track_event("profile_viewed", {
       total_resumes: @stats[:total_resumes],
@@ -58,7 +58,7 @@ class ProfilesController < ApplicationController
 
   def destroy
     @user = current_user
-    
+
     # Capture stats before deletion for tracking
     deletion_stats = {
       user_id: @user.id,
@@ -68,21 +68,21 @@ class ProfilesController < ApplicationController
       total_translations: @user.ai_translations.count,
       account_age_days: ((Time.current - @user.created_at) / 1.day).round
     }
-    
+
     # Track account deletion event BEFORE signing out
     track_event("account_deleted", deletion_stats)
-    
+
     # Sign out first
     sign_out(@user)
-    
+
     # Delete all associated data
     @user.resumes.destroy_all
     @user.cv_generations.destroy_all
     @user.ai_translations.destroy_all
-    
+
     # Delete the user
     @user.destroy
-    
+
     redirect_to root_path, notice: "تم حذف حسابك بنجاح. نأسف لرؤيتك تغادر!"
   end
 end

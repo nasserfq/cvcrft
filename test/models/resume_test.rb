@@ -8,7 +8,7 @@ class ResumeTest < ActiveSupport::TestCase
   test "fixtures are valid" do
     # Skip PDF generation in tests
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-    
+
     assert resumes(:complete_resume).valid?, "complete_resume fixture should be valid"
     assert resumes(:draft_resume).valid?, "draft_resume fixture should be valid"
     assert resumes(:minimal_resume).valid?, "minimal_resume fixture should be valid"
@@ -154,7 +154,7 @@ class ResumeTest < ActiveSupport::TestCase
 
   test "destroying resume destroys work_experiences" do
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-    
+
     user = users(:test_user)
     resume = Resume.create!(
       user: user,
@@ -166,7 +166,7 @@ class ResumeTest < ActiveSupport::TestCase
       job_title: "Developer",
       start_date: "2020-01"
     )
-    
+
     assert_difference "WorkExperience.count", -1 do
       resume.destroy
     end
@@ -174,15 +174,15 @@ class ResumeTest < ActiveSupport::TestCase
 
   test "destroying resume destroys skills" do
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-    
+
     user = users(:test_user)
     resume = Resume.create!(
       user: user,
       complete_name: "Test User",
       email: "destroy-skill-test@example.com"
     )
-    resume.skills.create!(category: "technical", skill_names: ["Ruby"])
-    
+    resume.skills.create!(category: "technical", skill_names: [ "Ruby" ])
+
     assert_difference "Skill.count", -1 do
       resume.destroy
     end
@@ -253,13 +253,13 @@ class ResumeTest < ActiveSupport::TestCase
 
   test "save_draft updates resume correctly" do
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-    
+
     resume = resumes(:minimal_resume)
-    form_data = { "step" => 2, "skills" => ["Ruby", "Rails"] }
-    
+    form_data = { "step" => 2, "skills" => [ "Ruby", "Rails" ] }
+
     resume.save_draft(form_data)
     resume.reload
-    
+
     assert resume.is_draft
     assert_equal form_data, resume.draft_data
   end
@@ -309,7 +309,7 @@ class ResumeTest < ActiveSupport::TestCase
 
   test "accepts nested attributes for work_experiences" do
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-    
+
     user = users(:test_user)
     resume = Resume.new(
       user: user,
@@ -319,24 +319,24 @@ class ResumeTest < ActiveSupport::TestCase
         { company: "Test Co", job_title: "Developer", start_date: "2020-01" }
       ]
     )
-    
+
     assert resume.save
     assert_equal 1, resume.work_experiences.count
   end
 
   test "accepts nested attributes for skills" do
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-    
+
     user = users(:test_user)
     resume = Resume.new(
       user: user,
       complete_name: "Test User",
       email: "nested-skill-test@example.com",
       skills_attributes: [
-        { category: "technical", skill_names: ["Ruby"] }
+        { category: "technical", skill_names: [ "Ruby" ] }
       ]
     )
-    
+
     assert resume.save
     assert_equal 1, resume.skills.count
   end

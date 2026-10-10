@@ -1,15 +1,15 @@
-require 'aws-sdk-ses'
+require "aws-sdk-ses"
 
 class SendOtpEmailJob < ApplicationJob
   queue_as :default
 
   def perform(email, otp_code)
     Rails.logger.info "Sending OTP email to #{email}"
-    
+
     ses_service = AmazonSesService.new
     subject = "Your CV Craft Login Code"
     body = generate_otp_email_body(otp_code)
-    
+
     ses_service.send_email(to: email, subject: subject, body: body)
     Rails.logger.info "OTP email sent successfully to #{email}"
   rescue => e
@@ -45,13 +45,13 @@ class SendOtpEmailJob < ApplicationJob
           <div class="content">
             <h2>Hello!</h2>
             <p>You requested a login code for your CV Craft account. Use the code below to complete your login:</p>
-            
+      #{'      '}
             <div class="otp-code">#{otp_code}</div>
-            
+      #{'      '}
             <p><strong>This code will expire in 10 minutes.</strong></p>
-            
+      #{'      '}
             <p>If you didn't request this code, please ignore this email.</p>
-            
+      #{'      '}
             <p>Best regards,<br>The CV Craft Team</p>
           </div>
           <div class="footer">

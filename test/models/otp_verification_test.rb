@@ -26,8 +26,8 @@ class OtpVerificationTest < ActiveSupport::TestCase
   end
 
   test "should not save otp with invalid email format" do
-    invalid_emails = ["invalid", "test@", "@example.com", "test.example.com"]
-    
+    invalid_emails = [ "invalid", "test@", "@example.com", "test.example.com" ]
+
     invalid_emails.each do |email|
       otp = OtpVerification.new(
         email: email,
@@ -49,8 +49,8 @@ class OtpVerificationTest < ActiveSupport::TestCase
   end
 
   test "should not save otp with code not exactly 6 characters" do
-    invalid_codes = ["12345", "1234567", "abc", ""]
-    
+    invalid_codes = [ "12345", "1234567", "abc", "" ]
+
     invalid_codes.each do |code|
       otp = OtpVerification.new(
         email: "test@example.com",
@@ -143,9 +143,9 @@ class OtpVerificationTest < ActiveSupport::TestCase
 
   test "generate_for creates new OTP for email" do
     email = "newuser@example.com"
-    
+
     otp = OtpVerification.generate_for(email)
-    
+
     assert_not_nil otp
     assert_equal email, otp.email
     assert_equal 6, otp.otp_code.length
@@ -155,7 +155,7 @@ class OtpVerificationTest < ActiveSupport::TestCase
 
   test "generate_for destroys old OTPs for same email" do
     email = "duplicate@example.com"
-    
+
     # Create first OTP
     first_otp = OtpVerification.create!(
       email: email,
@@ -163,13 +163,13 @@ class OtpVerificationTest < ActiveSupport::TestCase
       expires_at: 10.minutes.from_now
     )
     first_id = first_otp.id
-    
+
     # Generate new OTP for same email
     new_otp = OtpVerification.generate_for(email)
-    
+
     # First OTP should be destroyed
     assert_nil OtpVerification.find_by(id: first_id)
-    
+
     # New OTP should exist
     assert_not_nil OtpVerification.find_by(id: new_otp.id)
   end
@@ -184,10 +184,10 @@ class OtpVerificationTest < ActiveSupport::TestCase
 
   test "generate_for sets expiration to 10 minutes" do
     otp = OtpVerification.generate_for("expiration@example.com")
-    
+
     expected_min = 9.minutes.from_now
     expected_max = 11.minutes.from_now
-    
+
     assert otp.expires_at >= expected_min
     assert otp.expires_at <= expected_max
   end

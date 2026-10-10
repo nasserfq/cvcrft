@@ -210,7 +210,7 @@ class WorkExperienceTest < ActiveSupport::TestCase
 
   test "skip_validations_for_pdf delegates to resume" do
     Resume.any_instance.stubs(:skip_validations_for_pdf).returns(true)
-    
+
     we = work_experiences(:current_job)
     assert we.skip_validations_for_pdf
   end

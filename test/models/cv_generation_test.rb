@@ -71,7 +71,7 @@ class CvGenerationTest < ActiveSupport::TestCase
 
   test "should validate status inclusion" do
     valid_statuses = %w[processing completed failed cancelled draft]
-    
+
     valid_statuses.each do |status|
       generation = CvGeneration.new(
         user: users(:test_user),
@@ -141,10 +141,10 @@ class CvGenerationTest < ActiveSupport::TestCase
   test "cv_generation can optionally belong to resume" do
     generation = cv_generations(:completed_generation)
     assert_respond_to generation, :resume
-    
+
     # Test with resume
     assert generation.resume.present?
-    
+
     # Test without resume
     no_resume_gen = cv_generations(:processing_generation)
     assert_nil no_resume_gen.resume
@@ -277,11 +277,11 @@ class CvGenerationTest < ActiveSupport::TestCase
 
   test "save_draft updates generation correctly" do
     generation = cv_generations(:processing_generation)
-    form_data = { "step" => 2, "skills" => ["Ruby", "Rails"] }
-    
+    form_data = { "step" => 2, "skills" => [ "Ruby", "Rails" ] }
+
     generation.save_draft(form_data)
     generation.reload
-    
+
     assert generation.is_draft
     assert_equal "draft", generation.status
     assert_equal form_data, generation.draft_data
@@ -289,10 +289,10 @@ class CvGenerationTest < ActiveSupport::TestCase
 
   test "complete_draft updates generation correctly" do
     generation = cv_generations(:draft_generation)
-    
+
     generation.complete_draft
     generation.reload
-    
+
     assert_not generation.is_draft
     assert_equal "processing", generation.status
   end
@@ -304,7 +304,7 @@ class CvGenerationTest < ActiveSupport::TestCase
   test "metadata stores source correctly" do
     generation = cv_generations(:completed_generation)
     assert_equal "job_description", generation.metadata["source"]
-    
+
     cv_builder_gen = cv_generations(:cv_builder_generation)
     assert_equal "cv_builder", cv_builder_gen.metadata["source"]
   end

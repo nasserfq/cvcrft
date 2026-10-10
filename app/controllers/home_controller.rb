@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
-  layout false, only: [:index]
+  layout false, only: [ :index ]
 
   def index
     # Test Sidekiq job if requested
@@ -15,7 +15,7 @@ class HomeController < ApplicationController
 
     # User count for social proof
     @users_count = User.count
-    
+
     # Load recent CV generations and resumes for logged-in users
     if user_signed_in?
       @recent_cv_generations = current_user.cv_generations.where(status: "completed").recent.limit(3)

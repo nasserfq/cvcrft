@@ -22,7 +22,7 @@ class WorkExperienceDashboard < Administrate::BaseDashboard
     resume: Field::BelongsTo,
     start_date: Field::Text,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

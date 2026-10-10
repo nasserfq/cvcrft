@@ -30,7 +30,7 @@ class ResumeDashboard < Administrate::BaseDashboard
     user: UserDetailField,
     work_experiences: Field::HasMany,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

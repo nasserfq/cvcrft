@@ -72,7 +72,6 @@ class AiTranslationJob
   end
 
     def call_azure_openai_api
-
     # Prepare the prompt for translation
     system_prompt = build_system_prompt
     user_prompt = build_user_prompt

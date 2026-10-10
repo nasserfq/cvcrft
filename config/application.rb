@@ -38,7 +38,7 @@ module Cvcraft
 
     # Configure Sidekiq as the background job processor
     config.active_job.queue_adapter = :sidekiq
-    
+
     # Session store is configured in config/initializers/session_store.rb
   end
 end

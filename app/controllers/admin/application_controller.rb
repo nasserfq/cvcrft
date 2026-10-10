@@ -1,7 +1,7 @@
 module Admin
   class ApplicationController < Administrate::ApplicationController
     http_basic_authenticate_with name: "admin", password: "cvcraft2024"
-    
+
     # To customize the behavior of this controller,
     # you can overwrite any of the RESTful actions. For example:
     #

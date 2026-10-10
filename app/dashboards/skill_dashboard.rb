@@ -15,7 +15,7 @@ class SkillDashboard < Administrate::BaseDashboard
     resume: Field::BelongsTo,
     skill_names: Field::Text,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

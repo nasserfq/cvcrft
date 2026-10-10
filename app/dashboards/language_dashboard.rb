@@ -13,7 +13,7 @@ class LanguageDashboard < Administrate::BaseDashboard
     proficiency: Field::String,
     resume: Field::BelongsTo,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

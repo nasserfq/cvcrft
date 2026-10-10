@@ -1,6 +1,6 @@
 class CvGenerationsController < ApplicationController
-  layout false, only: [:new]
-  
+  layout false, only: [ :new ]
+
   before_action :authenticate_user!
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
   before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :save_draft, :resume_draft ]

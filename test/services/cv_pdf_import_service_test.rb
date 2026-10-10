@@ -7,7 +7,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
 
   test "detects English text as en language" do
     english_text = "John Doe\nSoftware Engineer\nExperienced developer with 5 years"
-    mock_reader = mock_pdf_reader([english_text])
+    mock_reader = mock_pdf_reader([ english_text ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -19,7 +19,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
 
   test "detects Arabic text and returns ar language" do
     arabic_text = "محمد أحمد\nمدير مشروع\nخبرة في إدارة المشاريع"
-    mock_reader = mock_pdf_reader([arabic_text])
+    mock_reader = mock_pdf_reader([ arabic_text ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -30,7 +30,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
 
   test "validate_english_content! raises ArabicContentError for Arabic text" do
     arabic_text = "محمد أحمد\nمدير مشروع\nخبرة في إدارة المشاريع"
-    mock_reader = mock_pdf_reader([arabic_text])
+    mock_reader = mock_pdf_reader([ arabic_text ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -46,7 +46,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
   test "detects mixed content with more than 30% Arabic as ar" do
     # Text with ~50% Arabic characters
     mixed_text = "محمد أحمد Ahmed Mohamed\nمدير مشروع Project Manager"
-    mock_reader = mock_pdf_reader([mixed_text])
+    mock_reader = mock_pdf_reader([ mixed_text ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -58,7 +58,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
   test "returns mixed for content between 10-30% Arabic" do
     # Text with ~15% Arabic (name only)
     mostly_english = "Mohamed Ahmed\nSoftware Engineer at Tech Company\nExperienced developer with Python, Ruby, JavaScript and more technologies"
-    mock_reader = mock_pdf_reader([mostly_english])
+    mock_reader = mock_pdf_reader([ mostly_english ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -74,7 +74,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
   test "extracts text from multi-page PDF" do
     page1_text = "John Doe\nSoftware Engineer"
     page2_text = "Work Experience\nTech Company"
-    mock_reader = mock_pdf_reader([page1_text, page2_text])
+    mock_reader = mock_pdf_reader([ page1_text, page2_text ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -107,7 +107,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
   end
 
   test "raises CorruptedFileError for empty PDF" do
-    mock_reader = mock_pdf_reader(["   \n\t  "])
+    mock_reader = mock_pdf_reader([ "   \n\t  " ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     error = assert_raises(CvPdfImportService::CorruptedFileError) do
@@ -124,7 +124,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
 
   test "cleans up excessive whitespace" do
     messy_text = "John    Doe\n\n\n\nSoftware   Engineer\n\t\t\tExperience"
-    mock_reader = mock_pdf_reader([messy_text])
+    mock_reader = mock_pdf_reader([ messy_text ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -145,16 +145,16 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
       John Smith
       Software Engineer
       Email: john@example.com
-      
+
       Professional Summary
       Experienced developer with expertise in Ruby on Rails
-      
+
       Work Experience
       Senior Developer at Tech Corp
       2020 - Present
     TEXT
 
-    mock_reader = mock_pdf_reader([english_cv])
+    mock_reader = mock_pdf_reader([ english_cv ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")
@@ -166,7 +166,7 @@ class CvPdfImportServiceTest < ActiveSupport::TestCase
   test "correctly handles text with small Arabic percentage" do
     # Small amount of Arabic (under 10%)
     text_low_arabic = "Hello World this is a test with محمد in it somewhere along the way and more text"
-    mock_reader = mock_pdf_reader([text_low_arabic])
+    mock_reader = mock_pdf_reader([ text_low_arabic ])
     PDF::Reader.stubs(:new).returns(mock_reader)
 
     service = CvPdfImportService.new("/fake/path.pdf")

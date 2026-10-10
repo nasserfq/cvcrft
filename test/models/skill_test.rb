@@ -20,7 +20,7 @@ class SkillTest < ActiveSupport::TestCase
   test "should not save skill without category" do
     skill = Skill.new(
       resume: resumes(:complete_resume),
-      skill_names: ["Ruby", "Rails"]
+      skill_names: [ "Ruby", "Rails" ]
     )
     assert_not skill.valid?
     assert_includes skill.errors[:category], "can't be blank"
@@ -37,12 +37,12 @@ class SkillTest < ActiveSupport::TestCase
 
   test "should validate level inclusion" do
     valid_levels = %w[beginner intermediate advanced expert]
-    
+
     valid_levels.each do |level|
       skill = Skill.new(
         resume: resumes(:complete_resume),
         category: "technical",
-        skill_names: ["Ruby"],
+        skill_names: [ "Ruby" ],
         level: level
       )
       assert skill.valid?, "#{level} should be a valid level"
@@ -53,7 +53,7 @@ class SkillTest < ActiveSupport::TestCase
     skill = Skill.new(
       resume: resumes(:complete_resume),
       category: "technical",
-      skill_names: ["Ruby"],
+      skill_names: [ "Ruby" ],
       level: "invalid_level"
     )
     assert_not skill.valid?
@@ -64,7 +64,7 @@ class SkillTest < ActiveSupport::TestCase
     skill = Skill.new(
       resume: resumes(:complete_resume),
       category: "technical",
-      skill_names: ["Ruby"],
+      skill_names: [ "Ruby" ],
       level: nil
     )
     assert skill.valid?
@@ -183,15 +183,15 @@ class SkillTest < ActiveSupport::TestCase
 
   test "skill_names can store and retrieve array" do
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-    
+
     skill = Skill.create!(
       resume: resumes(:complete_resume),
       category: "technical",
-      skill_names: ["Python", "Django", "FastAPI"]
+      skill_names: [ "Python", "Django", "FastAPI" ]
     )
-    
+
     skill.reload
-    assert_equal ["Python", "Django", "FastAPI"], skill.skill_names
+    assert_equal [ "Python", "Django", "FastAPI" ], skill.skill_names
   end
 
   # ============================================

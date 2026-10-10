@@ -14,13 +14,13 @@ class CleanEmptySkillNames < ActiveRecord::Migration[8.0]
           else
             skill.skill_names
           end
-          
+
           # Ensure it's an array
           skill_names = [] unless skill_names.is_a?(Array)
-          
+
           # Filter out empty strings
           cleaned_names = skill_names.reject { |name| name.blank? }
-          
+
           # Update the skill if there are changes
           if cleaned_names != skill_names
             skill.update_column(:skill_names, cleaned_names.to_json)

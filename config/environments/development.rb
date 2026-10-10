@@ -27,9 +27,9 @@ Rails.application.configure do
 
   # Configure cache busting for development
   config.public_file_server.headers = {
-    'Cache-Control' => 'no-cache, no-store, must-revalidate',
-    'Pragma' => 'no-cache',
-    'Expires' => '0'
+    "Cache-Control" => "no-cache, no-store, must-revalidate",
+    "Pragma" => "no-cache",
+    "Expires" => "0"
   }
 
   # Change to :null_store to avoid any caching.
