@@ -16,8 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 
     <style>
         body {
@@ -133,7 +133,7 @@
 
         <!-- Email Form -->
         <% unless params[:otp_sent] == 'true' %>
-          <div class="bg-white/60 dark:bg-[#1C1C21]/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
+          <div class="bg-white/60 dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
             <form class="space-y-6" action="/auth/send_otp" method="post">
               <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
               <%= hidden_field_tag :return_to, params[:return_to] %>
@@ -163,7 +163,7 @@
 
         <!-- OTP Form -->
         <% if params[:otp_sent] == 'true' %>
-          <div class="bg-white/60 dark:bg-[#1C1C21]/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
+          <div class="bg-white/60 dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
             <form class="space-y-6" action="/auth/verify_otp" method="post">
               <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
               <%= hidden_field_tag :email, params[:email] %>

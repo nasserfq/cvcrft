@@ -16,53 +16,55 @@
 */
 @theme {
   --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  /* Latin display face; Arabic glyphs fall through to Plex Sans Arabic. */
+  --font-display: "Bricolage Grotesque", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand — saturated and flat. */
-  --color-primary: #7c3aed;
-  --color-primaryHover: #5b21b6;
-  --color-primary-soft: #ddd6fe;
+  /* Brand — lavender neo-brutalism. */
+  --color-primary: #7b2ff7;
+  --color-primaryHover: #5b23c4;
+  --color-primary-soft: #c8b6ff;
   /* Used by the standalone landing/SEO pages, which carried their own config. */
-  --color-primaryAccent: #9b8cff;
-  --color-lavender-50: #f8f7ff;
-  --color-lavender-100: #f1eeff;
+  --color-primaryAccent: #b79cff;
+  --color-lavender-50: #faf7ff;
+  --color-lavender-100: #e6dcff;
 
-  --color-action: #2ef2a3;
-  --color-actionHover: #0fd98a;
-  /* The mint reads ~1.6:1 on white, so it is for fills only.
-     `action-ink` is the text-safe variant (~4.6:1). */
-  --color-action-ink: #046c4e;
+  /* Acid lime. ~1.1:1 on white, so it is for fills only.
+     `action-ink` is the text-safe variant (~9:1 on white). */
+  --color-action: #d7ff4a;
+  --color-actionHover: #c4f01e;
+  --color-action-ink: #3d4f00;
 
   /* Brutalist accent set. */
-  --color-brut-yellow: #ffd93d;
-  --color-brut-pink: #ff5c8a;
-  --color-brut-blue: #4d9de0;
-  --color-brut-orange: #ff8c42;
+  --color-brut-yellow: #d7ff4a;
+  --color-brut-pink: #c8b6ff;
+  --color-brut-blue: #7b2ff7;
+  --color-brut-orange: #ff9e6b;
 
-  /* Surfaces — warm paper, not clinical white. */
-  --color-canvas: #fffdf5;
-  --color-surface: #fff8e7;
-  --color-surface-2: #ffefc9;
-  --color-darkBase: #16161a;
-  --color-darkCard: #212126;
-  --color-darkCard-2: #2c2c33;
+  /* Surfaces — lavender ground, paper cards. */
+  --color-canvas: #e6dcff;
+  --color-surface: #faf7ff;
+  --color-surface-2: #c8b6ff;
+  --color-darkBase: #15101f;
+  --color-darkCard: #221a33;
+  --color-darkCard-2: #2e2443;
 
   /* Ink */
-  --color-ink: #000000;
-  --color-ink-muted: #3f3f46;
-  --color-ink-subtle: #52525b;
+  --color-ink: #15101f;
+  --color-ink-muted: #3b3350;
+  --color-ink-subtle: #544a6b;
 
-  /* Borders are structural in brutalism: always hard, always black. */
-  --color-borderLight: #000000;
-  --color-borderDark: #ffffff;
+  /* Borders are structural in brutalism: always hard, always ink. */
+  --color-borderLight: #15101f;
+  --color-borderDark: #e6dcff;
 
   /* Hard offset shadows — no blur, ever. */
-  --shadow-brut: 4px 4px 0 #000;
-  --shadow-brut-sm: 2px 2px 0 #000;
-  --shadow-brut-lg: 8px 8px 0 #000;
-  --shadow-glow: 4px 4px 0 #000;
-  --shadow-glow-mint: 4px 4px 0 #000;
+  --shadow-brut: 5px 5px 0 #15101f;
+  --shadow-brut-sm: 3px 3px 0 #15101f;
+  --shadow-brut-lg: 8px 8px 0 #15101f;
+  --shadow-glow: 5px 5px 0 #15101f;
+  --shadow-glow-mint: 5px 5px 0 #15101f;
 
-  --radius-card: 0.25rem;
+  --radius-card: 0;
   --text-xxs: 0.625rem;
 }
 
@@ -87,7 +89,7 @@ body {
 .rounded-xl,
 .rounded-2xl,
 .rounded-3xl {
-  border-radius: 0.25rem;
+  border-radius: 0;
 }
 
 /* Keep genuinely circular things circular: avatars, icon chips, toggles. */
@@ -97,10 +99,10 @@ body {
 
 /* 2. Replace every soft/blurred shadow with a hard offset one. */
 [class*="shadow-"]:not(.shadow-none) {
-  box-shadow: 4px 4px 0 #000;
+  box-shadow: 5px 5px 0 var(--color-ink);
 }
 .dark [class*="shadow-"]:not(.shadow-none) {
-  box-shadow: 4px 4px 0 #fff;
+  box-shadow: 5px 5px 0 var(--color-primary);
 }
 .shadow-none {
   box-shadow: none;
@@ -129,14 +131,14 @@ body {
 [class*="border-white/"],
 [class*="border-black/"],
 .border-borderLight {
-  border-color: #000 !important;
+  border-color: var(--color-ink) !important;
 }
 .dark [class*="border-gray-"],
 .dark [class*="border-slate-"],
 .dark [class*="border-white/"],
 .dark [class*="border-black/"],
 .dark .border-borderLight {
-  border-color: #fff !important;
+  border-color: var(--color-borderDark) !important;
 }
 
 /* 5. Buttons and inputs: the signature treatment. */
@@ -144,8 +146,8 @@ button:not(.btn-plain),
 a[role="button"],
 input[type="submit"],
 input[type="button"] {
-  border: 2px solid #000;
-  box-shadow: 3px 3px 0 #000;
+  border: 3px solid var(--color-ink);
+  box-shadow: 4px 4px 0 var(--color-ink);
   font-weight: 700;
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
@@ -153,16 +155,16 @@ input[type="button"] {
 .dark a[role="button"],
 .dark input[type="submit"],
 .dark input[type="button"] {
-  border-color: #fff;
-  box-shadow: 3px 3px 0 #fff;
+  border-color: var(--color-borderDark);
+  box-shadow: 4px 4px 0 var(--color-primary);
 }
 
 /* Press-in on interaction: the shadow collapses as the element moves into it. */
 button:not(.btn-plain):active,
 a[role="button"]:active,
 input[type="submit"]:active {
-  transform: translate(3px, 3px);
-  box-shadow: 0 0 0 #000;
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--color-ink);
 }
 
 input[type="text"],
@@ -174,8 +176,8 @@ input[type="search"],
 input[type="date"],
 select,
 textarea {
-  border: 2px solid #000 !important;
-  border-radius: 0.25rem;
+  border: 3px solid var(--color-ink) !important;
+  border-radius: 0;
 }
 .dark input[type="text"],
 .dark input[type="email"],
@@ -186,12 +188,12 @@ textarea {
 .dark input[type="date"],
 .dark select,
 .dark textarea {
-  border-color: #fff !important;
+  border-color: var(--color-borderDark) !important;
 }
 
 /* Visible focus ring — brutalism is high-contrast, so keyboard focus should be too. */
 :focus-visible {
-  outline: 3px solid var(--color-brut-blue);
+  outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -202,7 +204,58 @@ h3:not([class*="font-"]) {
   font-weight: 800;
 }
 h1, h2, h3 {
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+/* 7. Lavender ground with a faint ink dot grid (light mode only).
+   background-image only: the body's utilities still own its color. */
+html:not(.dark) body {
+  background-image: radial-gradient(rgb(21 16 31 / 0.16) 1px, transparent 1.4px);
+  background-size: 28px 28px;
+}
+
+/* 8. Lime can't carry text on light surfaces; swap to its ink there. */
+html:not(.dark) .text-action {
+  color: var(--color-action-ink);
+}
+.bg-action.text-white {
+  color: var(--color-ink);
+}
+
+/* 9. Chunky outlines: any element with a plain `border` gets 3px. */
+.border {
+  border-width: 3px;
+}
+
+/* 10. Grey copy on lavender drops under 4.5:1; pull it to the ink tints. */
+html:not(.dark) .text-gray-500 {
+  color: var(--color-ink-subtle);
+}
+html:not(.dark) .text-gray-600,
+html:not(.dark) .text-gray-700 {
+  color: var(--color-ink-muted);
+}
+
+/* Gradient headline text reads as one solid violet. */
+.gradient-text,
+.bg-clip-text.text-transparent {
+  background-image: none !important;
+  color: var(--color-primary) !important;
+  -webkit-text-fill-color: currentColor;
+}
+.dark .gradient-text,
+.dark .bg-clip-text.text-transparent {
+  color: var(--color-action) !important;
+}
+
+::selection {
+  background: var(--color-action);
+  color: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink) !important;
+  border-radius: 0 !important;
 }
 
 /*
@@ -211,10 +264,10 @@ h1, h2, h3 {
 */
 .js-hover-active {
   transform: translate(-2px, -2px) !important;
-  box-shadow: 6px 6px 0 #000 !important;
+  box-shadow: 7px 7px 0 var(--color-ink) !important;
 }
 .dark .js-hover-active {
-  box-shadow: 6px 6px 0 #fff !important;
+  box-shadow: 7px 7px 0 var(--color-primary) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
