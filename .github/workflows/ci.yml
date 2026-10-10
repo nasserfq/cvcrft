@@ -85,6 +85,21 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Views render with vite_javascript_tag, which needs a built manifest.
+      # public/vite is gitignored, so a fresh checkout has none and every test
+      # that renders such a view fails with "Vite Ruby can't find ... in the
+      # manifests". vite_ruby auto-builds on demand, but only if the JS
+      # dependencies are installed. npm install, not npm ci: the repo carries
+      # three lockfiles and package-lock.json is not kept in sync (the
+      # Dockerfile deletes it and reinstalls).
+      - name: Install JavaScript dependencies
+        run: npm install
+
       - name: Run tests
         env:
           RAILS_ENV: test
