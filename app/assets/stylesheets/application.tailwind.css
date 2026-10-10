@@ -69,7 +69,9 @@
 body {
   font-feature-settings: "ss01", "ss02";
   -webkit-font-smoothing: antialiased;
-  background-color: var(--color-canvas);
+  /* No background-color here. This block is unlayered, so it would beat
+     Tailwind's layered `dark:bg-darkBase` on <body> and force every page
+     light. The body's own utility classes own the background. */
 }
 
 /*
@@ -194,10 +196,12 @@ textarea {
 }
 
 /* 6. Headings carry the weight. */
-h1,
-h2,
-h3 {
+h1:not([class*="font-"]),
+h2:not([class*="font-"]),
+h3:not([class*="font-"]) {
   font-weight: 800;
+}
+h1, h2, h3 {
   letter-spacing: -0.02em;
 }
 
