@@ -1,6 +1,10 @@
 class Admin::EmailLoadTestController < ApplicationController
-  # HTTP Basic Authentication for admin access
-  http_basic_authenticate_with name: "admin", password: "cvcraft2024"
+  # HTTP Basic Authentication for admin access. See Admin::ApplicationController
+  # for why there is no fallback password.
+  http_basic_authenticate_with(
+    name: ENV.fetch("ADMIN_USERNAME", "admin"),
+    password: ENV.fetch("ADMIN_PASSWORD") { SecureRandom.hex(32) }
+  )
 
   # Use custom layout instead of Administrate layout
   layout "admin_email_load_test"

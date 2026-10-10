@@ -1,6 +1,13 @@
 module Admin
   class ApplicationController < Administrate::ApplicationController
-    http_basic_authenticate_with name: "admin", password: "cvcraft2024"
+    # Credentials come from the environment. No fallback: if ADMIN_PASSWORD is
+    # unset the panel gets an unguessable random password for the life of the
+    # process, so a misconfiguration locks admins out rather than leaving the
+    # dashboard open on a known password.
+    http_basic_authenticate_with(
+      name: ENV.fetch("ADMIN_USERNAME", "admin"),
+      password: ENV.fetch("ADMIN_PASSWORD") { SecureRandom.hex(32) }
+    )
 
     # To customize the behavior of this controller,
     # you can overwrite any of the RESTful actions. For example:
