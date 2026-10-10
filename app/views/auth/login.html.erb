@@ -229,6 +229,7 @@
           <a href="<%= terms_path %>" class="hover:text-primary transition-colors"><%= t('footer.terms') %></a>
           <a href="<%= privacy_path %>" class="hover:text-primary transition-colors"><%= t('footer.privacy') %></a>
           <a href="mailto:support@cvcrft.com" class="hover:text-primary transition-colors"><%= t('footer.contact') %></a>
+          <%= render 'shared/cookie_settings' %>
         </div>
 
         <div class="text-xs text-gray-500">

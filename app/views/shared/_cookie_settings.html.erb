@@ -1,0 +1,16 @@
+<%#
+  Lets a visitor change an analytics decision they already made.
+
+  GDPR Art. 7(3) requires withdrawing consent to be as easy as giving it,
+  and the banner only appears while no choice is stored. This clears the
+  cookie and reloads, which brings the banner back.
+
+  Rendered from every footer. The standalone pages (layout false) carry
+  their own footers, so this is included in each rather than relying on
+  layouts/_footer alone.
+%>
+<button type="button"
+        onclick="document.cookie='analytics_consent=; path=/; max-age=0'; location.reload();"
+        class="btn-plain bg-transparent border-0 shadow-none p-0 font-normal underline-offset-2 hover:underline hover:text-primary transition-colors cursor-pointer">
+  <%= t("consent.settings") %>
+</button>
