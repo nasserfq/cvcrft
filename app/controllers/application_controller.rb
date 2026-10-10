@@ -31,12 +31,18 @@ class ApplicationController < ActionController::Base
 
   # Override Devise's authenticate_user! to store intended URL before redirecting to login
   def authenticate_user!
-    unless user_signed_in?
-      # Store the intended URL so we can redirect back after login
-      store_location_for_custom_auth
-      redirect_to login_path(return_to: request.fullpath), alert: t("auth.login_required")
+    return if user_signed_in?
+
+    # JSON callers (the React components today, a mobile client later) can't
+    # follow a redirect to an HTML login page — they'd parse the page as JSON.
+    if request.format.json? || request.xhr?
+      render json: { error: t("auth.login_required"), authenticated: false }, status: :unauthorized
       return
     end
+
+    # Store the intended URL so we can redirect back after login
+    store_location_for_custom_auth
+    redirect_to login_path(return_to: request.fullpath), alert: t("auth.login_required")
   end
 
   private
