@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,7 +12,8 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= csrf_meta_tags %>
   </head>
-  <body class="antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans min-h-screen flex items-center justify-center" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
+  <body class="sr-app antialiased bg-gradient-to-b from-white via-emerald-50 to-white text-slate-900 font-sans min-h-screen flex items-center justify-center" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;">
+<%= render 'shared/ambient', fixed: true %>
     <!-- Background Accents -->
     <div class="pointer-events-none fixed inset-0 -z-10">
       <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
@@ -169,5 +170,6 @@
         checkStatus();
       <% end %>
     </script>
-  </body>
+  <%= render 'shared/site_scripts' %>
+</body>
 </html>

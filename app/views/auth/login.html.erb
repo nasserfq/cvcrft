@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>" dir="<%= text_direction %>" class="scroll-smooth">
+<html lang="<%= I18n.locale %>" dir="<%= text_direction %>" class="dark scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,54 +47,10 @@
         }
     </style>
 </head>
-<body class="bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden">
+<body class="sr-app bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden">
+<%= render 'shared/ambient', fixed: true %>
 
-    <!-- Background Blobs -->
-    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div class="blob bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full top-[-10%] left-[-10%]"></div>
-        <div class="blob bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full bottom-[-10%] right-[-10%] animation-delay-2000"></div>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="fixed top-3 md:top-4 inset-x-3 md:inset-x-6 mx-auto max-w-[1240px] z-50 rounded-[22px] border border-borderLight bg-white/70 backdrop-blur-xl dark:bg-darkBase/40 dark:border-borderDark dark:shadow-glass">
-        <div class="px-3 sm:px-5 h-16 md:h-[68px] flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center gap-2 z-50">
-                <a href="/" class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2">
-                    <span class="bg-primary text-mist w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 26, animate: true %></span>
-                    سيرة
-                </a>
-            </div>
-
-            <!-- Desktop Menu -->
-            <div class="hidden md:flex items-center gap-8 text-sm font-normal text-gray-500 dark:text-gray-400">
-                <a href="/#features" class="hover:text-primary transition-colors"><%= t('nav.features') %></a>
-                <a href="/#how-it-works" class="hover:text-primary transition-colors"><%= t('nav.how_it_works') %></a>
-                <a href="/#templates" class="hover:text-primary transition-colors"><%= t('nav.templates') %></a>
-            </div>
-
-            <!-- Actions -->
-            <div class="hidden md:flex items-center gap-4">
-                <button id="themeToggle" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
-                    <iconify-icon icon="solar:sun-2-linear" width="24" height="24" class="hidden dark:block pointer-events-none"></iconify-icon>
-                    <iconify-icon icon="solar:moon-linear" width="24" height="24" class="block dark:hidden pointer-events-none"></iconify-icon>
-                </button>
-                
-                <span class="flex items-center gap-2 text-sm text-primary dark:text-action">
-                    <iconify-icon icon="solar:login-2-linear" width="20"></iconify-icon>
-                    <span><%= t('nav.login') %></span>
-                </span>
-            </div>
-
-            <!-- Mobile Actions -->
-            <div class="flex md:hidden items-center gap-4 z-50">
-                <button id="themeToggleMobile" onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400">
-                    <iconify-icon icon="solar:sun-2-linear" width="22" height="22" class="hidden dark:block pointer-events-none"></iconify-icon>
-                    <iconify-icon icon="solar:moon-linear" width="22" height="22" class="block dark:hidden pointer-events-none"></iconify-icon>
-                </button>
-            </div>
-        </div>
-    </nav>
+    <%= render 'layouts/header' %>
 
     <!-- Main Content -->
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-28">
@@ -218,37 +174,14 @@
     </div>
 
     <!-- Site Footer -->
-    <%= render 'shared/sadu_band' %>
-    <footer class="border-t border-borderLight dark:border-borderDark bg-white/40 dark:bg-white/[0.03] pt-8 pb-6 px-4 sm:px-6">
-      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
-        <div class="flex items-center gap-3">
-          <span class="bg-primary text-mist w-7 h-7 rounded-lg flex items-center justify-center"><%= render "shared/logo_mark", size: 20 %></span>
-          <span class="font-medium text-lg text-darkBase dark:text-white">سيرة</span>
-        </div>
-        
-        <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-gray-500">
-          <a href="<%= terms_path %>" class="hover:text-primary transition-colors"><%= t('footer.terms') %></a>
-          <a href="<%= privacy_path %>" class="hover:text-primary transition-colors"><%= t('footer.privacy') %></a>
-          <a href="mailto:support@cvcrft.com" class="hover:text-primary transition-colors"><%= t('footer.contact') %></a>
-          <%= render 'shared/cookie_settings' %>
-        </div>
-
-        <div class="text-xs text-gray-500">
-          © <%= Time.current.year %> سيرة. <%= t('footer.copyright') %>
-        </div>
-      </div>
-    </footer>
+    <%= render 'layouts/footer' %>
 
     <script>
         // Theme Logic
         const html = document.documentElement;
 
         // Initialize Theme
-        if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
+        html.classList.add('dark'); // the Seera design is dark only
 
         // Button loading animation
         document.addEventListener('DOMContentLoaded', () => {
@@ -297,5 +230,6 @@
             });
         });
     </script>
+<%= render 'shared/site_scripts' %>
 </body>
 </html>

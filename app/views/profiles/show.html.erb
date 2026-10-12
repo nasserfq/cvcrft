@@ -2,7 +2,7 @@
 
 <div dir="<%= text_direction %>" class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-darkBase dark:via-darkBase dark:to-darkBase transition-colors duration-300">
   <!-- Top Navigation Bar -->
-  <div class="bg-white dark:bg-white/5 border-b border-gray-200 dark:border-white/10 sticky top-0 z-10 backdrop-blur-sm">
+  <div class="bg-white dark:bg-white/5 border-b border-gray-200 dark:border-white/10 backdrop-blur-sm">
     <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <div class="flex items-center gap-4">
@@ -249,7 +249,7 @@
           <div class="p-6">
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4"><%= t('profile.coupon_hint') %></p>
             <%= form_with url: redeem_coupon_profile_path, method: :post, local: true, class: "flex flex-col gap-3" do |f| %>
-              <%= f.text_field :code, placeholder: random_coupon_code_placeholder, class: "w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-[#27273A]/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary uppercase", autocomplete: "off" %>
+              <%= f.text_field :code, placeholder: random_coupon_code_placeholder, class: "w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-darkCard/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary uppercase", autocomplete: "off" %>
               <%= f.submit t('profile.apply_coupon'), class: "w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primaryHover text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98] cursor-pointer" %>
             <% end %>
           </div>
