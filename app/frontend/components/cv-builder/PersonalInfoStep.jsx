@@ -12,7 +12,7 @@ const PersonalInfoStep = ({ formData, handleInputChange, renderSaveDraftButton }
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
           <UserIcon />
         </div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">المعلومات الشخصية</h2>

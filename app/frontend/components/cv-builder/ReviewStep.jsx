@@ -46,8 +46,8 @@ const ReviewStep = ({
                 onClick={() => onTemplateChange(template.key)}
                 className={`text-start p-3 sm:p-3.5 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
                   isSelected
-                    ? "border-[#7C6CF2] bg-[#7C6CF2]/10 dark:bg-[#7C6CF2]/20 ring-2 ring-[#7C6CF2]/25"
-                    : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#1E1E2F] hover:border-[#7C6CF2]/40 active:scale-[0.99]"
+                    ? "border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/25"
+                    : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#1E1E2F] hover:border-primary/40 active:scale-[0.99]"
                 }`}
               >
                 <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug">
@@ -72,7 +72,7 @@ const ReviewStep = ({
               href={pdfPreviewUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium text-[#7C6CF2] hover:text-[#6A5AE0] touch-manipulation"
+              className="shrink-0 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium text-primary hover:text-[#6A5AE0] touch-manipulation"
             >
               {t("preview.open_full")}
             </a>

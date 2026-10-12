@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= t('site.name') %> | <%= t('site.tagline') %></title>
     <meta name="description" content="<%= t('site.description') %>" />
-    <meta name="theme-color" content="#7B2FF7" />
+    <meta name="theme-color" content="#07120D" />
     
     <!-- Canonical & Language Alternates -->
     <link rel="canonical" href="https://cvcrft.com<%= request.path == '/' ? '' : request.path %>" />
@@ -93,8 +93,8 @@
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" /></noscript>
 
     <style>
       body {
@@ -120,7 +120,7 @@
           background-clip: text;
           -webkit-background-clip: text;
           color: transparent;
-          background-image: linear-gradient(135deg, #7C6CF2 0%, #2ED3B7 100%);
+          background-image: linear-gradient(135deg, #0B7F48 0%, #D6B877 100%);
       }
 
       .blob {
@@ -171,10 +171,10 @@
 
     <!-- Navigation -->
     <nav
-      class="fixed top-0 w-full z-50 border-b border-borderLight bg-white/80 backdrop-blur-xl dark:bg-darkBase/80 dark:border-borderDark"
+      class="fixed top-3 md:top-4 inset-x-3 md:inset-x-6 mx-auto max-w-[1240px] z-50 rounded-[22px] border border-borderLight bg-white/70 backdrop-blur-xl dark:bg-darkBase/40 dark:border-borderDark dark:shadow-glass"
     >
       <div
-        class="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between"
+        class="px-3 sm:px-5 h-16 md:h-[68px] flex items-center justify-between"
       >
         <!-- Logo -->
         <div class="flex items-center gap-2 z-50">
@@ -182,11 +182,7 @@
             href="#"
             class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2"
           >
-            <span
-              class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"
-            >
-              س
-            </span>
+            <span class="bg-primary text-mist w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 26, animate: true %></span>
             سيرة
           </a>
         </div>
@@ -254,7 +250,7 @@
           
           <a
             href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
-            class="flex items-center justify-center px-5 py-2 rounded-full bg-primary hover:bg-primaryHover text-white text-sm font-normal transition-all shadow-glow hover:shadow-lg"
+            class="flex items-center justify-center px-5 h-11 rounded-xl bg-primary hover:bg-primaryHover text-white text-sm font-semibold transition-all shadow-glow hover:shadow-lg"
           >
             <%= t('nav.build_cv') %>
           </a>
@@ -307,11 +303,7 @@
       >
         <!-- Logo -->
         <div class="flex items-center gap-2">
-          <span
-            class="bg-primary text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow"
-          >
-            س
-          </span>
+          <span class="bg-primary text-mist w-8 h-8 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 22 %></span>
           <span
             class="text-xl font-medium tracking-tight text-darkBase dark:text-white"
           >
@@ -1028,10 +1020,11 @@
     </section>
 
     <!-- Footer -->
-    <footer class="border-t border-borderLight dark:border-borderDark bg-gray-50 dark:bg-darkBase pt-12 md:pt-16 pb-8 md:pb-10 px-4 sm:px-6">
+    <%= render 'shared/sadu_band' %>
+    <footer class="border-t border-borderLight dark:border-borderDark bg-white/40 dark:bg-white/[0.03] pt-12 md:pt-16 pb-8 md:pb-10 px-4 sm:px-6">
       <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
         <div class="flex items-center gap-3">
-          <span class="bg-primary text-white w-6 h-6 rounded flex items-center justify-center text-xs font-bold">س</span>
+          <span class="bg-primary text-mist w-7 h-7 rounded-lg flex items-center justify-center"><%= render "shared/logo_mark", size: 20 %></span>
           <span class="font-medium text-lg md:text-xl text-darkBase dark:text-white">سيرة</span>
         </div>
         
@@ -1054,7 +1047,7 @@
         const html = document.documentElement;
 
         // Initialize Theme
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
             html.classList.add('dark');
         } else {
             html.classList.remove('dark');

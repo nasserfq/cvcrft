@@ -133,7 +133,7 @@
             target: "_blank",
             class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
           <%= link_to "Regenerate PDF", download_pdf_cv_generation_path(@cv_generation, regenerate: true), 
-            class: "mt-2 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
+            class: "mt-2 bg-primary hover:bg-primary text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
                     <div class="text-xs text-gray-500 mt-1">PDF Version: <%= @cv_generation.metadata["pdf_version"] || "Unknown" %></div>
                   </div>
                 </div>

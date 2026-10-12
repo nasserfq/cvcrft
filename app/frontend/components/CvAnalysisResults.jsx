@@ -213,16 +213,16 @@ const CvAnalysisResults = ({ analysis, language, targetJob, targetIndustry }) =>
     <div className="space-y-8">
       {/* Target Context */}
       {(targetJob || targetIndustry) && (
-        <div className="bg-purple-50 rounded-xl p-4 flex flex-wrap gap-4 text-sm">
+        <div className="bg-primary/5 rounded-xl p-4 flex flex-wrap gap-4 text-sm">
           {targetJob && (
             <div>
-              <span className="text-purple-600 font-medium">{t.targetJob}: </span>
+              <span className="text-primary font-medium">{t.targetJob}: </span>
               <span className="text-slate-700">{targetJob}</span>
             </div>
           )}
           {targetIndustry && (
             <div>
-              <span className="text-purple-600 font-medium">{t.targetIndustry}: </span>
+              <span className="text-primary font-medium">{t.targetIndustry}: </span>
               <span className="text-slate-700">{targetIndustry}</span>
             </div>
           )}
@@ -334,7 +334,7 @@ const CvAnalysisResults = ({ analysis, language, targetJob, targetIndustry }) =>
       {Object.keys(keyword_analysis).length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <h2 className="text-xl font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
             {t.keywordAnalysis}

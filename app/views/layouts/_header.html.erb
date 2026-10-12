@@ -1,10 +1,10 @@
 <!-- Navigation -->
-<nav class="fixed top-0 w-full z-50 border-b border-borderLight bg-white/80 backdrop-blur-xl dark:bg-darkBase/80 dark:border-borderDark">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between">
+<nav class="fixed top-3 md:top-4 inset-x-3 md:inset-x-6 mx-auto max-w-[1240px] z-50 rounded-[22px] border border-borderLight bg-white/70 backdrop-blur-xl dark:bg-darkBase/40 dark:border-borderDark dark:shadow-glass">
+    <div class="px-3 sm:px-5 h-16 md:h-[68px] flex items-center justify-between">
         <!-- Logo -->
         <div class="flex items-center gap-2 z-50">
             <a href="/" class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2">
-                <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
+                <span class="bg-primary text-mist w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 26, animate: true %></span>
                 سيرة
             </a>
         </div>
@@ -53,7 +53,7 @@
                 </a>
             <% end %>
             
-            <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "flex items-center justify-center px-5 py-2 rounded-full bg-primary hover:bg-primaryHover text-white text-sm font-normal transition-all shadow-glow hover:shadow-lg" do %>
+            <%= link_to (user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path)), class: "flex items-center justify-center px-5 h-11 rounded-xl bg-primary hover:bg-primaryHover text-white text-sm font-semibold transition-all shadow-glow hover:shadow-lg" do %>
                 <%= t('nav.build_cv') %>
             <% end %>
         </div>
@@ -77,7 +77,7 @@
     <div class="flex items-center justify-between px-4 sm:px-6 h-16 shrink-0 border-b border-borderLight dark:border-borderDark">
         <!-- Logo -->
         <div class="flex items-center gap-2">
-            <span class="bg-primary text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
+            <span class="bg-primary text-mist w-8 h-8 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 22 %></span>
             <span class="text-xl font-medium tracking-tight text-darkBase dark:text-white">سيرة</span>
         </div>
         

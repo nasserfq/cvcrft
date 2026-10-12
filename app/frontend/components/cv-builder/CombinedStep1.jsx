@@ -15,7 +15,7 @@ const FieldError = ({ error }) => error ? (
 // Input with error styling
 const getInputClassName = (hasError) => 
   hasError 
-    ? inputClassName.replace('border-[#E6E8F0]', 'border-red-400').replace('focus:ring-[#7C6CF2]/40', 'focus:ring-red-500/40').replace('focus:border-[#7C6CF2]', 'focus:border-red-400') + ' ring-red-200'
+    ? inputClassName.replace('border-[#E6E8F0]', 'border-red-400').replace('focus:ring-primary/40', 'focus:ring-red-500/40').replace('focus:border-primary', 'focus:border-red-400') + ' ring-red-200'
     : inputClassName;
 
 // Icons
@@ -56,7 +56,7 @@ const CombinedStep1 = ({
     <div className="space-y-8">
       {/* Section Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
           <UserIcon />
         </div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('step1.title')}</h2>
@@ -66,7 +66,7 @@ const CombinedStep1 = ({
       {/* Personal Info Section */}
       <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">1</span>
+          <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">1</span>
           {t('step1.personal_section')}
         </h3>
         <div className="grid gap-4">
@@ -135,7 +135,7 @@ const CombinedStep1 = ({
       {/* Professional Summary Section */}
       <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-[#7C6CF2] text-white rounded-full flex items-center justify-center text-sm">2</span>
+          <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">2</span>
           {t('step1.summary_section')}
         </h3>
         <div className="space-y-4">
@@ -145,11 +145,11 @@ const CombinedStep1 = ({
               value={formData.professional_summary}
               onChange={(e) => handleInputChange("professional_summary", e.target.value)}
               rows={4}
-              className={`w-full rounded-xl ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-[#E6E8F0] dark:border-white/10 focus:ring-[#7C6CF2]/40 focus:border-[#7C6CF2]'} bg-white/70 dark:bg-[#27273A]/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none`}
+              className={`w-full rounded-xl ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-[#E6E8F0] dark:border-white/10 focus:ring-primary/40 focus:border-primary'} bg-white/70 dark:bg-[#27273A]/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none`}
               placeholder={t('personal.summary_placeholder')}
             />
             <FieldError error={validationErrors.professional_summary} />
-            <p className="mt-2 text-xs text-[#7C6CF2] bg-[#7C6CF2]/10 p-2 rounded-lg border border-[#7C6CF2]/20">
+            <p className="mt-2 text-xs text-primary bg-primary/10 p-2 rounded-lg border border-primary/20">
               {t('step1.summary_hint')}
             </p>
           </div>
@@ -160,7 +160,7 @@ const CombinedStep1 = ({
               type="button"
               onClick={translateProfessionalSummary}
               disabled={isTranslating || !formData.professional_summary.trim() || (!unlimitedUsage && remainingSummaryTranslations <= 0)}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#2ED3B7] text-[#1E1E2F] px-6 py-3 text-sm font-medium hover:bg-[#25AB94] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(46,211,183,0.4)]"
+              className="inline-flex items-center gap-2 rounded-xl bg-action text-[#1E1E2F] px-6 py-3 text-sm font-medium hover:bg-actionHover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)]"
             >
               {isTranslating ? (
                 <>

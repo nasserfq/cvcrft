@@ -61,7 +61,7 @@ const ProfessionalSummaryStep = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 text-[#7C6CF2] mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
           <DocumentIcon />
         </div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">الملخص المهني</h2>
@@ -79,13 +79,13 @@ const ProfessionalSummaryStep = ({
             value={formData.professional_summary}
             onChange={(e) => handleInputChange("professional_summary", e.target.value)}
             rows={6}
-            className="w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 focus:border-[#7C6CF2] ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none"
+            className="w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none"
             placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية. يجب أن يكون 3-5 جمل تعطي صورة واضحة عنك كمحترف..."
           />
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
             اكتب 3-5 جمل تصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية
           </p>
-          <p className="mt-2 text-xs text-[#7C6CF2] bg-[#7C6CF2]/10 p-2 rounded-xl border border-[#7C6CF2]/20">
+          <p className="mt-2 text-xs text-primary bg-primary/10 p-2 rounded-xl border border-primary/20">
             💡 <strong>ملاحظة:</strong> سيقوم النظام بترجمة النص العربي إلى الإنجليزية{" "}
             <strong>وإنشاء</strong> ملخص مهني شامل ومحسن لسيرتك الذاتية
           </p>
@@ -101,7 +101,7 @@ const ProfessionalSummaryStep = ({
               !formData.professional_summary.trim() ||
               translationCount >= maxTranslations
             }
-            className="inline-flex items-center gap-2 rounded-xl bg-[#2ED3B7] text-white px-6 py-3 text-sm font-medium hover:bg-[#28C4A8] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-xl bg-action text-darkBase px-6 py-3 text-sm font-medium hover:bg-actionHover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isTranslating ? (
               <>
@@ -151,7 +151,7 @@ const ProfessionalSummaryStep = ({
                   {formData.skills_extracted.map((skill, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 text-xs bg-[#7C6CF2]/10 text-[#7C6CF2] rounded-full border border-[#7C6CF2]/20"
+                      className="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full border border-primary/20"
                     >
                       {skill.name} ({skill.level})
                     </span>
