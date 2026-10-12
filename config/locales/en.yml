@@ -133,6 +133,7 @@ en:
   
   # Resume/CV
   resume:
+    need_resume_for_job: 'You need a completed resume before generating one for a job. Tap "Create new resume" to start.'
     title: "Resume"
     new: "New Resume"
     edit: "Edit Resume"
