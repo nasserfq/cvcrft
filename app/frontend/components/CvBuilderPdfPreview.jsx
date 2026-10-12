@@ -49,7 +49,7 @@ const CvBuilderPdfPreview = ({ resume }) => {
  return (
   <button
    onClick={handlePreview}
-   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
+   className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
   >
    <span className="mr-2">👁️</span>
    فتح في نافذة جديدة

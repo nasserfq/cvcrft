@@ -48,7 +48,7 @@ const StepLoadingSkeleton = memo(() => (
    <div className="h-6 bg-primary/10 rounded-lg w-1/2 mx-auto mb-2" />
    <div className="h-4 bg-gray-200 dark:bg-white/10 rounded-lg w-2/3 mx-auto" />
   </div>
-  <div className="p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/50 dark:bg-white/5">
+  <div className="p-6 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/50 dark:bg-white/5">
    <div className="h-5 bg-primary/10 rounded-lg w-1/4 mb-4" />
    <div className="space-y-3">
     <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
@@ -2775,9 +2775,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  return (
   <div data-turbo="false" className="py-2 sm:py-6 overflow-x-hidden w-full max-w-full">
    <div className="max-w-4xl mx-auto px-2 sm:px-4 w-full">
-    <div data-form-card className="bg-white/80 dark:bg-[#27273A]/80 backdrop-blur-xl rounded-2xl shadow-lg border border-[#E6E8F0] dark:border-white/10 overflow-hidden w-full">
+    <div data-form-card className="bg-white/80 dark:bg-darkCard/80 backdrop-blur-xl rounded-2xl shadow-lg border border-borderLight dark:border-white/10 overflow-hidden w-full">
      {/* Header with step indicator */}
-     <div className="bg-gradient-to-r from-primary to-[#6A5AE0] px-4 sm:px-8 py-5 sm:py-6">
+     <div className="bg-gradient-to-r from-primary to-primaryHover px-4 sm:px-8 py-5 sm:py-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
        <div className="flex items-center gap-3 flex-wrap">
         <h1 className="text-lg sm:text-2xl font-semibold text-white">
@@ -2854,7 +2854,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
      {/* Navigation Buttons - Mobile Optimized with Safe Area */}
      <div 
-      className="px-4 sm:px-8 py-4 border-t border-[#E6E8F0] dark:border-white/10 bg-[#F8F7FF]/50 dark:bg-[#27273A]/50" 
+      className="px-4 sm:px-8 py-4 border-t border-borderLight dark:border-white/10 bg-canvas/50 dark:bg-darkCard/50" 
       dir="rtl"
       style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
      >
@@ -2865,7 +2865,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          <button
           type="button"
           onClick={nextStep}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white transition-all hover:bg-[#6A5AE0] active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)] hover:shadow-[0_0_25px_-5px_rgba(124,108,242,0.5)] touch-manipulation"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white transition-all hover:bg-primaryHover active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)] hover:shadow-[0_0_25px_-5px_rgba(124,108,242,0.5)] touch-manipulation"
          >
           {t('steps.next')}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2877,7 +2877,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           type="button"
           onClick={exportToPDF}
           disabled={isExporting}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-action px-4 py-3 text-sm font-medium text-[#1E1E2F] transition-all hover:bg-actionHover active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)] hover:shadow-[0_0_25px_-5px_rgba(214,184,119,0.5)] touch-manipulation"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-action px-4 py-3 text-sm font-medium text-darkBase transition-all hover:bg-actionHover active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)] hover:shadow-[0_0_25px_-5px_rgba(214,184,119,0.5)] touch-manipulation"
          >
           {isExporting ? (
            <>
@@ -2892,7 +2892,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           )}
          </button>
         )}
-        <a href="/resumes" className="px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-[#E6E8F0] dark:ring-white/10 hover:bg-[#F8F7FF] dark:hover:bg-white/5 active:scale-[0.98] transition-all touch-manipulation">
+        <a href="/resumes" className="px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-borderLight dark:ring-white/10 hover:bg-canvas dark:hover:bg-white/5 active:scale-[0.98] transition-all touch-manipulation">
          {t('actions.cancel')}
         </a>
        </div>
@@ -2900,7 +2900,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         <button
          type="button"
          onClick={prevStep}
-         className="w-full py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-[#E6E8F0] dark:ring-white/10 hover:bg-[#F8F7FF] dark:hover:bg-white/5 active:scale-[0.98] flex items-center justify-center gap-2 transition-all touch-manipulation"
+         className="w-full py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-borderLight dark:ring-white/10 hover:bg-canvas dark:hover:bg-white/5 active:scale-[0.98] flex items-center justify-center gap-2 transition-all touch-manipulation"
         >
          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

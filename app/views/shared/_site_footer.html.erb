@@ -1,0 +1,15 @@
+<%# The sadu band and glass footer from the Seera canvas. %>
+<div aria-hidden="true" class="mb-6 rounded-md overflow-hidden" style="height: 12px; opacity: 0.75">
+  <svg width="100%" height="12"><defs><pattern id="saduFoot" width="24" height="12" patternUnits="userSpaceOnUse"><path d="M0 12L6 0L12 12Z" fill="rgba(214,184,119,0.7)"></path><path d="M12 0L18 12L24 0Z" fill="rgba(0,140,78,0.75)"></path></pattern></defs><rect width="100%" height="12" fill="url(#saduFoot)"></rect></svg>
+</div>
+
+<!-- Footer -->
+<footer class="glass-soft rounded-3xl px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+  <nav aria-label="<%= t('footer.terms') %>" class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm" style="color: rgba(238,243,238,0.7)">
+    <a href="<%= terms_path %>" style="color: rgba(238,243,238,0.7)"><%= t('footer.terms') %></a>
+    <a href="<%= privacy_path %>" style="color: rgba(238,243,238,0.7)"><%= t('footer.privacy') %></a>
+    <a href="mailto:support@cvcrft.com" style="color: rgba(238,243,238,0.7)"><%= t('footer.contact') %></a>
+    <%= render 'shared/cookie_settings' %>
+  </nav>
+  <span class="text-[13px]" style="color: rgba(238,243,238,0.5)">© <%= Time.current.year %> سيرة. <%= t('footer.copyright') %></span>
+</footer>

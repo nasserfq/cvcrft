@@ -150,7 +150,7 @@ const PdfPreviewButton = ({ cvId }) => {
  return (
   <button
    onClick={handlePreview}
-   className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center"
+   className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center"
   >
    <span className="mr-2">👁️</span>
    {t('preview.button')}

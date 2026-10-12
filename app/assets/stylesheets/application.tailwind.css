@@ -297,3 +297,194 @@ html:not(.dark) .text-gray-700 {
     scroll-behavior: auto !important;
   }
 }
+
+/* 9. The Seera canvas: glass surfaces and the landing's motion. */
+.sr-page a { color: #eef3ee; text-decoration: none; }
+.sr-page a:hover { color: #ffffff; }
+.sr-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+.glass { background: linear-gradient(155deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03)); -webkit-backdrop-filter: blur(28px) saturate(150%); backdrop-filter: blur(28px) saturate(150%); border: 1px solid rgba(255,255,255,0.13); box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.03), 0 30px 60px -30px rgba(2,12,7,0.7); }
+.glass-soft { background: rgba(255,255,255,0.05); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.09); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+
+.sr-btn { position: relative; overflow: hidden; transition: transform .35s cubic-bezier(.16,1,.3,1), background .35s cubic-bezier(.16,1,.3,1), border-color .35s; }
+.sr-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.28); }
+.sr-btn:active { transform: scale(.98); }
+.sr-btn:focus-visible { outline: 2px solid #d6b877; outline-offset: 3px; }
+.sr-btn::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%); transform: translateX(110%); transition: transform .9s cubic-bezier(.16,1,.3,1); pointer-events: none; }
+.sr-btn:hover::before { transform: translateX(-110%); }
+.sr-btn .sr-ico { transition: transform .5s cubic-bezier(.16,1,.3,1); }
+.sr-btn:hover .sr-ico { transform: translateX(-4px); }
+[dir="ltr"] .sr-btn:hover .sr-ico { transform: translateX(4px); }
+[dir="ltr"] .sr-arrow { transform: scaleX(-1); }
+.sr-primary { background: #0b7f48; color: #ffffff !important; }
+.sr-primary:hover { background: #0d8c50; }
+
+.sr-lift { transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .5s; }
+.sr-lift:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.22); }
+.sr-lift .sr-ico { transition: transform .6s cubic-bezier(.34,1.56,.64,1); }
+.sr-lift:hover .sr-ico { transform: rotate(-8deg) scale(1.08); }
+
+@keyframes sr-drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-60px,40px) scale(1.08); } }
+@keyframes sr-drift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(50px,-50px) scale(.94); } }
+@keyframes sr-floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes sr-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.8); } }
+@keyframes sr-shimmer { 0% { transform: translateX(120%); } 100% { transform: translateX(-120%); } }
+@keyframes sr-spin { to { transform: rotate(360deg); } }
+@keyframes sr-wordIn { from { opacity: 0; filter: blur(12px); transform: translateY(.4em); } to { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes sr-fadeUp { from { opacity: 0; filter: blur(6px); transform: translateY(22px); } to { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes sr-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes sr-ring { from { stroke-dashoffset: 314; } to { stroke-dashoffset: 16; } }
+@keyframes sr-reveal { from { opacity: 0; transform: translateY(48px) scale(.97); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes sr-mask { from { clip-path: inset(0 0 100% 0); transform: translateY(40%); } to { clip-path: inset(0 0 -10% 0); transform: none; } }
+
+.sr-orb1 { animation: sr-drift1 18s ease-in-out infinite; }
+.sr-orb2 { animation: sr-drift2 22s ease-in-out infinite; }
+.sr-orb3 { animation: sr-drift1 26s ease-in-out infinite reverse; }
+.sr-float { animation: sr-floaty 7s ease-in-out infinite; }
+.sr-dot { animation: sr-pulse 2.4s ease-in-out infinite; }
+.sr-shim { position: relative; overflow: hidden; }
+.sr-shim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%); animation: sr-shimmer 3.2s ease-in-out infinite; }
+.sr-spin { animation: sr-spin 140s linear infinite; }
+.sr-w { display: inline-block; animation: sr-wordIn 1.1s cubic-bezier(.16,1,.3,1) backwards; }
+.sr-up { animation: sr-fadeUp 1s cubic-bezier(.16,1,.3,1) backwards; }
+.sr-grow { display: block; transform-origin: right center; animation: sr-grow 1.1s cubic-bezier(.65,0,.35,1) backwards; }
+[dir="ltr"] .sr-grow { transform-origin: left center; }
+.sr-ring { animation: sr-ring 2.2s cubic-bezier(.65,0,.35,1) 1s backwards; }
+
+/* Scroll reveals: CSS scroll timelines where supported, otherwise
+   the script at the bottom adds .is-in as each block comes into view. */
+@supports (animation-timeline: view()) {
+  .sr-reveal { animation: sr-reveal linear backwards; animation-timeline: view(); animation-range: entry 0% entry 90%; }
+  .sr-mask { animation: sr-mask linear backwards; animation-timeline: view(); animation-range: entry 10% entry 80%; }
+}
+@supports not (animation-timeline: view()) {
+  .sr-io .sr-reveal { opacity: 0; transform: translateY(48px) scale(.97); filter: blur(8px); transition: opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1), filter 1s cubic-bezier(.16,1,.3,1); }
+  .sr-io .sr-reveal.is-in { opacity: 1; transform: none; filter: blur(0); }
+  .sr-io .sr-mask { clip-path: inset(0 0 100% 0); transform: translateY(40%); transition: clip-path .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+  .sr-io .sr-mask.is-in { clip-path: inset(0 0 -10% 0); transform: none; }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-w, .sr-up, .sr-grow, .sr-ring, .sr-reveal, .sr-mask, .sr-orb1, .sr-orb2, .sr-orb3, .sr-float, .sr-dot, .sr-shim::after, .sr-spin { animation: none !important; }
+  .sr-io .sr-reveal, .sr-io .sr-mask { opacity: 1; transform: none; filter: none; clip-path: none; transition: none; }
+  .sr-btn::before { display: none; }
+}
+
+/* 10. Every page in the canvas. The site is dark only, like the design:
+   the shared glass header, ambient orbs and these rules carry the landing
+   look into pages built before the redesign. */
+html.dark body {
+  background-color: #07120d;
+  color: #eef3ee;
+  font-feature-settings: "ss01", "ss02";
+  -webkit-font-smoothing: antialiased;
+}
+iconify-icon { display: inline-block; vertical-align: middle; }
+#mobile-menu { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
+
+/* Light-only surfaces with no dark variant become glass. */
+.dark [class~="bg-white"]:not([class*="dark:bg-"]):not(.keep-light),
+.dark [class*="bg-white/"]:not([class*="dark:bg-"]):not(.keep-light) {
+  background-color: transparent;
+  background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.02));
+  border-color: var(--color-borderDark);
+}
+.dark [class*="bg-gray-50"]:not([class*="dark:bg-"]),
+.dark [class*="bg-gray-100"]:not([class*="dark:bg-"]),
+.dark [class*="bg-slate-50"]:not([class*="dark:bg-"]),
+.dark [class*="bg-slate-100"]:not([class*="dark:bg-"]),
+.dark [class*="bg-emerald-50"]:not([class*="dark:bg-"]),
+.dark [class*="bg-emerald-100"]:not([class*="dark:bg-"]),
+.dark [class*="bg-lavender-50"]:not([class*="dark:bg-"]),
+.dark [class*="bg-canvas"]:not([class*="dark:bg-"]) {
+  background-color: rgb(255 255 255 / 0.05);
+}
+.dark [class*="from-white"]:not([class*="dark:from-"]),
+.dark [class*="via-emerald-50"]:not([class*="dark:via-"]) {
+  --tw-gradient-from: transparent;
+  --tw-gradient-via: transparent;
+  --tw-gradient-to: transparent;
+  background-image: none;
+}
+/* Light-only text with no dark variant. */
+.dark [class*="text-gray-900"]:not([class*="dark:text-"]),
+.dark [class*="text-gray-800"]:not([class*="dark:text-"]),
+.dark [class*="text-slate-900"]:not([class*="dark:text-"]),
+.dark [class*="text-slate-800"]:not([class*="dark:text-"]),
+.dark [class~="text-darkBase"]:not([class*="dark:text-"]):not([class*="bg-action"]):not([class*="bg-gold"]),
+.dark [class~="text-ink"]:not([class*="dark:text-"]) {
+  color: #eef3ee;
+}
+.dark [class*="text-gray-700"]:not([class*="dark:text-"]),
+.dark [class*="text-gray-600"]:not([class*="dark:text-"]),
+.dark [class*="text-slate-700"]:not([class*="dark:text-"]),
+.dark [class*="text-slate-600"]:not([class*="dark:text-"]) {
+  color: rgb(238 243 238 / 0.72);
+}
+.dark [class*="text-gray-500"]:not([class*="dark:text-"]),
+.dark [class*="text-gray-400"]:not([class*="dark:text-"]),
+.dark [class*="text-slate-500"]:not([class*="dark:text-"]) {
+  color: rgb(238 243 238 / 0.58);
+}
+/* Form fields: soft glass wells. */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]):not([type="range"]),
+.dark select,
+.dark textarea {
+  background-color: rgb(255 255 255 / 0.06);
+  color: #eef3ee;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgb(238 243 238 / 0.4);
+}
+
+/* Full-page wrappers let the orbs show through, as on the landing. */
+.dark [class*="min-h-screen"]:not(body) {
+  background-color: transparent;
+  background-image: none;
+}
+
+/* App pages start below the fixed glass header. */
+main.sr-app { padding-top: 6rem; }
+
+/* Motion: pages rise in the way the landing hero does. */
+.sr-app > * { animation: sr-fadeUp 1s cubic-bezier(.16,1,.3,1) backwards; }
+.sr-app > *:nth-child(2) { animation-delay: .08s; }
+.sr-app > *:nth-child(3) { animation-delay: .16s; }
+.sr-app > *:nth-child(n+4) { animation-delay: .24s; }
+/* Primary and gold buttons get the landing's shine sweep. */
+:is(a, button).bg-primary,
+:is(a, button).bg-action {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+:is(a, button).bg-primary::before,
+:is(a, button).bg-action::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 35%, rgb(255 255 255 / 0.22) 50%, transparent 65%);
+  transform: translateX(110%);
+  transition: transform .9s cubic-bezier(.16,1,.3,1);
+  pointer-events: none;
+}
+:is(a, button).bg-primary:hover::before,
+:is(a, button).bg-action:hover::before {
+  transform: translateX(-110%);
+}
+/* Card links lift on hover. */
+.sr-app a[class*="rounded-2xl"],
+.sr-app a[class*="rounded-3xl"] {
+  transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .5s;
+}
+.sr-app a[class*="rounded-2xl"]:hover,
+.sr-app a[class*="rounded-3xl"]:hover {
+  transform: translateY(-4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sr-app > * { animation: none !important; }
+  :is(a, button).bg-primary::before, :is(a, button).bg-action::before { display: none; }
+}

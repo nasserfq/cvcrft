@@ -28,7 +28,7 @@
       }
     </style>
   </head>
-  <body class="antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen flex flex-col">
+  <body class="sr-app antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen flex flex-col">
     <!-- Background Accents -->
     <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
@@ -38,6 +38,7 @@
 
     <!-- Header -->
     <%= render 'layouts/header' %>
+<%= render 'shared/ambient', fixed: true %>
 
     <!-- Main Content -->
     <main class="flex-1 pt-24 pb-12 sm:pt-28 sm:pb-16">
@@ -240,13 +241,7 @@
       const html = document.documentElement;
       
       // Dark (the Seera glass look) unless the visitor chose light
-      const savedTheme = localStorage.getItem('theme');
-      
-      if (savedTheme === 'light') {
-        html.classList.remove('dark');
-      } else {
-        html.classList.add('dark');
-      }
+      html.classList.add('dark'); // the Seera design is dark only
 
       // Mobile Menu Logic
       const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -275,5 +270,6 @@
         link.addEventListener('click', closeMenu);
       });
     </script>
-  </body>
+  <%= render 'shared/site_scripts' %>
+</body>
 </html>

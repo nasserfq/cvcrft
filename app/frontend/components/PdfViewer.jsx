@@ -58,10 +58,10 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
 
  if (loading) {
   return (
-   <div className="bg-gradient-to-br from-blue-50 to-primary/5 rounded-xl shadow-lg border border-blue-200 p-6 mb-6">
+   <div className="bg-gradient-to-br from-emerald-50 to-primary/5 rounded-xl shadow-lg border border-emerald-200 p-6 mb-6">
     <div className="flex items-center justify-center h-64">
      <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
       <h3 className="text-lg font-semibold text-gray-900 mb-2">
        Loading PDF Preview
       </h3>
@@ -102,7 +102,7 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
  }
 
  return (
-  <div className="bg-gradient-to-br from-blue-50 to-primary/5 rounded-xl shadow-lg border border-blue-200 p-6 mb-6">
+  <div className="bg-gradient-to-br from-emerald-50 to-primary/5 rounded-xl shadow-lg border border-emerald-200 p-6 mb-6">
    {/* Header with Success Animation */}
    <div className="flex items-center justify-between mb-6">
     <div className="flex items-center space-x-3">
@@ -156,7 +156,7 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
      </button>
      <button
       onClick={handleOpenInNewTab}
-      className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2"
+      className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2"
      >
       <svg
        className="w-5 h-5"
@@ -249,7 +249,7 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
         </p>
         <button
          onClick={handleDownload}
-         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+         className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors"
         >
          <svg
           className="w-4 h-4 mr-2"

@@ -28,7 +28,7 @@
       }
     </style>
   </head>
-  <body class="antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen flex flex-col">
+  <body class="sr-app antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen flex flex-col">
     <!-- Background Accents -->
     <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
@@ -38,6 +38,7 @@
 
     <!-- Header -->
     <%= render 'layouts/header' %>
+<%= render 'shared/ambient', fixed: true %>
 
     <!-- Main Content -->
     <main class="flex-1 pt-24 pb-12 sm:pt-28 sm:pb-16">
@@ -224,11 +225,8 @@
     <script>
       // Theme Logic
       const html = document.documentElement;
-      if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
-        html.classList.add('dark');
-      } else {
-        html.classList.remove('dark');
-      }
+      html.classList.add('dark'); // the Seera design is dark only
     </script>
-  </body>
+  <%= render 'shared/site_scripts' %>
+</body>
 </html>

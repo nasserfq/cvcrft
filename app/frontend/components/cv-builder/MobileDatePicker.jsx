@@ -59,7 +59,7 @@ const MobileDatePicker = ({
         type="button"
         onClick={() => !disabled && setIsOpen(true)}
         disabled={disabled}
-        className="w-full rounded-xl border border-[#E6E8F0] dark:border-white/10 bg-white dark:bg-[#27273A] px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-xl border border-borderLight dark:border-white/10 bg-white dark:bg-darkCard px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           fontSize: "16px",
           minHeight: "48px",
@@ -123,7 +123,7 @@ const MobileDatePicker = ({
                     {t("dates.year_label")}
                   </label>
                   <div
-                    className="max-h-48 sm:max-h-72 overflow-y-auto border border-[#E6E8F0] dark:border-gray-600 rounded-xl p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                    className="max-h-48 sm:max-h-72 overflow-y-auto border border-borderLight dark:border-gray-600 rounded-xl p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                     style={{ WebkitOverflowScrolling: "touch" }}
                   >
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -170,7 +170,7 @@ const MobileDatePicker = ({
                 </div>
               </div>
 
-              <div className="flex gap-3 p-6 bg-white dark:bg-gray-800 border-t border-[#E6E8F0] dark:border-gray-600">
+              <div className="flex gap-3 p-6 bg-white dark:bg-gray-800 border-t border-borderLight dark:border-gray-600">
                 <button
                   type="button"
                   onClick={handleClear}
@@ -181,7 +181,7 @@ const MobileDatePicker = ({
                 <button
                   type="button"
                   onClick={handleConfirm}
-                  className="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-medium hover:bg-[#6A5AE0] active:scale-[0.98] transition-all touch-manipulation shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)]"
+                  className="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-medium hover:bg-primaryHover active:scale-[0.98] transition-all touch-manipulation shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)]"
                 >
                   {t("actions.confirm")}
                 </button>

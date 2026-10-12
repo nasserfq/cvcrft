@@ -151,7 +151,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
       }}
     >
       <div
-        className="bg-white dark:bg-[#27273A] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+        className="bg-white dark:bg-darkCard rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-white/10">
@@ -172,12 +172,12 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
         </div>
 
         <div className="p-6">
-          <div className="mb-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <div className="mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
             <div className="flex gap-3">
-              <svg className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <div className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="text-sm text-emerald-700 dark:text-emerald-300">
                 <p className="font-medium mb-1">{t("import.note")}</p>
                 <p>{t("import.note_text")}</p>
               </div>
@@ -252,7 +252,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-[#6A5AE0] transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primaryHover transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -294,7 +294,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
               type="button"
               onClick={handleUpload}
               disabled={!file || isUploading}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-white font-medium hover:bg-[#6A5AE0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primaryHover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUploading ? (
                 <>

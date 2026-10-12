@@ -1,0 +1,27 @@
+<%# Mobile menu and scroll-reveal fallback for the Seera glass pages. %>
+<script>
+  (function () {
+    var menu = document.getElementById('mobile-menu');
+    var openBtn = document.getElementById('mobileMenuBtn');
+    var closeBtn = document.getElementById('closeMobileMenu');
+    if (menu && openBtn && closeBtn && !menu.dataset.bound) {
+      menu.dataset.bound = 'true';
+      var openMenu = function () { menu.classList.remove('translate-x-full'); document.body.style.overflow = 'hidden'; };
+      var closeMenu = function () { menu.classList.add('translate-x-full'); document.body.style.overflow = ''; };
+      openBtn.addEventListener('click', openMenu);
+      closeBtn.addEventListener('click', closeMenu);
+      menu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeMenu); });
+    }
+
+    // Scroll reveals for browsers without CSS scroll timelines.
+    if (window.CSS && CSS.supports && CSS.supports('animation-timeline: view()')) return;
+    if (!('IntersectionObserver' in window)) return;
+    document.documentElement.classList.add('sr-io');
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    document.querySelectorAll('.sr-reveal, .sr-mask').forEach(function (el) { io.observe(el); });
+  })();
+</script>

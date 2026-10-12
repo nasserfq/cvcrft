@@ -4,7 +4,7 @@
   </script>
 <% else %>
 <!-- Hero Header -->
-<div class="relative pt-28 pb-6 md:pt-32 md:pb-8 px-4 sm:px-6 text-center">
+<div class="relative pt-6 pb-6 md:pt-8 md:pb-8 px-4 sm:px-6 text-center">
   <h1 class="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-darkBase dark:text-white mb-3">
     <%= t('resume.new_title') %>
   </h1>
@@ -18,7 +18,7 @@
 <div class="relative pb-16 md:pb-24">
   <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
     <!-- Form Container -->
-    <div class="bg-white/70 dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl border border-borderLight dark:border-borderDark shadow-lg p-6 md:p-8" dir="<%= text_direction %>">
+    <div dir="<%= text_direction %>">
       <div id="resume-form-root" dir="<%= text_direction %>">
         <!-- React component will render here -->
       </div>

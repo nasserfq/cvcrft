@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= current_locale %>" dir="<%= text_direction %>" class="scroll-smooth">
+<html lang="<%= current_locale %>" dir="<%= text_direction %>" class="dark scroll-smooth">
   <head>
     <meta charset="UTF-8">
     <title><%= content_for(:title) || t('site.name') + " | " + t('site.tagline') %></title>
@@ -131,15 +131,12 @@
       Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
     -->
   </head>
-  <body class="bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden text-lg">
-    <!-- Background Blobs -->
-    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div class="blob bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full top-[-10%] left-[-10%]"></div>
-        <div class="blob bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full bottom-[-10%] right-[-10%] animation-delay-2000"></div>
-    </div>
-
+  <body class="bg-darkBase text-mist selection:bg-gold selection:text-darkBase overflow-x-hidden text-lg">
+    <%= render 'shared/ambient', fixed: true %>
     <%= render 'layouts/header' %>
-    <%= yield %>
+    <main id="main" class="sr-app relative">
+      <%= yield %>
+    </main>
     <%= render 'layouts/footer' %>
     
     <!-- Global hover/touch animation for native buttons and anchor-buttons -->
@@ -324,44 +321,6 @@
       })();
     </script>
     
-    <!-- Theme Toggle & Mobile Menu Scripts -->
-    <script>
-        // Theme Logic
-        const html = document.documentElement;
-
-        // Initialize Theme on page load
-        if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
-
-        // Mobile Menu Logic
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const closeMobileMenu = document.getElementById('closeMobileMenu');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-
-        function openMenu() {
-            if (mobileMenu) {
-                mobileMenu.classList.remove('translate-x-full');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeMenu() {
-            if (mobileMenu) {
-                mobileMenu.classList.add('translate-x-full');
-                document.body.style.overflow = '';
-            }
-        }
-
-        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
-        if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
-
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', closeMenu);
-        });
-    </script>
+    <%= render 'shared/site_scripts' %>
   </body>
 </html>

@@ -47,7 +47,7 @@ const ReviewStep = ({
                 className={`text-start p-3 sm:p-3.5 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
                   isSelected
                     ? "border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/25"
-                    : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#1E1E2F] hover:border-primary/40 active:scale-[0.99]"
+                    : "border-gray-200 dark:border-white/10 bg-white dark:bg-darkBase hover:border-primary/40 active:scale-[0.99]"
                 }`}
               >
                 <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug">
@@ -62,7 +62,7 @@ const ReviewStep = ({
         </div>
       </div>
 
-      <div className="w-full max-w-4xl mx-auto bg-white dark:bg-[#1E1E2F] border border-gray-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
+      <div className="w-full max-w-4xl mx-auto bg-white dark:bg-darkBase border border-gray-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
         {resumeId && pdfPreviewUrl && (
           <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-white/5">
             <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
@@ -72,7 +72,7 @@ const ReviewStep = ({
               href={pdfPreviewUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium text-primary hover:text-[#6A5AE0] touch-manipulation"
+              className="shrink-0 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium text-primary hover:text-primaryHover touch-manipulation"
             >
               {t("preview.open_full")}
             </a>
@@ -92,9 +92,9 @@ const ReviewStep = ({
         )}
 
         {resumeId && pdfPreviewUrl && (
-          <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-[#151520]">
+          <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-darkBase">
             {isPdfPreviewLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-[#1E1E2F]/80">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-darkBase/80">
                 <span className="text-sm text-gray-600 dark:text-gray-400">{t("preview.loading")}</span>
               </div>
             )}

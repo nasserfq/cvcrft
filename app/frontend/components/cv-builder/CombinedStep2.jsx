@@ -37,7 +37,7 @@ const FieldError = ({ error }) => error ? (
 // Input with error styling helper
 const getInputClass = (baseClass, hasError) => 
   hasError 
-    ? baseClass.replace('border-[#E6E8F0]/70', 'border-red-400') + ' ring-1 ring-red-200'
+    ? baseClass.replace('border-borderLight/70', 'border-red-400') + ' ring-1 ring-red-200'
     : baseClass;
 
 // Icon
@@ -95,7 +95,7 @@ const CombinedStep2 = ({
       </div>
 
       {/* Education Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.education ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
+      <div className={`p-4 sm:p-6 border ${validationErrors.education ? 'border-red-300' : 'border-borderLight/60 dark:border-gray-700'} rounded-xl bg-canvas/30 dark:bg-gray-800/50`}>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">1</span>
           {t('education.title')}
@@ -104,7 +104,7 @@ const CombinedStep2 = ({
         <SectionError error={validationErrors.education} />
         <div className="space-y-4">
           {formData.education.map((edu, index) => (
-            <div key={index} className="p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50 overflow-hidden">
+            <div key={index} className="p-4 border border-borderLight/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50 overflow-hidden">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('education.education_n', { n: index + 1 })}</span>
                 {formData.education.length > 1 && (
@@ -117,7 +117,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={edu.degree}
                     onChange={(e) => handleEducationChange(index, "degree", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm", validationErrors[`education_degree_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm", validationErrors[`education_degree_${index}`])}
                     placeholder={t('education.degree_placeholder')}
                   />
                   <FieldError error={validationErrors[`education_degree_${index}`]} />
@@ -127,7 +127,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={edu.institution}
                     onChange={(e) => handleEducationChange(index, "institution", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm", validationErrors[`education_institution_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm", validationErrors[`education_institution_${index}`])}
                     placeholder={t('education.institution_placeholder')}
                   />
                   <FieldError error={validationErrors[`education_institution_${index}`]} />
@@ -143,14 +143,14 @@ const CombinedStep2 = ({
               </div>
             </div>
           ))}
-          <button type="button" onClick={addEducation} className="w-full py-3 text-primary hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-primary/30 rounded-xl hover:bg-primary/10 active:bg-primary/20 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addEducation} className="w-full py-3 text-primary hover:text-primaryHover active:text-primaryHover text-sm font-medium border border-dashed border-primary/30 rounded-xl hover:bg-primary/10 active:bg-primary/20 active:scale-[0.99] transition-all touch-manipulation">
             + {t('education.add_another')}
           </button>
         </div>
       </div>
 
       {/* Work Experience Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.work_experience ? 'border-red-300' : 'border-[#E6E8F0]/60 dark:border-gray-700'} rounded-xl bg-[#F8F7FF]/30 dark:bg-gray-800/50`}>
+      <div className={`p-4 sm:p-6 border ${validationErrors.work_experience ? 'border-red-300' : 'border-borderLight/60 dark:border-gray-700'} rounded-xl bg-canvas/30 dark:bg-gray-800/50`}>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">2</span>
           {t('experience.title')}
@@ -159,7 +159,7 @@ const CombinedStep2 = ({
         <SectionError error={validationErrors.work_experience} />
         <div className="space-y-4">
           {formData.work_experience.map((work, index) => (
-            <div key={index} className="p-3 sm:p-4 border border-[#E6E8F0]/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
+            <div key={index} className="p-3 sm:p-4 border border-borderLight/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('experience.experience_n', { n: index + 1 })}</span>
                 {formData.work_experience.length > 1 && (
@@ -172,7 +172,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={work.job_title}
                     onChange={(e) => handleWorkExperienceChange(index, "job_title", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-base", validationErrors[`work_job_title_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-base", validationErrors[`work_job_title_${index}`])}
                     placeholder={t('experience.position_placeholder')}
                     style={{ fontSize: "16px" }}
                   />
@@ -183,7 +183,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={work.company}
                     onChange={(e) => handleWorkExperienceChange(index, "company", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-base", validationErrors[`work_company_${index}`])}
+                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-base", validationErrors[`work_company_${index}`])}
                     placeholder={t('experience.company_placeholder')}
                     style={{ fontSize: "16px" }}
                   />
@@ -211,7 +211,7 @@ const CombinedStep2 = ({
                           value={resp}
                           onChange={(e) => handleResponsibilityChange(index, respIndex, e.target.value)}
                           rows={2}
-                          className="flex-1 min-w-0 rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                          className="flex-1 min-w-0 rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
                           placeholder={t('experience.responsibility_placeholder')}
                           style={{ fontSize: "16px" }}
                         />
@@ -220,7 +220,7 @@ const CombinedStep2 = ({
                         )}
                       </div>
                     ))}
-                    <button type="button" onClick={() => addResponsibility(index)} className="text-primary hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium py-2 px-3 rounded active:bg-primary/10 transition-all touch-manipulation">+ {t('experience.add_responsibility')}</button>
+                    <button type="button" onClick={() => addResponsibility(index)} className="text-primary hover:text-primaryHover active:text-primaryHover text-sm font-medium py-2 px-3 rounded active:bg-primary/10 transition-all touch-manipulation">+ {t('experience.add_responsibility')}</button>
                   </div>
                   {/* Show original Arabic if translation was done */}
                   {work.responsibilities_arabic?.length > 0 && (
@@ -240,7 +240,7 @@ const CombinedStep2 = ({
               </div>
             </div>
           ))}
-          <button type="button" onClick={addWorkExperience} className="w-full py-3 text-primary hover:text-[#6A5AE0] active:text-[#6A5AE0] text-sm font-medium border border-dashed border-primary/30 rounded-xl hover:bg-primary/10 active:bg-primary/20 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addWorkExperience} className="w-full py-3 text-primary hover:text-primaryHover active:text-primaryHover text-sm font-medium border border-dashed border-primary/30 rounded-xl hover:bg-primary/10 active:bg-primary/20 active:scale-[0.99] transition-all touch-manipulation">
             + {t('experience.add_another')}
           </button>
 

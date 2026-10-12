@@ -79,7 +79,7 @@ const ProfessionalSummaryStep = ({
             value={formData.professional_summary}
             onChange={(e) => handleInputChange("professional_summary", e.target.value)}
             rows={6}
-            className="w-full rounded-xl border border-[#E6E8F0]/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none"
+            className="w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none"
             placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية. يجب أن يكون 3-5 جمل تعطي صورة واضحة عنك كمحترف..."
           />
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -135,7 +135,7 @@ const ProfessionalSummaryStep = ({
             <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
               الملخص المهني (بالإنجليزية)
             </label>
-            <div className="p-4 border border-[#E6E8F0]/60 dark:border-gray-600 rounded-xl bg-[#F8F7FF]/50 dark:bg-gray-700/50">
+            <div className="p-4 border border-borderLight/60 dark:border-gray-600 rounded-xl bg-canvas/50 dark:bg-gray-700/50">
               <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-left" dir="ltr">
                 {formData.professional_summary_english}
               </p>
@@ -177,7 +177,7 @@ const ProfessionalSummaryStep = ({
           </div>
         )}
 
-        <div className="p-4 border border-[#E6E8F0]/60 dark:border-gray-600 rounded-xl bg-[#F8F7FF]/50 dark:bg-gray-700/50">
+        <div className="p-4 border border-borderLight/60 dark:border-gray-600 rounded-xl bg-canvas/50 dark:bg-gray-700/50">
           <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
             نصائح لكتابة ملخص مهني قوي:
           </h3>

@@ -15,7 +15,7 @@ const FieldError = ({ error }) => error ? (
 // Input with error styling
 const getInputClassName = (hasError) => 
   hasError 
-    ? inputClassName.replace('border-[#E6E8F0]', 'border-red-400').replace('focus:ring-primary/40', 'focus:ring-red-500/40').replace('focus:border-primary', 'focus:border-red-400') + ' ring-red-200'
+    ? inputClassName.replace('border-borderLight', 'border-red-400').replace('focus:ring-primary/40', 'focus:ring-red-500/40').replace('focus:border-primary', 'focus:border-red-400') + ' ring-red-200'
     : inputClassName;
 
 // Icons
@@ -64,7 +64,7 @@ const CombinedStep1 = ({
       </div>
 
       {/* Personal Info Section */}
-      <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
+      <div className="p-4 sm:p-6 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/30 dark:bg-white/5">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">1</span>
           {t('step1.personal_section')}
@@ -133,7 +133,7 @@ const CombinedStep1 = ({
       </div>
 
       {/* Professional Summary Section */}
-      <div className="p-4 sm:p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/30 dark:bg-white/5">
+      <div className="p-4 sm:p-6 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/30 dark:bg-white/5">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">2</span>
           {t('step1.summary_section')}
@@ -145,7 +145,7 @@ const CombinedStep1 = ({
               value={formData.professional_summary}
               onChange={(e) => handleInputChange("professional_summary", e.target.value)}
               rows={4}
-              className={`w-full rounded-xl ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-[#E6E8F0] dark:border-white/10 focus:ring-primary/40 focus:border-primary'} bg-white/70 dark:bg-[#27273A]/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none`}
+              className={`w-full rounded-xl ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-borderLight dark:border-white/10 focus:ring-primary/40 focus:border-primary'} bg-white/70 dark:bg-darkCard/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none`}
               placeholder={t('personal.summary_placeholder')}
             />
             <FieldError error={validationErrors.professional_summary} />
@@ -160,7 +160,7 @@ const CombinedStep1 = ({
               type="button"
               onClick={translateProfessionalSummary}
               disabled={isTranslating || !formData.professional_summary.trim() || (!unlimitedUsage && remainingSummaryTranslations <= 0)}
-              className="inline-flex items-center gap-2 rounded-xl bg-action text-[#1E1E2F] px-6 py-3 text-sm font-medium hover:bg-actionHover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)]"
+              className="inline-flex items-center gap-2 rounded-xl bg-action text-darkBase px-6 py-3 text-sm font-medium hover:bg-actionHover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)]"
             >
               {isTranslating ? (
                 <>
@@ -187,7 +187,7 @@ const CombinedStep1 = ({
           {formData.professional_summary_english && (
             <div className="space-y-3">
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('step1.summary_english')}</label>
-              <div className="p-4 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/50 dark:bg-white/5">
+              <div className="p-4 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/50 dark:bg-white/5">
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-left" dir="ltr">{formData.professional_summary_english}</p>
               </div>
             </div>

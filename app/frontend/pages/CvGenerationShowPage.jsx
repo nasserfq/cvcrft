@@ -14,7 +14,7 @@ const CvGenerationShowPage = () => {
           <div className="text-red-500 text-lg mb-4">❌ Invalid CV Generation ID</div>
           <button
             onClick={() => window.location.href = '/cv_generations'}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded"
           >
             Back to CV Generations
           </button>

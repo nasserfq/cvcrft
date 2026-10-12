@@ -4,7 +4,7 @@
   </script>
 <% else %>
   <!DOCTYPE html>
-  <html lang="<%= I18n.locale %>" dir="<%= I18n.locale == :ar ? 'rtl' : 'ltr' %>">
+  <html lang="<%= I18n.locale %>" dir="<%= I18n.locale == :ar ? 'rtl' : 'ltr' %>" class="dark">
     <head>
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -82,9 +82,10 @@
         }
       </style>
     </head>
-    <body class="antialiased min-h-screen flex flex-col bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden" style="font-family: 'Readex Pro', ui-sans-serif, system-ui, -apple-system, sans-serif;">
+    <body class="sr-app antialiased min-h-screen flex flex-col bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden" style="font-family: 'Readex Pro', ui-sans-serif, system-ui, -apple-system, sans-serif;">
       <!-- Navbar -->
       <%= render 'layouts/header' %>
+<%= render 'shared/ambient', fixed: true %>
       
       <!-- Background Blobs -->
       <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
@@ -1186,11 +1187,7 @@
         const html = document.documentElement;
 
         // Initialize Theme
-        if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
+        html.classList.add('dark'); // the Seera design is dark only
 
         // Mobile Menu Logic
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -1223,6 +1220,7 @@
       
       <!-- Footer -->
       <%= render 'layouts/footer' %>
-    </body>
+    <%= render 'shared/site_scripts' %>
+</body>
   </html>
 <% end %>

@@ -106,7 +106,7 @@ const CvGenerationShow = ({ cvGenerationId }) => {
   return (
    <div className="container mx-auto px-4 py-8">
     <div className="flex items-center justify-center h-64">
-     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
      <span className="ml-3 text-gray-600">Loading CV generation...</span>
     </div>
    </div>
@@ -122,7 +122,7 @@ const CvGenerationShow = ({ cvGenerationId }) => {
      </div>
      <button
       onClick={() => (window.location.href = "/cv_generations")}
-      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+      className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded"
      >
       Back to CV Generations
      </button>
@@ -226,7 +226,7 @@ const CvGenerationShow = ({ cvGenerationId }) => {
            `);
           previewWindow.document.close();
          }}
-         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center"
+         className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center"
         >
          <span className="mr-2">👁️</span>
          Preview CV
@@ -298,7 +298,7 @@ const CvGenerationShow = ({ cvGenerationId }) => {
            {cvGeneration.resume_id}
            <a
             href={`/resumes/${cvGeneration.resume_id}`}
-            className="text-blue-600 hover:text-blue-800 ml-2"
+            className="text-emerald-600 hover:text-emerald-800 ml-2"
            >
             View Resume
            </a>
@@ -409,7 +409,7 @@ const CvGenerationShow = ({ cvGenerationId }) => {
       {/* Success Status for PDF */}
       {(cvGeneration.metadata?.pdf_generated === true ||
        cvGeneration.metadata?.pdf_generated === "true") && (
-       <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-6">
+       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
         <div className="flex items-center space-x-3">
          <div className="flex-shrink-0">
           <svg
@@ -463,7 +463,7 @@ const CvGenerationShow = ({ cvGenerationId }) => {
           <p className="text-sm text-yellow-700">
            Your CV is being generated. This may take a few minutes.
            {refreshing && (
-            <span className="ml-2 text-blue-600">
+            <span className="ml-2 text-emerald-600">
              🔄 Checking for updates...
             </span>
            )}

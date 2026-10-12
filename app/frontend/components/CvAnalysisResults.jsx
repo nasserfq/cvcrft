@@ -123,7 +123,7 @@ const ScoreGauge = ({ score, size = "large" }) => {
 const SectionScoreCard = ({ title, score, feedback }) => {
   const getScoreColor = (score) => {
     if (score >= 80) return "text-emerald-600 bg-emerald-100";
-    if (score >= 60) return "text-blue-600 bg-blue-100";
+    if (score >= 60) return "text-emerald-600 bg-emerald-100";
     if (score >= 40) return "text-amber-600 bg-amber-100";
     return "text-red-600 bg-red-100";
   };
@@ -145,7 +145,7 @@ const PriorityBadge = ({ priority, t }) => {
   const colors = {
     high: "bg-red-100 text-red-700 ring-red-500/20",
     medium: "bg-amber-100 text-amber-700 ring-amber-500/20",
-    low: "bg-blue-100 text-blue-700 ring-blue-500/20"
+    low: "bg-emerald-100 text-emerald-700 ring-emerald-500/20"
   };
 
   const labels = {
@@ -310,8 +310,8 @@ const CvAnalysisResults = ({ analysis, language, targetJob, targetIndustry }) =>
 
       {/* ATS Tips */}
       {ats_tips.length > 0 && (
-        <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6">
-          <h2 className="text-xl font-semibold text-blue-800 mb-4 flex items-center gap-2">
+        <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-6">
+          <h2 className="text-xl font-semibold text-emerald-800 mb-4 flex items-center gap-2">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
@@ -320,8 +320,8 @@ const CvAnalysisResults = ({ analysis, language, targetJob, targetIndustry }) =>
           <ul className="space-y-3">
             {ats_tips.map((tip, index) => (
               <li key={index} className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-blue-700 text-xs font-bold">{index + 1}</span>
+                <div className="w-6 h-6 bg-emerald-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-emerald-700 text-xs font-bold">{index + 1}</span>
                 </div>
                 <span className="text-slate-700">{tip}</span>
               </li>
