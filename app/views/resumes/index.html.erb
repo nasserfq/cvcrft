@@ -1,10 +1,5 @@
 <div class="container mx-auto px-4 pt-24 pb-8">
-  <% if flash[:alert].present? %>
-    <div role="alert" class="mb-6 flex items-start gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 text-ink dark:text-mist">
-      <iconify-icon icon="solar:info-circle-linear" width="22" class="shrink-0 text-gold-deep dark:text-gold"></iconify-icon>
-      <p class="text-sm leading-relaxed"><%= flash[:alert] %></p>
-    </div>
-  <% end %>
+  <%= render 'shared/flash_alert' %>
   <!-- Header with Actions -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
     <div class="text-center sm:text-right w-full sm:w-auto">
