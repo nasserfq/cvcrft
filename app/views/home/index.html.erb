@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= current_locale %>" dir="<%= text_direction %>" class="scroll-smooth">
+<html lang="<%= current_locale %>" dir="<%= text_direction %>" class="dark scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -97,990 +97,417 @@
     <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" /></noscript>
 
     <style>
-      body {
-          font-feature-settings: "ss01", "ss02";
-          -webkit-font-smoothing: antialiased;
+
+    <%# The landing page follows the Seera glass canvas design, which is dark only. %>
+    <style>
+      body { margin: 0; background: #07120d; font-feature-settings: "ss01", "ss02"; -webkit-font-smoothing: antialiased; }
+      .sr-page a { color: #eef3ee; text-decoration: none; }
+      .sr-page a:hover { color: #ffffff; }
+      .sr-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+      iconify-icon { display: inline-block; vertical-align: middle; }
+
+      .glass { background: linear-gradient(155deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03)); -webkit-backdrop-filter: blur(28px) saturate(150%); backdrop-filter: blur(28px) saturate(150%); border: 1px solid rgba(255,255,255,0.13); box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.03), 0 30px 60px -30px rgba(2,12,7,0.7); }
+      .glass-soft { background: rgba(255,255,255,0.05); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.09); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+
+      .sr-btn { position: relative; overflow: hidden; transition: transform .35s cubic-bezier(.16,1,.3,1), background .35s cubic-bezier(.16,1,.3,1), border-color .35s; }
+      .sr-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.28); }
+      .sr-btn:active { transform: scale(.98); }
+      .sr-btn:focus-visible { outline: 2px solid #d6b877; outline-offset: 3px; }
+      .sr-btn::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%); transform: translateX(110%); transition: transform .9s cubic-bezier(.16,1,.3,1); pointer-events: none; }
+      .sr-btn:hover::before { transform: translateX(-110%); }
+      .sr-btn .sr-ico { transition: transform .5s cubic-bezier(.16,1,.3,1); }
+      .sr-btn:hover .sr-ico { transform: translateX(-4px); }
+      [dir="ltr"] .sr-btn:hover .sr-ico { transform: translateX(4px); }
+      [dir="ltr"] .sr-arrow { transform: scaleX(-1); }
+      .sr-primary { background: #0b7f48; color: #ffffff !important; }
+      .sr-primary:hover { background: #0d8c50; }
+
+      .sr-lift { transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .5s; }
+      .sr-lift:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.22); }
+      .sr-lift .sr-ico { transition: transform .6s cubic-bezier(.34,1.56,.64,1); }
+      .sr-lift:hover .sr-ico { transform: rotate(-8deg) scale(1.08); }
+
+      @keyframes sr-drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-60px,40px) scale(1.08); } }
+      @keyframes sr-drift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(50px,-50px) scale(.94); } }
+      @keyframes sr-floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+      @keyframes sr-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.8); } }
+      @keyframes sr-shimmer { 0% { transform: translateX(120%); } 100% { transform: translateX(-120%); } }
+      @keyframes sr-spin { to { transform: rotate(360deg); } }
+      @keyframes sr-wordIn { from { opacity: 0; filter: blur(12px); transform: translateY(.4em); } to { opacity: 1; filter: blur(0); transform: none; } }
+      @keyframes sr-fadeUp { from { opacity: 0; filter: blur(6px); transform: translateY(22px); } to { opacity: 1; filter: blur(0); transform: none; } }
+      @keyframes sr-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+      @keyframes sr-ring { from { stroke-dashoffset: 314; } to { stroke-dashoffset: 16; } }
+      @keyframes sr-reveal { from { opacity: 0; transform: translateY(48px) scale(.97); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
+      @keyframes sr-mask { from { clip-path: inset(0 0 100% 0); transform: translateY(40%); } to { clip-path: inset(0 0 -10% 0); transform: none; } }
+
+      .sr-orb1 { animation: sr-drift1 18s ease-in-out infinite; }
+      .sr-orb2 { animation: sr-drift2 22s ease-in-out infinite; }
+      .sr-orb3 { animation: sr-drift1 26s ease-in-out infinite reverse; }
+      .sr-float { animation: sr-floaty 7s ease-in-out infinite; }
+      .sr-dot { animation: sr-pulse 2.4s ease-in-out infinite; }
+      .sr-shim { position: relative; overflow: hidden; }
+      .sr-shim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%); animation: sr-shimmer 3.2s ease-in-out infinite; }
+      .sr-spin { animation: sr-spin 140s linear infinite; }
+      .sr-w { display: inline-block; animation: sr-wordIn 1.1s cubic-bezier(.16,1,.3,1) backwards; }
+      .sr-up { animation: sr-fadeUp 1s cubic-bezier(.16,1,.3,1) backwards; }
+      .sr-grow { display: block; transform-origin: right center; animation: sr-grow 1.1s cubic-bezier(.65,0,.35,1) backwards; }
+      [dir="ltr"] .sr-grow { transform-origin: left center; }
+      .sr-ring { animation: sr-ring 2.2s cubic-bezier(.65,0,.35,1) 1s backwards; }
+
+      /* Scroll reveals: CSS scroll timelines where supported, otherwise
+         the script at the bottom adds .is-in as each block comes into view. */
+      @supports (animation-timeline: view()) {
+        .sr-reveal { animation: sr-reveal linear backwards; animation-timeline: view(); animation-range: entry 0% entry 90%; }
+        .sr-mask { animation: sr-mask linear backwards; animation-timeline: view(); animation-range: entry 10% entry 80%; }
       }
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-          width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-          background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 3px;
-      }
-      .dark ::-webkit-scrollbar-thumb {
-          background: #333;
+      @supports not (animation-timeline: view()) {
+        .sr-io .sr-reveal { opacity: 0; transform: translateY(48px) scale(.97); filter: blur(8px); transition: opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1), filter 1s cubic-bezier(.16,1,.3,1); }
+        .sr-io .sr-reveal.is-in { opacity: 1; transform: none; filter: blur(0); }
+        .sr-io .sr-mask { clip-path: inset(0 0 100% 0); transform: translateY(40%); transition: clip-path .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+        .sr-io .sr-mask.is-in { clip-path: inset(0 0 -10% 0); transform: none; }
       }
 
-      .gradient-text {
-          background-clip: text;
-          -webkit-background-clip: text;
-          color: transparent;
-          background-image: linear-gradient(135deg, #0B7F48 0%, #D6B877 100%);
-      }
+      #mobile-menu { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
 
-      .blob {
-          position: absolute;
-          filter: blur(90px);
-          opacity: 0.5;
-          z-index: -1;
-          animation: pulse 10s infinite alternate;
-      }
-
-      @keyframes pulse {
-          0% { transform: scale(1); }
-          100% { transform: scale(1.1); }
-      }
-
-      @keyframes scan {
-          0% { top: 0%; opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { top: 100%; opacity: 0; }
-      }
-
-      /* Mobile Menu Transition */
-      #mobile-menu {
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-      }
-
-      iconify-icon {
-          display: inline-block;
-          vertical-align: middle;
+      @media (prefers-reduced-motion: reduce) {
+        .sr-w, .sr-up, .sr-grow, .sr-ring, .sr-reveal, .sr-mask, .sr-orb1, .sr-orb2, .sr-orb3, .sr-float, .sr-dot, .sr-shim::after, .sr-spin { animation: none !important; }
+        .sr-io .sr-reveal, .sr-io .sr-mask { opacity: 1; transform: none; filter: none; clip-path: none; transition: none; }
+        .sr-btn::before { display: none; }
       }
     </style>
   </head>
-  <body
-    class="bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden text-lg"
-  >
-    <!-- Background Blobs -->
-    <div
-      class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none"
-    >
-      <div
-        class="blob bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full top-[-10%] left-[-10%]"
-      ></div>
-      <div
-        class="blob bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full bottom-[-10%] right-[-10%] animation-delay-2000"
-      ></div>
-    </div>
+  <body class="bg-darkBase text-mist overflow-x-hidden">
+    <% build_href = user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>
+    <% target_locale = current_locale == 'ar' ? 'en' : 'ar' %>
+    <% arrow = '<svg class="sr-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>'.html_safe %>
 
-    <!-- Navigation -->
-    <nav
-      class="fixed top-3 md:top-4 inset-x-3 md:inset-x-6 mx-auto max-w-[1240px] z-50 rounded-[22px] border border-borderLight bg-white/70 backdrop-blur-xl dark:bg-darkBase/40 dark:border-borderDark dark:shadow-glass"
-    >
-      <div
-        class="px-3 sm:px-5 h-16 md:h-[68px] flex items-center justify-between"
-      >
-        <!-- Logo -->
-        <div class="flex items-center gap-2 z-50">
-          <a
-            href="#"
-            class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2"
-          >
-            <span class="bg-primary text-mist w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 26, animate: true %></span>
-            سيرة
-          </a>
-        </div>
+    <div class="sr-page relative overflow-clip min-h-dvh leading-relaxed" style="background: #07120d; color: #eef3ee; line-height: 1.6">
 
-        <!-- Desktop Menu -->
-        <div
-          class="hidden md:flex items-center gap-8 text-sm font-normal text-gray-500 dark:text-gray-400"
-        >
-          <% if user_signed_in? %>
-            <%= link_to resumes_path, class: "hover:text-primary transition-colors" do %>
-              <%= t('nav.my_cv') %>
-            <% end %>
-          <% end %>
-          <a href="#features" class="hover:text-primary transition-colors">
-            <%= t('nav.features') %>
-          </a>
-          <a href="#how-it-works" class="hover:text-primary transition-colors">
-            <%= t('nav.how_it_works') %>
-          </a>
-          <a href="#templates" class="hover:text-primary transition-colors">
-            <%= t('nav.templates') %>
-          </a>
-        </div>
-
-        <!-- Actions -->
-        <div class="hidden md:flex items-center gap-4">
-          <!-- Language Toggle -->
-          <% target_locale = current_locale == 'ar' ? 'en' : 'ar' %>
-          <%= button_to locale_path(target_locale), method: :patch, class: "p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400 flex items-center gap-1 text-sm", title: t('language.switch') do %>
-            <iconify-icon icon="solar:global-linear" width="20" height="20" class="pointer-events-none"></iconify-icon>
-            <span class="font-medium"><%= target_locale == 'ar' ? 'ع' : 'EN' %></span>
-          <% end %>
-          
-          <button
-            id="themeToggle"
-            onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}"
-            class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400"
-          >
-            <iconify-icon
-              icon="solar:sun-2-linear"
-              width="24"
-              height="24"
-              class="hidden dark:block pointer-events-none"
-            ></iconify-icon>
-            <iconify-icon
-              icon="solar:moon-linear"
-              width="24"
-              height="24"
-              class="block dark:hidden pointer-events-none"
-            ></iconify-icon>
-          </button>
-          
-          <% if user_signed_in? %>
-            <%= link_to profile_path, class: "flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" do %>
-              <iconify-icon icon="solar:user-linear" width="20"></iconify-icon>
-              <span><%= current_user.email %></span>
-            <% end %>
-            <%= form_with url: "/auth/logout", method: :delete, class: "inline-flex" do |f| %>
-              <button type="submit" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors">
-                <iconify-icon icon="solar:logout-2-linear" width="20"></iconify-icon>
-                <span><%= t('nav.logout') %></span>
-              </button>
-            <% end %>
-          <% end %>
-          
-          <a
-            href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
-            class="flex items-center justify-center px-5 h-11 rounded-xl bg-primary hover:bg-primaryHover text-white text-sm font-semibold transition-all shadow-glow hover:shadow-lg"
-          >
-            <%= t('nav.build_cv') %>
-          </a>
-        </div>
-
-        <!-- Mobile Menu Button -->
-        <div class="flex md:hidden items-center gap-4 z-50">
-          <button
-            id="themeToggleMobile"
-            onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}"
-            class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400"
-          >
-            <iconify-icon
-              icon="solar:sun-2-linear"
-              width="22"
-              height="22"
-              class="hidden dark:block pointer-events-none"
-            ></iconify-icon>
-            <iconify-icon
-              icon="solar:moon-linear"
-              width="22"
-              height="22"
-              class="block dark:hidden pointer-events-none"
-            ></iconify-icon>
-          </button>
-          <button
-            id="mobileMenuBtn"
-            onclick="document.getElementById('mobile-menu').classList.remove('translate-x-full'); document.body.style.overflow='hidden';"
-            class="p-2 text-darkBase dark:text-white focus:outline-none"
-          >
-            <iconify-icon
-              icon="solar:hamburger-menu-linear"
-              width="26"
-              stroke-width="1.5"
-              class="pointer-events-none"
-            ></iconify-icon>
-          </button>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Mobile Menu Overlay -->
-    <div
-      id="mobile-menu"
-      class="fixed inset-0 z-[60] bg-white/95 dark:bg-darkBase/95 backdrop-blur-xl translate-x-full transition-transform duration-300 ease-in-out md:hidden flex flex-col h-[100dvh]"
-    >
-      <!-- Mobile Menu Header -->
-      <div
-        class="flex items-center justify-between px-4 sm:px-6 h-16 shrink-0 border-b border-borderLight dark:border-borderDark"
-      >
-        <!-- Logo -->
-        <div class="flex items-center gap-2">
-          <span class="bg-primary text-mist w-8 h-8 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 22 %></span>
-          <span
-            class="text-xl font-medium tracking-tight text-darkBase dark:text-white"
-          >
-            سيرة
-          </span>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center gap-3">
-          <!-- Language Toggle -->
-          <% target_locale_mobile = current_locale == 'ar' ? 'en' : 'ar' %>
-          <%= button_to locale_path(target_locale_mobile), method: :patch, class: "p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400 flex items-center gap-1 text-sm", title: t('language.switch') do %>
-            <iconify-icon icon="solar:global-linear" width="20" height="20" class="pointer-events-none"></iconify-icon>
-            <span class="font-medium"><%= target_locale_mobile == 'ar' ? 'ع' : 'EN' %></span>
-          <% end %>
-          
-          <button
-            id="themeToggleMobileInside"
-            onclick="var h=document.documentElement; if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';}else{h.classList.add('dark');localStorage.theme='dark';}"
-            class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400"
-          >
-            <iconify-icon
-              icon="solar:sun-2-linear"
-              width="24"
-              height="24"
-              class="hidden dark:block pointer-events-none"
-            ></iconify-icon>
-            <iconify-icon
-              icon="solar:moon-linear"
-              width="24"
-              height="24"
-              class="block dark:hidden pointer-events-none"
-            ></iconify-icon>
-          </button>
-          <button
-            id="closeMobileMenu"
-            onclick="document.getElementById('mobile-menu').classList.add('translate-x-full'); document.body.style.overflow='';"
-            class="p-2 text-gray-500 hover:text-darkBase dark:hover:text-white transition-colors"
-          >
-            <iconify-icon
-              icon="solar:close-circle-linear"
-              width="28"
-              stroke-width="1.5"
-              class="pointer-events-none"
-            ></iconify-icon>
-          </button>
-        </div>
+      <!-- Ambient light -->
+      <div aria-hidden="true" class="absolute inset-0 pointer-events-none">
+        <svg class="sr-spin" width="560" height="560" viewBox="0 0 100 100" style="position: absolute; top: 110px; left: -80px; opacity: 0.14"><g fill="none" stroke="#d6b877" stroke-width="0.35"><rect x="20" y="20" width="60" height="60"></rect><rect x="20" y="20" width="60" height="60" transform="rotate(45 50 50)"></rect><rect x="32" y="32" width="36" height="36" transform="rotate(22.5 50 50)"></rect><rect x="32" y="32" width="36" height="36" transform="rotate(67.5 50 50)"></rect><circle cx="50" cy="50" r="12"></circle><circle cx="50" cy="50" r="42.5"></circle></g></svg>
+        <svg class="sr-spin" width="440" height="440" viewBox="0 0 100 100" style="position: absolute; top: 2380px; right: -120px; opacity: 0.12"><g fill="none" stroke="#d6b877" stroke-width="0.4"><rect x="20" y="20" width="60" height="60"></rect><rect x="20" y="20" width="60" height="60" transform="rotate(45 50 50)"></rect><circle cx="50" cy="50" r="16"></circle></g></svg>
+        <div class="sr-orb1" style="position: absolute; top: -180px; right: -120px; width: 720px; height: 720px; border-radius: 50%; background: radial-gradient(circle, rgba(0,140,78,0.55), rgba(0,140,78,0) 65%); filter: blur(40px)"></div>
+        <div class="sr-orb2" style="position: absolute; top: 380px; left: -220px; width: 760px; height: 760px; border-radius: 50%; background: radial-gradient(circle, rgba(200,169,106,0.42), rgba(200,169,106,0) 65%); filter: blur(50px)"></div>
+        <div class="sr-orb3" style="position: absolute; top: 1500px; right: 8%; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(0,108,53,0.35), rgba(0,108,53,0) 65%); filter: blur(50px)"></div>
+        <div class="sr-orb2" style="position: absolute; top: 2500px; left: 4%; width: 680px; height: 680px; border-radius: 50%; background: radial-gradient(circle, rgba(214,184,119,0.38), rgba(214,184,119,0) 65%); filter: blur(60px)"></div>
+        <div class="sr-orb1" style="position: absolute; top: 3400px; right: 20%; width: 760px; height: 760px; border-radius: 50%; background: radial-gradient(circle, rgba(0,150,85,0.4), rgba(0,150,85,0) 65%); filter: blur(60px)"></div>
       </div>
 
-      <!-- Menu Items -->
-      <div
-        class="flex-1 flex flex-col items-center justify-center gap-8 p-6 overflow-y-auto"
-      >
-        <% if user_signed_in? %>
-          <%= link_to resumes_path, class: "mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight" do %>
-            <%= t('nav.my_cv') %>
-          <% end %>
-        <% end %>
-        <a
-          href="#features"
-          onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='features'; }, 50); return false;"
-          class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
-        >
-          <%= t('nav.features') %>
-        </a>
-        <a
-          href="#how-it-works"
-          onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='how-it-works'; }, 50); return false;"
-          class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
-        >
-          <%= t('nav.how_it_works') %>
-        </a>
-        <a
-          href="#templates"
-          onclick="var menu=document.getElementById('mobile-menu'); menu.classList.add('translate-x-full'); document.body.style.overflow=''; setTimeout(function(){ window.location.hash='templates'; }, 50); return false;"
-          class="mobile-link text-2xl font-normal text-darkBase dark:text-white hover:text-primary transition-colors tracking-tight"
-        >
-          <%= t('nav.templates') %>
-        </a>
+      <div class="relative mx-auto max-w-[1240px] px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
 
-        <div class="pt-6 border-t border-borderLight dark:border-borderDark w-full max-w-[280px] space-y-4">
-          <% if user_signed_in? %>
-            <%= link_to profile_path, class: "mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors" do %>
-              <iconify-icon icon="solar:user-linear" width="24"></iconify-icon>
-              <span><%= current_user.email %></span>
+        <!-- Nav -->
+        <header class="glass sticky top-3 sm:top-4 z-50 flex items-center justify-between gap-4 rounded-[22px] py-3 ps-4 pe-3 sm:ps-5">
+          <a href="#top" class="flex items-center gap-3">
+            <span class="glass flex items-center justify-center w-11 h-11 rounded-[13px] text-mist"><%= render "shared/logo_mark", size: 32, animate: true %></span>
+            <span class="text-[22px] font-semibold tracking-[-0.01em]">سيرة</span>
+          </a>
+          <nav aria-label="<%= t('nav.features') %>" class="hidden lg:flex flex-wrap gap-1">
+            <% if user_signed_in? %>
+              <%= link_to t('nav.my_cv'), resumes_path, class: "sr-btn px-4 py-2.5 rounded-xl text-[15px]", style: "color: rgba(238,243,238,0.78)" %>
             <% end %>
-            <%= form_with url: "/auth/logout", method: :delete, class: "w-full" do |f| %>
-              <button type="submit" class="w-full flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
-                <iconify-icon icon="solar:logout-2-linear" width="24"></iconify-icon>
-                <span><%= t('nav.logout_full') %></span>
-              </button>
+            <a href="#features" class="sr-btn px-4 py-2.5 rounded-xl text-[15px]" style="color: rgba(238,243,238,0.78)"><%= t('nav.features') %></a>
+            <a href="#how-it-works" class="sr-btn px-4 py-2.5 rounded-xl text-[15px]" style="color: rgba(238,243,238,0.78)"><%= t('nav.how_it_works') %></a>
+            <a href="#templates" class="sr-btn px-4 py-2.5 rounded-xl text-[15px]" style="color: rgba(238,243,238,0.78)"><%= t('nav.templates') %></a>
+          </nav>
+          <div class="flex items-center gap-2">
+            <%= button_to locale_path(target_locale), method: :patch, form_class: "contents", class: "sr-btn glass-soft h-11 min-w-11 px-3 rounded-xl text-mist sr-mono text-[13px] font-semibold cursor-pointer", title: t('language.switch') do %><%= target_locale == 'ar' ? 'ع' : 'EN' %><% end %>
+            <% if user_signed_in? %>
+              <%= link_to profile_path, class: "sr-btn hidden md:flex items-center h-11 px-3 rounded-xl", title: current_user.email, "aria-label": current_user.email do %>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="pointer-events-none"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <% end %>
+              <%= form_with url: "/auth/logout", method: :delete, class: "hidden md:flex" do %>
+                <button type="submit" class="sr-btn flex items-center h-11 px-3 rounded-xl text-mist/80 hover:text-red-300 cursor-pointer" title="<%= t('nav.logout') %>" aria-label="<%= t('nav.logout') %>">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="pointer-events-none"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>
+                </button>
+              <% end %>
+            <% else %>
+              <a href="<%= login_path %>" class="sr-btn hidden md:flex items-center h-11 px-4 rounded-xl text-[15px]"><%= t('nav.login') %></a>
             <% end %>
-          <% else %>
-            <a href="/login" class="mobile-link flex items-center justify-center gap-2 text-lg text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
-              <iconify-icon icon="solar:login-2-linear" width="24"></iconify-icon>
-              <span><%= t('nav.login') %></span>
-            </a>
-          <% end %>
-        </div>
+            <a href="<%= build_href %>" class="sr-btn sr-primary hidden sm:flex items-center h-11 px-5 rounded-xl text-[15px] font-semibold" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.45)"><%= t('nav.build_cv') %></a>
+            <button id="mobileMenuBtn" type="button" class="sr-btn glass-soft lg:hidden flex items-center justify-center h-11 w-11 rounded-xl text-mist" aria-label="Menu" aria-controls="mobile-menu">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="pointer-events-none"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            </button>
+          </div>
+        </header>
 
-        <a
-          href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
-          class="w-full max-w-[280px] py-4 rounded-2xl bg-primary hover:bg-primaryHover text-white text-lg font-medium shadow-glow text-center transition-all mt-6"
-        >
-          <%= t('nav.build_cv') %>
-        </a>
-      </div>
-    </div>
-
-    <!-- Hero Section -->
-    <header
-      class="relative pt-32 pb-16 md:pt-40 md:pb-24 lg:pt-52 lg:pb-36 px-4 sm:px-6 overflow-hidden"
-    >
-      <div
-        class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center"
-      >
-        <!-- Content -->
-        <div
-          class="flex flex-col gap-6 md:gap-8 text-center lg:text-right order-1"
-        >
-          <div
-            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 dark:bg-primary/10 w-fit mx-auto lg:mx-0 backdrop-blur-md"
-          >
-            <span class="relative flex h-2 w-2">
-              <span
-                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-action opacity-75"
-              ></span>
-              <span
-                class="relative inline-flex rounded-full h-2 w-2 bg-action"
-              ></span>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="fixed inset-0 z-[60] translate-x-full lg:hidden flex flex-col h-[100dvh]" style="background: rgba(7,18,13,0.92); -webkit-backdrop-filter: blur(28px); backdrop-filter: blur(28px)">
+          <div class="flex items-center justify-between px-4 sm:px-6 h-20 shrink-0">
+            <span class="flex items-center gap-3">
+              <span class="glass flex items-center justify-center w-11 h-11 rounded-[13px] text-mist"><%= render "shared/logo_mark", size: 30 %></span>
+              <span class="text-[22px] font-semibold">سيرة</span>
             </span>
-            <span
-              class="text-primary dark:text-action text-xs md:text-sm font-normal tracking-wide"
-            >
+            <button id="closeMobileMenu" type="button" class="sr-btn glass-soft flex items-center justify-center h-11 w-11 rounded-xl text-mist" aria-label="Close">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="pointer-events-none"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5l5 5M14.5 9.5l-5 5"/></svg>
+            </button>
+          </div>
+          <div class="flex-1 flex flex-col gap-3 p-4 sm:p-6 overflow-y-auto">
+            <% if user_signed_in? %>
+              <%= link_to t('nav.my_cv'), resumes_path, class: "glass-soft sr-btn rounded-2xl px-5 py-4 text-xl" %>
+            <% end %>
+            <a href="#features" class="glass-soft sr-btn rounded-2xl px-5 py-4 text-xl"><%= t('nav.features') %></a>
+            <a href="#how-it-works" class="glass-soft sr-btn rounded-2xl px-5 py-4 text-xl"><%= t('nav.how_it_works') %></a>
+            <a href="#templates" class="glass-soft sr-btn rounded-2xl px-5 py-4 text-xl"><%= t('nav.templates') %></a>
+            <div class="mt-4 flex flex-col gap-3">
+              <% if user_signed_in? %>
+                <%= link_to profile_path, class: "sr-btn flex items-center gap-2 px-5 py-3 rounded-2xl", style: "color: rgba(238,243,238,0.75)" do %>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="pointer-events-none"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span class="truncate"><%= current_user.email %></span>
+                <% end %>
+                <%= form_with url: "/auth/logout", method: :delete do %>
+                  <button type="submit" class="sr-btn w-full flex items-center gap-2 px-5 py-3 rounded-2xl text-mist/75 hover:text-red-300 cursor-pointer">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="pointer-events-none"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg><span><%= t('nav.logout_full') %></span>
+                  </button>
+                <% end %>
+              <% else %>
+                <a href="<%= login_path %>" class="sr-btn glass-soft flex items-center justify-center min-h-[52px] rounded-2xl text-lg"><%= t('nav.login') %></a>
+              <% end %>
+              <a href="<%= build_href %>" class="sr-btn sr-primary flex items-center justify-center min-h-[56px] rounded-2xl text-lg font-semibold" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)"><%= t('nav.build_cv') %></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero -->
+        <section id="top" class="grid gap-14 items-center pt-16 pb-24 md:pt-24 md:pb-[120px]" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr))">
+          <div class="flex flex-col gap-7">
+            <span class="glass-soft sr-up self-start inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+              <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
               <%= t('home.hero_badge') %>
             </span>
-          </div>
-
-          <h1
-            class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium leading-[1.15] md:leading-[1.1] tracking-tight text-darkBase dark:text-white"
-          >
-            <%= t('home.hero_title_1') %>
-            <br />
-            <span class="gradient-text"><%= t('home.hero_title_2') %></span>
-          </h1>
-
-          <p
-            class="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0"
-          >
-            <%= t('home.hero_description') %>
-          </p>
-
-          <!-- Buttons Grid -->
-          <div
-            class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg mx-auto lg:mx-0 mt-8"
-          >
-            <!-- Resume Builder (Purple) -->
-            <a
-              href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
-              class="flex items-center justify-between p-4 rounded-xl bg-primary text-white hover:bg-primaryHover hover:shadow-glow transition-all group"
-            >
-              <span class="font-medium text-base"><%= t('home.resume_builder') %></span>
-              <iconify-icon
-                icon="solar:document-add-linear"
-                width="24"
-                class="text-white/95"
-              ></iconify-icon>
-            </a>
-
-            <!-- Generate CV (Dark / Green) -->
-            <a
-              href="<%= user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path) %>"
-              class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-action dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
-            >
-              <span class="font-medium text-base"><%= t('home.generate_by_job') %></span>
-              <iconify-icon
-                icon="solar:magic-stick-3-linear"
-                width="24"
-                class="text-action-700 dark:text-action"
-              ></iconify-icon>
-            </a>
-
-            <!-- Analyze CV (Dark / Orange) -->
-            <a
-              href="<%= user_signed_in? ? cv_analysis_path : login_path(return_to: cv_analysis_path) %>"
-              class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-orange-500 dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
-            >
-              <span class="font-medium text-base"><%= t('home.analyze_resume') %></span>
-              <iconify-icon
-                icon="solar:scanner-linear"
-                width="24"
-                class="text-orange-500"
-              ></iconify-icon>
-            </a>
-
-            <!-- Import LinkedIn (Dark / Blue) -->
-            <a
-              href="<%= user_signed_in? ? linkedin_import_path : login_path(return_to: linkedin_import_path) %>"
-              class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-white/5 border border-borderLight dark:border-borderDark hover:border-blue-500 dark:hover:bg-white/10 transition-all group text-darkBase dark:text-white hover:bg-lavender-50"
-            >
-              <span class="font-medium text-base"><%= t('home.import_from_linkedin') %></span>
-              <iconify-icon
-                icon="solar:upload-square-linear"
-                width="24"
-                class="text-blue-600 dark:text-blue-400"
-              ></iconify-icon>
-            </a>
-          </div>
-
-          <div
-            class="flex items-center gap-4 justify-center lg:justify-start pt-2 md:pt-4 text-xs md:text-sm text-gray-500"
-          >
-            <div class="flex -space-x-3 space-x-reverse">
-              <div
-                class="w-8 h-8 rounded-full bg-gray-700 border-2 border-white dark:border-darkBase flex items-center justify-center text-[10px] text-white"
-              >
-                SA
-              </div>
-              <div
-                class="w-8 h-8 rounded-full bg-gray-600 border-2 border-white dark:border-darkBase flex items-center justify-center text-[10px] text-white"
-              >
-                AE
-              </div>
-              <div
-                class="w-8 h-8 rounded-full bg-gray-500 border-2 border-white dark:border-darkBase flex items-center justify-center text-[10px] text-white"
-              >
-                KW
-              </div>
+            <h1 class="m-0 font-semibold" style="font-size: clamp(40px, 5.4vw, 68px); line-height: 1.15; letter-spacing: -0.02em">
+              <% delay = 0.1 %>
+              <% t('home.hero_title_1').split.each do |word| %><span class="sr-w" style="animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+              <% delay += 0.04 %>
+              <% t('home.hero_title_2').split.each do |word| %><span class="sr-w" style="color: #d6b877; animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+            </h1>
+            <p class="sr-up m-0 text-[17px] sm:text-[19px] font-light max-w-[56ch]" style="animation-delay: .7s; color: rgba(238,243,238,0.7)"><%= t('home.hero_description') %></p>
+            <div class="sr-up grid grid-cols-1 min-[420px]:grid-cols-2 gap-2.5 max-w-[520px]" style="animation-delay: .85s">
+              <a href="<%= build_href %>" class="sr-btn sr-primary flex items-center justify-between gap-2.5 min-h-[52px] px-5 rounded-2xl font-semibold text-[15px]" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)">
+                <%= t('home.resume_builder') %>
+                <span class="sr-ico flex"><%= arrow %></span>
+              </a>
+              <a href="<%= user_signed_in? ? new_cv_generation_path : login_path(return_to: new_cv_generation_path) %>" class="sr-btn glass-soft flex items-center gap-2.5 min-h-[52px] px-[18px] rounded-2xl text-[15px]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><%= t('home.generate_by_job') %>
+              </a>
+              <a href="<%= user_signed_in? ? cv_analysis_path : login_path(return_to: cv_analysis_path) %>" class="sr-btn glass-soft flex items-center gap-2.5 min-h-[52px] px-[18px] rounded-2xl text-[15px]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"></path></svg><%= t('home.analyze_resume') %>
+              </a>
+              <a href="<%= user_signed_in? ? linkedin_import_path : login_path(return_to: linkedin_import_path) %>" class="sr-btn glass-soft flex items-center gap-2.5 min-h-[52px] px-[18px] rounded-2xl text-[15px]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"></path></svg><%= t('home.import_from_linkedin') %>
+              </a>
             </div>
-            <p><%= t('home.trusted_by', count: number_with_delimiter(@users_count)) %></p>
-          </div>
-        </div>
-
-        <!-- Visual Mockup -->
-        <div
-          class="relative order-2 perspective-1000 mt-8 lg:mt-0 w-full max-w-md lg:max-w-full mx-auto"
-        >
-          <div
-            class="absolute inset-0 bg-primary/20 blur-[60px] md:blur-[100px] rounded-full"
-          ></div>
-
-          <!-- Glass Card -->
-          <div
-            class="relative bg-white/60 dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl p-4 md:p-6 shadow-2xl transform lg:rotate-y-[-5deg] hover:rotate-y-0 transition-transform duration-500 border border-borderLight dark:border-borderDark"
-          >
-            <!-- Fake UI Header -->
-            <div
-              class="flex items-center justify-between mb-4 md:mb-6 border-b border-borderLight dark:border-borderDark pb-3 md:pb-4 dark:bg-darkCard/60"
-            >
-              <div class="flex gap-1.5 md:gap-2">
-                <div
-                  class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-500/80"
-                ></div>
-                <div
-                  class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-yellow-500/80"
-                ></div>
-                <div
-                  class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-green-500/80"
-                ></div>
+            <div class="sr-up flex items-center gap-3.5" style="animation-delay: 1s">
+              <div class="flex">
+                <span class="glass sr-mono w-[38px] h-[38px] rounded-full flex items-center justify-center text-xs font-semibold" style="background: rgba(214,184,119,0.35)">SA</span>
+                <span class="glass sr-mono w-[38px] h-[38px] rounded-full flex items-center justify-center text-xs font-semibold -ms-2.5" style="background: rgba(0,108,53,0.5)">AE</span>
+                <span class="glass sr-mono w-[38px] h-[38px] rounded-full flex items-center justify-center text-xs font-semibold -ms-2.5" style="background: rgba(214,184,119,0.35)">KW</span>
               </div>
-              <div class="text-[10px] md:text-xs text-gray-400 font-mono">
-                seera_editor_v1.0.exe
-              </div>
-            </div>
-
-            <!-- Layout Content -->
-            <div class="flex gap-3 md:gap-4 h-[300px] md:h-[380px]">
-              <!-- Sidebar -->
-              <div class="w-1/3 space-y-2 md:space-y-3 hidden sm:block">
-                <div
-                  class="h-20 md:h-28 rounded-lg bg-white/50 dark:bg-white/5 p-3 md:p-4 border border-borderLight dark:border-borderDark"
-                >
-                  <div
-                    class="w-7 h-7 md:w-9 md:h-9 rounded bg-primary/20 mb-2 md:mb-3 flex items-center justify-center text-primary"
-                  >
-                    <iconify-icon
-                      icon="solar:user-linear"
-                      width="18"
-                    ></iconify-icon>
-                  </div>
-                  <div
-                    class="h-1.5 md:h-2 w-12 md:w-16 bg-gray-200 dark:bg-white/20 rounded mb-1.5 md:mb-2"
-                  ></div>
-                  <div
-                    class="h-1 md:h-1.5 w-16 md:w-20 bg-gray-100 dark:bg-white/10 rounded"
-                  ></div>
-                </div>
-                <div
-                  class="h-20 md:h-28 rounded-lg bg-action/10 dark:bg-action/5 p-3 md:p-4 border border-action/20 relative overflow-hidden"
-                >
-                  <div
-                    class="absolute top-0 right-0 w-1 h-full bg-action"
-                  ></div>
-                  <div
-                    class="w-7 h-7 md:w-9 md:h-9 rounded bg-action/20 mb-2 md:mb-3 flex items-center justify-center text-action"
-                  >
-                    <iconify-icon
-                      icon="solar:magic-stick-3-linear"
-                      width="18"
-                    ></iconify-icon>
-                  </div>
-                  <div
-                    class="text-[10px] md:text-xs text-action-800 dark:text-action mb-1 md:mb-2 font-medium"
-                  >
-                    <%= t('home.job_analysis') %>
-                  </div>
-                  <div
-                    class="h-1 md:h-1.5 w-full bg-action/20 dark:bg-action/10 rounded"
-                  ></div>
-                </div>
-              </div>
-
-              <!-- Main Preview -->
-              <div
-                class="w-full sm:w-2/3 bg-white rounded-lg p-4 md:p-5 shadow-inner relative overflow-hidden dark:bg-lavender-50"
-              >
-                <!-- Scanning Line Effect -->
-                <div
-                  class="absolute top-0 left-0 w-full h-1 bg-action/50 shadow-[0_0_15px_rgba(215,255,74,0.6)] animate-[scan_3s_ease-in-out_infinite]"
-                ></div>
-
-                <div class="flex justify-between items-start mb-4 md:mb-6">
-                  <div class="">
-                    <div
-                      class="h-4 md:h-5 w-20 md:w-28 bg-gray-800 rounded mb-2"
-                    ></div>
-                    <div
-                      class="h-2 md:h-2.5 w-32 md:w-40 bg-gray-300 rounded"
-                    ></div>
-                  </div>
-                  <div
-                    class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200"
-                  ></div>
-                </div>
-                <div class="space-y-2 md:space-y-3 mb-4 md:mb-6">
-                  <div class="h-2 md:h-2.5 w-full bg-gray-200 rounded"></div>
-                  <div class="h-2 md:h-2.5 w-5/6 bg-gray-200 rounded"></div>
-                  <div class="h-2 md:h-2.5 w-4/6 bg-gray-200 rounded"></div>
-                </div>
-                <div
-                  class="mt-4 p-2 md:p-3 bg-blue-50 rounded border border-blue-100"
-                >
-                  <div class="flex items-center gap-2 mb-2">
-                    <iconify-icon
-                      icon="solar:stars-minimalistic-linear"
-                      class="text-primary w-3 h-3 md:w-4 md:h-4"
-                    ></iconify-icon>
-                    <span class="text-[10px] text-primary font-semibold">
-                      <%= t('home.enhanced_by_ai') %>
-                    </span>
-                  </div>
-                  <div
-                    class="h-1.5 md:h-2 w-full bg-blue-200 rounded mb-1.5"
-                  ></div>
-                  <div class="h-1.5 md:h-2 w-3/4 bg-blue-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Floating Badge -->
-            <div
-              class="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 bg-white dark:bg-darkCard border border-borderLight dark:border-borderDark p-3 md:p-4 rounded-xl shadow-xl flex items-center gap-3 md:gap-4 animate-bounce z-10"
-              style="animation-duration: 3s;"
-            >
-              <div
-                class="bg-green-500/10 text-green-500 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center"
-              >
-                <iconify-icon
-                  icon="solar:check-circle-linear"
-                  width="20"
-                  md:width="24"
-                  stroke-width="2"
-                ></iconify-icon>
-              </div>
-              <div class="text-right">
-                <div
-                  class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400"
-                >
-                  <%= t('home.score') %>
-                </div>
-                <div
-                  class="text-sm md:text-base font-semibold text-darkBase dark:text-white"
-                >
-                  95% ATS
-                </div>
-              </div>
+              <span class="text-sm" style="color: rgba(238,243,238,0.65)"><%= t('home.trusted_by', count: number_with_delimiter(@users_count)) %></span>
             </div>
           </div>
-        </div>
-      </div>
-    </header>
 
-    <!-- Features Section -->
-    <section id="features" class="py-16 md:py-24 px-4 sm:px-6 relative">
-      <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-12 md:mb-20">
-          <h2
-            class="text-3xl md:text-4xl lg:text-5xl font-medium text-darkBase dark:text-white mb-4 md:mb-6 tracking-tight"
-          >
-            <%= t('home.features_title') %>
-          </h2>
-          <p
-            class="text-lg md:text-xl text-gray-600 dark:text-gray-500 max-w-3xl mx-auto font-normal px-4"
-          >
-            <%= t('home.features_subtitle') %>
-          </p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-6 md:gap-8">
-          <!-- Feature 1 -->
-          <div
-            class="group bg-white backdrop-blur-xl rounded-2xl p-8 md:p-10 border border-borderLight dark:border-borderDark hover:border-primary/30 transition-all shadow-sm dark:shadow-none hover:shadow-lg hover:-translate-y-1 relative overflow-hidden dark:bg-darkCard/60"
-          >
-            <div
-              class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"
-            ></div>
-            <div
-              class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 md:mb-8 group-hover:bg-primary group-hover:text-white transition-colors"
-            >
-              <iconify-icon
-                icon="solar:document-add-linear"
-                width="28"
-              ></iconify-icon>
-            </div>
-            <h3
-              class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
-            >
-              <%= t('home.feature_job_gen_title') %>
-            </h3>
-            <p
-              class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
-            >
-              <%= t('home.feature_job_gen_desc') %>
-            </p>
-          </div>
-
-          <!-- Feature 2 -->
-          <div
-            class="group bg-white dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl p-8 md:p-10 border border-borderLight dark:border-borderDark hover:border-action/30 transition-all shadow-sm dark:shadow-none hover:shadow-lg hover:-translate-y-1 relative overflow-hidden"
-          >
-            <div
-              class="absolute top-0 right-0 w-32 h-32 bg-action/10 dark:bg-action/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"
-            ></div>
-            <div
-              class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-action/10 text-action-700 dark:text-action flex items-center justify-center mb-6 md:mb-8 group-hover:bg-action group-hover:text-darkBase transition-colors"
-            >
-              <iconify-icon icon="solar:globe-linear" width="28"></iconify-icon>
-            </div>
-            <h3
-              class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
-            >
-              <%= t('home.feature_translate_title') %>
-            </h3>
-            <p
-              class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
-            >
-              <%= t('home.feature_translate_desc') %>
-            </p>
-          </div>
-
-          <!-- Feature 3 -->
-          <div
-            class="group bg-white dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl p-8 md:p-10 border border-borderLight dark:border-borderDark hover:border-blue-400/30 transition-all shadow-sm dark:shadow-none hover:shadow-lg hover:-translate-y-1 relative overflow-hidden"
-          >
-            <div
-              class="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"
-            ></div>
-            <div
-              class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-blue-400/10 text-blue-500 dark:text-blue-400 flex items-center justify-center mb-6 md:mb-8 group-hover:bg-blue-500 group-hover:text-white transition-colors"
-            >
-              <iconify-icon
-                icon="solar:upload-linear"
-                width="28"
-              ></iconify-icon>
-            </div>
-            <h3
-              class="text-xl md:text-2xl font-medium text-darkBase dark:text-white mb-3 md:mb-4"
-            >
-              <%= t('home.feature_linkedin_title') %>
-            </h3>
-            <p
-              class="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal"
-            >
-              <%= t('home.feature_linkedin_desc') %>
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- How it works -->
-    <section
-      id="how-it-works"
-      class="py-16 md:py-24 px-4 sm:px-6 border-t border-borderLight dark:border-borderDark dark:bg-darkBase/50 bg-lavender-50/50"
-    >
-      <div class="max-w-4xl mx-auto">
-        <div class="text-center mb-12 md:mb-20">
-          <h2
-            class="text-2xl md:text-3xl font-medium text-darkBase dark:text-white"
-          >
-            <%= t('home.how_title') %>
-          </h2>
-        </div>
-
-        <div class="relative">
-          <!-- Connecting Line (Desktop Only) -->
-          <div
-            class="absolute top-8 right-9 bottom-8 w-px bg-gradient-to-b from-primary via-action to-transparent hidden md:block opacity-30"
-          ></div>
-
-          <div class="space-y-8 md:space-y-12">
-            <!-- Step 1 -->
-            <div class="flex flex-col md:flex-row gap-6 md:gap-8 relative">
-              <div class="hidden md:flex flex-col items-center">
-                <div
-                  class="w-20 h-20 rounded-full bg-white dark:bg-darkBase border-4 border-gray-100 dark:border-darkCard text-primary font-medium text-3xl flex items-center justify-center z-10 shadow-lg dark:shadow-glow"
-                >
-                  1
+          <!-- Editor mockup -->
+          <div class="sr-float relative py-5" aria-hidden="true">
+            <div class="glass sr-up rounded-[28px] overflow-hidden" style="animation-delay: .4s; animation-duration: 1.4s">
+              <div class="flex items-center justify-between px-[18px] py-3.5" style="border-bottom: 1px solid rgba(255,255,255,0.08)" dir="ltr">
+                <div class="flex gap-[7px]">
+                  <span class="w-[11px] h-[11px] rounded-full" style="background: #e0715f"></span>
+                  <span class="w-[11px] h-[11px] rounded-full" style="background: #e8b25c"></span>
+                  <span class="w-[11px] h-[11px] rounded-full" style="background: #7fbf86"></span>
                 </div>
+                <span class="sr-mono text-xs" style="color: rgba(238,243,238,0.55)">seera_editor_v1.0.exe</span>
+                <span class="w-[45px]"></span>
               </div>
-              <div
-                class="bg-white backdrop-blur-md p-6 md:p-8 rounded-2xl flex-1 border border-borderLight dark:border-borderDark shadow-sm md:mr-10 transition-transform hover:-translate-y-1 dark:bg-darkCard/60"
-              >
-                <div class="flex items-center gap-3 mb-3 md:hidden">
-                  <span
-                    class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm"
-                  >
-                    1
+              <div class="grid gap-3 sm:gap-4 p-4 sm:p-[22px]" style="grid-template-columns: 1.3fr 1fr">
+                <div class="glass-soft rounded-[18px] p-3.5 sm:p-[18px] flex flex-col gap-3 min-w-0">
+                  <span class="text-[13px] font-semibold" style="color: rgba(238,243,238,0.85)"><%= t('home.job_analysis') %></span>
+                  <span class="sr-grow h-2 rounded-md" style="animation-delay: .9s; background: rgba(255,255,255,0.14); width: 92%"></span>
+                  <span class="sr-grow h-2 rounded-md" style="animation-delay: 1.02s; background: rgba(255,255,255,0.1); width: 78%"></span>
+                  <span class="sr-grow h-2 rounded-md" style="animation-delay: 1.14s; background: rgba(255,255,255,0.1); width: 85%"></span>
+                  <span class="sr-grow h-2 rounded-md" style="animation-delay: 1.26s; background: rgba(255,255,255,0.08); width: 60%"></span>
+                  <span class="sr-shim mt-2 inline-flex items-center gap-2 self-start px-3 py-[7px] rounded-[10px] text-xs" style="background: rgba(214,184,119,0.16); border: 1px solid rgba(214,184,119,0.4); color: #d6b877">
+                    <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>
+                    <%= t('home.enhanced_by_ai') %>
                   </span>
-                  <h4 class="text-lg font-medium text-darkBase dark:text-white">
-                    <%= t('home.step1_short') %>
-                  </h4>
                 </div>
-                <h4
-                  class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
-                >
-                  <%= t('home.step1_title') %>
-                </h4>
-                <p
-                  class="text-sm md:text-base text-gray-600 dark:text-gray-400"
-                >
-                  <%= t('home.step1_desc') %>
-                </p>
+                <div class="glass-soft rounded-[18px] p-3 sm:p-[18px] flex flex-col items-center justify-center gap-2 min-w-0">
+                  <span class="text-[13px]" style="color: rgba(238,243,238,0.6)"><%= t('home.score') %></span>
+                  <div class="relative w-[92px] h-[92px] sm:w-[120px] sm:h-[120px]">
+                    <svg width="100%" height="100%" viewBox="0 0 120 120" style="transform: rotate(-90deg)">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="9"></circle>
+                      <circle class="sr-ring" cx="60" cy="60" r="50" fill="none" stroke="#2fa36b" stroke-width="9" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="16"></circle>
+                    </svg>
+                    <span dir="ltr" class="sr-mono absolute inset-0 flex flex-col items-center justify-center font-semibold text-xl sm:text-[26px]" style="line-height: 1.1">95%<span class="text-[11px] font-normal" style="color: rgba(238,243,238,0.6)">ATS</span></span>
+                  </div>
+                </div>
+                <div class="glass-soft rounded-[18px] px-[18px] py-4 flex flex-col gap-2.5" style="grid-column: 1 / -1">
+                  <span class="sr-grow rounded-md" style="animation-delay: 1.4s; height: 10px; background: rgba(255,255,255,0.16); width: 40%"></span>
+                  <span class="sr-grow rounded-md" style="animation-delay: 1.52s; height: 7px; background: rgba(255,255,255,0.09); width: 96%"></span>
+                  <span class="sr-grow rounded-md" style="animation-delay: 1.64s; height: 7px; background: rgba(255,255,255,0.09); width: 88%"></span>
+                  <span class="sr-grow rounded-md" style="animation-delay: 1.76s; height: 7px; background: rgba(255,255,255,0.07); width: 70%"></span>
+                </div>
               </div>
             </div>
+            <span class="glass sr-mono absolute -bottom-1.5 end-0 sm:-end-[18px] px-4 py-3 rounded-2xl flex items-center gap-2.5 text-sm font-semibold" dir="ltr">
+              <span class="sr-dot w-2 h-2 rounded-full" style="background: #7fbf86"></span>95% ATS</span>
+          </div>
+        </section>
 
-            <!-- Step 2 -->
-            <div class="flex flex-col md:flex-row gap-6 md:gap-8 relative">
-              <div class="hidden md:flex flex-col items-center">
-                <div
-                  class="w-20 h-20 rounded-full bg-white dark:bg-darkBase border-4 border-gray-100 dark:border-darkCard text-action-600 dark:text-action font-medium text-3xl flex items-center justify-center z-10 shadow-lg dark:shadow-glow-mint"
-                >
-                  2
-                </div>
+        <!-- Features -->
+        <section id="features" class="pt-10 pb-24 md:pb-[120px] flex flex-col gap-12 scroll-mt-28">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <h2 class="sr-mask m-0 font-semibold" style="font-size: clamp(32px, 4vw, 48px); letter-spacing: -0.02em; line-height: 1.2"><%= t('home.features_title') %></h2>
+            <p class="m-0 text-[17px] font-light max-w-[40ch]" style="color: rgba(238,243,238,0.62)"><%= t('home.features_subtitle') %></p>
+          </div>
+          <div class="grid gap-5" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr))">
+            <article class="glass sr-lift sr-reveal rounded-[32px] p-7 sm:p-10 flex flex-col gap-5 min-h-[420px] justify-between">
+              <span class="glass-soft sr-ico w-14 h-14 rounded-[18px] flex items-center justify-center" style="color: #2fa36b">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"></path></svg></span>
+              <div class="glass-soft rounded-[18px] p-4 flex flex-col gap-2" aria-hidden="true">
+                <span class="block h-[7px] rounded-md" style="background: rgba(255,255,255,0.14); width: 90%"></span>
+                <span class="block h-[7px] rounded-md" style="background: rgba(255,255,255,0.1); width: 70%"></span>
+                <span class="block h-[7px] rounded-md" style="background: rgba(214,184,119,0.45); width: 55%"></span>
               </div>
-              <div
-                class="bg-white dark:bg-darkCard/60 backdrop-blur-md p-6 md:p-8 rounded-2xl flex-1 border border-borderLight dark:border-borderDark shadow-sm md:mr-10 transition-transform hover:-translate-y-1"
-              >
-                <div class="flex items-center gap-3 mb-3 md:hidden">
-                  <span
-                    class="w-8 h-8 rounded-full bg-action/10 text-action-700 flex items-center justify-center font-bold text-sm"
-                  >
-                    2
-                  </span>
-                  <h4 class="text-lg font-medium text-darkBase dark:text-white">
-                    <%= t('home.step2_short') %>
-                  </h4>
-                </div>
-                <h4
-                  class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
-                >
-                  <%= t('home.step2_title') %>
-                </h4>
-                <p
-                  class="text-sm md:text-base text-gray-600 dark:text-gray-400"
-                >
-                  <%= t('home.step2_desc') %>
-                </p>
+              <div class="flex flex-col gap-2.5">
+                <h3 class="m-0 text-[26px] font-semibold"><%= t('home.feature_job_gen_title') %></h3>
+                <p class="m-0 text-base font-light" style="color: rgba(238,243,238,0.68)"><%= t('home.feature_job_gen_desc') %></p>
               </div>
+            </article>
+            <div class="grid gap-5">
+              <article class="glass sr-lift sr-reveal rounded-[32px] p-6 sm:p-8 flex gap-5 items-start">
+                <span class="glass-soft sr-ico flex-none w-[52px] h-[52px] rounded-2xl flex items-center justify-center" style="color: #2fa36b">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h8M8 3v2M6 5c0 4 3 7 6 8M10 5c0 3-3 7-6 8M13 21l4-9 4 9M14.5 18h5"></path></svg></span>
+                <div class="flex flex-col gap-2">
+                  <h3 class="m-0 text-[22px] font-semibold"><%= t('home.feature_translate_title') %></h3>
+                  <p class="m-0 text-[15px] font-light" style="color: rgba(238,243,238,0.68)"><%= t('home.feature_translate_desc') %></p>
+                </div>
+              </article>
+              <article class="glass sr-lift sr-reveal rounded-[32px] p-6 sm:p-8 flex gap-5 items-start">
+                <span class="glass-soft sr-ico flex-none w-[52px] h-[52px] rounded-2xl flex items-center justify-center" style="color: #2fa36b">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M12 18v-6M9 15l3 3 3-3"></path></svg></span>
+                <div class="flex flex-col gap-2">
+                  <h3 class="m-0 text-[22px] font-semibold"><%= t('home.feature_linkedin_title') %></h3>
+                  <p class="m-0 text-[15px] font-light" style="color: rgba(238,243,238,0.68)"><%= t('home.feature_linkedin_desc') %></p>
+                </div>
+              </article>
             </div>
+          </div>
+        </section>
 
-            <!-- Step 3 -->
-            <div class="flex flex-col md:flex-row gap-6 md:gap-8 relative">
-              <div class="hidden md:flex flex-col items-center">
-                <div
-                  class="w-20 h-20 rounded-full bg-white dark:bg-darkBase border-4 border-gray-100 dark:border-darkCard text-gray-800 dark:text-white font-medium text-3xl flex items-center justify-center z-10 shadow-lg"
-                >
-                  3
+        <!-- How it works -->
+        <section id="how-it-works" class="pt-10 pb-24 md:pb-[120px] flex flex-wrap gap-10 items-start scroll-mt-28">
+          <div class="flex flex-col gap-4" style="flex: 1 1 300px">
+            <span class="sr-mono text-[13px] tracking-[0.08em]" style="color: #d6b877" dir="ltr">01 — 03</span>
+            <h2 class="sr-mask m-0 font-semibold" style="font-size: clamp(32px, 4vw, 48px); letter-spacing: -0.02em; line-height: 1.2"><%= t('home.how_title') %></h2>
+          </div>
+          <ol class="glass list-none m-0 p-2 sm:p-3 rounded-[32px] flex flex-col gap-2 min-w-0" style="flex: 2 1 560px">
+            <% [1, 2, 3].each do |n| %>
+              <li class="glass-soft sr-lift sr-reveal rounded-3xl p-5 sm:p-7 flex gap-4 sm:gap-6 items-start">
+                <% if n == 1 %>
+                  <span class="sr-mono flex-none w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-lg font-semibold" style="background: #0b7f48; color: #ffffff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5)">1</span>
+                <% else %>
+                  <span class="glass sr-mono flex-none w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-lg font-semibold"><%= n %></span>
+                <% end %>
+                <div class="flex flex-col gap-1.5">
+                  <h3 class="m-0 text-xl sm:text-[22px] font-semibold"><%= t("home.step#{n}_title") %></h3>
+                  <p class="m-0 text-[15px] sm:text-base font-light" style="color: rgba(238,243,238,0.68)"><%= t("home.step#{n}_desc") %></p>
                 </div>
+              </li>
+            <% end %>
+          </ol>
+        </section>
+
+        <!-- Templates -->
+        <section id="templates" class="pt-10 pb-24 md:pb-[120px] scroll-mt-28">
+          <div class="glass sr-reveal rounded-[40px] grid gap-12 items-center" style="padding: clamp(28px, 5vw, 64px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr))">
+            <div class="flex flex-col gap-5">
+              <h2 class="sr-mask m-0 font-semibold" style="font-size: clamp(32px, 4vw, 48px); letter-spacing: -0.02em; line-height: 1.2"><%= t('home.templates_title') %></h2>
+              <p class="m-0 text-[17px] font-light max-w-[48ch]" style="color: rgba(238,243,238,0.68)"><%= t('home.templates_desc') %></p>
+              <span class="glass-soft self-start px-4 py-2.5 rounded-xl text-sm" style="color: rgba(238,243,238,0.85)"><%= t('home.templates_coming_soon') %></span>
+            </div>
+            <div aria-hidden="true" class="relative h-[320px] sm:h-[380px]" dir="ltr">
+              <div class="glass-soft absolute flex flex-col gap-[9px] p-5 box-border" style="top: 40px; left: 6%; width: 52%; height: 82%; border-radius: 20px; transform: rotate(-8deg)">
+                <span class="block h-2.5 rounded-md" style="width: 50%; background: rgba(255,255,255,0.2)"></span>
+                <span class="block h-1.5 rounded-md" style="width: 90%; background: rgba(255,255,255,0.08)"></span>
+                <span class="block h-1.5 rounded-md" style="width: 80%; background: rgba(255,255,255,0.08)"></span>
               </div>
-              <div
-                class="bg-white dark:bg-darkCard/60 backdrop-blur-md p-6 md:p-8 rounded-2xl flex-1 border border-borderLight dark:border-borderDark shadow-sm md:mr-10 transition-transform hover:-translate-y-1"
-              >
-                <div class="flex items-center gap-3 mb-3 md:hidden">
-                  <span
-                    class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm"
-                  >
-                    3
-                  </span>
-                  <h4 class="text-lg font-medium text-darkBase dark:text-white">
-                    <%= t('home.step3_short') %>
-                  </h4>
-                </div>
-                <h4
-                  class="hidden md:block text-xl font-medium text-darkBase dark:text-white mb-3"
-                >
-                  <%= t('home.step3_title') %>
-                </h4>
-                <p
-                  class="text-sm md:text-base text-gray-600 dark:text-gray-400"
-                >
-                  <%= t('home.step3_desc') %>
-                </p>
+              <div class="glass-soft absolute grid gap-3 p-5 box-border" style="top: 30px; right: 6%; width: 52%; height: 82%; border-radius: 20px; transform: rotate(7deg); grid-template-columns: 1fr 2fr">
+                <span class="rounded-[10px]" style="background: rgba(214,184,119,0.18)"></span>
+                <span class="flex flex-col gap-[9px]"><span class="block h-2.5 rounded-md" style="width: 70%; background: rgba(255,255,255,0.2)"></span><span class="block h-1.5 rounded-md" style="width: 95%; background: rgba(255,255,255,0.08)"></span></span>
+              </div>
+              <div class="glass sr-float absolute flex flex-col gap-2.5 p-6 box-border" style="top: 10px; left: 50%; margin-left: -28%; width: 56%; height: 90%; border-radius: 22px">
+                <span class="block rounded-md" style="height: 14px; width: 55%; background: rgba(255,255,255,0.32)"></span>
+                <span class="block rounded-md" style="height: 7px; width: 35%; background: #0b7f48; opacity: 0.8"></span>
+                <span class="block my-2" style="height: 1px; background: rgba(255,255,255,0.14)"></span>
+                <span class="block h-1.5 rounded-md" style="width: 92%; background: rgba(255,255,255,0.12)"></span>
+                <span class="block h-1.5 rounded-md" style="width: 86%; background: rgba(255,255,255,0.12)"></span>
+                <span class="block h-1.5 rounded-md" style="width: 74%; background: rgba(255,255,255,0.12)"></span>
+                <span class="block rounded-md mt-2.5" style="height: 9px; width: 40%; background: rgba(255,255,255,0.22)"></span>
+                <span class="block h-1.5 rounded-md" style="width: 90%; background: rgba(255,255,255,0.12)"></span>
+                <span class="block h-1.5 rounded-md" style="width: 80%; background: rgba(255,255,255,0.12)"></span>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
+        </section>
 
-    <!-- Templates Preview Section -->
-    <section id="templates" class="py-16 md:py-24 px-4 sm:px-6 text-center">
-      <div class="max-w-3xl mx-auto">
-        <span
-          class="text-primary dark:text-action text-xs font-semibold tracking-wider uppercase mb-3 block"
-        >
-          <%= t('home.templates_label') %>
-        </span>
-        <h2
-          class="text-3xl md:text-4xl font-medium text-darkBase dark:text-white mb-4 md:mb-6"
-        >
-          <%= t('home.templates_title') %>
-        </h2>
-        <p
-          class="md:text-xl dark:text-gray-400 md:mb-12 text-lg text-gray-600 mb-10"
-        >
-          <%= t('home.templates_desc') %>
-          <br class="hidden sm:block" />
-          <span
-            class="text-primary mt-3 inline-block text-xs md:text-sm font-medium bg-primary/10 px-3 py-1.5 rounded-full"
-          >
-            <%= t('home.templates_coming_soon') %>
-          </span>
-        </p>
-
-        <div
-          class="relative w-full max-w-[280px] sm:max-w-sm mx-auto group cursor-pointer"
-        >
-          <div
-            class="absolute inset-0 bg-gradient-to-tr from-primary to-action opacity-0 group-hover:opacity-20 blur-2xl transition-opacity duration-500 rounded-lg"
-          ></div>
-          <div
-            class="relative bg-white rounded shadow-2xl overflow-hidden border border-gray-200 dark:border-white/20 aspect-[1/1.41] transform group-hover:-translate-y-2 transition-transform duration-300"
-          >
-            <!-- Minimalist Resume Skeleton -->
-            <div class="p-6 md:p-8 h-full flex flex-col text-left" dir="ltr">
-              <div class="border-b border-gray-200 pb-4 md:pb-6 mb-4 md:mb-6">
-                <div class="h-4 md:h-6 w-1/2 bg-gray-800 mb-2 md:mb-3"></div>
-                <div class="h-2 md:h-3 w-1/3 bg-gray-400"></div>
-              </div>
-              <div class="space-y-4 md:space-y-5 flex-1">
-                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
-                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
-                <div class="h-2 md:h-2.5 w-5/6 bg-gray-100"></div>
-                <div class="mt-4 md:mt-6 h-3 md:h-4 w-1/4 bg-gray-300"></div>
-                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
-                <div class="h-2 md:h-2.5 w-full bg-gray-100"></div>
-                <div class="mt-1 md:mt-2 h-2 md:h-2.5 w-3/4 bg-gray-100"></div>
-              </div>
+        <!-- CTA -->
+        <section id="start" class="pt-5 pb-20 md:pb-[100px]">
+          <div class="glass sr-reveal relative overflow-hidden rounded-[40px] flex flex-wrap items-center justify-between gap-8" style="padding: clamp(36px, 6vw, 80px)">
+            <div aria-hidden="true" class="absolute rounded-full" style="top: -140px; left: -80px; width: 420px; height: 420px; background: radial-gradient(circle, rgba(0,150,85,0.35), rgba(0,150,85,0) 65%); filter: blur(30px)"></div>
+            <div aria-hidden="true" class="absolute top-0 inset-x-0" style="height: 10px; opacity: 0.8">
+              <svg width="100%" height="10"><defs><pattern id="saduCta" width="20" height="10" patternUnits="userSpaceOnUse"><path d="M0 0L5 10L10 0Z" fill="rgba(0,140,78,0.8)"></path><path d="M10 10L15 0L20 10Z" fill="rgba(214,184,119,0.7)"></path></pattern></defs><rect width="100%" height="10" fill="url(#saduCta)"></rect></svg>
+            </div>
+            <div class="relative flex flex-col gap-3.5 max-w-[620px]">
+              <h2 class="sr-mask m-0 font-semibold" style="font-size: clamp(30px, 3.8vw, 46px); letter-spacing: -0.02em; line-height: 1.2"><%= t('home.cta_title') %></h2>
+              <p class="m-0 text-[17px] font-light" style="color: rgba(238,243,238,0.7)"><%= t('home.cta_description') %></p>
+            </div>
+            <div class="relative flex flex-col items-center gap-3">
+              <a href="<%= build_href %>" class="sr-btn sr-primary flex items-center gap-3 min-h-[58px] px-[34px] rounded-[18px] font-semibold text-[17px]" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 20px 44px -18px rgba(0,140,78,0.7)">
+                <%= t('home.cta_button') %>
+                <span class="sr-ico flex"><%= arrow %></span>
+              </a>
+              <span class="text-[13px]" style="color: rgba(238,243,238,0.55)"><%= t('home.cta_no_card') %></span>
             </div>
           </div>
+        </section>
+
+        <div aria-hidden="true" class="mb-6 rounded-md overflow-hidden" style="height: 12px; opacity: 0.75">
+          <svg width="100%" height="12"><defs><pattern id="saduFoot" width="24" height="12" patternUnits="userSpaceOnUse"><path d="M0 12L6 0L12 12Z" fill="rgba(214,184,119,0.7)"></path><path d="M12 0L18 12L24 0Z" fill="rgba(0,140,78,0.75)"></path></pattern></defs><rect width="100%" height="12" fill="url(#saduFoot)"></rect></svg>
         </div>
+
+        <!-- Footer -->
+        <footer class="glass-soft rounded-3xl px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+          <nav aria-label="<%= t('footer.terms') %>" class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm" style="color: rgba(238,243,238,0.7)">
+            <a href="<%= terms_path %>" style="color: rgba(238,243,238,0.7)"><%= t('footer.terms') %></a>
+            <a href="<%= privacy_path %>" style="color: rgba(238,243,238,0.7)"><%= t('footer.privacy') %></a>
+            <a href="mailto:support@cvcrft.com" style="color: rgba(238,243,238,0.7)"><%= t('footer.contact') %></a>
+            <%= render 'shared/cookie_settings' %>
+          </nav>
+          <span class="text-[13px]" style="color: rgba(238,243,238,0.5)">© <%= Time.current.year %> سيرة. <%= t('footer.copyright') %></span>
+        </footer>
       </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="py-16 md:py-24 px-4 sm:px-6">
-      <div class="max-w-6xl mx-auto">
-        <div
-          class="relative rounded-2xl md:rounded-3xl overflow-hidden bg-darkBase text-white p-8 md:p-20 text-center shadow-2xl"
-        >
-          <!-- Background Gradient -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-primary/30 to-transparent"
-          ></div>
-          <div
-            class="absolute -right-20 -top-20 w-64 h-64 md:w-96 md:h-96 bg-primary/20 blur-3xl rounded-full"
-          ></div>
-
-          <div class="relative z-10">
-            <h2
-              class="text-3xl md:text-5xl font-medium mb-6 md:mb-8 tracking-tight"
-            >
-              <%= t('home.cta_title') %>
-            </h2>
-            <p
-              class="text-base md:text-xl font-normal text-gray-300 max-w-2xl mr-auto mb-8 md:mb-10 ml-auto"
-            >
-              <%= t('home.cta_description') %>
-            </p>
-
-            <a
-              href="<%= user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>"
-              class="inline-block px-8 py-4 md:px-10 md:py-5 rounded-xl bg-primary hover:bg-primaryHover text-white font-medium shadow-glow transition-all text-base md:text-lg"
-            >
-              <%= t('home.cta_button') %>
-            </a>
-            <p class="mt-4 md:mt-6 text-xs md:text-sm text-gray-400">
-              <%= t('home.cta_no_card') %>
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <%= render 'shared/sadu_band' %>
-    <footer class="border-t border-borderLight dark:border-borderDark bg-white/40 dark:bg-white/[0.03] pt-12 md:pt-16 pb-8 md:pb-10 px-4 sm:px-6">
-      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
-        <div class="flex items-center gap-3">
-          <span class="bg-primary text-mist w-7 h-7 rounded-lg flex items-center justify-center"><%= render "shared/logo_mark", size: 20 %></span>
-          <span class="font-medium text-lg md:text-xl text-darkBase dark:text-white">سيرة</span>
-        </div>
-        
-        <div class="flex flex-wrap justify-center gap-6 md:gap-8 text-sm md:text-base text-gray-500">
-          <a href="<%= terms_path %>" class="hover:text-primary transition-colors"><%= t('footer.terms') %></a>
-          <a href="<%= privacy_path %>" class="hover:text-primary transition-colors"><%= t('footer.privacy') %></a>
-          <a href="mailto:support@cvcrft.com" class="hover:text-primary transition-colors"><%= t('footer.contact') %></a>
-          <%= render 'shared/cookie_settings' %>
-        </div>
-
-        <div class="text-xs md:text-sm text-gray-500">
-          © <%= Time.current.year %> سيرة. <%= t('footer.copyright') %>
-        </div>
-      </div>
-    </footer>
+    </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Theme Logic
-        const html = document.documentElement;
+      (function () {
+        var menu = document.getElementById('mobile-menu');
+        function openMenu() { menu.classList.remove('translate-x-full'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menu.classList.add('translate-x-full'); document.body.style.overflow = ''; }
+        document.getElementById('mobileMenuBtn').addEventListener('click', openMenu);
+        document.getElementById('closeMobileMenu').addEventListener('click', closeMenu);
+        menu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', closeMenu); });
 
-        // Initialize Theme
-        if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
-
-        // Mobile Menu Logic
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const closeMobileMenu = document.getElementById('closeMobileMenu');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        function openMenu() {
-            if (mobileMenu) {
-                mobileMenu.classList.remove('translate-x-full');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeMenu() {
-            if (mobileMenu) {
-                mobileMenu.classList.add('translate-x-full');
-                document.body.style.overflow = '';
-            }
-        }
-
-        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
-        if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
-
-        // Close menu when clicking ANY link inside it
-        if (mobileMenu) {
-            const links = mobileMenu.querySelectorAll('a');
-            links.forEach(link => link.addEventListener('click', closeMenu));
-        }
-      });
+        // Scroll reveals for browsers without CSS scroll timelines.
+        if (window.CSS && CSS.supports && CSS.supports('animation-timeline: view()')) return;
+        if (!('IntersectionObserver' in window)) return;
+        document.documentElement.classList.add('sr-io');
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -10% 0px' });
+        document.querySelectorAll('.sr-reveal, .sr-mask').forEach(function (el) { io.observe(el); });
+      })();
     </script>
   </body>
 </html>
