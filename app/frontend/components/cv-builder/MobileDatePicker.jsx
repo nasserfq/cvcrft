@@ -59,7 +59,7 @@ const MobileDatePicker = ({
         type="button"
         onClick={() => !disabled && setIsOpen(true)}
         disabled={disabled}
-        className="w-full rounded-xl border border-[#E6E8F0] dark:border-white/10 bg-white dark:bg-[#27273A] px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6CF2]/40 focus:border-[#7C6CF2] transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-xl border border-[#E6E8F0] dark:border-white/10 bg-white dark:bg-[#27273A] px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           fontSize: "16px",
           minHeight: "48px",
@@ -100,7 +100,7 @@ const MobileDatePicker = ({
             }}
           >
             <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm max-h-[85vh] overflow-hidden shadow-2xl">
-              <div className="bg-[#7C6CF2] text-white px-6 py-4 flex items-center justify-between">
+              <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold">{t("dates.select_title")}</h3>
                 <button
                   type="button"
@@ -134,7 +134,7 @@ const MobileDatePicker = ({
                           onClick={() => setSelectedYear(year)}
                           className={`py-3 sm:py-3 px-2 rounded-xl text-base sm:text-sm font-medium transition-all active:scale-95 ${
                             selectedYear === year
-                              ? "bg-[#7C6CF2] text-white shadow-md"
+                              ? "bg-primary text-white shadow-md"
                               : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300"
                           }`}
                           style={{ minHeight: "44px" }}
@@ -158,7 +158,7 @@ const MobileDatePicker = ({
                         onClick={() => setSelectedMonth(month.value)}
                         className={`py-3 px-2 rounded-xl text-base sm:text-sm font-medium transition-all active:scale-95 ${
                           selectedMonth === month.value
-                            ? "bg-[#7C6CF2] text-white shadow-md"
+                            ? "bg-primary text-white shadow-md"
                             : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300"
                         }`}
                         style={{ minHeight: "44px" }}
@@ -181,7 +181,7 @@ const MobileDatePicker = ({
                 <button
                   type="button"
                   onClick={handleConfirm}
-                  className="flex-1 py-3 px-4 bg-[#7C6CF2] text-white rounded-xl font-medium hover:bg-[#6A5AE0] active:scale-[0.98] transition-all touch-manipulation shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)]"
+                  className="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-medium hover:bg-[#6A5AE0] active:scale-[0.98] transition-all touch-manipulation shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)]"
                 >
                   {t("actions.confirm")}
                 </button>

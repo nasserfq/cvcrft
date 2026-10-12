@@ -44,12 +44,12 @@ const ReviewStep = lazy(() => import("./cv-builder/ReviewStep"));
 const StepLoadingSkeleton = memo(() => (
  <div className="animate-pulse space-y-6">
   <div className="text-center mb-6">
-   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#7C6CF2]/10 mb-4" />
-   <div className="h-6 bg-[#7C6CF2]/10 rounded-lg w-1/2 mx-auto mb-2" />
+   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4" />
+   <div className="h-6 bg-primary/10 rounded-lg w-1/2 mx-auto mb-2" />
    <div className="h-4 bg-gray-200 dark:bg-white/10 rounded-lg w-2/3 mx-auto" />
   </div>
   <div className="p-6 border border-[#E6E8F0] dark:border-white/10 rounded-xl bg-[#F8F7FF]/50 dark:bg-white/5">
-   <div className="h-5 bg-[#7C6CF2]/10 rounded-lg w-1/4 mb-4" />
+   <div className="h-5 bg-primary/10 rounded-lg w-1/4 mb-4" />
    <div className="space-y-3">
     <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
     <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
@@ -2777,7 +2777,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    <div className="max-w-4xl mx-auto px-2 sm:px-4 w-full">
     <div data-form-card className="bg-white/80 dark:bg-[#27273A]/80 backdrop-blur-xl rounded-2xl shadow-lg border border-[#E6E8F0] dark:border-white/10 overflow-hidden w-full">
      {/* Header with step indicator */}
-     <div className="bg-gradient-to-r from-[#7C6CF2] to-[#6A5AE0] px-4 sm:px-8 py-5 sm:py-6">
+     <div className="bg-gradient-to-r from-primary to-[#6A5AE0] px-4 sm:px-8 py-5 sm:py-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
        <div className="flex items-center gap-3 flex-wrap">
         <h1 className="text-lg sm:text-2xl font-semibold text-white">
@@ -2803,7 +2803,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         {autoSaveStatus !== "idle" && (
          <span className={`text-xs flex items-center gap-1 ${
           autoSaveStatus === "saving" ? "text-white/70" :
-          autoSaveStatus === "saved" ? "text-[#2ED3B7]" :
+          autoSaveStatus === "saved" ? "text-action" :
           "text-red-300"
          }`}>
           {autoSaveStatus === "saving" && (
@@ -2842,7 +2842,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       <div className="mt-4" dir="rtl">
        <div className="w-full bg-white/20 rounded-full h-2">
         <div
-         className="bg-[#2ED3B7] h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(46,211,183,0.5)]"
+         className="bg-action h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(214,184,119,0.5)]"
          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
         ></div>
        </div>
@@ -2865,7 +2865,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          <button
           type="button"
           onClick={nextStep}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#7C6CF2] px-4 py-3 text-sm font-medium text-white transition-all hover:bg-[#6A5AE0] active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)] hover:shadow-[0_0_25px_-5px_rgba(124,108,242,0.5)] touch-manipulation"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white transition-all hover:bg-[#6A5AE0] active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)] hover:shadow-[0_0_25px_-5px_rgba(124,108,242,0.5)] touch-manipulation"
          >
           {t('steps.next')}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2877,7 +2877,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           type="button"
           onClick={exportToPDF}
           disabled={isExporting}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#2ED3B7] px-4 py-3 text-sm font-medium text-[#1E1E2F] transition-all hover:bg-[#25AB94] active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 shadow-[0_0_20px_-5px_rgba(46,211,183,0.4)] hover:shadow-[0_0_25px_-5px_rgba(46,211,183,0.5)] touch-manipulation"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-action px-4 py-3 text-sm font-medium text-[#1E1E2F] transition-all hover:bg-actionHover active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)] hover:shadow-[0_0_25px_-5px_rgba(214,184,119,0.5)] touch-manipulation"
          >
           {isExporting ? (
            <>

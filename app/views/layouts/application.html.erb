@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="description" content="<%= content_for(:description) || t('site.description') %>">
-    <meta name="theme-color" content="#7B2FF7">
+    <meta name="theme-color" content="#07120D">
     
     <!-- Canonical & Language Alternates -->
     <link rel="canonical" href="https://cvcrft.com<%= request.path == '/' ? '' : request.path %>">
@@ -55,8 +55,8 @@
     <!-- Google Fonts (async loading) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"></noscript>
 
     
     <!-- Custom Styles -->
@@ -84,7 +84,7 @@
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            background-image: linear-gradient(135deg, #7B2FF7 0%, #2EF2A3 100%);
+            background-image: linear-gradient(135deg, #0B7F48 0%, #D6B877 100%);
         }
 
         .blob {
@@ -330,7 +330,7 @@
         const html = document.documentElement;
 
         // Initialize Theme on page load
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
             html.classList.add('dark');
         } else {
             html.classList.remove('dark');

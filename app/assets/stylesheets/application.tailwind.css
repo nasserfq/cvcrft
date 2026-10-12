@@ -4,169 +4,174 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
-  Neo-brutalist design tokens.
+  Seera glass design tokens.
 
-  Previously these lived only in an inline `tailwind.config` script next to
-  the Play CDN (cdn.tailwindcss.com), which compiled CSS in the visitor's
-  browser on every page load. They now live in the real build.
+  Source: the "سيرة — Glass Redesign" canvas (Main + Logo artboards). Deep
+  forest ground, Saudi green primary, sadu gold accent, frosted glass
+  panels, Readex Pro for Arabic and Latin alike.
 
   Every pre-existing token name (primary, action, canvas, darkBase, darkCard,
   borderLight, …) is kept, so the ~1,900 utility usages across the views pick
   up the new look without being edited. Only the values changed.
 */
 @theme {
-  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
-  /* Latin display face; Arabic glyphs fall through to Plex Sans Arabic. */
-  --font-display: "Bricolage Grotesque", "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Readex Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Readex Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Brand — lavender neo-brutalism. */
-  --color-primary: #7b2ff7;
-  --color-primaryHover: #5b23c4;
-  --color-primary-soft: #c8b6ff;
+  /* Brand — Saudi green. */
+  --color-primary: #0b7f48;
+  --color-primaryHover: #006c35;
+  /* Text-safe green on the dark ground (~6:1 on #07120d). */
+  --color-primary-soft: #2fa36b;
   /* Used by the standalone landing/SEO pages, which carried their own config. */
-  --color-primaryAccent: #b79cff;
-  --color-lavender-50: #faf7ff;
-  --color-lavender-100: #e6dcff;
+  --color-primaryAccent: #2fa36b;
 
-  /* Acid lime. ~1.1:1 on white, so it is for fills only.
-     `action-ink` is the text-safe variant (~9:1 on white). */
-  --color-action: #d7ff4a;
-  --color-actionHover: #c4f01e;
-  --color-action-ink: #3d4f00;
+  /* Sadu gold. ~1.8:1 on sand, so on light surfaces it is for fills only.
+     `action-ink` is the text-safe variant (~5.6:1 on sand). */
+  --color-action: #d6b877;
+  --color-actionHover: #c9a65e;
+  --color-action-ink: #6f5418;
+  --color-gold: #d6b877;
+  --color-gold-deep: #a8842f;
 
-  /* Brutalist accent set. */
-  --color-brut-yellow: #d7ff4a;
-  --color-brut-pink: #c8b6ff;
-  --color-brut-blue: #7b2ff7;
-  --color-brut-orange: #ff9e6b;
-
-  /* Surfaces — lavender ground, paper cards. */
-  --color-canvas: #e6dcff;
-  --color-surface: #faf7ff;
-  --color-surface-2: #c8b6ff;
-  --color-darkBase: #15101f;
-  --color-darkCard: #221a33;
-  --color-darkCard-2: #2e2443;
+  /* Surfaces — sand in light mode, deep forest in dark. */
+  --color-canvas: #f4f1e8;
+  --color-surface: #fbf9f3;
+  --color-surface-2: #e9e3d2;
+  --color-darkBase: #07120d;
+  --color-darkCard: #0f2018;
+  --color-darkCard-2: #163024;
 
   /* Ink */
-  --color-ink: #15101f;
-  --color-ink-muted: #3b3350;
-  --color-ink-subtle: #544a6b;
+  --color-ink: #0d2a1b;
+  --color-ink-muted: #2c4537;
+  --color-ink-subtle: #47604f;
+  --color-mist: #eef3ee;
 
-  /* Borders are structural in brutalism: always hard, always ink. */
-  --color-borderLight: #15101f;
-  --color-borderDark: #e6dcff;
+  /* Hairline glass borders. */
+  --color-borderLight: rgb(13 42 27 / 0.12);
+  --color-borderDark: rgb(255 255 255 / 0.13);
 
-  /* Hard offset shadows — no blur, ever. */
-  --shadow-brut: 5px 5px 0 #15101f;
-  --shadow-brut-sm: 3px 3px 0 #15101f;
-  --shadow-brut-lg: 8px 8px 0 #15101f;
-  --shadow-glow: 5px 5px 0 #15101f;
-  --shadow-glow-mint: 5px 5px 0 #15101f;
+  /* Soft, deep shadows and the green CTA glow. */
+  --shadow-glass: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 30px 60px -30px rgb(2 12 7 / 0.7);
+  --shadow-glow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 18px 40px -18px rgb(0 140 78 / 0.6);
+  --shadow-glow-mint: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 18px 40px -18px rgb(0 140 78 / 0.6);
+  --shadow-glow-gold: 0 18px 40px -18px rgb(214 184 119 / 0.55);
 
-  --radius-card: 0;
+  --radius-card: 28px;
   --text-xxs: 0.625rem;
 }
 
 body {
-  font-feature-settings: "ss01", "ss02";
+  font-feature-settings: normal;
   -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
   /* No background-color here. This block is unlayered, so it would beat
      Tailwind's layered `dark:bg-darkBase` on <body> and force every page
      light. The body's own utility classes own the background. */
 }
 
 /*
-  Neo-brutalist override layer.
+  Glass override layer.
 
   These rules are intentionally unlayered, so they beat Tailwind's @layer
-  utilities in the cascade. That is what lets the existing markup — written
-  for a soft, glassy design — read as brutalist without touching 51 views.
+  utilities in the cascade. That is what lets the existing markup read as
+  the Seera glass design without touching 51 views.
 */
 
-/* 1. Flatten the radii. Brutalism is square-ish, not pill-shaped. */
-.rounded-lg,
-.rounded-xl,
-.rounded-2xl,
-.rounded-3xl {
-  border-radius: 0;
+/* 1. Ambient light: a green orb top-right and a gold orb bottom-left,
+   fixed behind the page. background-image only, so the body's utilities
+   still own its color. */
+body {
+  background-attachment: fixed;
+  background-image:
+    radial-gradient(48rem 48rem at 100% -10%, rgb(0 140 78 / 0.14), transparent 65%),
+    radial-gradient(44rem 44rem at -10% 70%, rgb(200 169 106 / 0.16), transparent 65%);
+}
+.dark body {
+  background-image:
+    radial-gradient(48rem 48rem at 100% -10%, rgb(0 140 78 / 0.45), transparent 65%),
+    radial-gradient(44rem 44rem at -10% 70%, rgb(200 169 106 / 0.28), transparent 65%),
+    radial-gradient(40rem 40rem at 80% 110%, rgb(0 108 53 / 0.3), transparent 65%);
 }
 
-/* Keep genuinely circular things circular: avatars, icon chips, toggles. */
-.rounded-full {
-  border-radius: 9999px;
-}
-
-/* 2. Replace every soft/blurred shadow with a hard offset one. */
-[class*="shadow-"]:not(.shadow-none) {
-  box-shadow: 5px 5px 0 var(--color-ink);
-}
-.dark [class*="shadow-"]:not(.shadow-none) {
-  box-shadow: 5px 5px 0 var(--color-primary);
-}
-.shadow-none {
-  box-shadow: none;
-}
-
-/* 3. Blur is the opposite of brutalism. */
-.backdrop-blur,
-.backdrop-blur-sm,
-.backdrop-blur-md,
-.backdrop-blur-lg,
-.backdrop-blur-xl,
-.backdrop-blur-2xl,
-.backdrop-blur-3xl {
-  backdrop-filter: none;
-}
-
-/* The landing page's decorative gradient blobs. */
+/* The landing page's decorative blobs become the green and gold orbs. */
 .blob {
-  filter: none !important;
-  opacity: 0.35;
+  opacity: 0.6;
 }
 
-/* 4. Hard black borders wherever a border is already declared. */
+/* 2. Frosted glass. Anything already declared as blurred gets the glass
+   sheen: a top-lit gradient, hairline border and an inset highlight. */
+.dark [class*="backdrop-blur"] {
+  background-image: linear-gradient(155deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.02));
+  border-color: var(--color-borderDark);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
+}
+.dark [class*="backdrop-blur"][class*="rounded-"]:not(nav):not(#mobile-menu) {
+  box-shadow: var(--shadow-glass);
+}
+html:not(.dark) [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+
+/* 3. Generous, soft corners. */
+.rounded-2xl {
+  border-radius: 1.5rem;
+}
+.rounded-3xl {
+  border-radius: 2rem;
+}
+
+/* 4. Hairline borders everywhere a border is already declared. */
 [class*="border-gray-"],
 [class*="border-slate-"],
-[class*="border-white/"],
 [class*="border-black/"],
 .border-borderLight {
-  border-color: var(--color-ink) !important;
+  border-color: var(--color-borderLight);
 }
 .dark [class*="border-gray-"],
 .dark [class*="border-slate-"],
 .dark [class*="border-white/"],
-.dark [class*="border-black/"],
-.dark .border-borderLight {
-  border-color: var(--color-borderDark) !important;
+.dark .border-borderLight,
+.dark .border-borderDark {
+  border-color: var(--color-borderDark);
 }
 
-/* 5. Buttons and inputs: the signature treatment. */
-button:not(.btn-plain),
+/* 5. Primary buttons: lit from the top, green glow underneath. */
+.bg-primary:is(a, button),
+button.bg-primary,
+input[type="submit"].bg-primary {
+  box-shadow: var(--shadow-glow);
+}
+.bg-primary:is(a, button):hover {
+  background-color: var(--color-primaryHover);
+}
+/* Gold fills never carry white text: it drops to ~1.8:1. */
+.bg-action.text-white,
+.bg-gold.text-white {
+  color: var(--color-darkBase);
+}
+
+button,
 a[role="button"],
 input[type="submit"],
 input[type="button"] {
-  border: 3px solid var(--color-ink);
-  box-shadow: 4px 4px 0 var(--color-ink);
-  font-weight: 700;
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s,
+    box-shadow 0.35s;
 }
-.dark button:not(.btn-plain),
-.dark a[role="button"],
-.dark input[type="submit"],
-.dark input[type="button"] {
-  border-color: var(--color-borderDark);
-  box-shadow: 4px 4px 0 var(--color-primary);
-}
-
-/* Press-in on interaction: the shadow collapses as the element moves into it. */
-button:not(.btn-plain):active,
+button:active:not(:disabled),
 a[role="button"]:active,
 input[type="submit"]:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 var(--color-ink);
+  transform: scale(0.98);
 }
 
+/* Inputs: soft glass wells. */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -174,10 +179,10 @@ input[type="tel"],
 input[type="number"],
 input[type="search"],
 input[type="date"],
+input[type="url"],
 select,
 textarea {
-  border: 3px solid var(--color-ink) !important;
-  border-radius: 0;
+  border-color: var(--color-borderLight);
 }
 .dark input[type="text"],
 .dark input[type="email"],
@@ -186,49 +191,43 @@ textarea {
 .dark input[type="number"],
 .dark input[type="search"],
 .dark input[type="date"],
+.dark input[type="url"],
 .dark select,
 .dark textarea {
-  border-color: var(--color-borderDark) !important;
+  border-color: var(--color-borderDark);
 }
 
-/* Visible focus ring — brutalism is high-contrast, so keyboard focus should be too. */
+/* Gold focus ring, as in the design. */
 :focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+html:not(.dark) :focus-visible {
+  outline-color: var(--color-gold-deep);
 }
 
-/* 6. Headings carry the weight. */
+/* 6. Headings: semibold and tightly tracked. */
 h1:not([class*="font-"]),
 h2:not([class*="font-"]),
 h3:not([class*="font-"]) {
-  font-weight: 800;
+  font-weight: 600;
 }
 h1, h2, h3 {
   font-family: var(--font-display);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
-/* 7. Lavender ground with a faint ink dot grid (light mode only).
-   background-image only: the body's utilities still own its color. */
-html:not(.dark) body {
-  background-image: radial-gradient(rgb(21 16 31 / 0.16) 1px, transparent 1.4px);
-  background-size: 28px 28px;
+/* 7. Contrast fixes for the palette. */
+/* Green text sits under 4.5:1 on the dark ground; lift it. */
+.dark .text-primary {
+  color: var(--color-primary-soft);
 }
-
-/* 8. Lime can't carry text on light surfaces; swap to its ink there. */
-html:not(.dark) .text-action {
+/* Gold can't carry text on sand; swap to its ink there. */
+html:not(.dark) .text-action,
+html:not(.dark) .text-gold {
   color: var(--color-action-ink);
 }
-.bg-action.text-white {
-  color: var(--color-ink);
-}
-
-/* 9. Chunky outlines: any element with a plain `border` gets 3px. */
-.border {
-  border-width: 3px;
-}
-
-/* 10. Grey copy on lavender drops under 4.5:1; pull it to the ink tints. */
+/* Grey copy on sand drops under 4.5:1; pull it to the ink tints. */
 html:not(.dark) .text-gray-500 {
   color: var(--color-ink-subtle);
 }
@@ -237,37 +236,55 @@ html:not(.dark) .text-gray-700 {
   color: var(--color-ink-muted);
 }
 
-/* Gradient headline text reads as one solid violet. */
+/* Gradient headline text reads as solid gold (deep green on sand), the
+   way the design highlights the second half of its headline. */
 .gradient-text,
 .bg-clip-text.text-transparent {
   background-image: none !important;
-  color: var(--color-primary) !important;
+  color: var(--color-primaryHover) !important;
   -webkit-text-fill-color: currentColor;
 }
 .dark .gradient-text,
 .dark .bg-clip-text.text-transparent {
-  color: var(--color-action) !important;
+  color: var(--color-gold) !important;
 }
 
 ::selection {
-  background: var(--color-action);
-  color: var(--color-ink);
+  background: var(--color-gold);
+  color: var(--color-darkBase);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ink) !important;
-  border-radius: 0 !important;
+  background: rgb(13 42 27 / 0.25) !important;
+  border-radius: 999px !important;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.18) !important;
 }
 
 /*
-  The existing JS adds .js-hover-active on hover/touch for a soft lift with a
-  blurred shadow. Re-point it at the brutalist press instead.
+  The existing JS adds .js-hover-active on hover/touch. Re-point it at the
+  design's gentle lift.
 */
 .js-hover-active {
-  transform: translate(-2px, -2px) !important;
-  box-shadow: 7px 7px 0 var(--color-ink) !important;
+  transform: translateY(-2px) !important;
 }
-.dark .js-hover-active {
-  box-shadow: 7px 7px 0 var(--color-primary) !important;
+
+/* 8. Logo mark: the three strokes of س draw in, then the gold spark pops. */
+@keyframes seera-seg { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes seera-pop {
+  0% { transform: scale(0) rotate(-90deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.seera-mark .seg {
+  stroke-dasharray: 100;
+  animation: seera-seg 0.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s backwards;
+}
+.seera-mark .s2 { animation-delay: 0.7s; }
+.seera-mark .s3 { animation-delay: 1.15s; animation-duration: 0.9s; }
+.seera-mark .spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: seera-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 1.9s backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

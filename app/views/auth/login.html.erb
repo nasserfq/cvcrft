@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= t('auth.page_title') %> — <%= t('site.name') %></title>
     <meta name="description" content="<%= t('auth.page_description') %>" />
-    <meta name="theme-color" content="#7B2FF7" />
+    <meta name="theme-color" content="#07120D" />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="/icon.png" type="image/png" />
     <%= csrf_meta_tags %>
@@ -16,8 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"></noscript>
 
     <style>
         body {
@@ -39,7 +39,7 @@
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            background-image: linear-gradient(135deg, #7B2FF7 0%, #2EF2A3 100%);
+            background-image: linear-gradient(135deg, #0B7F48 0%, #D6B877 100%);
         }
         iconify-icon {
             display: inline-block;
@@ -56,12 +56,12 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-borderLight bg-white/80 backdrop-blur-xl dark:bg-darkBase/80 dark:border-borderDark">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between">
+    <nav class="fixed top-3 md:top-4 inset-x-3 md:inset-x-6 mx-auto max-w-[1240px] z-50 rounded-[22px] border border-borderLight bg-white/70 backdrop-blur-xl dark:bg-darkBase/40 dark:border-borderDark dark:shadow-glass">
+        <div class="px-3 sm:px-5 h-16 md:h-[68px] flex items-center justify-between">
             <!-- Logo -->
             <div class="flex items-center gap-2 z-50">
                 <a href="/" class="text-xl md:text-2xl font-medium tracking-tight text-darkBase dark:text-white flex items-center gap-2">
-                    <span class="bg-primary text-white w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-sm font-semibold shadow-glow">س</span>
+                    <span class="bg-primary text-mist w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center shadow-glow"><%= render "shared/logo_mark", size: 26, animate: true %></span>
                     سيرة
                 </a>
             </div>
@@ -218,10 +218,11 @@
     </div>
 
     <!-- Site Footer -->
-    <footer class="border-t border-borderLight dark:border-borderDark bg-gray-50 dark:bg-darkBase pt-8 pb-6 px-4 sm:px-6">
+    <%= render 'shared/sadu_band' %>
+    <footer class="border-t border-borderLight dark:border-borderDark bg-white/40 dark:bg-white/[0.03] pt-8 pb-6 px-4 sm:px-6">
       <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
         <div class="flex items-center gap-3">
-          <span class="bg-primary text-white w-6 h-6 rounded flex items-center justify-center text-xs font-bold">س</span>
+          <span class="bg-primary text-mist w-7 h-7 rounded-lg flex items-center justify-center"><%= render "shared/logo_mark", size: 20 %></span>
           <span class="font-medium text-lg text-darkBase dark:text-white">سيرة</span>
         </div>
         
@@ -243,7 +244,7 @@
         const html = document.documentElement;
 
         // Initialize Theme
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
             html.classList.add('dark');
         } else {
             html.classList.remove('dark');

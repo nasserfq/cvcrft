@@ -1,0 +1,10 @@
+<%# The Seera mark: the letter س drawn in three strokes with a gold spark.
+    Locals: size (px, default 32), animate (default false). %>
+<% size = local_assigns.fetch(:size, 32) %>
+<% animate = local_assigns.fetch(:animate, false) %>
+<svg width="<%= size %>" height="<%= size %>" viewBox="15 22 170 170" aria-hidden="true" class="<%= 'seera-mark' if animate %>">
+  <path class="seg" pathLength="100" d="M164 84 V98 Q164 112 151 112 Q138 112 138 98 V74" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path class="seg s2" pathLength="100" d="M138 98 Q138 112 125 112 Q112 112 112 98 V62" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path class="seg s3" pathLength="100" d="M112 98 C112 142 98 168 72 168 C47 168 34 150 36 124" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path class="spark" d="M164 37 L167.5 48.5 L179 52 L167.5 55.5 L164 67 L160.5 55.5 L149 52 L160.5 48.5 Z" fill="#d6b877"></path>
+</svg>
