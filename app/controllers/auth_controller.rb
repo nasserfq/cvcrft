@@ -1,8 +1,24 @@
 class AuthController < ApplicationController
-  skip_before_action :verify_authenticity_token, only: [ :send_otp, :verify_otp, :logout ]
+  skip_before_action :verify_authenticity_token, only: [ :logout ]
   before_action :authenticate_user!, only: [ :logout ]
   before_action :redirect_if_authenticated, only: [ :login ]
   layout false, only: [ :login ]
+
+  # Throttle code requests and guesses. Per IP for both, and per address for
+  # sending so nobody can flood one inbox or burn a victim's pending code.
+  rate_limit to: 5, within: 10.minutes, only: :send_otp, name: "otp-send-ip",
+             with: -> { redirect_to login_path, alert: "محاولات كثيرة. يرجى المحاولة بعد قليل." }
+  rate_limit to: 3, within: 10.minutes, only: :send_otp, name: "otp-send-email",
+             by: -> { params[:email].to_s.strip.downcase },
+             with: -> { redirect_to login_path(otp_sent: "true", email: params[:email]), alert: "تم إرسال رمز مؤخراً. يرجى التحقق من بريدك أو المحاولة بعد قليل." }
+  rate_limit to: 20, within: 10.minutes, only: :verify_otp, name: "otp-verify-ip",
+             with: -> { redirect_to login_path, alert: "محاولات كثيرة. يرجى المحاولة بعد قليل." }
+
+  # An expired or missing form token (e.g. a login page left open) sends the
+  # user back to a fresh login page instead of a 422.
+  rescue_from ActionController::InvalidAuthenticityToken do
+    redirect_to login_path, alert: "انتهت صلاحية الصفحة. يرجى المحاولة مرة أخرى."
+  end
 
   def login
     # Show login form (only for unauthenticated users)
@@ -43,10 +59,11 @@ class AuthController < ApplicationController
       redirect_to login_path(return_to: return_to) and return
     end
 
-    # Find valid OTP
-    otp_verification = OtpVerification.valid.find_by(email: email, otp_code: otp_code)
+    # Find the pending OTP for this email; verify! checks the code and counts
+    # wrong guesses against it.
+    otp_verification = OtpVerification.valid.where(email: email).order(created_at: :desc).first
 
-    unless otp_verification
+    unless otp_verification&.verify!(otp_code)
       flash[:alert] = "رمز التحقق غير صحيح أو منتهي الصلاحية"
       redirect_to login_path(otp_sent: "true", email: email, return_to: return_to) and return
     end
@@ -62,31 +79,17 @@ class AuthController < ApplicationController
       # Ensure user is saved
       user.save! if user.changed?
 
-      # Verify the OTP
-      if otp_verification.verify!(otp_code)
-        # Sign in the user
-        Rails.logger.info "About to sign in user: #{user.email} (ID: #{user.id})"
-        sign_in(:user, user)
-        Rails.logger.info "User signed in successfully. Session: #{session.inspect}"
-        Rails.logger.info "Current user after sign_in: #{current_user&.email} (ID: #{current_user&.id})"
-        Rails.logger.info "Warden user key: #{session['warden.user.user.key']}"
+      sign_in(:user, user)
+      Rails.logger.info "User #{user.id} signed in"
 
-        # Track login event in PostHog
-        identify_user(user)
-        track_event("user_logged_in", { login_method: "otp" })
+      # Track login event in PostHog
+      identify_user(user)
+      track_event("user_logged_in", { login_method: "otp" })
 
-        flash[:notice] = "تم تسجيل الدخول بنجاح!"
+      flash[:notice] = "تم تسجيل الدخول بنجاح!"
 
-        # Redirect to the intended destination or CV builder page
-        if return_to.present? && return_to.start_with?("/")
-          redirect_to return_to
-        else
-          redirect_to new_resume_path
-        end
-      else
-        flash[:alert] = "رمز التحقق غير صحيح"
-        redirect_to login_path(otp_sent: "true", email: email, return_to: return_to)
-      end
+      # Redirect to the intended destination or CV builder page
+      redirect_to safe_return_to(return_to) || new_resume_path
     rescue => e
       Rails.logger.error "OTP Verification Error: #{e.message}"
       flash[:alert] = "فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى."
@@ -117,15 +120,16 @@ class AuthController < ApplicationController
 
   private
 
+  # Only same-site paths: "/x" is fine, "//host" and "/\\host" are not.
+  def safe_return_to(path)
+    path if path.is_a?(String) && path.match?(%r{\A/(?![/\\])})
+  end
+
   def redirect_if_authenticated
     if user_signed_in?
       # If user is already logged in, redirect to return_to or home
       return_to = params[:return_to].presence || session.delete(:user_return_to)
-      if return_to.present? && return_to.start_with?("/")
-        redirect_to return_to
-      else
-        redirect_to root_path
-      end
+      redirect_to safe_return_to(return_to) || root_path
     end
   end
 end

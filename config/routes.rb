@@ -39,9 +39,6 @@ Rails.application.routes.draw do
     post :redeem_coupon, on: :member
   end
 
-  # Test Sidekiq route
-  get "/test_sidekiq", to: "home#test_sidekiq"
-
   # Resume routes with nested resources
   resources :resumes do
     resources :work_experiences, only: [ :create, :update, :destroy ]
@@ -60,9 +57,6 @@ Rails.application.routes.draw do
       get :certifications_section
       get :languages_section
     end
-
-    # Test endpoint
-    get :test_auth, on: :collection
   end
 
   # AI Translation routes

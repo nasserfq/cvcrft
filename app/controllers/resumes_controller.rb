@@ -31,21 +31,6 @@ class ResumesController < ApplicationController
     end
   end
 
-  def test_auth
-    Rails.logger.info "=== TEST AUTH ENDPOINT ==="
-    Rails.logger.info "Current user: #{current_user&.email} (ID: #{current_user&.id})"
-    Rails.logger.info "User signed in: #{user_signed_in?}"
-    Rails.logger.info "Request format: #{request.format}"
-    Rails.logger.info "Headers: #{request.headers.to_h.select { |k, v| k.include?('auth') || k.include?('csrf') || k.include?('content') }}"
-
-    render json: {
-      current_user: current_user&.email,
-      user_id: current_user&.id,
-      signed_in: user_signed_in?,
-      format: request.format.to_s
-    }
-  end
-
   # Progressive loading: show returns only header/minimal data for fast initial load
   def show
     start = Time.now
@@ -141,7 +126,6 @@ class ResumesController < ApplicationController
     Rails.logger.info "Current user: #{current_user&.email} (ID: #{current_user&.id})"
     Rails.logger.info "User signed in: #{user_signed_in?}"
     Rails.logger.info "Request format: #{request.format}"
-    Rails.logger.info "Resume params: #{resume_params.inspect}"
 
     if current_user.nil?
       Rails.logger.error "No current user found!"
@@ -261,7 +245,6 @@ class ResumesController < ApplicationController
   def save_draft
     Rails.logger.info "=== SAVE RESUME DRAFT ==="
     Rails.logger.info "Resume ID: #{params[:id]}"
-    Rails.logger.info "Draft data: #{params[:draft_data]}"
 
     begin
       if params[:id] == "new"

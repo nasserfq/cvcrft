@@ -3,6 +3,9 @@ require "aws-sdk-ses"
 class SendOtpEmailJob < ApplicationJob
   queue_as :default
 
+  # The code is a login secret: keep it out of the job log lines.
+  self.log_arguments = false
+
   def perform(email, otp_code)
     Rails.logger.info "Sending OTP email to #{email}"
 

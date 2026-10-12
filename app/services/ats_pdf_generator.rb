@@ -19,16 +19,31 @@ class AtsPdfGenerator
     template_catalog.any? { |template| template[:key] == key } ? key : AtsTemplates::Classic01.key
   end
 
+  PDF_DIR = Rails.root.join("tmp", "pdfs", "generated")
+
+  # Each render gets its own file. Paths used to come from the person's name
+  # alone, so two users with the same name (or any two all-Arabic names, which
+  # parameterize to "") wrote and read back the same file. Files older than a
+  # day are swept so the directory does not grow without bound.
+  def self.unique_pdf_path
+    FileUtils.mkdir_p(PDF_DIR)
+    Dir.glob(PDF_DIR.join("*.pdf")).each do |old|
+      File.delete(old) if File.mtime(old) < 1.day.ago
+    rescue Errno::ENOENT
+      nil
+    end
+    PDF_DIR.join("#{SecureRandom.uuid}.pdf")
+  end
+
   def self.generate_pdf(resume, data, options = {})
     template_key = normalize_template_key(options[:template] || options["template"])
     template = template_for(template_key).config
     Rails.logger.info "=== ATS PDF GENERATOR STARTED ==="
-    Rails.logger.info "Resume: #{resume.inspect}"
+    Rails.logger.info "Resume: #{resume.id}"
     Rails.logger.info "Template: #{template_key}"
 
-    filename = resume.complete_name.present? ? "#{resume.complete_name.parameterize}_resume.pdf" : "resume_#{SecureRandom.hex(6)}.pdf"
-    pdf_path = Rails.root.join("tmp", "pdfs", "generated", filename)
-    FileUtils.mkdir_p(File.dirname(pdf_path))
+    filename = resume.complete_name.to_s.parameterize.presence&.then { |slug| "#{slug}_resume.pdf" } || "resume.pdf"
+    pdf_path = self.unique_pdf_path
 
     # Set strict encoding to prevent issues with special characters
     Prawn::Document.generate(pdf_path, force_encoding: true, margin: template[:margin]) do |pdf|

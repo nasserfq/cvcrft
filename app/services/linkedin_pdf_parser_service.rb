@@ -1,6 +1,11 @@
 class LinkedinPdfParserService
   class LinkedinPdfParseError < StandardError; end
 
+  # A CV is a few pages. Caps keep a hostile upload from tying up the web
+  # request or sending a huge prompt to the AI.
+  MAX_PAGES = 20
+  MAX_TEXT_CHARS = 60_000
+
   def initialize(file_path_or_io)
     @file = file_path_or_io
   end
@@ -15,15 +20,16 @@ class LinkedinPdfParserService
     reader = PDF::Reader.new(@file)
 
     text_content = []
-    reader.pages.each do |page|
+    reader.pages.first(MAX_PAGES).each do |page|
       text_content << page.text
+      break if text_content.sum(&:length) > MAX_TEXT_CHARS
     end
 
     # Join all pages with newlines
     raw_text = text_content.join("\n\n")
 
     # Clean up the text (remove excessive whitespace but preserve structure)
-    clean_text(raw_text)
+    clean_text(raw_text)[0, MAX_TEXT_CHARS]
   rescue PDF::Reader::MalformedPDFError => e
     raise LinkedinPdfParseError, "Invalid PDF file: #{e.message}"
   rescue => e

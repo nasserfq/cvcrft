@@ -53,6 +53,10 @@ class CvImportsController < ApplicationController
         original_filename: pdf_file.original_filename
       )
 
+      unless current_user.usage_limits.consume!(:document_ai)
+        return render json: { success: false, error: "لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", limit_reached: true }, status: :too_many_requests
+      end
+
       if @cv_import.save
         # Queue the background job for AI processing
         CvImportJob.perform_async(@cv_import.id)

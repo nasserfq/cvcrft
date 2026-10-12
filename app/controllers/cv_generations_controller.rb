@@ -3,7 +3,7 @@ class CvGenerationsController < ApplicationController
 
   before_action :authenticate_user!
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
-  before_action :set_cv_generation, only: [ :show, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :save_draft, :resume_draft ]
+  before_action :set_cv_generation, only: [ :show, :status, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :preview, :save_draft, :resume_draft ]
 
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
@@ -98,7 +98,19 @@ class CvGenerationsController < ApplicationController
     Rails.logger.info "Using user_id: #{user_id} for CV generation"
 
     # Initialize the Azure OpenAI service
-    service = AzureOpenaiService.new(user_id, cv_generation_params[:resume_id])
+    # resume_id comes from the request: only the user's own resumes may be used.
+    resume_id = cv_generation_params[:resume_id].presence
+    resume_id &&= current_user.resumes.find(resume_id).id
+
+    unless limits.consume!(:job_based_generation)
+      respond_to do |format|
+        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة." }
+        format.json { render json: { error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة.", limit_reached: true, remaining: 0 }, status: :too_many_requests }
+      end
+      return
+    end
+
+    service = AzureOpenaiService.new(user_id, resume_id)
 
     # Generate CV
     ats_template = AtsTemplatePdfService.normalize_template_key(cv_generation_params[:ats_template])
@@ -108,8 +120,8 @@ class CvGenerationsController < ApplicationController
       {
         complete_name: cv_generation_params[:complete_name],
         email: cv_generation_params[:email],
-        temperature: cv_generation_params[:temperature] || 0.7,
-        max_tokens: cv_generation_params[:max_tokens] || 15000,
+        temperature: (cv_generation_params[:temperature].presence || 0.7).to_f.clamp(0.0, 1.0),
+        max_tokens: (cv_generation_params[:max_tokens].presence || 15000).to_i.clamp(1000, 15000),
         ats_template: ats_template,
         force_pdf_regeneration: true,  # Always regenerate PDF when user creates a new CV
         source: "job_description"  # Track the source for limit counting
@@ -146,6 +158,10 @@ class CvGenerationsController < ApplicationController
   end
 
   def retry
+    if @cv_generation.status == "failed" && !current_user.usage_limits.consume!(:job_based_generation)
+      return redirect_to @cv_generation, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة."
+    end
+
     user_id = @cv_generation.user_id
     service = AzureOpenaiService.new(user_id, @cv_generation.resume_id)
 
@@ -172,9 +188,7 @@ class CvGenerationsController < ApplicationController
   end
 
   def status
-    @cv_generation = CvGeneration.find(params[:id])
-    user_id = @cv_generation.user_id
-    service = AzureOpenaiService.new(user_id, @cv_generation.resume_id)
+    service = AzureOpenaiService.new(current_user.id, @cv_generation.resume_id)
 
     result = service.get_cv_generation_status(@cv_generation.id)
 
@@ -208,6 +222,11 @@ class CvGenerationsController < ApplicationController
   def download_pdf
     # Check if we need to force regenerate the PDF
     if params[:regenerate] == "true"
+      # Regenerating runs the AI again, so it uses the same allowance as a new generation.
+      unless current_user.usage_limits.consume!(:job_based_generation)
+        return redirect_to @cv_generation, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة."
+      end
+
       # Call the CV generator job synchronously to regenerate the PDF
       begin
         job_description = @cv_generation.job_description
@@ -255,7 +274,7 @@ class CvGenerationsController < ApplicationController
   end
 
   def preview_resume
-    @resume = Resume.find(params[:id])
+    @resume = current_user.resumes.find(params[:id])
 
     # Generate PDF for preview if needed
     unless @resume.metadata&.dig("pdf_data")
@@ -292,6 +311,11 @@ class CvGenerationsController < ApplicationController
   def view_pdf
     # Check if we need to force regenerate the PDF
     if params[:regenerate] == "true"
+      # Regenerating runs the AI again, so it uses the same allowance as a new generation.
+      unless current_user.usage_limits.consume!(:job_based_generation)
+        return redirect_to @cv_generation, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة."
+      end
+
       # Use the same regeneration logic as in download_pdf
       begin
         job_description = @cv_generation.job_description
@@ -340,7 +364,6 @@ class CvGenerationsController < ApplicationController
   def save_draft
     Rails.logger.info "=== SAVE DRAFT ==="
     Rails.logger.info "CV Generation ID: #{@cv_generation.id}"
-    Rails.logger.info "Draft data: #{params[:draft_data]}"
 
     begin
       # Save form data as draft
@@ -381,6 +404,14 @@ class CvGenerationsController < ApplicationController
     Rails.logger.info "=== RESUME DRAFT ==="
     Rails.logger.info "CV Generation ID: #{@cv_generation.id}"
 
+    if @cv_generation.can_be_resumed? && !current_user.usage_limits.consume!(:job_based_generation)
+      respond_to do |format|
+        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة." }
+        format.json { render json: { success: false, error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة.", limit_reached: true }, status: :too_many_requests }
+      end
+      return
+    end
+
     if @cv_generation.can_be_resumed?
       # Complete the draft and start processing
       @cv_generation.complete_draft
@@ -395,8 +426,9 @@ class CvGenerationsController < ApplicationController
         {
           complete_name: draft_data["complete_name"],
           email: draft_data["email"],
-          temperature: draft_data["temperature"] || 0.7,
-          max_tokens: draft_data["max_tokens"] || 15000
+          temperature: (draft_data["temperature"].presence || 0.7).to_f.clamp(0.0, 1.0),
+          max_tokens: (draft_data["max_tokens"].presence || 15000).to_i.clamp(1000, 15000),
+          source: "job_description"
         }
       )
 

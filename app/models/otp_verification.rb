@@ -1,21 +1,30 @@
 class OtpVerification < ApplicationRecord
+  # Wrong guesses allowed against one code before it is burned. With a
+  # 6-digit code this keeps the odds of guessing it at 5 in a million.
+  MAX_FAILED_ATTEMPTS = 5
+
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :otp_code, presence: true, length: { is: 6 }
   validates :expires_at, presence: true
 
-  scope :valid, -> { where("expires_at > ?", Time.current).where(verified: false) }
+  scope :valid, -> { where("expires_at > ?", Time.current).where(verified: false).where("failed_attempts < ?", MAX_FAILED_ATTEMPTS) }
   scope :expired, -> { where("expires_at <= ?", Time.current) }
 
   def expired?
     expires_at <= Time.current
   end
 
+  # Checks a submitted code. A wrong code counts against this OTP; a right
+  # one consumes it atomically, so the same code cannot sign in twice.
   def verify!(code)
-    return false if expired? || verified?
-    return false unless otp_code == code
+    return false if expired? || verified? || failed_attempts >= MAX_FAILED_ATTEMPTS
 
-    update!(verified: true)
-    true
+    unless ActiveSupport::SecurityUtils.secure_compare(otp_code, code.to_s)
+      self.class.where(id: id).update_all("failed_attempts = failed_attempts + 1")
+      return false
+    end
+
+    self.class.where(id: id, verified: false).update_all(verified: true, updated_at: Time.current) == 1
   end
 
   def self.generate_for(email)

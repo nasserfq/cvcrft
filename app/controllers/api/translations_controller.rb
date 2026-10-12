@@ -18,10 +18,9 @@ class Api::TranslationsController < ApplicationController
       end
 
       # Always enqueue a new AI translation job for every request
-      Rails.logger.info "[AI Translate] Request params: #{params.inspect}"
 
       user_id = current_user.id
-      resume_id = params[:resume_id]
+      resume_id = owned_resume_id
       arabic_text = params[:arabic_text]
 
       # Validate input
@@ -32,6 +31,11 @@ class Api::TranslationsController < ApplicationController
 
       # Generate a unique job ID first
       job_id = SecureRandom.hex(12)
+
+      unless usage_limits.consume!(:summary_translation)
+        render json: { error: "limit reached", limit_reached: true, remaining: 0 }, status: :too_many_requests
+        return
+      end
 
       job = AiTranslationJob.perform_async(
         arabic_text,
@@ -80,10 +84,9 @@ class Api::TranslationsController < ApplicationController
         return
       end
 
-      Rails.logger.info "[AI Translate Jobs] Request params: #{params.inspect}"
 
       user_id = current_user.id
-      resume_id = params[:resume_id]
+      resume_id = owned_resume_id
       job_descriptions = params[:job_descriptions] # Array of {index, job_title, company, responsibilities}
 
       if job_descriptions.blank? || !job_descriptions.is_a?(Array)
@@ -109,6 +112,11 @@ class Api::TranslationsController < ApplicationController
         responsibilities = job["responsibilities"]&.select(&:present?)&.join("\n") || ""
         "[#{job['job_title']} - #{job['company']}]\n#{responsibilities}"
       end.join("\n\n---\n\n")
+
+      unless usage_limits.consume!(:jobs_translation)
+        render json: { error: "limit reached", limit_reached: true, remaining: 0 }, status: :too_many_requests
+        return
+      end
 
       job = AiTranslationJob.perform_async(
         combined_text,
@@ -213,7 +221,7 @@ class Api::TranslationsController < ApplicationController
 
   def export_pdf
     begin
-      Rails.logger.info "Export PDF request: params=#{params.inspect}, direct_download=#{params[:direct_download]}, token=#{params[:token]}"
+      Rails.logger.info "Export PDF request: direct_download=#{params[:direct_download]}"
       selected_template = AtsTemplatePdfService.normalize_template_key(params[:template])
 
       # Track PDF export event
@@ -260,7 +268,6 @@ class Api::TranslationsController < ApplicationController
           "resume_id" => params[:resume_id],
           "view_in_browser" => params[:view_in_browser] == "true",
           "resume_params" => request.post? ? resume_params.as_json : nil,
-          "callback_url" => params[:callback_url],
           "template" => selected_template
         }
 
@@ -281,7 +288,7 @@ class Api::TranslationsController < ApplicationController
 
       # Handle direct download using token
       if params[:direct_download] == "true" && params[:token].present?
-        Rails.logger.info "Processing direct download request with token: #{params[:token]}"
+        Rails.logger.info "Processing direct download request"
 
         redis = Redis.new(url: ENV["REDIS_URL"] || "redis://localhost:6379/1")
         redis_key = "cv_builder:pdf:#{current_user.id}:#{params[:token]}"
@@ -292,7 +299,7 @@ class Api::TranslationsController < ApplicationController
           return send_file pdf_path, filename: filename, type: "application/pdf", disposition: "attachment"
         end
 
-        Rails.logger.error "PDF file not found for token: #{params[:token]}"
+        Rails.logger.error "PDF file not found for direct download token"
         return render json: { error: "PDF not found" }, status: :not_found
       end
 
@@ -365,7 +372,7 @@ class Api::TranslationsController < ApplicationController
     token = params[:token]
     resume_id = params[:resume_id]
 
-    Rails.logger.info "Checking PDF status for job_id=#{job_id}, token=#{token}, resume_id=#{resume_id}"
+    Rails.logger.info "Checking PDF status for job_id=#{job_id}, resume_id=#{resume_id}"
 
     if job_id.blank? && token.blank? && resume_id.blank?
       return render json: { error: "Either job_id, token, or resume_id is required" }, status: :bad_request
@@ -396,6 +403,13 @@ class Api::TranslationsController < ApplicationController
   end
 
   private
+
+  # resume_id comes from the request; only the user's own resumes may be named.
+  def owned_resume_id
+    return nil if params[:resume_id].blank?
+
+    current_user.resumes.find(params[:resume_id]).id
+  end
 
   def usage_limits
     current_user.usage_limits
