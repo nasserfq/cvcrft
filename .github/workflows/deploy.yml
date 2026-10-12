@@ -1,7 +1,5 @@
 name: Deploy
 
-# Runs `kamal deploy` for the current main, only when started by hand:
-# GitHub app › cvcrft › Actions › Deploy › Run workflow.
 on:
   workflow_dispatch:
 
@@ -14,15 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    env:
-      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
-      CVCRAFT_DATABASE_PASSWORD: ${{ secrets.CVCRAFT_DATABASE_PASSWORD }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-
     steps:
+      - name: Load deploy secrets
+        env:
+          DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
+        run: |
+          printf '%s\n' "$DEPLOY_ENV" | tr -d '\r' | grep -E '^[A-Z_]+=' | while IFS= read -r line; do
+            echo "::add-mask::${line#*=}"
+            echo "$line" >> "$GITHUB_ENV"
+          done
+
       - uses: actions/checkout@v4
 
       - uses: ruby/setup-ruby@v1
@@ -30,9 +29,6 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      # .kamal/secrets reads the master key from config/master.key, and
-      # config/deploy.yml expects the SSH key at ~/.ssh/cvcraft_netcup.
-      # The image is built on the server itself, so only SSH is needed here.
       - name: Install keys
         run: |
           printf '%s' "$RAILS_MASTER_KEY" > config/master.key
