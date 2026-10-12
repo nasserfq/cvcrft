@@ -122,6 +122,7 @@ class ResumesController < ApplicationController
 
     existing_starter = current_user.resumes.drafts.order(updated_at: :desc).find(&:empty_starter_draft?)
     if existing_starter
+      flash.keep
       redirect_to edit_resume_path(existing_starter, step: existing_starter.current_draft_step)
       return
     end

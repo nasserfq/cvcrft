@@ -23,11 +23,11 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
-  test "new without a completed resume explains why it lands on resumes" do
+  test "new without a completed resume sends the user to the resume builder with a message" do
     @user.resumes.update_all(is_draft: true)
     get new_cv_generation_url
-    assert_redirected_to resumes_path
-    follow_redirect!
+    assert_redirected_to new_resume_path
+    follow_redirect! while response.redirect?
     assert_select "[role=alert]", text: I18n.t("resume.need_resume_for_job")
   end
 

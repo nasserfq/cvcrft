@@ -502,8 +502,8 @@ class CvGenerationsController < ApplicationController
     Rails.logger.info "User #{current_user.email} has no completed resumes, redirecting to resume creation"
 
     respond_to do |format|
-      format.html { redirect_to resumes_path, alert: t("resume.need_resume_for_job") }
-      format.json { render json: { error: "\u064A\u062C\u0628 \u0639\u0644\u064A\u0643 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631\u0629 \u0630\u0627\u062A\u064A\u0629 \u0623\u0648\u0644\u0627\u064B \u0642\u0628\u0644 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631 \u0630\u0627\u062A\u064A\u0629 \u0645\u062E\u0635\u0635\u0629 \u0628\u0646\u0627\u0621\u064B \u0639\u0644\u0649 \u0648\u0635\u0641 \u0627\u0644\u0648\u0638\u064A\u0641\u0629.", redirect_url: resumes_path }, status: :unprocessable_entity }
+      format.html { redirect_to new_resume_path, alert: t("resume.need_resume_for_job") }
+      format.json { render json: { error: "\u064A\u062C\u0628 \u0639\u0644\u064A\u0643 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631\u0629 \u0630\u0627\u062A\u064A\u0629 \u0623\u0648\u0644\u0627\u064B \u0642\u0628\u0644 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631 \u0630\u0627\u062A\u064A\u0629 \u0645\u062E\u0635\u0635\u0629 \u0628\u0646\u0627\u0621\u064B \u0639\u0644\u0649 \u0648\u0635\u0641 \u0627\u0644\u0648\u0638\u064A\u0641\u0629.", redirect_url: new_resume_path }, status: :unprocessable_entity }
     end
   end
 end
