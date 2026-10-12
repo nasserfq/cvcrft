@@ -23,6 +23,14 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "new without a completed resume explains why it lands on resumes" do
+    @user.resumes.update_all(is_draft: true)
+    get new_cv_generation_url
+    assert_redirected_to resumes_path
+    follow_redirect!
+    assert_select "[role=alert]", text: I18n.t("resume.need_resume_for_job")
+  end
+
   test "should redirect to login when not authenticated for index" do
     sign_out @user
     get cv_generations_url
