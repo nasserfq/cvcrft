@@ -35,7 +35,7 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cvcraft_netcup
           chmod 600 ~/.ssh/cvcraft_netcup config/master.key
-          ssh-keyscan -H 159.195.9.248 >> ~/.ssh/known_hosts
+          ssh-keyscan -t ed25519 159.195.9.248 >> ~/.ssh/known_hosts
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/cvcraft_netcup
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
