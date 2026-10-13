@@ -1,4 +1,9 @@
 ENV["RAILS_ENV"] ||= "test"
+# Admin HTTP Basic Auth credentials. Set before the app boots: with
+# eager_load on (CI), Admin::ApplicationController reads them at load time,
+# and a later assignment leaves it with the random fallback password.
+ENV["ADMIN_USERNAME"] ||= "admin"
+ENV["ADMIN_PASSWORD"] ||= "test-only-admin-password"
 require_relative "../config/environment"
 require "rails/test_help"
 require "sidekiq/testing"
@@ -123,8 +128,8 @@ module ActionDispatch
     # HTTP Basic Auth credentials for the admin panel. These must match what
     # Admin::ApplicationController reads, or any admin-route test gets the
     # random fallback password and 401s.
-    BASIC_AUTH_USERNAME = ENV["ADMIN_USERNAME"] ||= "admin"
-    BASIC_AUTH_PASSWORD = ENV["ADMIN_PASSWORD"] ||= "test-only-admin-password"
+    BASIC_AUTH_USERNAME = ENV.fetch("ADMIN_USERNAME")
+    BASIC_AUTH_PASSWORD = ENV.fetch("ADMIN_PASSWORD")
 
     # Helper to get HTTP Basic Auth header
     def basic_auth_header
