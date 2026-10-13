@@ -26,6 +26,11 @@ gem "bcrypt", "~> 3.1.7"
 gem "posthog-ruby"
 gem "posthog-rails"
 
+# Sentry error monitoring, tracing and logs (config/initializers/sentry.rb)
+gem "sentry-ruby", "~> 7.1"
+gem "sentry-rails", "~> 7.1"
+gem "sentry-sidekiq", "~> 7.1"
+
 
 # Authentication and OTP
 gem "devise"

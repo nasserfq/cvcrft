@@ -41,6 +41,8 @@ env:
     AI_PROVIDER: bedrock
     AI_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
     ADMIN_USERNAME: admin
+    # Sentry DSNs are meant to be public (they only allow sending events).
+    SENTRY_DSN: https://058e816b8430efc0f1c2913d87129bc8@o4512250318618624.ingest.us.sentry.io/4512250323140608
 
 accessories:
   db:
