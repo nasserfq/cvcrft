@@ -238,7 +238,7 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     # Skip resume update for job descriptions translations - they don't update the resume directly
     return if @options[:job_descriptions]
 
-    resume = Resume.find(@resume_id)
+    resume = Resume.find_by!(id: @resume_id, user_id: @user_id)
 
     # Only update professional summary for professional summary translations
     if @options[:professional_summary] && result[:english_text].present?
@@ -263,7 +263,7 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
   def create_skills_from_translation(skills_data)
     return unless @resume_id && skills_data.present?
 
-    resume = Resume.find(@resume_id)
+    resume = Resume.find_by!(id: @resume_id, user_id: @user_id)
 
     skills_data.each do |skill_data|
       # Skip if skill name is blank

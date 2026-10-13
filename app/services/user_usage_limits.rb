@@ -3,6 +3,17 @@ class UserUsageLimits
   BASE_JOBS_TRANSLATIONS = 5
   BASE_CV_BUILDER_GENERATIONS = 5
   BASE_JOB_BASED_GENERATIONS = 5
+  # CV analysis, CV import and LinkedIn import share one allowance.
+  BASE_DOCUMENT_AI = 20
+
+  # kind => counter column on users. Counters only go up, so deleting content
+  # never gives quota back, and they are bumped before the AI work is queued.
+  COUNTERS = {
+    summary_translation: :summary_translations_count,
+    jobs_translation: :jobs_translations_count,
+    job_based_generation: :job_based_generations_count,
+    document_ai: :document_ai_count
+  }.freeze
 
   def initialize(user)
     @user = user
@@ -36,18 +47,32 @@ class UserUsageLimits
     BASE_JOB_BASED_GENERATIONS + coupon_bonus(:bonus_job_based_generations)
   end
 
+  def max_document_ai
+    return nil if unlimited?
+
+    BASE_DOCUMENT_AI
+  end
+
+  # Usage is the counter, or the legacy count of completed rows for accounts
+  # that used features before the counters existed, whichever is higher.
   def summary_translations_used
-    @user.ai_translations
-      .where("metadata->>'professional_summary' = ?", "true")
-      .where(status: "completed")
-      .count
+    [ @user.summary_translations_count,
+      @user.ai_translations
+        .where("metadata->>'professional_summary' = ?", "true")
+        .where(status: "completed")
+        .count ].max
   end
 
   def jobs_translations_used
-    @user.ai_translations
-      .where("metadata->>'job_descriptions' = ?", "true")
-      .where(status: "completed")
-      .count
+    [ @user.jobs_translations_count,
+      @user.ai_translations
+        .where("metadata->>'job_descriptions' = ?", "true")
+        .where(status: "completed")
+        .count ].max
+  end
+
+  def document_ai_used
+    @user.document_ai_count
   end
 
   def cv_builder_generations_used
@@ -58,10 +83,11 @@ class UserUsageLimits
   end
 
   def job_based_generations_used
-    @user.cv_generations
-      .where("metadata->>'source' = ?", "job_description")
-      .where(status: "completed")
-      .count
+    [ @user.job_based_generations_count,
+      @user.cv_generations
+        .where("metadata->>'source' = ?", "job_description")
+        .where(status: "completed")
+        .count ].max
   end
 
   def remaining_summary_translations
@@ -86,6 +112,31 @@ class UserUsageLimits
     return nil if unlimited?
 
     [ max_job_based_generations - job_based_generations_used, 0 ].max
+  end
+
+  def remaining_document_ai
+    return nil if unlimited?
+
+    [ max_document_ai - document_ai_used, 0 ].max
+  end
+
+  def can_use_document_ai?
+    unlimited? || remaining_document_ai.positive?
+  end
+
+  # Atomically checks and records one use of an AI feature. Returns false,
+  # recording nothing, when the user has no allowance left. The row lock
+  # stops parallel requests from all passing the check.
+  def consume!(kind)
+    column = COUNTERS.fetch(kind)
+    allowed = false
+
+    @user.with_lock do
+      allowed = unlimited? || remaining_for(kind).positive?
+      @user.increment!(column) if allowed
+    end
+
+    allowed
   end
 
   def can_translate_summary?
@@ -126,6 +177,15 @@ class UserUsageLimits
   end
 
   private
+
+  def remaining_for(kind)
+    case kind
+    when :summary_translation then remaining_summary_translations
+    when :jobs_translation then remaining_jobs_translations
+    when :job_based_generation then remaining_job_based_generations
+    when :document_ai then remaining_document_ai
+    end
+  end
 
   def redeemed_coupons
     CouponRedemptionStore.redeemed_codes_for(@user.id).filter_map do |code|

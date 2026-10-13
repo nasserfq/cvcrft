@@ -73,7 +73,7 @@ class CvGeneratorJob
     end
       # Load existing resume data
       if @resume_id
-        @existing_resume = Resume.find(@resume_id)
+        @existing_resume = owned_resume
         Rails.logger.info "📋 Loaded existing resume ID: #{@existing_resume.id}"
         Rails.logger.info "📋 Resume has #{@existing_resume.skills.count} skills"
         Rails.logger.info "📋 First skill: #{@existing_resume.skills.first&.attributes&.inspect}"
@@ -106,6 +106,12 @@ class CvGeneratorJob
     private
 
   # --- Data Fetching and AI Communication (Minimal changes, mostly logging) ---
+
+  # The resume must belong to the user this job runs for; resume_id comes
+  # from the request, so never load it unscoped.
+  def owned_resume
+    Resume.find_by!(id: @resume_id, user_id: @user_id)
+  end
 
   def find_cv_generation_record
     # NOTE: You must implement this based on your database structure
@@ -458,7 +464,7 @@ class CvGeneratorJob
   def create_or_update_resume(result)
     # For existing resumes, do NOT update any fields or sections. Only use the AI summary in the generated CV metadata/PDF.
     if @resume_id
-      resume = Resume.find(@resume_id)
+      resume = owned_resume
       Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
       # Do NOT update professional_summary or any sections for existing resumes.
     else
@@ -482,7 +488,7 @@ class CvGeneratorJob
     # NOTE: This method is now merged/replaced by the logic in create_or_update_resume
     # but the original code structure might require it to remain for clarity.
     Rails.logger.info "update_existing_resume is deprecated; no mutation performed."
-    Resume.find(@resume_id)
+    owned_resume
   end
 
   def create_new_resume(result)
@@ -492,14 +498,14 @@ class CvGeneratorJob
   professional_summary: result[:professional_summary],
   summary: result[:professional_summary]
     }
-    resume = Resume.create!(resume_data)
+    resume = Resume.create!(resume_data.merge(user_id: @user_id))
     @cv_generation.update!(resume_id: resume.id)
     resume
   end
 
 
   def populate_resume_sections(result)
-    resume = @resume_id ? Resume.find(@resume_id) : @cv_generation.resume
+    resume = @resume_id ? owned_resume : @cv_generation.resume
 
     # Only populate sections for new resumes or when explicitly requested
     return if @resume_id && !@options[:force_update_sections]
@@ -618,7 +624,7 @@ class CvGeneratorJob
     Rails.logger.info "=== GENERATING PDF FOR RESUME WITH PRAWN ==="
 
     begin
-      resume = @resume_id ? Resume.find(@resume_id).reload : @cv_generation.resume.reload
+      resume = @resume_id ? owned_resume.reload : @cv_generation.resume.reload
 
       # Get the full generated data from the CV generation metadata
       generated_data = @cv_generation.metadata["generated_data"]
@@ -774,7 +780,7 @@ class CvGeneratorJob
     return true if @options[:force_pdf_regeneration]
     return true if pdf_cache_expired?
 
-    resume = @resume_id ? Resume.find(@resume_id) : @cv_generation.resume
+    resume = @resume_id ? owned_resume : @cv_generation.resume
     generated_data = (@cv_generation.metadata["generated_data"] || {}).deep_symbolize_keys
     template_key = selected_ats_template_key
     current_cache_key = generate_pdf_cache_key(resume, generated_data, template_key)

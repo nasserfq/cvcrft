@@ -3,6 +3,10 @@ class AiTranslationsController < ApplicationController
 
   def create
     @translation = current_user.ai_translations.build(translation_params)
+    if @translation.resume_id && !current_user.resumes.exists?(@translation.resume_id)
+      render json: { errors: [ "Resume not found" ] }, status: :not_found
+      return
+    end
 
     if @translation.save
       # Trigger AI translation job

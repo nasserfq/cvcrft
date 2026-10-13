@@ -6,6 +6,10 @@ class CvPdfImportService
   # Arabic character ratio threshold (30% = reject)
   ARABIC_THRESHOLD = 0.3
 
+  # Same caps as LinkedinPdfParserService.
+  MAX_PAGES = LinkedinPdfParserService::MAX_PAGES
+  MAX_TEXT_CHARS = LinkedinPdfParserService::MAX_TEXT_CHARS
+
   def initialize(file_path_or_io)
     @file = file_path_or_io
   end
@@ -30,9 +34,10 @@ class CvPdfImportService
     end
 
     text_content = []
-    reader.pages.each do |page|
+    reader.pages.first(MAX_PAGES).each do |page|
       page_text = page.text
       text_content << page_text if page_text.present?
+      break if text_content.sum(&:length) > MAX_TEXT_CHARS
     end
 
     raw_text = text_content.join("\n\n")
@@ -41,7 +46,7 @@ class CvPdfImportService
       raise CorruptedFileError, "لم نتمكن من استخراج النص من الملف. قد يكون الملف عبارة عن صورة أو محمي"
     end
 
-    clean_text(raw_text)
+    clean_text(raw_text)[0, MAX_TEXT_CHARS]
   rescue PDF::Reader::MalformedPDFError, PDF::Reader::EncryptedPDFError => e
     raise CorruptedFileError, "الملف تالف أو محمي: #{e.message}"
   rescue PDF::Reader::UnsupportedFeatureError => e

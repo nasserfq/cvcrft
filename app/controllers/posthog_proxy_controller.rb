@@ -40,7 +40,10 @@ class PosthogProxyController < ActionController::Base
   end
 
   def proxy_to_posthog(host)
-    uri = URI.parse("#{host}#{posthog_path}")
+    # Connect to the fixed PostHog host and only forward the path. Building
+    # the URI from host + request path let "/ingest.x@host:port" (the route's
+    # format segment) move the connection to another host.
+    uri = URI.parse(host)
 
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = uri.scheme == "https"
@@ -49,7 +52,7 @@ class PosthogProxyController < ActionController::Base
 
     # Build the request
     klass = request_class_for(request.method)
-    posthog_request = klass.new(uri.request_uri)
+    posthog_request = klass.new(posthog_path)
 
     # Forward headers
     forward_headers(posthog_request)
@@ -76,7 +79,7 @@ class PosthogProxyController < ActionController::Base
     path = request.fullpath
     path = path.sub(%r{^/ingest}, "")
     path = path.sub(%r{^/ph-static}, "/static")
-    path.presence || "/"
+    path.start_with?("/") ? path : "/#{path}"
   end
 
   def request_class_for(method)

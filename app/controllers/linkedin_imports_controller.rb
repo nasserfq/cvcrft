@@ -1,6 +1,6 @@
 class LinkedinImportsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_linkedin_import, only: [ :status, :show, :update, :destroy, :download_pdf ]
+  before_action :set_linkedin_import, only: [ :status, :show, :update, :destroy, :download_pdf, :save_to_cv ]
 
   # GET /linkedin-import
   def new
@@ -19,6 +19,14 @@ class LinkedinImportsController < ApplicationController
         format.json { render json: { success: false, error: "Please upload a LinkedIn PDF file" }, status: :unprocessable_entity }
       end
       return
+    end
+
+    if params[:pdf_file].size > 10.megabytes
+      return reject_upload("حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت", :unprocessable_entity)
+    end
+
+    unless current_user.usage_limits.consume!(:document_ai)
+      return reject_upload("لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", :too_many_requests)
     end
 
     begin
@@ -99,8 +107,6 @@ class LinkedinImportsController < ApplicationController
 
   # POST /linkedin-import/:id/save-to-cv
   def save_to_cv
-    @linkedin_import = LinkedinImport.find(params[:id])
-
     unless @linkedin_import.completed?
       render json: { success: false, error: "Import not completed" }, status: :unprocessable_entity
       return
@@ -137,6 +143,16 @@ class LinkedinImportsController < ApplicationController
   end
 
   private
+
+  def reject_upload(message, status)
+    respond_to do |format|
+      format.html do
+        flash[:alert] = message
+        redirect_to linkedin_import_path
+      end
+      format.json { render json: { success: false, error: message }, status: status }
+    end
+  end
 
   def set_linkedin_import
     @linkedin_import = current_user.linkedin_imports.find(params[:id])

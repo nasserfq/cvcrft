@@ -199,7 +199,7 @@ class AzureOpenaiService
 
   # Get CV generation status
   def get_cv_generation_status(generation_id)
-    generation = CvGeneration.find(generation_id)
+    generation = CvGeneration.where(user_id: @user_id).find(generation_id)
 
     {
       id: generation.id,
@@ -229,7 +229,7 @@ class AzureOpenaiService
   def get_resume_cv_generations(limit = 10)
     return [] unless @resume_id
 
-    CvGeneration.where(resume_id: @resume_id)
+    CvGeneration.where(user_id: @user_id, resume_id: @resume_id)
                 .order(created_at: :desc)
                 .limit(limit)
                 .map do |generation|
@@ -239,7 +239,7 @@ class AzureOpenaiService
 
   # Retry failed CV generation
   def retry_cv_generation(generation_id)
-    generation = CvGeneration.find(generation_id)
+    generation = CvGeneration.where(user_id: @user_id).find(generation_id)
 
     return { error: "CV generation is not in failed status" } unless generation.status == "failed"
 
@@ -263,7 +263,7 @@ class AzureOpenaiService
 
   # Cancel pending CV generation
   def cancel_cv_generation(generation_id)
-    generation = CvGeneration.find(generation_id)
+    generation = CvGeneration.where(user_id: @user_id).find(generation_id)
 
     return { error: "CV generation cannot be cancelled" } unless generation.status == "processing"
 

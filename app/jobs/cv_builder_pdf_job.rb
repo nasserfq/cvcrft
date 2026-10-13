@@ -9,14 +9,12 @@ class CvBuilderPdfJob
   # Job will be called with resume_id or resume_params
   def perform(options)
     Rails.logger.info "=== CV BUILDER PDF JOB STARTED ==="
-    Rails.logger.info "Job options: #{options.inspect}"
 
     # Extract parameters
     resume_id = options["resume_id"]
     user_id = options["user_id"]
     resume_params = options["resume_params"]
     job_token = options["job_token"]
-    callback_url = options["callback_url"]
     direct_download = options["direct_download"] || false
     template = options["template"]
 
@@ -32,9 +30,6 @@ class CvBuilderPdfJob
       # Store the PDF in Redis
       store_pdf_in_redis(user_id, job_token, pdf_result[:path])
 
-      # Callback if URL is provided
-      send_callback(callback_url, pdf_result) if callback_url.present?
-
       Rails.logger.info "=== CV BUILDER PDF JOB COMPLETED ==="
       { status: "success", file_path: pdf_result[:path], filename: pdf_result[:filename] }
     rescue => e
@@ -45,7 +40,7 @@ class CvBuilderPdfJob
   end
 
   # Class method to schedule PDF generation
-  def self.schedule_pdf_generation(user_id, resume_id, view_in_browser, resume_params = nil, callback_url = nil)
+  def self.schedule_pdf_generation(user_id, resume_id, view_in_browser, resume_params = nil)
     Rails.logger.info "Scheduling PDF generation with params: user_id=#{user_id}, resume_id=#{resume_id}, view_in_browser=#{view_in_browser}"
 
     # Build options for the job
@@ -53,8 +48,7 @@ class CvBuilderPdfJob
       "user_id" => user_id,
       "resume_id" => resume_id,
       "view_in_browser" => view_in_browser,
-      "resume_params" => resume_params,
-      "callback_url" => callback_url
+      "resume_params" => resume_params
     }
 
     # Enqueue the job
@@ -132,12 +126,5 @@ class CvBuilderPdfJob
     redis_key = "cv_builder:pdf:#{user_id}:#{job_token}"
     redis.setex(redis_key, 24.hours.to_i, pdf_path)
     Rails.logger.info "Stored PDF in Redis with key: #{redis_key}"
-  end
-
-  def send_callback(callback_url, pdf_result)
-    Rails.logger.info "Sending callback to: #{callback_url}"
-    RestClient.post(callback_url, pdf_result)
-  rescue => e
-    Rails.logger.error "Failed to send callback: #{e.message}"
   end
 end

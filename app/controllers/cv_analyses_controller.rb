@@ -24,6 +24,14 @@ class CvAnalysesController < ApplicationController
       return
     end
 
+    if params[:pdf_file].size > 10.megabytes
+      return reject_upload("حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت", :unprocessable_entity)
+    end
+
+    unless current_user.usage_limits.consume!(:document_ai)
+      return reject_upload("لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", :too_many_requests)
+    end
+
     begin
       # Parse PDF to extract text
       pdf_file = params[:pdf_file]
@@ -126,6 +134,16 @@ class CvAnalysesController < ApplicationController
   end
 
   private
+
+  def reject_upload(message, status)
+    respond_to do |format|
+      format.html do
+        flash[:alert] = message
+        redirect_to cv_analysis_path
+      end
+      format.json { render json: { success: false, error: message }, status: status }
+    end
+  end
 
   def set_cv_analysis
     @cv_analysis = current_user.cv_analyses.find(params[:id])

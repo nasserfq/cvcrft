@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_10_230000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_12_220100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -173,6 +173,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_10_230000) do
     t.boolean "verified", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "failed_attempts", default: 0, null: false
     t.index ["email"], name: "index_otp_verifications_on_email"
     t.index ["expires_at"], name: "index_otp_verifications_on_expires_at"
     t.index ["otp_code"], name: "index_otp_verifications_on_otp_code"
@@ -224,6 +225,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_10_230000) do
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
     t.string "locale", default: "ar", null: false
+    t.integer "summary_translations_count", default: 0, null: false
+    t.integer "jobs_translations_count", default: 0, null: false
+    t.integer "job_based_generations_count", default: 0, null: false
+    t.integer "document_ai_count", default: 0, null: false
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 

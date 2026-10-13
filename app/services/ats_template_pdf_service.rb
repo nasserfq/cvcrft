@@ -28,9 +28,8 @@ class AtsTemplatePdfService
     style = catalog.find { |item| item[:key] == template_key } || catalog.first
     config = style[:config]
 
-    filename = resume.complete_name.present? ? "#{resume.complete_name.parameterize}_resume.pdf" : "resume_#{SecureRandom.hex(6)}.pdf"
-    pdf_path = Rails.root.join("tmp", "pdfs", "generated", filename)
-    FileUtils.mkdir_p(File.dirname(pdf_path))
+    filename = resume.complete_name.to_s.parameterize.presence&.then { |slug| "#{slug}_resume.pdf" } || "resume.pdf"
+    pdf_path = AtsPdfGenerator.unique_pdf_path
 
     Prawn::Document.generate(pdf_path, force_encoding: true, margin: config[:margin] || 36) do |pdf|
       pdf.font "Helvetica", enable_smart_quotes: false do
