@@ -1,6 +1,8 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { inputClassName } from "./FormUtils";
+import LocationCombobox from "./LocationCombobox";
+import { getCities, getCountries } from "./locationData";
 
 // Error display component
 const FieldError = ({ error }) => error ? (
@@ -51,6 +53,8 @@ const CombinedStep1 = ({
   validationErrors = {},
 }) => {
   const { t } = useTranslation();
+  const countryOptions = useMemo(() => getCountries(), []);
+  const cityOptions = useMemo(() => getCities(formData.country), [formData.country]);
 
   return (
     <div className="space-y-8">
@@ -108,10 +112,13 @@ const CombinedStep1 = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.city')} <span className="text-red-500">*</span></label>
-              <input
-                type="text"
+              <LocationCombobox
                 value={formData.city}
-                onChange={(e) => handleInputChange("city", e.target.value)}
+                onChange={(v) => handleInputChange("city", v)}
+                onPick={(city) => {
+                  if (!formData.country?.trim() && city.country) handleInputChange("country", city.country);
+                }}
+                options={cityOptions}
                 className={getInputClassName(validationErrors.city)}
                 placeholder="Riyadh"
               />
@@ -119,10 +126,10 @@ const CombinedStep1 = ({
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.country')} <span className="text-red-500">*</span></label>
-              <input
-                type="text"
+              <LocationCombobox
                 value={formData.country}
-                onChange={(e) => handleInputChange("country", e.target.value)}
+                onChange={(v) => handleInputChange("country", v)}
+                options={countryOptions}
                 className={getInputClassName(validationErrors.country)}
                 placeholder="Saudi Arabia"
               />
