@@ -189,6 +189,8 @@ class Api::TranslationsController < ApplicationController
           # Job descriptions specific data
           job_descriptions: is_job_descriptions,
           job_indices: metadata["job_indices"] || [],
+          # Short reason for a failure (see AiTranslationJob.error_code_for)
+          error_code: (metadata["error_code"] if translation.status == "failed"),
           # Include remaining counts so frontend can update after completion/failure
           remaining_summary: usage_limits.remaining_summary_translations,
           remaining_jobs: usage_limits.remaining_jobs_translations
