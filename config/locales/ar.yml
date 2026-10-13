@@ -44,6 +44,34 @@ ar:
     already_redeemed: "لقد استخدمت هذا الكود مسبقاً."
     redeemed_success: "تم تطبيق الكود! تم زيادة حدود الاستخدام."
 
+  # Credits and payments (packs/billing)
+  billing:
+    title: "الرصيد"
+    subtitle: "الرصيد يُستخدم للمدرب الذكي. كل رسالة للمدرب تستهلك رصيداً واحداً."
+    balance: "رصيدك"
+    credits: "رصيد"
+    free_note: "كل حساب جديد يبدأ بـ %{count} رصيد مجاناً."
+    buy_title: "اشحن رصيدك"
+    buy: "شراء"
+    pack_credits: "%{credits} رصيد"
+    price_sar: "%{price} ريال"
+    per_credit: "%{price} ريال لكل رصيد"
+    payment_methods: "ادفع عبر مدى أو Apple Pay أو STC Pay أو البطاقة. الدفع الآمن عبر ميسر."
+    history_title: "آخر العمليات"
+    history_empty: "لا توجد عمليات بعد."
+    reasons:
+      signup_bonus: "رصيد الترحيب"
+      purchase: "شراء رصيد"
+      coupon: "كود خصم"
+      coach_message: "رسالة للمدرب الذكي"
+      refund: "استرداد"
+      admin_adjustment: "تعديل"
+    invoice_description: "%{credits} رصيد في سيرة"
+    unknown_pack: "باقة الرصيد غير موجودة."
+    checkout_failed: "تعذر فتح صفحة الدفع. حاول مرة أخرى."
+    purchase_success: "تم استلام الدفع. أُضيف %{credits} رصيد إلى حسابك."
+    purchase_pending: "لم يصلنا الدفع بعد. إذا دفعت، سيظهر رصيدك خلال دقائق."
+
   # Authentication
   auth:
     login_required: "يرجى تسجيل الدخول أولاً"

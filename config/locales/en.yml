@@ -46,6 +46,34 @@ en:
     already_redeemed: "You have already used this coupon."
     redeemed_success: "Coupon applied! Your limits have been increased."
 
+  # Credits and payments (packs/billing)
+  billing:
+    title: "Credits"
+    subtitle: "Credits pay for the AI coach. One credit is one coach message."
+    balance: "Your balance"
+    credits: "credits"
+    free_note: "New accounts start with %{count} free credits."
+    buy_title: "Get more credits"
+    buy: "Buy"
+    pack_credits: "%{credits} credits"
+    price_sar: "%{price} SAR"
+    per_credit: "%{price} SAR per credit"
+    payment_methods: "Pay with mada, Apple Pay, STC Pay or card. Secure checkout by Moyasar."
+    history_title: "Recent activity"
+    history_empty: "No activity yet."
+    reasons:
+      signup_bonus: "Welcome credits"
+      purchase: "Credit purchase"
+      coupon: "Coupon"
+      coach_message: "AI coach message"
+      refund: "Refund"
+      admin_adjustment: "Adjustment"
+    invoice_description: "%{credits} Seera credits"
+    unknown_pack: "That credit pack doesn't exist."
+    checkout_failed: "We couldn't open the payment page. Please try again."
+    purchase_success: "Payment received. %{credits} credits were added to your balance."
+    purchase_pending: "We haven't received the payment yet. If you paid, your credits will appear in a few minutes."
+
   # Authentication
   auth:
     login_required: "Please log in first"

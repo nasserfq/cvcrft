@@ -12,6 +12,7 @@ names don't change: `packs/accounts/app/models/user.rb` is still `User`.
 | `resume_builder` | Resumes and their sections, the builder, PDF templates and export |
 | `ai_tools` | Job-based CV generation, CV analysis, translation, the AI client |
 | `imports` | CV PDF import and LinkedIn import |
+| `billing` | Credits (ledger and balance), credit packs, Moyasar checkout. Off unless `BILLING_ENABLED` |
 | `admin` | Administrate dashboards, admin controllers, email load tests |
 
 What stays in `app/`: the shared base classes (`ApplicationController`,

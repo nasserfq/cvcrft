@@ -1,6 +1,6 @@
 class ConfigCoupon
   attr_reader :code, :description, :bonus_summary_translations, :bonus_jobs_translations,
-              :bonus_cv_builder_generations, :bonus_job_based_generations, :expires_at
+              :bonus_cv_builder_generations, :bonus_job_based_generations, :bonus_credits, :expires_at
 
   def initialize(code, attrs = {})
     attrs = attrs.to_h.stringify_keys
@@ -12,6 +12,8 @@ class ConfigCoupon
     @bonus_jobs_translations = attrs.fetch("bonus_jobs_translations", 0).to_i
     @bonus_cv_builder_generations = attrs.fetch("bonus_cv_builder_generations", 0).to_i
     @bonus_job_based_generations = attrs.fetch("bonus_job_based_generations", 0).to_i
+    # Billing credits for the AI coach, granted once when the coupon is redeemed.
+    @bonus_credits = attrs.fetch("bonus_credits", 0).to_i
     @expires_at = parse_expires_at(attrs["expires_at"])
   end
 
@@ -38,7 +40,8 @@ class ConfigCoupon
       bonus_summary_translations: bonus_summary_translations,
       bonus_jobs_translations: bonus_jobs_translations,
       bonus_cv_builder_generations: bonus_cv_builder_generations,
-      bonus_job_based_generations: bonus_job_based_generations
+      bonus_job_based_generations: bonus_job_based_generations,
+      bonus_credits: bonus_credits
     }
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_12_220100) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_13_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,6 +67,36 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_12_220100) do
     t.datetime "updated_at", null: false
     t.boolean "unlimited", default: false, null: false
     t.index "lower((code)::text)", name: "index_coupons_on_lower_code", unique: true
+  end
+
+  create_table "credit_ledger_entries", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "amount", null: false
+    t.integer "balance_after", null: false
+    t.string "reason", null: false
+    t.string "idempotency_key", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["idempotency_key"], name: "index_credit_ledger_entries_on_idempotency_key", unique: true
+    t.index ["user_id", "created_at"], name: "index_credit_ledger_entries_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_credit_ledger_entries_on_user_id"
+  end
+
+  create_table "credit_purchases", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "pack", null: false
+    t.integer "credits", null: false
+    t.integer "amount_halalas", null: false
+    t.string "currency", default: "SAR", null: false
+    t.string "status", default: "pending", null: false
+    t.string "moyasar_invoice_id"
+    t.string "checkout_url"
+    t.datetime "paid_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["moyasar_invoice_id"], name: "index_credit_purchases_on_moyasar_invoice_id", unique: true
+    t.index ["user_id"], name: "index_credit_purchases_on_user_id"
   end
 
   create_table "cv_analyses", force: :cascade do |t|
@@ -229,6 +259,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_12_220100) do
     t.integer "jobs_translations_count", default: 0, null: false
     t.integer "job_based_generations_count", default: 0, null: false
     t.integer "document_ai_count", default: 0, null: false
+    t.integer "credit_balance", default: 0, null: false
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
@@ -254,6 +285,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_12_220100) do
   add_foreign_key "certifications", "resumes"
   add_foreign_key "coupon_redemptions", "coupons"
   add_foreign_key "coupon_redemptions", "users"
+  add_foreign_key "credit_ledger_entries", "users"
+  add_foreign_key "credit_purchases", "users"
   add_foreign_key "cv_analyses", "users"
   add_foreign_key "cv_generations", "resumes"
   add_foreign_key "cv_generations", "users"
