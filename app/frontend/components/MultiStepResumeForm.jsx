@@ -1591,7 +1591,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       setJobTranslationSuccess(true);
       return;
      } else if (status.status === "failed") {
-      setJobTranslationError(translate("translation.failed"));
+      setJobTranslationError(
+       status.error_code
+        ? `${translate("translation.failed")} (${status.error_code})`
+        : translate("translation.failed")
+      );
       setIsTranslatingJobs(false);
       return;
      }
@@ -2348,7 +2352,11 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
       if (status.remaining_summary !== undefined) {
        setRemainingSummaryTranslations(status.remaining_summary);
       }
-      setTranslationError(translate("translation.failed"));
+      setTranslationError(
+       status.error_code
+        ? `${translate("translation.failed")} (${status.error_code})`
+        : translate("translation.failed")
+      );
       setIsTranslating(false);
       return;
      }

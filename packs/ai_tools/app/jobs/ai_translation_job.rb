@@ -3,21 +3,48 @@ class AiTranslationJob
 
   sidekiq_options retry: 3, backtrace: true
 
-  class OpenAIRequestError < StandardError
-    attr_reader :status_code, :response_body, :request_id
+  # Provider failures worth another try. Sidekiq retries the job; the
+  # translation stays "processing" so the page keeps polling instead of
+  # showing a failure the retry may fix.
+  RETRYABLE_ERRORS = [
+    RubyLLM::RateLimitError, RubyLLM::OverloadedError, RubyLLM::ServerError,
+    RubyLLM::ServiceUnavailableError, Faraday::TimeoutError, Faraday::ConnectionFailed
+  ].freeze
 
-    def initialize(message, status_code: nil, response_body: nil, request_id: nil)
-      super(message)
-      @status_code = status_code
-      @response_body = response_body
-      @request_id = request_id
-    end
+  # Retry soon: the page polls for about 30 seconds.
+  sidekiq_retry_in { |count| 5 * (count + 1) }
 
-    def retryable?
-      return true if status_code.nil?
-      return true if [ 408, 409, 425, 429 ].include?(status_code)
+  sidekiq_retries_exhausted do |job, error|
+    options = (job["args"][3] || {}).transform_keys(&:to_s)
+    translation = AiTranslation.where(user_id: job["args"][1])
+                               .where("metadata->>'job_id' = ?", options["job_id"].to_s)
+                               .order(created_at: :desc).first
+    translation&.update!(
+      status: "failed",
+      english_text: "Translation failed: #{error.message}".truncate(5000),
+      metadata: translation.metadata.merge("error" => error.message, "error_code" => error_code_for(error))
+    )
+  end
 
-      status_code >= 500
+  # A short, non-secret reason the page shows next to the failure message, so
+  # a failure can be diagnosed without opening the admin panel.
+  def self.error_code_for(error)
+    message = error.message.to_s
+    case error
+    when RubyLLM::UnauthorizedError
+      "ai_key_invalid"
+    when RubyLLM::ForbiddenError
+      message.match?(/security token|UnrecognizedClient|signature/i) ? "ai_key_invalid" : "ai_no_model_access"
+    when *RETRYABLE_ERRORS
+      "ai_unavailable"
+    when RubyLLM::PaymentRequiredError
+      "ai_billing"
+    when RubyLLM::BadRequestError, RubyLLM::ContextLengthExceededError
+      "ai_bad_request"
+    when RubyLLM::ConfigurationError, RubyLLM::ModelNotFoundError
+      "ai_config"
+    else
+      "internal"
     end
   end
 
@@ -28,11 +55,10 @@ class AiTranslationJob
     # Convert string keys to symbol keys for internal use
     @options = options.transform_keys(&:to_sym)
 
-    # Create AI translation record
-    @translation = create_translation_record
+    # Create AI translation record (or pick up the one a retried attempt made)
+    @translation = find_or_create_translation_record
 
     begin
-      # Process the translation using Azure OpenAI
       result = call_azure_openai_api
 
       # Update the translation record with success
@@ -43,25 +69,23 @@ class AiTranslationJob
 
       # Extract and create skills if requested
       create_skills_from_translation(result[:skills_extracted]) if result[:skills_extracted]
-
-    rescue OpenAIRequestError => e
-      if e.retryable?
-        mark_translation_retryable(e)
-        raise
-      end
-
-      handle_translation_error(e)
+    rescue *RETRYABLE_ERRORS => e
+      mark_translation_retryable(e)
+      raise
     rescue => e
-      # Handle errors
+      # Not worth retrying: the same request would fail the same way.
       handle_translation_error(e)
-      raise e
     end
   end
 
   private
 
-  def create_translation_record
+  def find_or_create_translation_record
     user = User.find(@user_id)
+    existing = @options[:job_id].present? &&
+      user.ai_translations.where("metadata->>'job_id' = ?", @options[:job_id].to_s).order(created_at: :desc).first
+    return existing if existing
+
     user.ai_translations.create!(
       arabic_text: @arabic_text,
       resume_id: @resume_id,
@@ -306,19 +330,17 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
   def handle_translation_error(error)
     @translation.update!(
       status: "failed",
-      english_text: "Translation failed: #{error.message}",
+      english_text: "Translation failed: #{error.message}".truncate(5000),
       metadata: @translation.metadata.merge({
         error: error.message,
-        backtrace: error.backtrace.first(5)
+        error_code: self.class.error_code_for(error),
+        backtrace: Array(error.backtrace).first(5)
       })
     )
 
     # Log the error
     Rails.logger.error "AI Translation failed for user #{@user_id}, jid=#{jid}: #{error.message}"
-    if error.respond_to?(:status_code)
-      Rails.logger.error "OpenAI status=#{error.status_code} request_id=#{error.request_id}"
-    end
-    Rails.logger.error error.backtrace.join("\n")
+    Rails.logger.error Array(error.backtrace).join("\n")
   end
 
   def mark_translation_retryable(error)
@@ -327,14 +349,10 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
       metadata: @translation.metadata.merge({
         retryable_error: true,
         last_error: error.message,
-        provider_status: error.status_code,
-        request_id: error.request_id
-      }.compact)
+        error_code: self.class.error_code_for(error)
+      })
     )
 
-    Rails.logger.warn(
-      "AI Translation transient failure for user #{@user_id}, jid=#{jid}, " \
-      "status=#{error.status_code || 'n/a'}, request_id=#{error.request_id || 'n/a'}"
-    )
+    Rails.logger.warn "AI Translation transient failure for user #{@user_id}, jid=#{jid}: #{error.class}: #{error.message}"
   end
 end

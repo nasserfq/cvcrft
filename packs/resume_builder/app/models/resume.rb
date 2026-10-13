@@ -59,7 +59,9 @@ class Resume < ApplicationRecord
   # Legacy validations (keeping for backward compatibility)
   validates :title, length: { minimum: 3, maximum: 100 }, allow_blank: true
   validates :target_position, length: { minimum: 3, maximum: 100 }, allow_blank: true
-  validates :summary, length: { minimum: 50, maximum: 1000 }, allow_blank: true
+  # No minimum: the builder accepts a 5-character summary, and the AI
+  # translation copies its English text here, so a short one must still save.
+  validates :summary, length: { maximum: 1000 }, allow_blank: true
 
   # ATS optimization fields
   validates :ats_score, numericality: { greater_than: 0, less_than: 101 }, allow_nil: true
