@@ -20,7 +20,7 @@
     <meta property="og:url" content="<%= request.original_url rescue 'https://cvcrft.com' %>">
     <meta property="og:title" content="<%= content_for(:title) || t('site.name') + ' - ' + t('site.tagline') %>">
     <meta property="og:description" content="<%= content_for(:description) || t('site.description') %>">
-    <meta property="og:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=6" %>">
+    <meta property="og:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=7" %>">
     <meta property="og:locale" content="<%= current_locale == 'ar' ? 'ar_SA' : 'en_US' %>">
     <meta property="og:locale:alternate" content="<%= current_locale == 'ar' ? 'en_US' : 'ar_SA' %>">
     <meta property="og:site_name" content="<%= t('site.name') %>">
@@ -30,7 +30,7 @@
     <meta name="twitter:url" content="<%= request.original_url rescue 'https://cvcrft.com' %>">
     <meta name="twitter:title" content="<%= content_for(:title) || t('site.name') + ' - ' + t('site.tagline') %>">
     <meta name="twitter:description" content="<%= content_for(:description) || t('site.description') %>">
-    <meta name="twitter:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=6" %>">
+    <meta name="twitter:image" content="<%= content_for(:og_image) || "#{request.base_url rescue 'https://cvcrft.com'}/og-image.png?v=7" %>">
     
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -46,8 +46,8 @@
     
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-    <link rel="icon" href="/icon.png?v=6" type="image/png">
-    <link rel="apple-touch-icon" href="/icon.png?v=6">
+    <link rel="icon" href="/icon.png?v=7" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=7">
     
     <!-- Iconify -->
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
