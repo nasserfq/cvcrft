@@ -30,6 +30,7 @@ env:
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
     - ADMIN_PASSWORD
+    - SENTRY_DSN
   clear:
     REDIS_URL: redis://cvcraft-redis:6379/1
     DATABASE_HOST: cvcraft-db
