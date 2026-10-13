@@ -1,0 +1,22 @@
+<%#
+# Navigation
+
+Administrate's default navigation, except that the email load test, which has
+a route but no model, is linked directly. The default looks up an
+EmailLoadTest model for it and raises, which broke every admin page.
+%>
+
+<nav class="navigation">
+  <%= link_to(t("administrate.navigation.back_to_app"), root_url, class: "button button--alt button--nav") if defined?(root_url) %>
+
+  <% Administrate::Namespace.new(namespace).resources_with_index_route.each do |resource| %>
+    <% next if resource.to_s == "email_load_test" %>
+    <%= link_to(
+      display_resource_name(resource),
+      resource_index_route(resource),
+      class: "navigation__link navigation__link--#{nav_link_state(resource)}"
+    ) if accessible_action?(model_from_resource(resource), :index) %>
+  <% end %>
+
+  <%= link_to("Email load test", admin_email_load_test_index_path, class: "navigation__link navigation__link--inactive") %>
+</nav>
