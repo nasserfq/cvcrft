@@ -28,6 +28,15 @@ module Cvcraft
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Feature modules live in packs/<name>/app, laid out like app/. Each one
+    # is added to the same load paths as app/, so class names stay global
+    # (packs/accounts/app/models/user.rb is still User). See packs/README.md.
+    Dir[root.join("packs/*")].sort.each do |pack|
+      %w[app app/controllers app/helpers app/models app/mailers app/views].each do |path|
+        paths[path] << File.join(pack, path)
+      end
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

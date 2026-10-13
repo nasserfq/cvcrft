@@ -1,24 +1,24 @@
 {
   "ignored_warnings": [
     {
-      "fingerprint": "f198aeabd1bc517312faba1c16303207342600ba851a5d1fa39b4112e85e1e66",
+      "fingerprint": "8792fc7f0462ce7776b3f7bb63503262955eb68ec98055ebf47657f754fad796",
       "check_name": "SendFile",
-      "file": "app/controllers/api/translations_controller.rb",
+      "file": "packs/ai_tools/app/controllers/api/translations_controller.rb",
       "line": 279,
       "note": "Reviewed 2026-10-12. send_file path comes from CvBuilderPdfJob#perform, not from the request: AtsPdfGenerator.unique_pdf_path (a random UUID under Rails.root/tmp/pdfs/generated). The resume is ownership-checked in the job, and params[:resume_id] only selects which of the caller's own resumes to render."
     },
     {
-      "fingerprint": "5aec15b38301f8652c718562ffeabb24abdfaa6497b6b43777bb530995bdfd11",
+      "fingerprint": "3fcd32d40b44dd9ae0e6d588e1953f5e5fd0fdf16f5a39750a0d2c92af43fc50",
       "check_name": "SendFile",
-      "file": "app/controllers/api/translations_controller.rb",
-      "line": 292,
+      "file": "packs/ai_tools/app/controllers/api/translations_controller.rb",
+      "line": 299,
       "note": "Reviewed 2026-10-10. The path is a Redis VALUE written server-side by CvBuilderPdfJob; params[:token] is only part of the KEY, namespaced under current_user.id (cv_builder:pdf:<user_id>:<token>), so a caller can neither supply a path nor read another user's entry."
     },
     {
-      "fingerprint": "3717fdf3e79f3bfbe6691fb23049249fde6293e0b76d23bb7e798210e360bf0e",
+      "fingerprint": "743fffc562649b18b302d8cf8b98cefdaf8789315a78d43800c555d77ec1dc69",
       "check_name": "SendFile",
-      "file": "app/controllers/api/translations_controller.rb",
-      "line": 340,
+      "file": "packs/ai_tools/app/controllers/api/translations_controller.rb",
+      "line": 347,
       "note": "Reviewed 2026-10-12. Same sink as line 279: path produced by CvBuilderPdfJob via AtsPdfGenerator.unique_pdf_path (random UUID under tmp/pdfs/generated); the resume is built on current_user.resumes so it cannot belong to anyone else."
     }
   ],
