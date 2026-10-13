@@ -121,6 +121,9 @@
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <% if Rails.env.production? && ENV["SENTRY_DSN"].present? %>
+      <meta name="sentry-dsn" content="<%= ENV["SENTRY_DSN"] %>">
+    <% end %>
     <!--
       If using a TypeScript entrypoint file:
         vite_typescript_tag 'application'
