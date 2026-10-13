@@ -18,7 +18,7 @@
     <meta property="og:url" content="https://cvcrft.com/" />
     <meta property="og:title" content="<%= t('site.name') %> - <%= t('site.tagline') %>" />
     <meta property="og:description" content="<%= t('site.description') %>" />
-    <meta property="og:image" content="https://cvcrft.com/og-image.png" />
+    <meta property="og:image" content="https://cvcrft.com/og-image.png?v=7" />
     <meta property="og:locale" content="<%= current_locale == 'ar' ? 'ar_SA' : 'en_US' %>" />
     <meta property="og:locale:alternate" content="<%= current_locale == 'ar' ? 'en_US' : 'ar_SA' %>" />
     <meta property="og:site_name" content="<%= t('site.name') %>" />
@@ -28,11 +28,11 @@
     <meta name="twitter:url" content="https://cvcrft.com/" />
     <meta name="twitter:title" content="<%= t('site.name') %> - <%= t('site.tagline') %>" />
     <meta name="twitter:description" content="<%= t('site.description') %>" />
-    <meta name="twitter:image" content="https://cvcrft.com/og-image.png" />
+    <meta name="twitter:image" content="https://cvcrft.com/og-image.png?v=7" />
     
     <!-- Favicon -->
-    <link rel="icon" href="/icon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="icon" href="/icon.png?v=7" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=7" />
     
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -63,7 +63,7 @@
           "url": "https://cvcrft.com/",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://cvcrft.com/icon.png"
+            "url": "https://cvcrft.com/icon.png?v=7"
           },
           "sameAs": []
         },
