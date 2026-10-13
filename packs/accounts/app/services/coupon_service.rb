@@ -21,6 +21,11 @@ class CouponService
       end
 
       CouponRedemptionStore.redeem!(user.id, coupon.code)
+      if coupon.bonus_credits.positive?
+        Billing::Credits.grant!(user, coupon.bonus_credits,
+                                reason: "coupon", key: "coupon:#{coupon.code}:#{user.id}",
+                                metadata: { coupon: coupon.code })
+      end
       coupon
     end
   end

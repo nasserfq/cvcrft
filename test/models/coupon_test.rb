@@ -41,4 +41,14 @@ class CouponServiceTest < ActiveSupport::TestCase
       CouponService.redeem(user, "NOTREAL")
     end
   end
+  test "a coupon with bonus_credits adds credits once" do
+    user = users(:one)
+    coupon = ConfigCoupon.new("COACH25", "bonus_credits" => 25)
+    CouponRegistry.stubs(:find).with("COACH25").returns(coupon)
+
+    CouponService.redeem(user, "COACH25")
+    assert_raises(CouponService::AlreadyRedeemedError) { CouponService.redeem(user, "COACH25") }
+
+    assert_equal Billing::SIGNUP_BONUS + 25, Billing::Credits.balance(user)
+  end
 end

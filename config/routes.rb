@@ -39,6 +39,15 @@ Rails.application.routes.draw do
     post :redeem_coupon, on: :member
   end
 
+  # Credits and payments (packs/billing), off unless BILLING_ENABLED
+  resources :credits, only: [ :index ] do
+    collection do
+      post :purchase
+      get :complete
+      post "moyasar/callback", action: :moyasar_callback, as: :moyasar_callback
+    end
+  end
+
   # Resume routes with nested resources
   resources :resumes do
     resources :work_experiences, only: [ :create, :update, :destroy ]
