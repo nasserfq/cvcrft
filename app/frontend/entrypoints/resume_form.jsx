@@ -1,3 +1,4 @@
+import "../lib/sentry"; // Initialize Sentry first so it catches errors from everything below
 import React from "react";
 import { createRoot } from "react-dom/client";
 import MultiStepResumeForm from "../components/MultiStepResumeForm";
