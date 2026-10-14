@@ -33,6 +33,7 @@ jobs:
             to_entries[]
             | select(.key | test("^[A-Z][A-Z0-9_]*$"))
             | select(.key | IN("DEPLOY_ENV", "SSH_PRIVATE_KEY", "GITHUB_TOKEN") | not)
+            | .value |= sub("[\r\n]+$"; "")
             | select(.value | contains("\n") | not)
             | "\(.key)=\(.value)"' >> "$GITHUB_ENV"
 
