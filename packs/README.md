@@ -30,5 +30,5 @@ would have under `app/`. A new pack is a new folder under `packs/` with an
 `app/` inside it. It is picked up on the next boot.
 
 Packwerk checks boundaries (`bin/packwerk check` in CI); existing violations live in `package_todo.yml`.
-`coach` may only depend on `resume_builder`.
+`coach` may only depend on the root package (`.`), `accounts`, `imports` and `resume_builder`.
 New code in other packs reaches `resume_builder` only through `ResumeBuilder::PublicApi`.

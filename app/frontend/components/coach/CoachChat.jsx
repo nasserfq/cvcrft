@@ -13,7 +13,7 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
   const [proposals, setProposals] = useState(initialProposals);
   const [pending, setPending] = useState(null); // streamed text of the reply in flight
   const [input, setInput] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null); // message to show, or null
   const pendingRef = useRef(null); // `done` needs the text without waiting for a render
   const listRef = useRef(null);
   const busy = pending !== null;
@@ -40,7 +40,7 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
           } else if (data.type === "proposal") {
             setProposals((list) => [...list, data.proposal]);
           } else if (data.type === "error") {
-            setError(true);
+            setError(t("coach.error"));
             finish(null);
           }
         },
@@ -61,7 +61,7 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
     const content = input.trim();
     if (!content || busy) return;
 
-    setError(false);
+    setError(null);
     setInput("");
     setMessages((list) => [...list, { id: `local-${Date.now()}`, role: "user", content }]);
     pendingRef.current = "";
@@ -76,16 +76,21 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
         },
         body: JSON.stringify({ content }),
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        // The 429 daily cap carries its own message.
+        const body = await response.json().catch(() => ({}));
+        setError(body.error || t("coach.error"));
+        finish(null);
+      }
     } catch {
-      setError(true);
+      setError(t("coach.error"));
       finish(null);
     }
   };
 
   const settled = (id, ok) => {
     if (id) setProposals((list) => list.filter((p) => p.id !== id));
-    setError(!ok);
+    setError(ok ? null : t("coach.error"));
   };
 
   // Stacked on mobile, chat beside the preview on desktop.
@@ -123,7 +128,7 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
 
         {error && (
           <p className="glass-soft sr-up m-0 rounded-2xl px-5 py-3 text-[15px]" style={{ color: "#d6b877" }} role="alert">
-            {t("coach.error")}
+            {error}
           </p>
         )}
 
