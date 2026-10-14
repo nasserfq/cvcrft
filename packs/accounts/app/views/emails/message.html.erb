@@ -1,0 +1,60 @@
+<%# The Seera email frame: dark forest canvas, glass cards, Arabic then English.
+    Locals: kind, subject, preheader, plus whatever emails/_<kind> needs. %>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title><%= subject %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; background: #07120d; }
+    a { color: #d6b877; }
+    @media (max-width: 600px) {
+      .sr-card { padding: 26px 22px !important; }
+      .sr-code { font-size: 28px !important; letter-spacing: 6px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#07120d;color:#eef3ee;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;"><%= preheader %></div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#07120d" style="background-color:#07120d;background-image:radial-gradient(circle at 85% 0%, rgba(0,150,85,0.30), rgba(0,150,85,0) 55%), radial-gradient(circle at 0% 100%, rgba(214,184,119,0.12), rgba(214,184,119,0) 50%);">
+    <tr>
+      <td align="center" style="padding:36px 16px 40px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+          <tr>
+            <td align="center" style="padding:0 0 28px;">
+              <a href="<%= SeeraEmail::SITE_URL %>" style="text-decoration:none;color:#eef3ee;">
+                <img src="<%= SeeraEmail::SITE_URL %>/icon.png" width="52" height="52" alt="Seera" style="display:block;margin:0 auto 10px;border:0;border-radius:14px;">
+                <span style="font-family:<%= SeeraEmail::FONT %>;font-size:22px;font-weight:600;color:#eef3ee;">سيرة <span style="color:#d6b877;">·</span> Seera</span>
+              </a>
+            </td>
+          </tr>
+          <% SeeraEmail::LOCALES.each do |locale| %>
+            <% I18n.with_locale(locale) do %>
+              <% rtl = locale == "ar" %>
+              <tr>
+                <td class="sr-card" dir="<%= rtl ? "rtl" : "ltr" %>" lang="<%= locale %>" bgcolor="#0f1f17" style="padding:34px 36px;text-align:<%= rtl ? "right" : "left" %>;background-color:#0f1f17;background-image:linear-gradient(155deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.13);border-radius:24px;">
+                  <p style="margin:0 0 18px;font-family:<%= SeeraEmail::FONT %>;font-size:12px;font-weight:600;letter-spacing:<%= rtl ? "0" : "1.5px" %>;text-transform:uppercase;color:#d6b877;"><%= t("emails.language_label") %></p>
+                  <%= render "emails/#{kind}", **local_assigns %>
+                  <p style="margin:24px 0 0;font-family:<%= SeeraEmail::FONT %>;font-size:15px;line-height:1.7;color:rgba(238,243,238,0.82);"><%= t("emails.signoff") %><br><span style="color:#eef3ee;font-weight:600;"><%= t("emails.team") %></span></p>
+                </td>
+              </tr>
+              <tr><td style="height:16px;line-height:16px;font-size:0;">&nbsp;</td></tr>
+            <% end %>
+          <% end %>
+          <tr>
+            <td align="center" style="padding:12px 8px 0;font-family:<%= SeeraEmail::FONT %>;font-size:13px;line-height:1.8;color:rgba(238,243,238,0.45);">
+              <div dir="rtl" lang="ar"><%= t("emails.automated", locale: "ar") %></div>
+              <div dir="ltr" lang="en"><%= t("emails.automated", locale: "en") %></div>
+              <div style="padding-top:8px;"><a href="<%= SeeraEmail::SITE_URL %>" style="color:#d6b877;text-decoration:none;">cvcrft.com</a></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -76,126 +76,19 @@ class BatchEmailService
   end
 
   def send_otp_email(email_data, options)
-    ses_service = AmazonSesService.new
     otp_code = email_data[:otp_code] || generate_otp_code
-
-    subject = "Your CV Craft Login Code"
-    body = generate_otp_email_body(otp_code)
-
-    ses_service.send_email(
-      to: email_data[:email],
-      subject: subject,
-      body: body
-    )
+    SeeraEmail.otp(otp_code).deliver_to(email_data[:email])
   end
 
   def send_welcome_email(email_data, options)
-    ses_service = AmazonSesService.new
-
-    subject = "Welcome to CV Craft!"
-    body = generate_welcome_email_body(email_data[:name] || "User")
-
-    ses_service.send_email(
-      to: email_data[:email],
-      subject: subject,
-      body: body
-    )
+    SeeraEmail.welcome(email_data[:name] || email_data[:email].split("@").first).deliver_to(email_data[:email])
   end
 
   def send_notification_email(email_data, options)
-    ses_service = AmazonSesService.new
-
-    subject = options[:subject] || "CV Craft Notification"
-    body = options[:body] || "You have a new notification from CV Craft."
-
-    ses_service.send_email(
-      to: email_data[:email],
-      subject: subject,
-      body: body
-    )
+    SeeraEmail.notification.deliver_to(email_data[:email])
   end
 
   def generate_otp_code
     rand(100000..999999).to_s
-  end
-
-  def generate_otp_email_body(otp_code)
-    <<~HTML
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your Login Code</title>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #10b981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
-          .otp-code { font-size: 32px; font-weight: bold; color: #10b981; text-align: center; margin: 20px 0; padding: 20px; background: white; border-radius: 8px; letter-spacing: 4px; }
-          .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>CV Craft</h1>
-          </div>
-          <div class="content">
-            <h2>Your Login Code</h2>
-            <p>Use the following code to log in to your CV Craft account:</p>
-            <div class="otp-code">#{otp_code}</div>
-            <p>This code will expire in 10 minutes for security reasons.</p>
-            <p>If you didn't request this code, please ignore this email.</p>
-          </div>
-          <div class="footer">
-            <p>&copy; 2024 CV Craft. All rights reserved.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    HTML
-  end
-
-  def generate_welcome_email_body(name)
-    <<~HTML
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome to CV Craft</title>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #10b981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
-          .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Welcome to CV Craft!</h1>
-          </div>
-          <div class="content">
-            <h2>Hello #{name}!</h2>
-            <p>Welcome to CV Craft, the ultimate platform for creating professional resumes and CVs.</p>
-            <p>Get started by:</p>
-            <ul>
-              <li>Creating your first resume</li>
-              <li>Adding your work experience</li>
-              <li>Including your skills and education</li>
-              <li>Generating a professional PDF</li>
-            </ul>
-            <p>If you have any questions, feel free to reach out to our support team.</p>
-          </div>
-          <div class="footer">
-            <p>&copy; 2024 CV Craft. All rights reserved.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    HTML
   end
 end

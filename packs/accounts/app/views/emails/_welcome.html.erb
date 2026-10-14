@@ -1,0 +1,10 @@
+<h1 style="<%= SeeraEmail::STYLES[:h1] %>"><%= t("emails.welcome.heading", name: name) %></h1>
+<p style="<%= SeeraEmail::STYLES[:p] %>"><%= t("emails.welcome.intro") %></p>
+<p style="<%= SeeraEmail::STYLES[:p] %>margin-bottom:8px;color:#eef3ee;"><%= t("emails.welcome.steps_title") %></p>
+<ul style="margin:0 0 22px;padding-<%= I18n.locale == :ar ? "right" : "left" %>:22px;">
+  <% t("emails.welcome.steps").each do |step| %>
+    <li style="<%= SeeraEmail::STYLES[:p] %>margin-bottom:6px;"><%= step %></li>
+  <% end %>
+</ul>
+<p style="margin:0 0 20px;"><a href="<%= cta_url %>" style="<%= SeeraEmail::STYLES[:button] %>"><%= t("emails.welcome.cta") %></a></p>
+<p style="<%= SeeraEmail::STYLES[:muted] %>"><%= t("emails.welcome.help") %></p>

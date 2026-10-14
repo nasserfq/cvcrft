@@ -1,0 +1,16 @@
+<% SeeraEmail::LOCALES.each do |locale| -%>
+<% I18n.with_locale(locale) do -%>
+<%= t("emails.language_label") %>
+
+<%= render "emails/#{kind}", **local_assigns %>
+
+<%= t("emails.signoff") %>
+<%= t("emails.team") %>
+
+----------------------------------------
+
+<% end -%>
+<% end -%>
+<%= t("emails.automated", locale: "ar") %>
+<%= t("emails.automated", locale: "en") %>
+<%= SeeraEmail::SITE_URL %>

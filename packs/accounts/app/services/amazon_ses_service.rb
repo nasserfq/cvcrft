@@ -11,7 +11,11 @@ class AmazonSesService
     )
   end
 
-  def send_email(to:, subject:, body:)
+  # body is the HTML part; text, when given, is the plain-text alternative.
+  def send_email(to:, subject:, body:, text: nil)
+    message_body = { html: { data: body, charset: "UTF-8" } }
+    message_body[:text] = { data: text, charset: "UTF-8" } if text.present?
+
     @client.send_email({
       source: Rails.application.credentials.aws[:from_email],
       destination: {
@@ -22,12 +26,7 @@ class AmazonSesService
           data: subject,
           charset: "UTF-8"
         },
-        body: {
-          html: {
-            data: body,
-            charset: "UTF-8"
-          }
-        }
+        body: message_body
       }
     })
   rescue Aws::SES::Errors::ServiceError => e

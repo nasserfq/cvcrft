@@ -1,0 +1,34 @@
+# Copy for SeeraEmail (packs/accounts/app/services/seera_email.rb). Every
+# email shows the Arabic from emails.ar.yml first, then this English copy.
+en:
+  emails:
+    language_label: "English"
+    signoff: "Best regards,"
+    team: "The Seera team"
+    automated: "This is an automated message. Please do not reply."
+    otp:
+      subject: "Your Seera login code"
+      preheader: "Your code is valid for 10 minutes"
+      heading: "Your login code"
+      intro: "You asked for a code to sign in to your Seera account. Enter the code below to finish signing in:"
+      expiry: "This code expires in 10 minutes."
+      ignore: "If you didn't ask for this code, you can safely ignore this email."
+    welcome:
+      subject: "Welcome to Seera"
+      preheader: "Start your professional CV now"
+      heading: "Welcome, %{name}"
+      intro: "We're glad you joined Seera, the place to build a professional CV in Arabic and English."
+      steps_title: "Get started:"
+      steps:
+        - "Create your first CV"
+        - "Add your work experience"
+        - "Add your skills and education"
+        - "Download a professional PDF"
+      cta: "Start your CV"
+      help: "If you have any questions, our team is happy to help."
+    notification:
+      subject: "New notification from Seera"
+      preheader: "You have a new notification in your account"
+      heading: "You have a new notification"
+      body: "There's a new notification waiting in your Seera account."
+      cta: "Open Seera"
