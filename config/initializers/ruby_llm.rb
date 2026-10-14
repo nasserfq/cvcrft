@@ -20,6 +20,9 @@ RubyLLM.configure do |config|
   config.bedrock_secret_key = ENV["AWS_SECRET_ACCESS_KEY"]
   config.bedrock_region     = ENV.fetch("AWS_REGION", "us-east-1")
 
+  # TypeSafe's Jev judges the coach's CVs; without a key Coach::Judge uses Haiku.
+  config.typesafe_api_key = ENV["JEV_API_KEY"]
+
   config.request_timeout = ENV.fetch("AI_TIMEOUT", 120).to_i
 end
 
