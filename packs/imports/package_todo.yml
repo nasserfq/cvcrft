@@ -1,0 +1,16 @@
+# This file contains a list of dependencies that are not part of the long term plan for the
+# 'packs/imports' package.
+# We should generally work to reduce this list over time.
+#
+# You can regenerate this file using the following command:
+#
+# bin/packwerk update-todo
+---
+packs/resume_builder:
+  "::Resume":
+    violations:
+    - privacy
+    files:
+    - packs/imports/app/controllers/linkedin_imports_controller.rb
+    - packs/imports/app/models/cv_import.rb
+    - packs/imports/app/models/linkedin_import.rb

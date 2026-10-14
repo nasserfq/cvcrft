@@ -105,6 +105,14 @@ GEM
     bcrypt_pbkdf (1.1.2)
     bcrypt_pbkdf (1.1.2-arm64-darwin)
     bcrypt_pbkdf (1.1.2-x86_64-darwin)
+    benchmark (0.5.0)
+    better_html (2.2.0)
+      actionview (>= 7.0)
+      activesupport (>= 7.0)
+      ast (~> 2.0)
+      erubi (~> 1.4)
+      parser (>= 2.4)
+      smart_properties
     bigdecimal (3.3.1)
     bindex (0.8.1)
     bootsnap (1.21.1)
@@ -123,6 +131,7 @@ GEM
       xpath (~> 3.2)
     concurrent-ruby (1.3.6)
     connection_pool (3.0.2)
+    constant_resolver (0.3.0)
     crass (1.0.6)
     cssbundling-rails (1.4.3)
       railties (>= 6.0.0)
@@ -269,6 +278,21 @@ GEM
       racc (~> 1.4)
     orm_adapter (0.5.0)
     ostruct (0.6.3)
+    packwerk (3.3.1)
+      activesupport (>= 6.0)
+      ast
+      benchmark
+      better_html
+      bundler
+      constant_resolver (>= 0.3)
+      parallel
+      parser
+      prism (>= 1.4.0)
+      zeitwerk (>= 2.6.1)
+    packwerk-extensions (0.4.0)
+      packwerk (>= 3)
+      railties (>= 6.0.0)
+      zeitwerk
     paper_trail (17.0.0)
       activerecord (>= 7.1)
       request_store (~> 1.4)
@@ -445,6 +469,7 @@ GEM
       logger (>= 1.7.0)
       rack (>= 3.2.0)
       redis-client (>= 0.26.0)
+    smart_properties (1.17.0)
     solid_cable (3.0.12)
       actioncable (>= 7.2)
       activejob (>= 7.2)
@@ -545,6 +570,8 @@ DEPENDENCIES
   kamal
   minitest (~> 5.25)
   mocha
+  packwerk (~> 3.3)
+  packwerk-extensions (~> 0.4)
   paper_trail
   parallel
   pdf-reader

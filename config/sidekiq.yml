@@ -3,6 +3,7 @@
   - [default, 1]
   - [mailers, 2]
   - [ai_translations, 3]
+  - [coach, 3]
   - [pdf_generation, 4]
   - [cv_builder, 5]
 

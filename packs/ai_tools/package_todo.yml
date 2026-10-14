@@ -1,0 +1,35 @@
+# This file contains a list of dependencies that are not part of the long term plan for the
+# 'packs/ai_tools' package.
+# We should generally work to reduce this list over time.
+#
+# You can regenerate this file using the following command:
+#
+# bin/packwerk update-todo
+---
+packs/resume_builder:
+  "::AtsTemplatePdfService":
+    violations:
+    - privacy
+    files:
+    - packs/ai_tools/app/controllers/api/translations_controller.rb
+    - packs/ai_tools/app/controllers/cv_generations_controller.rb
+    - packs/ai_tools/app/helpers/cv_generation_helper.rb
+    - packs/ai_tools/app/jobs/cv_generator_job.rb
+  "::CvBuilderPdfJob":
+    violations:
+    - privacy
+    files:
+    - packs/ai_tools/app/controllers/api/translations_controller.rb
+  "::ProfessionalSummaryText":
+    violations:
+    - privacy
+    files:
+    - packs/ai_tools/app/jobs/ai_translation_job.rb
+  "::Resume":
+    violations:
+    - privacy
+    files:
+    - packs/ai_tools/app/jobs/ai_translation_job.rb
+    - packs/ai_tools/app/jobs/cv_generator_job.rb
+    - packs/ai_tools/app/models/ai_translation.rb
+    - packs/ai_tools/app/models/cv_generation.rb

@@ -1,0 +1,8 @@
+# Pack boundaries. See packs/README.md.
+include:
+  - "**/*.{rb,rake,erb}"
+exclude:
+  - "{bin,node_modules,vendor,tmp,log,public,storage}/**/*"
+  - "app/frontend/**/*"
+require:
+  - packwerk/privacy/checker
