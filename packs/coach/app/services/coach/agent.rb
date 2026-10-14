@@ -8,7 +8,7 @@ module Coach
       "scratch" => <<~TEXT,
         The user is building a CV from scratch. The chat opened by asking for their first and last name.
         Work on one section at a time, in this order: header (contact details), professional summary
-        (ask their target job and years of experience, then write it), work experience, education,
+        (ask their target job and years of experience, then write it), education, work experience,
         skills, certifications, languages. Never skip a section: ask about each one, and move on only
         when the user gives it or says they have none. Ask short, specific questions, then turn the answers
         into strong, results-focused CV content and show it to the user. Once they confirm it,
