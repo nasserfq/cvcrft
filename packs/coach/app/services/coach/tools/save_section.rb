@@ -8,7 +8,7 @@ module Coach
       parameter :section, description: "One of: #{Coach::Draft::SECTIONS.join(', ')}"
       parameter :json, description: <<~TEXT.squish
         The section as JSON. header: {"complete_name","email","phone_number","city","country"}.
-        professional_summary: a string. work_experience: [{"job_title","company","start_date","end_date","is_current","responsibilities":[...]}].
+        professional_summary: a string. professional_summary_english: the summary in English, a string. work_experience: [{"job_title","company","start_date","end_date","is_current","responsibilities":[...]}].
         education: [{"degree","institution","start_date","end_date","gpa","is_current"}].
         skills: [{"category","skill_names":[...]}]. certifications: [{"name","organization","date"}].
         languages: [{"language","proficiency"}]. Dates are YYYY-MM.
@@ -22,7 +22,9 @@ module Coach
       end
 
       def execute(section:, json:)
-        @chat.update!(draft: Coach::Draft.merge(@chat.draft, section, JSON.parse(json)))
+        value = JSON.parse(json)
+        # Locked and reloaded so a proposal the user accepted after this job loaded the chat isn't overwritten.
+        @chat.with_lock { @chat.update!(draft: Coach::Draft.merge(@chat.draft, section, value)) }
         Coach.broadcast(@chat, type: "draft", draft: @chat.draft)
         "saved"
       rescue Coach::Draft::Invalid, JSON::ParserError => e

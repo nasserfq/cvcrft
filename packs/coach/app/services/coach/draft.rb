@@ -4,7 +4,7 @@ module Coach
     class Invalid < StandardError; end
 
     HEADER = %w[complete_name email phone_number city country].freeze
-    SECTIONS = (%w[header professional_summary] + ResumeBuilder::PublicApi::REQUIRED.keys).freeze
+    SECTIONS = (%w[header professional_summary professional_summary_english] + ResumeBuilder::PublicApi::REQUIRED.keys).freeze
     ARRAY_FIELDS = %w[skill_names responsibilities].freeze
     # What a proposal may rewrite: section => the field inside each entry (nil when the section is the text).
     REWRITABLE = { "professional_summary" => nil, "work_experience" => "responsibilities" }.freeze
@@ -18,8 +18,8 @@ module Coach
         raise Invalid, "header must be a JSON object with #{HEADER.join(', ')}" unless value.is_a?(Hash)
 
         draft.merge(value.slice(*HEADER))
-      when "professional_summary"
-        raise Invalid, "professional_summary must be a non-empty string" unless value.is_a?(String) && value.present?
+      when "professional_summary", "professional_summary_english"
+        raise Invalid, "#{section} must be a non-empty string" unless value.is_a?(String) && value.present?
 
         draft.merge(section => value)
       when *ResumeBuilder::PublicApi::REQUIRED.keys

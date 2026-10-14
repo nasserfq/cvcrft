@@ -126,6 +126,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   test "picking a Seera resume copies it into the draft" do
     Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     draft = { "complete_name" => "Sara Ali", "email" => "sara@example.com", "professional_summary" => "Cashier.",
+              "professional_summary_english" => "Cashier (EN).",
               "work_experience" => [ { "job_title" => "Cashier", "company" => "Panda", "start_date" => "2019-01",
                                        "end_date" => nil, "is_current" => true, "responsibilities" => [ "Till" ] } ] }
     resume = ResumeBuilder::PublicApi.create_from_draft(@user, draft)
@@ -134,7 +135,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
       post coach_chats_url, params: { path: "import", resume_id: resume.id }
     end
     chat = Coach::Chat.order(:id).last
-    assert_equal "Cashier.", chat.draft["professional_summary"]
+    assert_equal [ "Cashier.", "Cashier (EN)." ], chat.draft.values_at("professional_summary", "professional_summary_english")
     assert_equal [ "Till" ], chat.draft["work_experience"].sole["responsibilities"]
     assert_equal "user", chat.messages.sole.role
   end

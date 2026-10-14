@@ -36,4 +36,14 @@ class Coach::Tools::SaveSectionTest < ActiveSupport::TestCase
     assert_equal({ "complete_name" => "Sara" }, @chat.reload.draft)
     assert_no_broadcasts("coach:#{@chat.id}")
   end
+
+  test "a change saved after the job loaded the chat survives a later save" do
+    Coach::Chat.find(@chat.id).update!(draft: @chat.draft.merge("professional_summary" => "Accepted rewrite."))
+
+    @tool.call(section: "languages", json: [ { "language" => "Arabic", "proficiency" => "Native" } ].to_json)
+
+    draft = @chat.reload.draft
+    assert_equal "Accepted rewrite.", draft["professional_summary"]
+    assert_equal "Arabic", draft["languages"].sole["language"]
+  end
 end
