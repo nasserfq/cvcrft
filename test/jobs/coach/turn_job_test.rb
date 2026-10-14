@@ -20,8 +20,30 @@ class Coach::TurnJobTest < ActiveJob::TestCase
     message = @chat.messages.order(:id).last
     assert_equal [ "assistant", "Hello" ], [ message.role, message.content ]
     # Both chunks arrive within the flush window, so they go out as one broadcast.
-    assert_equal [ { "type" => "chunk", "text" => "Hello" }, { "type" => "done", "message_id" => message.id } ],
+    assert_equal [ { "type" => "chunk", "text" => "Hello" }, { "type" => "done", "message_id" => message.id, "text" => "Hello", "fields" => [] } ],
                  broadcasts(@stream).map { |b| JSON.parse(b) }
+  end
+
+  test "each chunk carries the whole text so far, and text before a tool call is saved too" do
+    # RubyLLM returns only the text after the last tool call.
+    Coach::Agent.any_instance.stubs(:reply).multiple_yields([ "Great! " ], [ "Your city?" ]).returns("Your city?")
+
+    stub_const(Coach::TurnJob, :FLUSH_EVERY, 0) { Coach::TurnJob.perform_now(@chat.id) }
+
+    chunks = broadcasts(@stream).map { |b| JSON.parse(b) }.select { |b| b["type"] == "chunk" }
+    assert_equal [ "Great! ", "Great! Your city?" ], chunks.map { |c| c["text"] }
+    assert_equal "Great! Your city?", @chat.messages.order(:id).last.content
+  end
+
+  test "boxes the reply asked for are saved and broadcast with done" do
+    Coach::Agent.any_instance.stubs(:reply).returns("Your email?")
+    Coach::Agent.any_instance.stubs(:fields).returns([ "Email" ])
+
+    Coach::TurnJob.perform_now(@chat.id)
+
+    message = @chat.messages.order(:id).last
+    assert_equal [ "Email" ], message.fields
+    assert_broadcast_on(@stream, type: "done", message_id: message.id, text: "Your email?", fields: [ "Email" ])
   end
 
   test "an error is reported and broadcast, and nothing is saved" do

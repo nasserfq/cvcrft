@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_15_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_15_000200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,6 +57,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_000100) do
     t.text "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "fields", default: [], null: false
     t.index ["coach_chat_id", "created_at"], name: "index_coach_messages_on_coach_chat_id_and_created_at"
     t.index ["coach_chat_id"], name: "index_coach_messages_on_coach_chat_id"
   end

@@ -13,12 +13,18 @@ module Coach
     def create
       return start_import if params[:path] == "import"
 
-      chat = Coach::Chat.create!(user: current_user, path: params[:path])
+      chat = Coach::Chat.transaction do
+        Coach::Chat.create!(user: current_user, path: params[:path]).tap do |c|
+          # The coach opens with a question, so the user isn't facing an empty chat.
+          c.messages.create!(role: "assistant", content: t("coach.first_question"),
+                             fields: [ t("coach.first_name"), t("coach.last_name") ])
+        end
+      end
       redirect_to coach_chat_path(chat)
     end
 
     def show
-      @messages = @chat.messages.order(:id).map { |m| m.slice(:id, :role, :content) }
+      @messages = @chat.messages.order(:id).map { |m| m.slice(:id, :role, :content, :fields) }
     end
 
     def accept

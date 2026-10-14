@@ -12,21 +12,25 @@ module Coach
         chat.update!(draft: Coach::Extract.call(chat.messages.order(:id).first.content))
         Coach.broadcast(chat, type: "draft", draft: chat.draft)
       end
-      buffer = +""
+      # Action Cable can deliver broadcasts out of order, so each chunk carries the whole text so far.
+      streamed = +""
+      sent = 0
       flushed_at = now
       flush = lambda do
-        Coach.broadcast(chat, type: "chunk", text: buffer.dup) unless buffer.empty?
-        buffer.clear
+        Coach.broadcast(chat, type: "chunk", text: streamed.dup) if streamed.size > sent
+        sent = streamed.size
         flushed_at = now
       end
 
-      reply = Coach::Agent.new(chat).reply do |text|
-        buffer << text
+      agent = Coach::Agent.new(chat)
+      reply = agent.reply do |text|
+        streamed << text
         flush.call if now - flushed_at >= FLUSH_EVERY
       end
       flush.call
-      message = chat.messages.create!(role: "assistant", content: reply)
-      Coach.broadcast(chat, type: "done", message_id: message.id)
+      # reply is only the text after the last tool call; save everything the user saw.
+      message = chat.messages.create!(role: "assistant", content: streamed.presence || reply, fields: agent.fields)
+      Coach.broadcast(chat, type: "done", message_id: message.id, text: message.content, fields: message.fields)
     # Never re-raise: a Sidekiq retry would send the user a second reply.
     rescue => e
       Sentry.capture_exception(e, tags: { pack: "coach" })

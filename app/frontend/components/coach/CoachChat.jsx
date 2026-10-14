@@ -30,11 +30,14 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
       { channel: "Coach::ChatChannel", chat_id: chatId },
       {
         received(data) {
+          // Broadcasts can arrive out of order: each chunk is the whole text so far, so keep the longest,
+          // and drop chunks that land after done.
           if (data.type === "chunk") {
-            pendingRef.current = (pendingRef.current || "") + data.text;
-            setPending(pendingRef.current);
+            if (pendingRef.current === null || data.text.length <= pendingRef.current.length) return;
+            pendingRef.current = data.text;
+            setPending(data.text);
           } else if (data.type === "done") {
-            finish({ id: data.message_id, role: "assistant", content: pendingRef.current || "" });
+            finish({ id: data.message_id, role: "assistant", content: data.text, fields: data.fields || [] });
           } else if (data.type === "draft") {
             setDraft(data.draft);
           } else if (data.type === "proposal") {
@@ -56,13 +59,18 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, pending]);
 
-  const send = async (event) => {
+  const send = (event) => {
     event.preventDefault();
     const content = input.trim();
     if (!content || busy) return;
 
-    setError(null);
     setInput("");
+    post(content);
+  };
+
+  // Shared by the text box and the input boxes under a question.
+  const post = async (content) => {
+    setError(null);
     setMessages((list) => [...list, { id: `local-${Date.now()}`, role: "user", content }]);
     pendingRef.current = "";
     setPending("");
@@ -103,8 +111,14 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
         </header>
 
         <ol ref={listRef} className="list-none m-0 p-1 flex-1 flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: "60vh" }}>
-          {messages.map((message) => (
-            <Bubble key={message.id} role={message.role}>{message.content}</Bubble>
+          {messages.map((message, i) => (
+            <Bubble key={message.id} role={message.role}>
+              {message.content}
+              {/* Only the latest question's boxes; answered ones would be stale. */}
+              {!busy && i === messages.length - 1 && message.fields?.length > 0 && (
+                <Fields labels={message.fields} onSubmit={post} />
+              )}
+            </Bubble>
           ))}
           {busy && (
             <Bubble role="assistant">
@@ -158,6 +172,48 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
       </section>
       <DraftPreview draft={draft} />
     </div>
+  );
+}
+
+// Input boxes under a coach question; the answers go out as one "Label: value" message.
+function Fields({ labels, onSubmit }) {
+  const { t } = useTranslation();
+  const [values, setValues] = useState(() => labels.map(() => ""));
+  const filled = values.some((v) => v.trim());
+
+  const submit = (event) => {
+    event.preventDefault();
+    const content = labels
+      .map((label, i) => (values[i].trim() ? `${label}: ${values[i].trim()}` : null))
+      .filter(Boolean)
+      .join("\n");
+    onSubmit(content);
+  };
+
+  return (
+    <form onSubmit={submit} className="mt-3 flex flex-col gap-2 whitespace-normal">
+      {labels.map((label, i) => (
+        <label key={i} className="flex flex-col gap-1 text-[13px]" style={muted}>
+          {label}
+          <input
+            value={values[i]}
+            onChange={(event) => setValues((list) => list.map((v, j) => (j === i ? event.target.value : v)))}
+            autoFocus={i === 0}
+            maxLength={200}
+            dir="auto"
+            className="glass-soft rounded-xl px-3 py-2 text-[16px] border-0 outline-none"
+            style={{ color: "#eef3ee" }}
+          />
+        </label>
+      ))}
+      <button
+        type="submit"
+        disabled={!filled}
+        className="sr-btn sr-primary self-start min-h-[44px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {t("coach.send")}
+      </button>
+    </form>
   );
 }
 

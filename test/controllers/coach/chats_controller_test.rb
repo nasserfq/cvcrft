@@ -49,6 +49,11 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     chat = Coach::Chat.order(:id).last
     assert_equal [ @user, "scratch" ], [ chat.user, chat.path ]
     assert_redirected_to coach_chat_path(chat)
+    # Opens with the name question and its two boxes, without calling the model.
+    first = chat.messages.sole
+    assert_equal [ "assistant", I18n.t("coach.first_question"), [ I18n.t("coach.first_name"), I18n.t("coach.last_name") ] ],
+                 [ first.role, first.content, first.fields ]
+    assert_no_enqueued_jobs(only: Coach::TurnJob)
   end
 
   test "show renders the chat" do
