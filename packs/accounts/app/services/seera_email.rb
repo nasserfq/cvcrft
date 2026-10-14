@@ -8,6 +8,10 @@
 class SeeraEmail
   LOCALES = %w[ar en].freeze
   SITE_URL = "https://cvcrft.com".freeze
+  # Its own file, not /icon.png: public files are cached for a year, so mail
+  # clients and image proxies kept showing the old icon.png. Give a new logo a
+  # new file name rather than overwriting this one.
+  LOGO_URL = "#{SITE_URL}/email-logo.png".freeze
 
   # Inline styles shared by the bodies (email clients drop most <style> rules).
   FONT = "'Readex Pro', 'Segoe UI', Tahoma, Arial, sans-serif".freeze
