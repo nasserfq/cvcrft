@@ -1,6 +1,14 @@
 require "test_helper"
 
 class Coach::ExtractTest < ActiveSupport::TestCase
+  # Stub the whole chain: RubyLLM.chat checks Bedrock credentials, which CI doesn't have.
+  def stub_llm(parsed)
+    llm = stub(ask: stub(parsed: parsed))
+    llm.stubs(:with_instructions).returns(llm)
+    llm.stubs(:with_schema).returns(llm)
+    RubyLLM.stubs(:chat).returns(llm)
+  end
+
   test "keeps valid sections and drops invalid entries" do
     parsed = {
       "complete_name" => "Sara Ali",
@@ -12,7 +20,7 @@ class Coach::ExtractTest < ActiveSupport::TestCase
       ],
       "skills" => [ { "category" => "Tools", "skill_names" => "POS" } ] # skill_names must be an array
     }
-    RubyLLM::Chat.any_instance.stubs(:ask).returns(stub(parsed: parsed))
+    stub_llm(parsed)
 
     draft = Coach::Extract.call("Sara Ali, cashier at Panda")
 
@@ -23,7 +31,7 @@ class Coach::ExtractTest < ActiveSupport::TestCase
   end
 
   test "an empty reply gives an empty draft" do
-    RubyLLM::Chat.any_instance.stubs(:ask).returns(stub(parsed: nil))
+    stub_llm(nil)
 
     assert_equal({}, Coach::Extract.call("…"))
   end
