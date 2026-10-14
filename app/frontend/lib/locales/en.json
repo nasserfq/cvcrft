@@ -363,5 +363,12 @@
       "11": "November",
       "12": "December"
     }
+  },
+  "coach": {
+    "title": "AI Coach",
+    "placeholder": "Write your message…",
+    "send": "Send",
+    "error": "Something went wrong. Please try again.",
+    "thinking": "Thinking…"
   }
 }

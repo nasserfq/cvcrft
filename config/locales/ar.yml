@@ -72,6 +72,23 @@ ar:
     purchase_success: "تم استلام الدفع. أُضيف %{credits} رصيد إلى حسابك."
     purchase_pending: "لم يصلنا الدفع بعد. إذا دفعت، سيظهر رصيدك خلال دقائق."
 
+  # AI Coach (packs/coach)
+  coach:
+    title: "المدرب الذكي"
+    subtitle: "ابنِ سيرتك الذاتية بالمحادثة، أو دع المدرب يحسّن سيرتك الحالية."
+    paths:
+      scratch:
+        title: "ابدأ من الصفر"
+        body: "أجب عن بعض الأسئلة ويكتب المدرب معك كل قسم."
+      import:
+        title: "حسّن سيرتي"
+        body: "أحضر سيرتك الحالية واحصل على صياغات أقوى تقبلها أو تتجاوزها."
+    start: "ابدأ"
+    placeholder: "اكتب رسالتك…"
+    send: "إرسال"
+    error: "حدث خطأ ما. حاول مرة أخرى."
+    thinking: "يفكر…"
+
   # Authentication
   auth:
     login_required: "يرجى تسجيل الدخول أولاً"

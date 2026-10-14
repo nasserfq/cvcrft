@@ -3,6 +3,7 @@
   "private": "true",
   "dependencies": {
     "@hotwired/turbo": "^8.0.13",
+    "@rails/actioncable": "^8.1.400",
     "@rails/activestorage": "^8.0.201",
     "@sentry/react": "^10.76.2",
     "@tailwindcss/cli": "^4.1.12",
