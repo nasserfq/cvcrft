@@ -1,0 +1,12 @@
+<%= t("emails.welcome.heading", name: name) %>
+
+<%= t("emails.welcome.intro") %>
+
+<%= t("emails.welcome.steps_title") %>
+<% t("emails.welcome.steps").each do |step| -%>
+- <%= step %>
+<% end -%>
+
+<%= t("emails.welcome.cta") %>: <%= cta_url %>
+
+<%= t("emails.welcome.help") %>

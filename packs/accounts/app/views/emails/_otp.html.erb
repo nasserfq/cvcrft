@@ -1,0 +1,5 @@
+<h1 style="<%= SeeraEmail::STYLES[:h1] %>"><%= t("emails.otp.heading") %></h1>
+<p style="<%= SeeraEmail::STYLES[:p] %>"><%= t("emails.otp.intro") %></p>
+<div class="sr-code" dir="ltr" style="<%= SeeraEmail::STYLES[:code] %>"><%= code %></div>
+<p style="<%= SeeraEmail::STYLES[:p] %>"><strong style="color:#eef3ee;"><%= t("emails.otp.expiry") %></strong></p>
+<p style="<%= SeeraEmail::STYLES[:muted] %>"><%= t("emails.otp.ignore") %></p>
