@@ -33,6 +33,18 @@ class ResumeBuilder::PublicApiTest < ActiveSupport::TestCase
     assert_equal @draft, ResumeBuilder::PublicApi.read(users(:one), resume.id)
   end
 
+  # Catches drift between PublicApi::REQUIRED/FIELDS and what ResumeDraftSync keeps.
+  test "a draft built by Coach::Draft survives create_from_draft and read" do
+    header = @draft.slice(*Coach::Draft::HEADER)
+    draft = Coach::Draft::SECTIONS.reduce({}) do |acc, section|
+      Coach::Draft.merge(acc, section, section == "header" ? header : @draft[section])
+    end
+
+    resume = ResumeBuilder::PublicApi.create_from_draft(users(:one), draft)
+
+    assert_equal draft, ResumeBuilder::PublicApi.read(users(:one), resume.id).slice(*draft.keys)
+  end
+
   test "read only finds the user's own resumes" do
     resume = ResumeBuilder::PublicApi.create_from_draft(users(:one), @draft)
 

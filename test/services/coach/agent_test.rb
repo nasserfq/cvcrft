@@ -9,5 +9,7 @@ class Coach::AgentTest < ActiveSupport::TestCase
     assert_includes scratch, draft.to_json
     assert_includes import, draft.to_json
     assert_not_equal scratch, import
+    assert_includes scratch, "Never invent facts"
+    assert_includes import, "save_section"
   end
 end

@@ -3,6 +3,21 @@
 module ResumeBuilder
   module PublicApi
     HEADER_FIELDS = %w[complete_name email phone_number city country professional_summary professional_summary_english].freeze
+    FIELDS = {
+      "work_experience" => %w[job_title company start_date end_date is_current responsibilities],
+      "education" => %w[degree institution start_date end_date gpa is_current],
+      "skills" => %w[category skill_names],
+      "certifications" => %w[name organization date],
+      "languages" => %w[language proficiency]
+    }.freeze
+    # Entries missing any of these are skipped by ResumeDraftSync.
+    REQUIRED = {
+      "work_experience" => %w[job_title company start_date],
+      "education" => %w[degree institution start_date],
+      "skills" => %w[category skill_names],
+      "certifications" => %w[name organization],
+      "languages" => %w[language proficiency]
+    }.freeze
 
     module_function
 
@@ -11,15 +26,15 @@ module ResumeBuilder
 
       resume.attributes.slice(*HEADER_FIELDS).merge(
         "work_experience" => resume.work_experiences.order(:id).map { |w|
-          w.attributes.slice(*%w[job_title company start_date end_date is_current])
+          w.attributes.slice(*FIELDS["work_experience"])
             .merge("responsibilities" => parse_responsibilities(w.responsibilities))
         },
         "education" => resume.educations.order(:id).map { |e|
-          e.attributes.slice(*%w[degree institution start_date end_date gpa is_current])
+          e.attributes.slice(*FIELDS["education"])
         },
         "skills" => resume.skills.order(:id).map { |s| { "category" => s.category, "skill_names" => Array(s.skill_names) } },
-        "certifications" => resume.certifications.order(:id).map { |c| c.attributes.slice(*%w[name organization date]) },
-        "languages" => resume.languages.order(:id).map { |l| l.attributes.slice(*%w[language proficiency]) }
+        "certifications" => resume.certifications.order(:id).map { |c| c.attributes.slice(*FIELDS["certifications"]) },
+        "languages" => resume.languages.order(:id).map { |l| l.attributes.slice(*FIELDS["languages"]) }
       )
     end
 
