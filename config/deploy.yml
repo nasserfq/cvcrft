@@ -45,6 +45,9 @@ env:
     # Payments (packs/billing): only these emails see /credits until
     # BILLING_ENABLED is set to "true".
     BILLING_TESTERS: non1993@protonmail.com
+    # AI Coach (packs/coach): only these emails see it until COACH_ENABLED is
+    # set to "true".
+    COACH_TESTERS: non1993@protonmail.com
     # Sentry DSNs are meant to be public (they only allow sending events).
     SENTRY_DSN: https://058e816b8430efc0f1c2913d87129bc8@o4512250318618624.ingest.us.sentry.io/4512250323140608
 

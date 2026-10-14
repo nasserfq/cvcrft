@@ -93,6 +93,10 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # Enforces boundaries between packs [https://github.com/Shopify/packwerk]
+  gem "packwerk", "~> 3.3", require: false
+  gem "packwerk-extensions", "~> 0.4", require: false
 end
 
 group :development do

@@ -1,0 +1,82 @@
+# This file contains a list of dependencies that are not part of the long term plan for the
+# '.' package.
+# We should generally work to reduce this list over time.
+#
+# You can regenerate this file using the following command:
+#
+# bin/packwerk update-todo
+---
+packs/resume_builder:
+  "::AtsPdfGenerator":
+    violations:
+    - privacy
+    files:
+    - test/integration/security_fixes_test.rb
+  "::Certification":
+    violations:
+    - privacy
+    files:
+    - test/models/certification_test.rb
+  "::Education":
+    violations:
+    - privacy
+    files:
+    - test/models/education_test.rb
+  "::Language":
+    violations:
+    - privacy
+    files:
+    - test/models/language_test.rb
+  "::ProfessionalSummaryText":
+    violations:
+    - privacy
+    files:
+    - test/services/professional_summary_text_test.rb
+  "::Resume":
+    violations:
+    - privacy
+    files:
+    - test/controllers/cv_generations_controller_test.rb
+    - test/controllers/profiles_controller_test.rb
+    - test/controllers/resumes_controller_test.rb
+    - test/integration/security_fixes_test.rb
+    - test/models/certification_test.rb
+    - test/models/education_test.rb
+    - test/models/language_test.rb
+    - test/models/resume_test.rb
+    - test/models/skill_test.rb
+    - test/models/work_experience_test.rb
+    - test/services/ats_template_pdf_service_test.rb
+    - test/services/resume_builder/public_api_test.rb
+    - test/services/resume_draft_deduplicator_test.rb
+    - test/services/resume_draft_sync_test.rb
+    - test/test_helper.rb
+  "::ResumeDraftDeduplicator":
+    violations:
+    - privacy
+    files:
+    - lib/tasks/resumes.rake
+    - test/services/resume_draft_deduplicator_test.rb
+  "::ResumeDraftSync":
+    violations:
+    - privacy
+    files:
+    - test/controllers/resumes_controller_test.rb
+    - test/services/resume_draft_sync_test.rb
+  "::ResumePdfService":
+    violations:
+    - privacy
+    files:
+    - test/controllers/resumes_controller_test.rb
+    - test/services/ats_template_pdf_service_test.rb
+  "::Skill":
+    violations:
+    - privacy
+    files:
+    - db/migrate/20251004103104_clean_empty_skill_names.rb
+    - test/models/skill_test.rb
+  "::WorkExperience":
+    violations:
+    - privacy
+    files:
+    - test/models/work_experience_test.rb

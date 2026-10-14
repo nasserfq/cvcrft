@@ -1,0 +1,4 @@
+enforce_dependencies: false
+# Other packs may use only what is under app/public (ResumeBuilder::PublicApi).
+enforce_privacy: true
+public_path: app/public/
