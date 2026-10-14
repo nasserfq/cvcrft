@@ -13,6 +13,15 @@ class Coach::JudgeTest < ActiveSupport::TestCase
     }
   end
 
+  # Stub the whole chain: RubyLLM.chat checks Bedrock credentials, which CI doesn't have.
+  def haiku
+    llm = stub
+    llm.stubs(:with_instructions).returns(llm)
+    llm.stubs(:with_schema).returns(llm)
+    RubyLLM.stubs(:chat).returns(llm)
+    llm
+  end
+
   test "Jev gets section text without the header's values" do
     RubyLLM.config.stubs(:typesafe_api_key).returns("k")
     RubyLLM.expects(:judge).with { |input, **opts|
@@ -32,8 +41,8 @@ class Coach::JudgeTest < ActiveSupport::TestCase
   test "without a key Haiku answers and Jev is never called" do
     RubyLLM.config.stubs(:typesafe_api_key).returns(nil)
     RubyLLM.expects(:judge).never
-    RubyLLM::Chat.any_instance.expects(:ask).with { |text| !text.include?(EMAIL) }
-                 .returns(stub(parsed: { "next_step" => "skills", "scores" => { "skills" => 0.2 } }))
+    haiku.expects(:ask).with { |text| !text.include?(EMAIL) }
+         .returns(stub(parsed: { "next_step" => "skills", "scores" => { "skills" => 0.2 } }))
 
     assert_equal "skills", Coach::Judge.next_step(@draft)
   end
@@ -42,7 +51,7 @@ class Coach::JudgeTest < ActiveSupport::TestCase
     RubyLLM.config.stubs(:typesafe_api_key).returns("k")
     RubyLLM.expects(:judge).raises(RubyLLM::ServerError, "boom")
     Sentry.expects(:capture_exception).with(instance_of(RubyLLM::ServerError), tags: { pack: "coach" })
-    RubyLLM::Chat.any_instance.stubs(:ask).returns(stub(parsed: { "next_step" => "languages", "scores" => { "languages" => 0.5 } }))
+    haiku.stubs(:ask).returns(stub(parsed: { "next_step" => "languages", "scores" => { "languages" => 0.5 } }))
 
     result = Coach::Judge.call(@draft)
 
@@ -52,7 +61,7 @@ class Coach::JudgeTest < ActiveSupport::TestCase
 
   test "next_step is always in SECTIONS and scores stay in 0..1" do
     RubyLLM.config.stubs(:typesafe_api_key).returns(nil)
-    RubyLLM::Chat.any_instance.stubs(:ask).returns(stub(parsed: { "next_step" => "hobbies", "scores" => { "skills" => 7 } }))
+    haiku.stubs(:ask).returns(stub(parsed: { "next_step" => "hobbies", "scores" => { "skills" => 7 } }))
 
     result = Coach::Judge.call(@draft)
 
