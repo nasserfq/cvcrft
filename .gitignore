@@ -49,3 +49,6 @@ node_modules
 # Database dumps — contain user PII, never commit
 *.dump
 *.sql.gz
+
+# CodeGraph local index
+/.codegraph/
