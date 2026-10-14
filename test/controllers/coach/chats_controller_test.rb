@@ -85,7 +85,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the import card lists only the user's own resumes" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    stub_pdf_generation
     mine = ResumeBuilder::PublicApi.create_from_draft(@user, "complete_name" => "Sara Ali", "email" => "sara@example.com")
     theirs = ResumeBuilder::PublicApi.create_from_draft(users(:two), "complete_name" => "Someone Else", "email" => "else@example.com")
 
@@ -124,7 +124,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "picking a Seera resume copies it into the draft" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    stub_pdf_generation
     draft = { "complete_name" => "Sara Ali", "email" => "sara@example.com", "professional_summary" => "Cashier.",
               "professional_summary_english" => "Cashier (EN).",
               "work_experience" => [ { "job_title" => "Cashier", "company" => "Panda", "start_date" => "2019-01",
@@ -141,7 +141,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "another user's resume is not found" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    stub_pdf_generation
     resume = ResumeBuilder::PublicApi.create_from_draft(users(:two), "complete_name" => "Someone Else", "email" => "else@example.com")
 
     assert_no_difference -> { Coach::Chat.count } do
