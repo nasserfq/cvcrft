@@ -369,6 +369,18 @@
     "placeholder": "Write your message…",
     "send": "Send",
     "error": "Something went wrong. Please try again.",
-    "thinking": "Thinking…"
+    "thinking": "Thinking…",
+    "preview": {
+      "title": "Your CV so far",
+      "empty": "Your CV appears here as you and the coach finish each section.",
+      "professional_summary": "Summary",
+      "work_experience": "Experience",
+      "education": "Education",
+      "skills": "Skills",
+      "certifications": "Certifications",
+      "languages": "Languages",
+      "present": "Present",
+      "gpa": "GPA"
+    }
   }
 }

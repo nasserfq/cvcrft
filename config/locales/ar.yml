@@ -88,6 +88,17 @@ ar:
     send: "إرسال"
     error: "حدث خطأ ما. حاول مرة أخرى."
     thinking: "يفكر…"
+    preview:
+      title: "سيرتك حتى الآن"
+      empty: "تظهر سيرتك هنا كلما أنهيت أنت والمدرب قسمًا."
+      professional_summary: "الملخص"
+      work_experience: "الخبرات"
+      education: "التعليم"
+      skills: "المهارات"
+      certifications: "الشهادات"
+      languages: "اللغات"
+      present: "حتى الآن"
+      gpa: "المعدل"
 
   # Authentication
   auth:

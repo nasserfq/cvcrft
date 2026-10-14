@@ -18,6 +18,7 @@ function renderApp() {
       chatId={container.dataset.chatId}
       messageUrl={container.dataset.messageUrl}
       initialMessages={JSON.parse(container.dataset.messages || "[]")}
+      initialDraft={JSON.parse(container.dataset.draft || "{}")}
     />
   );
 }
