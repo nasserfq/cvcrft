@@ -2,13 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createConsumer } from "@rails/actioncable";
 import DraftPreview from "./DraftPreview";
+import ProposalCard from "./ProposalCard";
 
 const muted = { color: "rgba(238,243,238,0.7)" };
 
-export default function CoachChat({ chatId, messageUrl, initialMessages, initialDraft }) {
+export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, initialMessages, initialDraft, initialProposals }) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState(initialDraft);
+  const [proposals, setProposals] = useState(initialProposals);
   const [pending, setPending] = useState(null); // streamed text of the reply in flight
   const [input, setInput] = useState("");
   const [error, setError] = useState(false);
@@ -35,6 +37,8 @@ export default function CoachChat({ chatId, messageUrl, initialMessages, initial
             finish({ id: data.message_id, role: "assistant", content: pendingRef.current || "" });
           } else if (data.type === "draft") {
             setDraft(data.draft);
+          } else if (data.type === "proposal") {
+            setProposals((list) => [...list, data.proposal]);
           } else if (data.type === "error") {
             setError(true);
             finish(null);
@@ -79,6 +83,11 @@ export default function CoachChat({ chatId, messageUrl, initialMessages, initial
     }
   };
 
+  const settled = (id, ok) => {
+    if (id) setProposals((list) => list.filter((p) => p.id !== id));
+    setError(!ok);
+  };
+
   // Stacked on mobile, chat beside the preview on desktop.
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
@@ -103,6 +112,14 @@ export default function CoachChat({ chatId, messageUrl, initialMessages, initial
             </Bubble>
           )}
         </ol>
+
+        {proposals.length > 0 && (
+          <ul className="list-none m-0 p-0 flex flex-col gap-3">
+            {proposals.map((proposal) => (
+              <ProposalCard key={proposal.id} proposal={proposal} acceptUrl={acceptUrl} rejectUrl={rejectUrl} onSettled={settled} />
+            ))}
+          </ul>
+        )}
 
         {error && (
           <p className="glass-soft sr-up m-0 rounded-2xl px-5 py-3 text-[15px]" style={{ color: "#d6b877" }} role="alert">

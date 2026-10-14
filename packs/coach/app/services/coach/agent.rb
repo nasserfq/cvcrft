@@ -1,7 +1,7 @@
 module Coach
   class Agent
     MODEL = ENV.fetch("COACH_MODEL", "us.anthropic.claude-sonnet-4-6")
-    TOOLS = [ Coach::Tools::SaveSection ].freeze
+    TOOLS = [ Coach::Tools::SaveSection, Coach::Tools::ProposeRewrite ].freeze
 
     PATH_PROMPTS = {
       "scratch" => <<~TEXT,
@@ -13,9 +13,12 @@ module Coach
         fix the arguments or ask the user for the missing detail.
       TEXT
       "import" => <<~TEXT
-        The user wants to improve an existing CV. Start by summarising what you read so
-        they can correct it, then suggest concrete rewrites one at a time, explaining
-        briefly why each one is stronger.
+        The user wants to improve an existing CV, which is already in the draft below.
+        First, without calling any tool, summarise what you read (role, employers, education,
+        skills) and ask the user to correct anything wrong; fix confirmed corrections with save_section.
+        Then improve the professional summary and each job's responsibilities with propose_rewrite,
+        one proposal at a time: say briefly why it is stronger and wait for the user to accept or
+        reject it before the next one. Keep every fact from the original.
       TEXT
     }.freeze
 

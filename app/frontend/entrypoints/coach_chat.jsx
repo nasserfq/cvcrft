@@ -17,8 +17,11 @@ function renderApp() {
     <CoachChat
       chatId={container.dataset.chatId}
       messageUrl={container.dataset.messageUrl}
+      acceptUrl={container.dataset.acceptUrl}
+      rejectUrl={container.dataset.rejectUrl}
       initialMessages={JSON.parse(container.dataset.messages || "[]")}
       initialDraft={JSON.parse(container.dataset.draft || "{}")}
+      initialProposals={JSON.parse(container.dataset.proposals || "[]")}
     />
   );
 }

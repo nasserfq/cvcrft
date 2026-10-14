@@ -3,7 +3,8 @@
 <div dir="<%= text_direction %>" class="sr-page relative leading-relaxed" style="color: #eef3ee">
   <div class="relative mx-auto max-w-[1200px] px-4 sm:px-6 pt-10 pb-20">
     <%= tag.div id: "coach-chat-root",
-          data: { chat_id: @chat.id, message_url: message_coach_chat_path(@chat), messages: @messages, draft: @chat.draft } %>
+          data: { chat_id: @chat.id, message_url: message_coach_chat_path(@chat), messages: @messages, draft: @chat.draft,
+                  proposals: @chat.proposals, accept_url: accept_coach_chat_path(@chat), reject_url: reject_coach_chat_path(@chat) } %>
   </div>
 </div>
 <%= vite_javascript_tag 'entrypoints/coach_chat.jsx' %>

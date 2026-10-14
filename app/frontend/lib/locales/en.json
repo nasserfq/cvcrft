@@ -381,6 +381,21 @@
       "languages": "Languages",
       "present": "Present",
       "gpa": "GPA"
+    },
+    "import": {
+      "pdf": "Upload your CV (PDF, up to 10 MB)",
+      "word_note": "Word file? Save it as PDF first.",
+      "pick_seera": "Or pick one of your Seera CVs",
+      "review_seera": "Please review my CV “{{title}}”.",
+      "too_big": "The file is too large. The limit is 10 MB.",
+      "not_pdf": "Please upload a PDF file, or pick one of your CVs.",
+      "unreadable": "We couldn't read that PDF. It may be a scanned image or password-protected."
+    },
+    "proposal": {
+      "accept": "Accept",
+      "reject": "Reject",
+      "before": "Before",
+      "after": "After"
     }
   }
 }
