@@ -512,7 +512,7 @@ en:
     hero_title_1: "Your professional resume,"
     hero_title_2: "ready in minutes."
     hero_description: "\"CVCraft\" is the smart assistant for building ATS-compatible resumes. Tailor your resume to job descriptions, translate your experience, and import your data from LinkedIn."
-    trusted_by: "Trusted by %{count}+ job seekers"
+    trusted_by: "Trusted by %{count}+ users"
     
     # Action buttons
     resume_builder: "Resume Builder"
