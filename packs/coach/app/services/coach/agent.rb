@@ -1,7 +1,7 @@
 module Coach
   class Agent
     MODEL = ENV.fetch("COACH_MODEL", "us.anthropic.claude-sonnet-4-6")
-    TOOLS = [ Coach::Tools::SaveSection, Coach::Tools::ProposeRewrite ].freeze
+    TOOLS = [ Coach::Tools::SaveSection, Coach::Tools::ProposeRewrite, Coach::Tools::NextStep, Coach::Tools::ReviewCv ].freeze
 
     PATH_PROMPTS = {
       "scratch" => <<~TEXT,
@@ -45,6 +45,7 @@ module Coach
         Never invent facts the user did not give you: no job titles, employers, dates, numbers or
         qualifications of your own. If something is missing, ask for it.
         Call save_section after each section the user confirms.
+        Call next_step when you are unsure what to ask next, and review_cv before you finish.
 
         #{PATH_PROMPTS.fetch(@chat.path)}
         Current draft (JSON): #{@chat.draft.to_json}
