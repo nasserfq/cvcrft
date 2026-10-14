@@ -91,9 +91,9 @@ en:
     send: "Send"
     error: "Something went wrong. Please try again."
     thinking: "Thinking…"
-    first_question: "Hi! I'm your Seera coach. Let's build your CV together, one step at a time. What's your full name?"
-    first_name: "First name"
-    last_name: "Last name"
+    first_question: "Hi! I'm your Seera coach. Let's build your CV together, one step at a time. What's your name? Please write it in English, as it will appear on your CV."
+    first_name: "First name (in English)"
+    last_name: "Last name (in English)"
     preview:
       title: "Your CV so far"
       empty: "Your CV appears here as you and the coach finish each section."

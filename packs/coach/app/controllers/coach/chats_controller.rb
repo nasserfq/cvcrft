@@ -17,7 +17,7 @@ module Coach
         Coach::Chat.create!(user: current_user, path: params[:path]).tap do |c|
           # The coach opens with a question, so the user isn't facing an empty chat.
           c.messages.create!(role: "assistant", content: t("coach.first_question"),
-                             fields: [ t("coach.first_name"), t("coach.last_name") ])
+                             fields: [ { label: t("coach.first_name"), type: "text" }, { label: t("coach.last_name"), type: "text" } ])
         end
       end
       redirect_to coach_chat_path(chat)
