@@ -33,4 +33,28 @@ class Coach::TurnJobTest < ActiveJob::TestCase
     end
     assert_broadcast_on(@stream, type: "error")
   end
+
+  test "an import chat with an empty draft is extracted first and the draft broadcast" do
+    chat = Coach::Chat.create!(user: users(:one), path: "import")
+    chat.messages.create!(role: "user", content: "Sara Ali, cashier at Panda")
+    draft = { "complete_name" => "Sara Ali" }
+    Coach::Extract.expects(:call).once.with("Sara Ali, cashier at Panda").returns(draft)
+    Coach::Agent.any_instance.stubs(:reply).returns("Here is what I read")
+
+    Coach::TurnJob.perform_now(chat.id)
+
+    assert_equal draft, chat.reload.draft
+    assert_broadcast_on("coach:#{chat.id}", type: "draft", draft: draft)
+  end
+
+  test "an import chat that already has a draft is not extracted again" do
+    chat = Coach::Chat.create!(user: users(:one), path: "import", draft: { "complete_name" => "Sara Ali" })
+    chat.messages.create!(role: "user", content: "Please review my CV")
+    Coach::Extract.expects(:call).never
+    Coach::Agent.any_instance.stubs(:reply).returns("Here is what I read")
+
+    Coach::TurnJob.perform_now(chat.id)
+
+    assert_equal "Here is what I read", chat.messages.order(:id).last.content
+  end
 end

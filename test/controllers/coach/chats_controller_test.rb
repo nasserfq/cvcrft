@@ -44,10 +44,10 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
 
   test "create starts a chat on the chosen path" do
     assert_difference -> { Coach::Chat.count } do
-      post coach_chats_url, params: { path: "import" }
+      post coach_chats_url, params: { path: "scratch" }
     end
     chat = Coach::Chat.order(:id).last
-    assert_equal [ @user, "import" ], [ chat.user, chat.path ]
+    assert_equal [ @user, "scratch" ], [ chat.user, chat.path ]
     assert_redirected_to coach_chat_path(chat)
   end
 
@@ -82,5 +82,119 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
       post message_coach_chat_url(@chat), params: { content: " " }, as: :json
     end
     assert_response :unprocessable_entity
+  end
+
+  test "the import card lists only the user's own resumes" do
+    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    mine = ResumeBuilder::PublicApi.create_from_draft(@user, "complete_name" => "Sara Ali", "email" => "sara@example.com")
+    theirs = ResumeBuilder::PublicApi.create_from_draft(users(:two), "complete_name" => "Someone Else", "email" => "else@example.com")
+
+    get coach_root_url
+    assert_select "select[name='resume_id'] option[value='#{mine.id}']"
+    assert_select "select[name='resume_id'] option[value='#{theirs.id}']", 0
+  end
+
+  test "a PDF upload starts an import chat with its text and queues a turn" do
+    CvPdfImportService.any_instance.stubs(:parse).returns(text: "Sara Ali\nCashier, Panda", language: "en")
+
+    assert_enqueued_with(job: Coach::TurnJob, queue: "coach") do
+      post coach_chats_url, params: { path: "import", pdf_file: fixture_file_upload("cv.pdf", "application/pdf") }
+    end
+    chat = Coach::Chat.order(:id).last
+    assert_redirected_to coach_chat_path(chat)
+    assert_equal [ "import", {} ], [ chat.path, chat.draft ]
+    assert_equal [ [ "user", "Sara Ali\nCashier, Panda" ] ], chat.messages.map { |m| [ m.role, m.content ] }
+  end
+
+  test "a non-PDF upload is rejected" do
+    assert_no_difference -> { Coach::Chat.count } do
+      post coach_chats_url, params: { path: "import", pdf_file: fixture_file_upload("cv.pdf", "text/plain") }
+    end
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", I18n.t("coach.import.not_pdf")
+  end
+
+  test "an upload over 10 MB is rejected" do
+    ActionDispatch::Http::UploadedFile.any_instance.stubs(:size).returns(11.megabytes)
+
+    assert_no_difference -> { Coach::Chat.count } do
+      post coach_chats_url, params: { path: "import", pdf_file: fixture_file_upload("cv.pdf", "application/pdf") }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "picking a Seera resume copies it into the draft" do
+    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    draft = { "complete_name" => "Sara Ali", "email" => "sara@example.com", "professional_summary" => "Cashier.",
+              "work_experience" => [ { "job_title" => "Cashier", "company" => "Panda", "start_date" => "2019-01",
+                                       "end_date" => nil, "is_current" => true, "responsibilities" => [ "Till" ] } ] }
+    resume = ResumeBuilder::PublicApi.create_from_draft(@user, draft)
+
+    assert_enqueued_with(job: Coach::TurnJob) do
+      post coach_chats_url, params: { path: "import", resume_id: resume.id }
+    end
+    chat = Coach::Chat.order(:id).last
+    assert_equal "Cashier.", chat.draft["professional_summary"]
+    assert_equal [ "Till" ], chat.draft["work_experience"].sole["responsibilities"]
+    assert_equal "user", chat.messages.sole.role
+  end
+
+  test "another user's resume is not found" do
+    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    resume = ResumeBuilder::PublicApi.create_from_draft(users(:two), "complete_name" => "Someone Else", "email" => "else@example.com")
+
+    assert_no_difference -> { Coach::Chat.count } do
+      post coach_chats_url, params: { path: "import", resume_id: resume.id }
+    end
+    assert_response :not_found
+  end
+
+  test "accept applies the proposal and removes it" do
+    chat = import_chat_with_proposal
+
+    post accept_coach_chat_url(chat), params: { proposal_id: "abcd1234" }, as: :json
+    assert_response :ok
+    chat.reload
+    assert_equal "Retail cashier who keeps queues short.", chat.draft["professional_summary"]
+    assert_empty chat.proposals
+  end
+
+  test "reject removes the proposal and leaves the draft alone" do
+    chat = import_chat_with_proposal
+
+    post reject_coach_chat_url(chat), params: { proposal_id: "abcd1234" }, as: :json
+    assert_response :ok
+    chat.reload
+    assert_equal "I work hard.", chat.draft["professional_summary"]
+    assert_empty chat.proposals
+  end
+
+  test "an unknown proposal is not found" do
+    chat = import_chat_with_proposal
+
+    post accept_coach_chat_url(chat), params: { proposal_id: "nope" }, as: :json
+    assert_response :not_found
+    assert_equal 1, chat.reload.proposals.size
+  end
+
+  test "another user's proposals can't be accepted or rejected" do
+    chat = import_chat_with_proposal(users(:two))
+
+    post accept_coach_chat_url(chat), params: { proposal_id: "abcd1234" }, as: :json
+    assert_response :not_found
+    sign_in @user # the 404 doesn't write the session
+    post reject_coach_chat_url(chat), params: { proposal_id: "abcd1234" }, as: :json
+    assert_response :not_found
+    assert_equal [ "I work hard.", 1 ], [ chat.reload.draft["professional_summary"], chat.proposals.size ]
+  end
+
+  private
+
+  def import_chat_with_proposal(user = @user)
+    Coach::Chat.create!(
+      user:, path: "import", draft: { "professional_summary" => "I work hard." },
+      proposals: [ { "id" => "abcd1234", "section" => "professional_summary", "index" => nil, "field" => "professional_summary",
+                     "before" => "I work hard.", "after" => "Retail cashier who keeps queues short." } ]
+    )
   end
 end

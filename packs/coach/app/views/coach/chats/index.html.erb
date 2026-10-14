@@ -7,6 +7,10 @@
 
 <div dir="<%= text_direction %>" class="sr-page relative leading-relaxed" style="color: #eef3ee">
   <div class="relative mx-auto max-w-[1040px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-8">
+    <% if flash[:alert].present? %>
+      <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #d6b877" role="alert"><%= flash[:alert] %></p>
+    <% end %>
+
     <section class="glass sr-up rounded-[32px] p-7 sm:p-10 flex flex-col gap-3">
       <h1 class="m-0 font-semibold" style="font-size: clamp(30px, 4vw, 44px); line-height: 1.2; letter-spacing: -0.02em"><%= t('coach.title') %></h1>
       <p class="m-0 font-light text-[16px] max-w-[52ch]" style="color: rgba(238,243,238,0.7)"><%= t('coach.subtitle') %></p>
@@ -24,11 +28,36 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><%= icons[path] %></svg>
             </span>
           </div>
-          <%= button_to coach_chats_path, params: { path: path }, method: :post, data: { turbo: false },
-                class: "sr-btn sr-primary w-full flex items-center justify-between gap-2.5 min-h-[52px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer",
-                style: "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" do %>
-            <span><%= t('coach.start') %></span>
-            <span class="sr-ico flex"><%= arrow %></span>
+          <% button = { class: "sr-btn sr-primary w-full flex items-center justify-between gap-2.5 min-h-[52px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer",
+                        style: "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" } %>
+          <% if path == "import" %>
+            <%# PDF only: there is no Word parser, so the note asks for a PDF export. %>
+            <%= form_with url: coach_chats_path, multipart: true, data: { turbo: false }, class: "flex flex-col gap-4" do |f| %>
+              <%= f.hidden_field :path, value: "import" %>
+              <label class="flex flex-col gap-1.5 text-[14px]">
+                <span class="font-semibold"><%= t('coach.import.pdf') %></span>
+                <%= f.file_field :pdf_file, accept: "application/pdf", class: "glass-soft rounded-2xl px-4 py-3 text-[14px] w-full" %>
+                <span class="text-[13px]" style="color: rgba(238,243,238,0.6)"><%= t('coach.import.word_note') %></span>
+              </label>
+              <% if @resumes.any? %>
+                <label class="flex flex-col gap-1.5 text-[14px]">
+                  <span class="font-semibold"><%= t('coach.import.pick_seera') %></span>
+                  <%= f.select :resume_id,
+                        @resumes.map { |r| [ "#{r['title'].presence || '—'} · #{r['updated_at'].to_date.iso8601}", r["id"], { style: "color: #0b1a12" } ] },
+                        { include_blank: true },
+                        class: "glass-soft rounded-2xl px-4 py-3 text-[14px] w-full", style: "color: #eef3ee" %>
+                </label>
+              <% end %>
+              <%= f.button type: "submit", **button do %>
+                <span><%= t('coach.start') %></span>
+                <span class="sr-ico flex"><%= arrow %></span>
+              <% end %>
+            <% end %>
+          <% else %>
+            <%= button_to coach_chats_path, params: { path: path }, method: :post, data: { turbo: false }, **button do %>
+              <span><%= t('coach.start') %></span>
+              <span class="sr-ico flex"><%= arrow %></span>
+            <% end %>
           <% end %>
         </article>
       <% end %>

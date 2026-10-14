@@ -7,6 +7,11 @@ module Coach
 
     def perform(chat_id)
       chat = Coach::Chat.find(chat_id)
+      # Extracted here, not in the upload request, so the request never waits on the LLM.
+      if chat.path == "import" && chat.draft.blank?
+        chat.update!(draft: Coach::Extract.call(chat.messages.order(:id).first.content))
+        Coach.broadcast(chat, type: "draft", draft: chat.draft)
+      end
       buffer = +""
       flushed_at = now
       flush = lambda do

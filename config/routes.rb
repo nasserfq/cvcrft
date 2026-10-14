@@ -52,7 +52,11 @@ Rails.application.routes.draw do
   namespace :coach do
     root "chats#index"
     resources :chats, only: [ :create, :show ] do
-      post :message, on: :member
+      member do
+        post :message
+        post :accept
+        post :reject
+      end
     end
   end
 

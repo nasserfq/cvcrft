@@ -21,6 +21,13 @@ module ResumeBuilder
 
     module_function
 
+    # Newest first, for pickers outside the builder; only the user's own resumes.
+    def list(user)
+      user.resumes.order(updated_at: :desc).map do |resume|
+        { "id" => resume.id, "title" => resume.title.presence || resume.complete_name, "updated_at" => resume.updated_at }
+      end
+    end
+
     def read(user, resume_id)
       resume = user.resumes.find(resume_id)
 

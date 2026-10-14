@@ -50,4 +50,18 @@ class ResumeBuilder::PublicApiTest < ActiveSupport::TestCase
 
     assert_raises(ActiveRecord::RecordNotFound) { ResumeBuilder::PublicApi.read(users(:two), resume.id) }
   end
+
+  test "list returns only the user's resumes, newest first" do
+    older = ResumeBuilder::PublicApi.create_from_draft(users(:one), @draft)
+    newer = ResumeBuilder::PublicApi.create_from_draft(users(:one), @draft.merge("complete_name" => "Sara B"))
+    older.update_columns(updated_at: 2.days.ago, title: "Old CV")
+    ResumeBuilder::PublicApi.create_from_draft(users(:two), @draft)
+
+    list = ResumeBuilder::PublicApi.list(users(:one))
+
+    assert_equal users(:one).resumes.count, list.size
+    assert_equal [ newer.id, older.id ], list.map { |r| r["id"] } & [ newer.id, older.id ]
+    assert_equal list.sort_by { |r| r["updated_at"] }.reverse, list
+    assert_equal [ "Sara B", "Old CV" ], [ newer.id, older.id ].map { |id| list.find { |r| r["id"] == id }["title"] }
+  end
 end
