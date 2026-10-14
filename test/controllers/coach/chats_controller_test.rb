@@ -189,6 +189,53 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "I work hard.", 1 ], [ chat.reload.draft["professional_summary"], chat.proposals.size ]
   end
 
+  test "send_to_seera turns the draft into a resume and opens it" do
+    stub_pdf_generation
+    @chat.update!(draft: { "complete_name" => "Sara Ali", "email" => "sara@example.com",
+                           "skills" => [ { "category" => "Retail", "skill_names" => [ "Cash handling" ] } ] })
+
+    assert_difference -> { @user.resumes.count } do
+      post send_to_seera_coach_chat_url(@chat)
+    end
+    resume = @user.resumes.order(:id).last
+    assert_redirected_to resume_path(resume)
+    assert_equal [ "coach", "Sara Ali" ], [ resume.source, resume.complete_name ]
+  end
+
+  test "send_to_seera on another user's chat is not found" do
+    other = Coach::Chat.create!(user: users(:two), path: "scratch", draft: { "complete_name" => "Someone Else" })
+
+    assert_no_difference -> { users(:two).resumes.count } do
+      post send_to_seera_coach_chat_url(other)
+    end
+    assert_response :not_found
+  end
+
+  test "send_to_seera with an empty draft makes no resume" do
+    assert_no_difference -> { @user.resumes.count } do
+      post send_to_seera_coach_chat_url(@chat)
+    end
+    assert_redirected_to coach_chat_path(@chat)
+    assert_equal I18n.t("coach.send_to_seera.empty"), flash[:alert]
+  end
+
+  test "message is refused once today's cap is reached" do
+    Coach::DAILY_LIMIT.times { @chat.messages.create!(role: "user", content: "Hi") }
+
+    assert_no_enqueued_jobs do
+      post message_coach_chat_url(@chat), params: { content: "One more" }, as: :json
+    end
+    assert_response :too_many_requests
+    assert_equal I18n.t("coach.daily_cap", limit: Coach::DAILY_LIMIT), response.parsed_body["error"]
+  end
+
+  test "yesterday's messages don't count toward the cap" do
+    travel_to(1.day.ago) { Coach::DAILY_LIMIT.times { @chat.messages.create!(role: "user", content: "Hi") } }
+
+    post message_coach_chat_url(@chat), params: { content: "Good morning" }, as: :json
+    assert_response :accepted
+  end
+
   private
 
   def import_chat_with_proposal(user = @user)

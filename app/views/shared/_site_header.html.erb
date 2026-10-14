@@ -15,6 +15,10 @@
   <nav aria-label="<%= t('nav.features') %>" class="hidden lg:flex flex-wrap gap-1">
     <% if user_signed_in? %>
       <%= link_to t('nav.my_cv'), resumes_path, class: "sr-btn px-4 py-2.5 rounded-xl text-[15px]", style: "color: rgba(238,243,238,0.78)" %>
+      <%# Only testers (or everyone once COACH_ENABLED) see the coach. %>
+      <% if Coach.enabled_for?(current_user) %>
+        <%= link_to t('nav.coach'), coach_root_path, class: "sr-btn px-4 py-2.5 rounded-xl text-[15px]", style: "color: rgba(238,243,238,0.78)" %>
+      <% end %>
     <% end %>
     <a href="<%= anchor_base %>#features" class="sr-btn px-4 py-2.5 rounded-xl text-[15px]" style="color: rgba(238,243,238,0.78)"><%= t('nav.features') %></a>
     <a href="<%= anchor_base %>#how-it-works" class="sr-btn px-4 py-2.5 rounded-xl text-[15px]" style="color: rgba(238,243,238,0.78)"><%= t('nav.how_it_works') %></a>
@@ -55,6 +59,9 @@
   <div class="flex-1 flex flex-col gap-3 p-4 sm:p-6 overflow-y-auto">
     <% if user_signed_in? %>
       <%= link_to t('nav.my_cv'), resumes_path, class: "glass-soft sr-btn rounded-2xl px-5 py-4 text-xl" %>
+      <% if Coach.enabled_for?(current_user) %>
+        <%= link_to t('nav.coach'), coach_root_path, class: "glass-soft sr-btn rounded-2xl px-5 py-4 text-xl" %>
+      <% end %>
     <% end %>
     <a href="<%= anchor_base %>#features" class="glass-soft sr-btn rounded-2xl px-5 py-4 text-xl"><%= t('nav.features') %></a>
     <a href="<%= anchor_base %>#how-it-works" class="glass-soft sr-btn rounded-2xl px-5 py-4 text-xl"><%= t('nav.how_it_works') %></a>

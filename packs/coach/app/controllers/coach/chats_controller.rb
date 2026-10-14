@@ -1,7 +1,7 @@
 module Coach
   class ChatsController < ApplicationController
     before_action :authenticate_user!, :require_coach!
-    before_action :set_chat, only: %i[show message accept reject]
+    before_action :set_chat, only: %i[show message accept reject send_to_seera]
 
     # Same cap as CvImportsController.
     MAX_PDF_SIZE = 10.megabytes
@@ -29,7 +29,18 @@ module Coach
       settle_proposal { |draft, _proposal| draft }
     end
 
+    def send_to_seera
+      return redirect_to coach_chat_path(@chat), alert: t("coach.send_to_seera.empty") if @chat.draft.blank?
+
+      resume = ResumeBuilder::PublicApi.create_from_draft(current_user, @chat.draft)
+      redirect_to resume_path(resume)
+    end
+
     def message
+      if Coach.daily_count(current_user) >= Coach::DAILY_LIMIT
+        return render json: { error: t("coach.daily_cap", limit: Coach::DAILY_LIMIT) }, status: :too_many_requests
+      end
+
       message = @chat.messages.new(role: "user", content: params[:content])
       return head :unprocessable_entity unless message.save
 

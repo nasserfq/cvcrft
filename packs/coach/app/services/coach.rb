@@ -14,4 +14,11 @@ module Coach
   def self.table_name_prefix = "coach_"
 
   def self.broadcast(chat, payload) = ActionCable.server.broadcast("coach:#{chat.id}", payload)
+
+  # Coach is free, so this caps each user's model spend.
+  DAILY_LIMIT = 60
+
+  def self.daily_count(user)
+    Coach::Message.joins(:chat).where(role: "user", coach_chats: { user_id: user.id }, created_at: Time.current.all_day).count
+  end
 end

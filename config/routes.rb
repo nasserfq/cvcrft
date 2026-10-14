@@ -56,6 +56,7 @@ Rails.application.routes.draw do
         post :message
         post :accept
         post :reject
+        post :send_to_seera
       end
     end
   end

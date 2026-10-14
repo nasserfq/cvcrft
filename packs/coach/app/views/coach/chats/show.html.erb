@@ -1,7 +1,13 @@
 <% content_for :title, t('coach.title') %>
 
 <div dir="<%= text_direction %>" class="sr-page relative leading-relaxed" style="color: #eef3ee">
-  <div class="relative mx-auto max-w-[1200px] px-4 sm:px-6 pt-10 pb-20">
+  <div class="relative mx-auto max-w-[1200px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-5">
+    <% if flash[:alert].present? %>
+      <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #d6b877" role="alert"><%= flash[:alert] %></p>
+    <% end %>
+    <%# A plain form post, so the builder opens on the new resume. %>
+    <%= button_to t('coach.send_to_seera.button'), send_to_seera_coach_chat_path(@chat),
+          form_class: "self-end", class: "sr-btn sr-primary min-h-[48px] px-6 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
     <%= tag.div id: "coach-chat-root",
           data: { chat_id: @chat.id, message_url: message_coach_chat_path(@chat), messages: @messages, draft: @chat.draft,
                   proposals: @chat.proposals, accept_url: accept_coach_chat_path(@chat), reject_url: reject_coach_chat_path(@chat) } %>
