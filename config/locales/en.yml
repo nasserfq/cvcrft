@@ -74,6 +74,23 @@ en:
     purchase_success: "Payment received. %{credits} credits were added to your balance."
     purchase_pending: "We haven't received the payment yet. If you paid, your credits will appear in a few minutes."
 
+  # AI Coach (packs/coach)
+  coach:
+    title: "AI Coach"
+    subtitle: "Build your CV in a conversation, or let the coach sharpen the one you have."
+    paths:
+      scratch:
+        title: "Build from scratch"
+        body: "Answer a few questions and the coach writes each section with you."
+      import:
+        title: "Improve my CV"
+        body: "Bring an existing CV and get concrete rewrites you can accept or skip."
+    start: "Start"
+    placeholder: "Write your message…"
+    send: "Send"
+    error: "Something went wrong. Please try again."
+    thinking: "Thinking…"
+
   # Authentication
   auth:
     login_required: "Please log in first"

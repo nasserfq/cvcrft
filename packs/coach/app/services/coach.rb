@@ -9,4 +9,9 @@ module Coach
     testers = ENV.fetch("COACH_TESTERS", "").split(",").map { |email| email.strip.downcase }
     testers.include?(user.email.to_s.downcase)
   end
+
+  # Coach::Chat and Coach::Message live in coach_chats and coach_messages.
+  def self.table_name_prefix = "coach_"
+
+  def self.broadcast(chat, payload) = ActionCable.server.broadcast("coach:#{chat.id}", payload)
 end

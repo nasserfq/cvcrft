@@ -6,6 +6,7 @@
       "name": "app",
       "dependencies": {
         "@hotwired/turbo": "^8.0.13",
+        "@rails/actioncable": "^8.1.400",
         "@rails/activestorage": "^8.0.201",
         "@sentry/react": "^10.76.2",
         "@tailwindcss/cli": "^4.1.12",
@@ -207,6 +208,8 @@
     "@protobufjs/pool": ["@protobufjs/pool@1.1.0", "", {}, "sha512-0kELaGSIDBKvcgS4zkjz1PeddatrjYcmMWOlAuAPwAeccUrPHdUqo/J6LiymHHEiJT5NrF1UVwxY14f+fy4WQw=="],
 
     "@protobufjs/utf8": ["@protobufjs/utf8@1.1.0", "", {}, "sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw=="],
+
+    "@rails/actioncable": ["@rails/actioncable@8.1.400", "", {}, "sha512-Qffc3/I9xcpeaal12hmi9EPRV3hz9FvakUHBR7kL0jpZviWwO9dyaG8F1ltcjkHIdFxQ5QqzRyequAWHMq17xQ=="],
 
     "@rails/activestorage": ["@rails/activestorage@8.0.201", "", { "dependencies": { "spark-md5": "^3.0.1" } }, "sha512-nwc2UnffHA3lgStYP01JUF9ni9dZTPX7YJESj5qRjrox4Q3oA7bDErKySP6bS9fOTcwtrPvTHBH95gKpLEic6Q=="],
 

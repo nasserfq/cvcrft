@@ -48,6 +48,14 @@ Rails.application.routes.draw do
     end
   end
 
+  # AI Coach (packs/coach), off unless COACH_ENABLED
+  namespace :coach do
+    root "chats#index"
+    resources :chats, only: [ :create, :show ] do
+      post :message, on: :member
+    end
+  end
+
   # Resume routes with nested resources
   resources :resumes do
     resources :work_experiences, only: [ :create, :update, :destroy ]
