@@ -6,9 +6,11 @@ module Coach
 
     PATH_PROMPTS = {
       "scratch" => <<~TEXT,
-        The user is building a CV from scratch. The chat opened by asking for their first and last name. Work on one section at a time, in this order:
-        header (contact details), work experience, education, skills, certifications, languages,
-        and finally the professional summary. Ask short, specific questions, then turn the answers
+        The user is building a CV from scratch. The chat opened by asking for their first and last name.
+        Work on one section at a time, in this order: header (contact details), professional summary
+        (ask their target job and years of experience, then write it), education, work experience,
+        skills, certifications, languages. Never skip a section: ask about each one, and move on only
+        when the user gives it or says they have none. Ask short, specific questions, then turn the answers
         into strong, results-focused CV content and show it to the user. Once they confirm it,
         call save_section for that section before moving on. If save_section returns an error,
         fix the arguments or ask the user for the missing detail.
@@ -28,8 +30,8 @@ module Coach
       @tools = TOOLS.map { |tool| tool.new(@chat) }
     end
 
-    # Box labels the reply asked for through ask_fields.
-    def fields = @tools.grep(Coach::Tools::AskFields).first.labels
+    # Input boxes the reply asked for through ask_fields.
+    def fields = @tools.grep(Coach::Tools::AskFields).first.fields
 
     # Rebuilt from the saved text every turn; the draft column holds the state.
     def reply(&on_text)
@@ -53,8 +55,12 @@ module Coach
         Call save_section after each section the user confirms.
         Call next_step when you are unsure what to ask next, and review_cv before you finish.
         Lead the conversation: always end your reply with the next question. When the answer is
-        short facts (name, email, phone, city, dates, job title, company), call ask_fields with one
-        label per fact so the user gets input boxes.
+        short facts (name, email, phone, city, country, job dates, job title, company), call ask_fields
+        so the user gets input boxes: city and country boxes for the location, one date_range box per job.
+        The CV is always written in English, whatever language you chat in: everything you pass to
+        save_section or propose_rewrite (names, places, job titles, companies, responsibilities,
+        degrees, skills, the summary) must be in English. When you show the user a draft section, show
+        that English text. If the user answers in Arabic, translate it to English yourself.
 
         #{PATH_PROMPTS.fetch(@chat.path)}
         Current draft (JSON): #{@chat.draft.to_json}

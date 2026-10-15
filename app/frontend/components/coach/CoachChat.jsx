@@ -1,8 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createConsumer } from "@rails/actioncable";
 import DraftPreview from "./DraftPreview";
 import ProposalCard from "./ProposalCard";
+import LocationCombobox from "../cv-builder/LocationCombobox";
+import MobileDatePicker from "../cv-builder/MobileDatePicker";
+import { getCities, getCountries } from "../cv-builder/locationData";
 
 const muted = { color: "rgba(238,243,238,0.7)" };
 
@@ -116,7 +119,7 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
               {message.content}
               {/* Only the latest question's boxes; answered ones would be stale. */}
               {!busy && i === messages.length - 1 && message.fields?.length > 0 && (
-                <Fields labels={message.fields} onSubmit={post} />
+                <Fields fields={message.fields} onSubmit={post} />
               )}
             </Bubble>
           ))}
@@ -175,36 +178,85 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
   );
 }
 
+const boxClass = "glass-soft w-full rounded-xl px-3 py-2 text-[16px] border-0 outline-none";
+
 // Input boxes under a coach question; the answers go out as one "Label: value" message.
-function Fields({ labels, onSubmit }) {
+// Older messages stored plain label strings.
+function Fields({ fields, onSubmit }) {
   const { t } = useTranslation();
-  const [values, setValues] = useState(() => labels.map(() => ""));
-  const filled = values.some((v) => v.trim());
+  const boxes = fields.map((f) => (typeof f === "string" ? { label: f, type: "text" } : f));
+  const [values, setValues] = useState(() => boxes.map(() => ({ text: "", start: "", end: "", current: false })));
+  const set = (i, patch) => setValues((list) => list.map((v, j) => (j === i ? { ...v, ...patch } : v)));
+  const countries = useMemo(() => getCountries(), []);
+  const country = values[boxes.findIndex((b) => b.type === "country")]?.text;
+  const cities = useMemo(() => getCities(country), [country]);
+
+  const answer = (box, v) => {
+    if (box.type !== "date_range") return v.text.trim();
+    if (!v.start) return "";
+    return `${v.start} – ${v.current ? "Present" : v.end || "?"}`;
+  };
+  const filled = boxes.some((box, i) => answer(box, values[i]));
 
   const submit = (event) => {
     event.preventDefault();
-    const content = labels
-      .map((label, i) => (values[i].trim() ? `${label}: ${values[i].trim()}` : null))
+    const content = boxes
+      .map((box, i) => answer(box, values[i]) && `${box.label}: ${answer(box, values[i])}`)
       .filter(Boolean)
       .join("\n");
     onSubmit(content);
   };
 
+  const input = (box, i) => {
+    const v = values[i];
+    if (box.type === "city" || box.type === "country") {
+      return (
+        <LocationCombobox
+          value={v.text}
+          onChange={(text) => set(i, { text })}
+          onPick={(city) => {
+            const c = boxes.findIndex((b) => b.type === "country");
+            if (box.type === "city" && c >= 0 && !values[c].text.trim() && city.country) set(c, { text: city.country });
+          }}
+          options={box.type === "city" ? cities : countries}
+          className={boxClass}
+          placeholder={box.type === "city" ? "Riyadh" : "Saudi Arabia"}
+        />
+      );
+    }
+    if (box.type === "date_range") {
+      return (
+        <div className="flex flex-col gap-2">
+          <MobileDatePicker value={v.start} onChange={(start) => set(i, { start })} placeholder={t("experience.start_date")} />
+          <MobileDatePicker value={v.end} onChange={(end) => set(i, { end })} disabled={v.current} placeholder={t("experience.end_date")} />
+          <label className="inline-flex items-center gap-2 text-[14px]">
+            <input type="checkbox" checked={v.current} onChange={(e) => set(i, { current: e.target.checked })} className="w-5 h-5" />
+            {t("experience.present")}
+          </label>
+        </div>
+      );
+    }
+    return (
+      <input
+        type={box.type === "email" || box.type === "tel" ? box.type : "text"}
+        value={v.text}
+        onChange={(event) => set(i, { text: event.target.value })}
+        autoFocus={i === 0}
+        maxLength={200}
+        dir="auto"
+        className={boxClass}
+        style={{ color: "#eef3ee" }}
+      />
+    );
+  };
+
   return (
-    <form onSubmit={submit} className="mt-3 flex flex-col gap-2 whitespace-normal">
-      {labels.map((label, i) => (
-        <label key={i} className="flex flex-col gap-1 text-[13px]" style={muted}>
-          {label}
-          <input
-            value={values[i]}
-            onChange={(event) => setValues((list) => list.map((v, j) => (j === i ? event.target.value : v)))}
-            autoFocus={i === 0}
-            maxLength={200}
-            dir="auto"
-            className="glass-soft rounded-xl px-3 py-2 text-[16px] border-0 outline-none"
-            style={{ color: "#eef3ee" }}
-          />
-        </label>
+    <form onSubmit={submit} className="mt-3 flex flex-col gap-3 whitespace-normal">
+      {boxes.map((box, i) => (
+        <div key={i} className="flex flex-col gap-1">
+          <span className="text-[13px]" style={muted}>{box.label}</span>
+          {input(box, i)}
+        </div>
       ))}
       <button
         type="submit"

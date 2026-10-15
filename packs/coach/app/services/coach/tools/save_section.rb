@@ -4,6 +4,7 @@ module Coach
       description <<~TEXT.squish
         Save one finished CV section to the user's draft after they confirm it.
         Collections replace the whole list, so send every entry, not only the new one.
+        Every value must be in English, even when the chat is in Arabic.
       TEXT
       parameter :section, description: "One of: #{Coach::Draft::SECTIONS.join(', ')}"
       parameter :json, description: <<~TEXT.squish

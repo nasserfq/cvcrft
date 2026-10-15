@@ -9,7 +9,7 @@ module Coach
       parameter :index, type: "integer", required: false,
                         description: "For work_experience: the entry's position in the draft's list, starting at 0"
       parameter :after, description: <<~TEXT.squish
-        The new text. professional_summary: the whole summary. work_experience: the entry's responsibilities, one per line.
+        The new text, in English. professional_summary: the whole summary. work_experience: the entry's responsibilities, one per line.
       TEXT
 
       # The default name would be "coach--tools--propose_rewrite".
