@@ -141,10 +141,8 @@ Rails.application.routes.draw do
   # Sidekiq web interface (admin only in production)
   require "sidekiq/web"
   if Rails.env.production?
-    # Protect Sidekiq web interface with authentication in production
-    authenticate :user, lambda { |u| u.admin? } do
-      mount Sidekiq::Web => "/sidekiq"
-    end
+    # Protected by HTTP Basic auth with the admin panel's credentials
+    mount SidekiqWebAuth.from_env.wrap(Sidekiq::Web), at: "/sidekiq"
   else
     # Allow access in development/test
     mount Sidekiq::Web => "/sidekiq"
