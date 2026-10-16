@@ -23,6 +23,10 @@ class CvGeneratorJob
     @resume_id = resume_id
     @options = options.transform_keys(&:to_sym)
 
+    # The AI only rewrites the professional summary of a saved CV; it never
+    # builds a new one. Fail before anything is created.
+    raise ArgumentError, "resume_id is required" if @resume_id.blank?
+
     # Default options for cache handling
     @options[:force_pdf_regeneration] ||= false
     @options[:pdf_cache_hours] ||= 24
@@ -43,18 +47,14 @@ class CvGeneratorJob
       )
     end
 
-    # For existing resumes, do NOT update any fields or sections. Only use the AI summary in the generated CV metadata/PDF.
-    if @resume_id
-      Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
-    end
-      # Load existing resume data
-      if @resume_id
-        @existing_resume = owned_resume
-        Rails.logger.info "📋 Loaded existing resume ID: #{@existing_resume.id}"
-        Rails.logger.info "📋 Resume has #{@existing_resume.skills.count} skills"
-        Rails.logger.info "📋 First skill: #{@existing_resume.skills.first&.attributes&.inspect}"
-        @snapshot = CvGenerator::ResumeSnapshot.new(@existing_resume).to_h
-      end
+    # Do NOT update any fields or sections of the saved resume. Only use the AI summary in the generated CV metadata/PDF.
+    Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
+      # Load the saved resume data
+      @existing_resume = owned_resume
+      Rails.logger.info "📋 Loaded existing resume ID: #{@existing_resume.id}"
+      Rails.logger.info "📋 Resume has #{@existing_resume.skills.count} skills"
+      Rails.logger.info "📋 First skill: #{@existing_resume.skills.first&.attributes&.inspect}"
+      @snapshot = CvGenerator::ResumeSnapshot.new(@existing_resume).to_h
 
       # Process the CV generation using Azure OpenAI
       result = call_azure_openai_api
@@ -62,8 +62,7 @@ class CvGeneratorJob
   # Update the CV generation record with success (full structure stored in metadata)
   update_cv_generation_success(result)
 
-      # Create or update resume with generated content
-      # This logic now correctly creates/updates all associated models (WorkExperience, Skill, etc.)
+      # Reload the saved resume (never mutated) before rendering the PDF
       create_or_update_resume(result)
 
       # Generate PDF using the full structured data from metadata
@@ -109,24 +108,17 @@ class CvGeneratorJob
   # --- Data Persistence (Crucial Fix for storing full JSON) ---
 
   def update_cv_generation_success(result)
-    Rails.logger.info "📊 Existing resume skills count: #{@existing_resume.skills.count}" if @existing_resume
+    Rails.logger.info "📊 Existing resume skills count: #{@existing_resume.skills.count}"
     CvGenerator::ResultPersister.new(@cv_generation).record!(result, snapshot: @snapshot)
   end
 
-  # --- Resume Creation/Update (Remains largely the same, ensuring full population) ---
+  # --- Saved resume (read only; never created or updated here) ---
 
   def create_or_update_resume(result)
-    # For existing resumes, do NOT update any fields or sections. Only use the AI summary in the generated CV metadata/PDF.
-    if @resume_id
-      resume = owned_resume
-      Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
-      # Do NOT update professional_summary or any sections for existing resumes.
-    else
-      # For brand new, AI-only CVs, create a new Resume record and populate sections
-      resume = create_new_resume(result)
-      # Populate sections for new resumes only (not for existing builder CVs)
-      CvGenerator::ResultPersister.new(@cv_generation).populate_sections!(@cv_generation.resume, result)
-    end
+    # The saved resume is never mutated: do NOT update professional_summary or
+    # any sections. Only the AI summary is used, in the generated CV metadata/PDF.
+    resume = owned_resume
+    Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
 
     # Ensure we're not losing any existing data (debug logging)
     Rails.logger.info "Skills count (source resume): #{resume.skills.count}"
@@ -138,24 +130,12 @@ class CvGeneratorJob
     resume
   end
 
-  def create_new_resume(result)
-    resume_data = {
-      complete_name: @options[:complete_name] || "Generated CV",
-      email: @options[:email] || "user@example.com",
-  professional_summary: result[:professional_summary],
-  summary: result[:professional_summary]
-    }
-    resume = Resume.create!(resume_data.merge(user_id: @user_id))
-    @cv_generation.update!(resume_id: resume.id)
-    resume
-  end
-
   # --- PDF Generation (Rewritten for ATS compliance) ---
   def generate_pdf_for_resume
     Rails.logger.info "=== GENERATING PDF FOR RESUME WITH PRAWN ==="
 
     begin
-      resume = @resume_id ? owned_resume.reload : @cv_generation.resume.reload
+      resume = owned_resume.reload
 
       # Get the full generated data from the CV generation metadata
       generated_data = @cv_generation.metadata["generated_data"]
@@ -311,7 +291,7 @@ class CvGeneratorJob
     return true if @options[:force_pdf_regeneration]
     return true if pdf_cache_expired?
 
-    resume = @resume_id ? owned_resume : @cv_generation.resume
+    resume = owned_resume
     generated_data = (@cv_generation.metadata["generated_data"] || {}).deep_symbolize_keys
     template_key = selected_ats_template_key
     current_cache_key = generate_pdf_cache_key(resume, generated_data, template_key)

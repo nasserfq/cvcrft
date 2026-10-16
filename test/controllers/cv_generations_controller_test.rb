@@ -88,6 +88,55 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "minimalist_real_estate", created.metadata["ats_template"]
   end
 
+  test "create without a saved CV redirects back with a message and spends no credit" do
+    UserUsageLimits.any_instance.expects(:consume!).never
+    CvGeneratorJob.expects(:perform_async).never
+
+    assert_no_difference [ "CvGeneration.count", "Resume.count", -> { @user.reload.job_based_generations_count.to_i } ] do
+      post cv_generations_url, params: {
+        cv_generation: { job_description: "New job description for testing that meets minimum length requirements", resume_id: "" }
+      }
+    end
+
+    assert_redirected_to new_cv_generation_path
+    assert_equal I18n.t("cv_generation.choose_resume", locale: :ar), flash[:alert]
+  end
+
+  test "create without a saved CV as JSON is refused with 422 and spends no credit" do
+    UserUsageLimits.any_instance.expects(:consume!).never
+    CvGeneratorJob.expects(:perform_async).never
+
+    assert_no_difference [ "CvGeneration.count", "Resume.count", -> { @user.reload.job_based_generations_count.to_i } ] do
+      post cv_generations_url(format: :json, locale: "en"), params: {
+        cv_generation: { job_description: "New job description for testing that meets minimum length requirements" }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal({ "error" => "Choose one of your CVs first." }, response.parsed_body)
+  end
+
+  test "retry of a generation with no saved CV is refused before spending a credit" do
+    @cv_generation.update!(status: "failed")
+    UserUsageLimits.any_instance.expects(:consume!).never
+    CvGeneratorJob.expects(:perform_async).never
+
+    post retry_cv_generation_url(@cv_generation)
+
+    assert_redirected_to new_cv_generation_path
+    assert_equal I18n.t("cv_generation.choose_resume", locale: :ar), flash[:alert]
+  end
+
+  test "resume_draft of a generation with no saved CV is refused before spending a credit" do
+    UserUsageLimits.any_instance.expects(:consume!).never
+    CvGeneratorJob.expects(:perform_async).never
+
+    post resume_draft_cv_generation_url(@cv_generation, format: :json, locale: "en")
+
+    assert_response :unprocessable_entity
+    assert_equal({ "success" => false, "error" => "Choose one of your CVs first." }, response.parsed_body)
+  end
+
   test "should get status as json" do
     get status_cv_generation_url(@cv_generation), as: :json
     assert_response :success

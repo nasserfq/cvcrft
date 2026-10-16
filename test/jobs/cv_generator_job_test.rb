@@ -53,90 +53,29 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
     user.cv_generations.where(job_description: JOB_DESCRIPTION).order(:id).last
   end
 
-  test "new CV from a non-JSON reply: creates a resume and stores the raw text as the summary" do
+  test "without a saved resume nothing is created and the queued generation is marked failed" do
     user = users(:test_user)
-    stub_ai_response("Plain text summary, no JSON here.", tokens: 640)
+    queued = create_test_cv_generation(user, job_description: JOB_DESCRIPTION)
+    AiModel.expects(:complete).never
 
-    assert_difference -> { user.resumes.count }, 1 do
-      run_job(user, nil, { "complete_name" => "Sara Ali", "email" => "sara@example.com" })
+    assert_no_difference [ -> { user.resumes.count }, -> { CvGeneration.count } ] do
+      error = assert_raises(ArgumentError) { run_job(user, nil, { "complete_name" => "Sara Ali" }) }
+      assert_equal "resume_id is required", error.message
     end
 
-    generation = last_generation(user)
-    assert_equal "completed", generation.status
-    assert_equal "Plain text summary, no JSON here.", generation.generated_content
-    assert_equal 640, generation.tokens_used
-    assert_equal AiModel.default, generation.ai_model
-
-    meta = generation.metadata
-    assert_equal({
-      "professional_summary" => "Plain text summary, no JSON here.",
-      "work_experiences" => [], "skills" => [], "educations" => [], "certifications" => [], "languages" => []
-    }, meta["generated_data"])
-    assert_equal "Response was not in expected JSON format", meta["ats_optimization_notes"]
-    assert_equal "Response was not in expected JSON format", meta["generation_notes"]
-    assert_equal "Plain text summary, no JSON here.", meta["raw_response"]
-    assert_equal "Sara Ali", meta["complete_name"]
-    assert_equal true, meta["pdf_generated"]
-
-    resume = generation.resume
-    assert_equal "Sara Ali", resume.complete_name
-    assert_equal "sara@example.com", resume.email
-    assert_equal "Plain text summary, no JSON here.", resume.professional_summary
-    assert_equal "Plain text summary, no JSON here.", resume.summary
-    assert_equal 0, resume.work_experiences.count
-    assert_equal 0, resume.skills.count
+    queued.reload
+    assert_equal "failed", queued.status
+    assert_equal "resume_id is required", queued.metadata["error"]
+    assert_nil queued.resume_id
   end
 
-  test "new CV defaults the name and email when options leave them out" do
+  test "without a saved resume and no queued generation, no record of any kind is created" do
     user = users(:test_user)
-    stub_ai_response("Summary only")
+    AiModel.expects(:complete).never
 
-    run_job(user)
-
-    resume = last_generation(user).resume
-    assert_equal "Generated CV", resume.complete_name
-    assert_equal "user@example.com", resume.email
-  end
-
-  test "new CV saves every section of the reply onto the new resume" do
-    user = users(:test_user)
-    stub_ai_response(AI_REPLY)
-
-    assert_difference -> { user.resumes.count }, 1 do
-      run_job(user)
+    assert_no_difference [ -> { user.resumes.count }, -> { CvGeneration.count } ] do
+      assert_raises(ArgumentError) { run_job(user, "") }
     end
-
-    generation = last_generation(user)
-    assert_equal "completed", generation.status
-    assert_equal AI_REPLY[:professional_summary], generation.generated_content
-    assert_equal JSON.parse(AI_REPLY.except(:ats_optimization_notes, :generation_notes).to_json),
-                 generation.metadata["generated_data"]
-    assert_equal "Keyword dense", generation.metadata["ats_optimization_notes"]
-
-    resume = generation.resume
-    assert_equal AI_REPLY[:professional_summary], resume.professional_summary
-    assert_equal [ [ "PayCo", "Lead Engineer", "2021-01", nil, [ "Led a team of six" ].to_s ] ],
-                 resume.work_experiences.pluck(:company, :job_title, :start_date, :end_date, :responsibilities)
-    assert_equal [ [ "BSc Computer Science", "KSU", "2010-09", "2014-06" ] ],
-                 resume.educations.pluck(:degree, :institution, :start_date, :end_date)
-    assert_equal [ [ "Technical Skills", "Ruby", [ "Ruby" ] ], [ "Technical Skills", "Rails", [ "Rails" ] ] ],
-                 resume.skills.order(:id).map { |skill| [ skill.category, skill.name, skill.skill_names ] }
-    assert_equal [ [ "AWS SA", "Amazon", "2020-01" ] ], resume.certifications.pluck(:name, :organization, :date)
-    assert_equal [ [ "English", "Fluent" ] ], resume.languages.pluck(:language, :proficiency)
-  end
-
-  test "new CV with only skills in the reply saves the skills" do
-    user = users(:test_user)
-    stub_ai_response(AI_REPLY.slice(:professional_summary, :skills))
-
-    run_job(user)
-
-    generation = last_generation(user)
-    assert_equal "completed", generation.status
-    assert_equal [ [ "Technical Skills", [ "Ruby" ] ], [ "Technical Skills", [ "Rails" ] ] ],
-                 generation.resume.skills.order(:id).map { |skill| [ skill.category, skill.skill_names ] }
-    assert_equal [ { "category" => "Technical Skills", "names" => [ "Ruby", "Rails" ] } ],
-                 generation.metadata["generated_data"]["skills"]
   end
 
   test "existing resume: keeps the resume untouched and stores its snapshot with the new summary" do
@@ -161,6 +100,10 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
       assert_equal 900, generation.tokens_used
 
       meta = generation.metadata
+      # Only the summary comes from the AI; every other section is the saved resume's.
+      saved_sections = JSON.parse(CvGenerator::ResumeSnapshot.new(resume).to_h.except(:professional_summary).to_json)
+      assert_equal saved_sections, meta["generated_data"].except("professional_summary")
+      assert_not_equal resume.professional_summary, meta["generated_data"]["professional_summary"]
       expected_data = snapshot_golden.merge("professional_summary" => AI_REPLY[:professional_summary])
       assert_equal expected_data, meta["generated_data"]
       assert_equal Base64.encode64("%PDF-fake"), meta["pdf_data"]
@@ -232,17 +175,18 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
   end
 
   test "AI failure marks the generation failed and re-raises" do
-    user = users(:test_user)
+    user = users(:user_with_resumes)
+    resume = resumes(:complete_resume)
     stub_ai_failure
 
-    error = assert_raises(RuntimeError) { run_job(user) }
+    error = assert_raises(RuntimeError) { run_job(user, resume.id) }
     assert_equal "API Error", error.message
 
     generation = last_generation(user)
     assert_equal "failed", generation.status
     assert_equal "API Error", generation.metadata["error"]
     assert generation.metadata["error_backtrace"].present?
-    assert_nil generation.resume_id
+    assert_equal resume.id, generation.resume_id
   end
 
   test "another user's resume is refused and the run marked failed" do
@@ -251,14 +195,6 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
 
     assert_raises(ActiveRecord::RecordNotFound) { run_job(users(:test_user), resumes(:complete_resume).id) }
     assert_equal "failed", last_generation(users(:test_user)).status
-  end
-
-  test "new CV sends the golden prompts" do
-    AiModel.expects(:complete)
-           .with(system: golden("system_prompt.txt"), user: golden("user_prompt_new.txt"), temperature: 0.7, max_tokens: 15000)
-           .returns(ai_message("Summary"))
-
-    run_job(users(:test_user))
   end
 
   test "existing resume sends the golden prompts" do
@@ -272,8 +208,8 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
   test "temperature and max_tokens come from the options" do
     AiModel.expects(:complete)
            .with(has_entries(temperature: 0.2, max_tokens: 4000))
-           .returns(ai_message("Summary"))
+           .returns(ai_message(AI_REPLY))
 
-    run_job(users(:test_user), nil, { "temperature" => "0.2", "max_tokens" => "4000" })
+    run_job(users(:user_with_resumes), resumes(:complete_resume).id, { "temperature" => "0.2", "max_tokens" => "4000" })
   end
 end

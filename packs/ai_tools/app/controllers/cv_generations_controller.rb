@@ -4,6 +4,7 @@ class CvGenerationsController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
   before_action :set_cv_generation, only: [ :show, :status, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :preview, :save_draft, :resume_draft ]
+  before_action :require_saved_resume, only: [ :retry, :resume_draft ]
 
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
@@ -98,9 +99,18 @@ class CvGenerationsController < ApplicationController
     Rails.logger.info "Using user_id: #{user_id} for CV generation"
 
     # Initialize the CV generation service
+    # The AI only rewrites the professional summary of a saved CV, so one is
+    # required. Refuse before a credit is consumed.
+    if cv_generation_params[:resume_id].blank?
+      respond_to do |format|
+        format.html { redirect_to new_cv_generation_path, alert: t("cv_generation.choose_resume") }
+        format.json { render json: { error: t("cv_generation.choose_resume") }, status: :unprocessable_entity }
+      end
+      return
+    end
+
     # resume_id comes from the request: only the user's own resumes may be used.
-    resume_id = cv_generation_params[:resume_id].presence
-    resume_id &&= current_user.resumes.find(resume_id).id
+    resume_id = current_user.resumes.find(cv_generation_params[:resume_id]).id
 
     unless limits.consume!(:job_based_generation)
       respond_to do |format|
@@ -464,6 +474,17 @@ class CvGenerationsController < ApplicationController
       :job_description, :resume_id, :complete_name, :email,
       :temperature, :max_tokens, :ats_template
     )
+  end
+
+  # Older generations made without a saved CV can't be re-run: the job only
+  # rewrites a saved CV's summary. Refuse before a credit is consumed.
+  def require_saved_resume
+    return if @cv_generation.resume_id
+
+    respond_to do |format|
+      format.html { redirect_to new_cv_generation_path, alert: t("cv_generation.choose_resume") }
+      format.json { render json: { success: false, error: t("cv_generation.choose_resume") }, status: :unprocessable_entity }
+    end
   end
 
   def ensure_user_has_resume

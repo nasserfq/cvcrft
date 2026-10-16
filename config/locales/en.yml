@@ -405,6 +405,7 @@ en:
     ats_template_label: "Choose ATS template for export"
     select_resume_and_job: "Please select a resume, enter a job description, and choose a template."
     select_resume_label: "Select Resume"
+    choose_resume: "Choose one of your CVs first."
     ats:
       original_classic:
         name: "Original Classic (Legacy)"
