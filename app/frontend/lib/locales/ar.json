@@ -196,6 +196,9 @@
   "templates": {
     "title": "اختر قالباً",
     "ats_picker_label": "اختر قالب ATS للتصدير",
+    "preview_template": "معاينة القالب",
+    "close": "إغلاق",
+    "use_template": "استخدم هذا القالب",
     "modern": "عصري",
     "classic": "كلاسيكي",
     "minimal": "بسيط",

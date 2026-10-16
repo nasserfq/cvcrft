@@ -70,50 +70,44 @@ class AtsTemplatePdfService
 
     left_width = (pdf.bounds.width * left_width_ratio).to_i
     right_width = pdf.bounds.width - left_width - 14
-    top = pdf.cursor
-    left_bottom = top
-    right_bottom = top
 
-    pdf.bounding_box([ 0, top ], width: left_width) do
-      render_section_title(pdf, sidebar_title, config)
-      pdf.move_down 2
+    render_side_by_side(
+      pdf,
+      [ 0, left_width ],
+      [ left_width + 14, right_width ],
+      left: lambda {
+        render_section_title(pdf, sidebar_title, config)
+        pdf.move_down 2
 
-      if sidebar_sections.include?(:contact)
-        render_section_subtitle(pdf, "Contact")
-        pdf.text resume.email.to_s, size: config[:body_size] || 10
-        pdf.text resume.phone_number.to_s, size: config[:body_size] || 10
-        pdf.text [ resume.city, resume.country ].compact.join(", "), size: config[:body_size] || 10
-        pdf.move_down 8
-      end
+        if sidebar_sections.include?(:contact)
+          render_section_subtitle(pdf, "Contact")
+          pdf.text resume.email.to_s, size: config[:body_size] || 10
+          pdf.text resume.phone_number.to_s, size: config[:body_size] || 10
+          pdf.text [ resume.city, resume.country ].compact.join(", "), size: config[:body_size] || 10
+          pdf.move_down 8
+        end
 
-      if sidebar_sections.include?(:languages)
-        render_languages_sidebar(pdf, data, config)
-        pdf.move_down 8
-      end
+        if sidebar_sections.include?(:languages)
+          render_languages_sidebar(pdf, data, config)
+          pdf.move_down 8
+        end
 
-      if sidebar_sections.include?(:skills)
-        render_skills_sidebar(pdf, data, config)
-      end
-      left_bottom = pdf.cursor
-    end
-
-    pdf.bounding_box([ left_width + 14, top ], width: right_width) do
-      if main_sections.include?(:summary)
-        render_summary(pdf, resume, data, config)
-      end
-      if main_sections.include?(:education)
-        render_education(pdf, data, config)
-      end
-      if main_sections.include?(:skills)
-        render_skills(pdf, data, config)
-      end
-      right_bottom = pdf.cursor
-    end
-
-    # Continue long content full-width below the two-column header area.
-    pdf.move_cursor_to([ left_bottom, right_bottom ].min - 8)
-    render_work_experience(pdf, resume, config) if main_sections.include?(:work_experience)
-    render_certifications(pdf, data, config) if main_sections.include?(:certifications)
+        render_skills_sidebar(pdf, data, config) if sidebar_sections.include?(:skills)
+      },
+      # The main column carries every main section in order, so work experience
+      # follows the summary directly instead of waiting below the sidebar.
+      right: lambda {
+        main_sections.each do |section|
+          case section
+          when :summary then render_summary(pdf, resume, data, config)
+          when :education then render_education(pdf, data, config)
+          when :skills then render_skills(pdf, data, config)
+          when :work_experience then render_work_experience(pdf, resume, config)
+          when :certifications then render_certifications(pdf, data, config)
+          end
+        end
+      }
+    )
   end
 
   def self.render_corporate_layout(pdf, resume, data, config)
@@ -131,26 +125,60 @@ class AtsTemplatePdfService
     # Top section summary full width, then split.
     render_summary(pdf, resume, data, config)
 
-    split_top = pdf.cursor
     left_width = (pdf.bounds.width * 0.50).to_i
     right_width = pdf.bounds.width - left_width - 10
-    left_bottom = split_top
-    right_bottom = split_top
 
-    pdf.bounding_box([ 0, split_top ], width: left_width) do
-      render_education(pdf, data, config)
-      render_certifications(pdf, data, config)
-      left_bottom = pdf.cursor
-    end
-
-    pdf.bounding_box([ left_width + 10, split_top ], width: right_width) do
-      render_skills(pdf, data, config)
-      render_languages(pdf, data, config)
-      right_bottom = pdf.cursor
-    end
-
-    pdf.move_cursor_to([ left_bottom, right_bottom ].min - 8)
+    render_side_by_side(
+      pdf,
+      [ 0, left_width ],
+      [ left_width + 10, right_width ],
+      left: lambda {
+        render_education(pdf, data, config)
+        render_certifications(pdf, data, config)
+      },
+      right: lambda {
+        render_skills(pdf, data, config)
+        render_languages(pdf, data, config)
+      }
+    )
+    pdf.move_down 8
     render_work_experience(pdf, resume, config)
+  end
+
+  # Draws two columns that start at the current position, then leaves the
+  # document just below whichever column ended lower (the later page, or the
+  # smaller y on the same page) so following content continues without a gap.
+  # Prawn's cursor inside a stretchy bounding_box is always 0, so this works
+  # with absolute page numbers and y positions instead. A column that spills
+  # onto the next page continues from that page's top margin.
+  def self.render_side_by_side(pdf, left_column, right_column, left:, right:)
+    start_page = pdf.page_number
+    top = pdf.cursor
+    ends = []
+
+    [ [ left_column, left ], [ right_column, right ] ].each do |(x, width), body|
+      pdf.go_to_page(start_page)
+      pdf.bounding_box([ x, top ], width: width) do
+        flow_from_page_top(pdf.bounds)
+        body.call
+      end
+      ends << [ pdf.page_number, pdf.y ]
+    end
+
+    page, y = ends.max_by { |page_number, end_y| [ page_number, -end_y ] }
+    pdf.go_to_page(page)
+    pdf.y = y
+  end
+
+  # A Prawn bounding box keeps its original top on every page it spills onto,
+  # which would leave the header's height blank at the top of page 2. Move the
+  # column up to the top margin whenever it breaks onto another page.
+  def self.flow_from_page_top(box)
+    page_top = box.parent.absolute_top
+    box.define_singleton_method(:move_past_bottom) do
+      @y = page_top
+      super()
+    end
   end
 
   def self.render_clean_layout(pdf, resume, data, config)
@@ -256,7 +284,7 @@ class AtsTemplatePdfService
     return if resume.work_experiences.blank?
 
     render_section_title(pdf, "WORK EXPERIENCE", config)
-    sorted = Array(resume.work_experiences).sort_by { |exp| exp.is_current ? Time.current.to_i : Date.parse(exp.start_date.to_s).to_time.to_i rescue 0 }.reverse
+    sorted = sort_experiences_newest_first(resume.work_experiences)
     sorted.each do |experience|
       date_text = "#{experience.start_date} - #{experience.is_current ? 'Present' : experience.end_date}"
       pdf.float { pdf.text date_text, size: config[:meta_size] || 10, align: :right }
@@ -270,6 +298,41 @@ class AtsTemplatePdfService
       end
       pdf.move_down(config[:experience_gap] || 10)
     end
+  end
+
+  # Current roles first, then by start date, newest first. Roles whose start
+  # date cannot be read go last; ties keep their input order.
+  def self.sort_experiences_newest_first(experiences)
+    oldest = Date.new(1, 1, 1)
+    Array(experiences).each_with_index.sort_by do |experience, index|
+      start = parse_resume_date(experience.start_date) || oldest
+      [ experience.is_current ? 0 : 1, -start.jd, index ]
+    end.map(&:first)
+  end
+
+  # Reads the date formats resumes carry: Date/Time objects, "YYYY-MM-DD",
+  # "YYYY-MM", "YYYY", "MM/YYYY", and "Present"/"Current" (today). Returns nil
+  # for blank or unreadable values.
+  def self.parse_resume_date(value)
+    return value.to_date if value.is_a?(Date) || value.is_a?(Time)
+
+    text = value.to_s.strip
+    return nil if text.blank?
+    return Date.current if text.match?(/\A(present|current|now)\z/i)
+
+    year, month, day =
+      case text
+      when /\A(\d{4})-(\d{1,2})-(\d{1,2})/ then [ $1, $2, $3 ]
+      when /\A(\d{4})[-\/](\d{1,2})\z/ then [ $1, $2, 1 ]
+      when /\A(\d{1,2})\/(\d{4})\z/ then [ $2, $1, 1 ]
+      when /\A(\d{4})\z/ then [ $1, 1, 1 ]
+      end
+    return Date.new(year.to_i, month.to_i, day.to_i) if year && Date.valid_date?(year.to_i, month.to_i, day.to_i)
+    return nil if year
+
+    Date.parse(text)
+  rescue Date::Error
+    nil
   end
 
   def self.normalize_responsibilities(raw)
@@ -371,7 +434,7 @@ class AtsTemplatePdfService
   def self.render_work_experience_clean(pdf, resume, config)
     return if resume.work_experiences.blank?
     render_section_title_clean(pdf, "Work Experience", config)
-    sorted = Array(resume.work_experiences).sort_by { |exp| exp.is_current ? Time.current.to_i : Date.parse(exp.start_date.to_s).to_time.to_i rescue 0 }.reverse
+    sorted = sort_experiences_newest_first(resume.work_experiences)
     sorted.each do |experience|
       pdf.text "#{experience.job_title} - #{experience.company}", size: config[:subheading_size] || 11, style: :bold
       pdf.text "#{experience.start_date} - #{experience.is_current ? 'Present' : experience.end_date}", size: config[:meta_size] || 10

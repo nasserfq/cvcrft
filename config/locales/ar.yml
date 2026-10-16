@@ -401,6 +401,8 @@ ar:
     job_description_label: "وصف الوظيفة"
     job_description_placeholder: "أدخل وصف الوظيفة التي تريد التقدم إليها..."
     ats_template_label: "اختر قالب ATS للتصدير"
+    preview_template: "معاينة القالب"
+    use_template: "استخدم هذا القالب"
     select_resume_and_job: "يرجى اختيار سيرة ذاتية وإدخال وصف الوظيفة واختيار قالب."
     select_resume_label: "اختيار السيرة الذاتية"
     choose_resume: "اختر سيرتك الذاتية أولاً"

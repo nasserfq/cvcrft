@@ -104,4 +104,92 @@ class AtsTemplatePdfServiceTest < ActiveSupport::TestCase
 
     AtsTemplatePdfService.generate_pdf(@resume, {}, template: "no_such_template")
   end
+
+  # Prawn's cursor inside a stretchy bounding_box is always 0, so the old
+  # "min of the two column cursors" jumped to the page bottom and pushed work
+  # experience onto page 2.
+  %w[two_column_corporate white_black_engineering minimalist_real_estate infographic_light].each do |key|
+    test "#{key} keeps work experience on page one" do
+      result = AtsTemplatePdfService.generate_pdf(@resume, sample_data, template: key)
+      pages = PDF::Reader.new(result[:path]).pages
+
+      assert_equal 1, pages.size
+      assert_match(/WORK EXPERIENCE/, pages.first.text)
+      assert_match(/Engineer/, pages.first.text)
+    ensure
+      File.delete(result[:path]) if result && File.exist?(result[:path])
+    end
+  end
+
+  test "render_side_by_side continues below the taller column" do
+    pdf = Prawn::Document.new
+    start_y = pdf.y
+
+    AtsTemplatePdfService.render_side_by_side(
+      pdf, [ 0, 100 ], [ 120, 100 ],
+      left: -> { pdf.move_down 50 },
+      right: -> { pdf.move_down 200 }
+    )
+
+    assert_equal 1, pdf.page_number
+    assert_in_delta start_y - 200, pdf.y, 0.01
+  end
+
+  test "render_side_by_side follows a column that spills onto the next page" do
+    pdf = Prawn::Document.new
+    pdf.move_down 600
+
+    AtsTemplatePdfService.render_side_by_side(
+      pdf, [ 0, 100 ], [ 120, 100 ],
+      left: -> { 20.times { pdf.text "line" } },
+      right: -> { pdf.move_down 10 }
+    )
+
+    line_height = pdf.height_of("line")
+    assert_equal 2, pdf.page_count
+    assert_equal 2, pdf.page_number
+    # The spilled lines restart at the top margin, not at the column's page-1 offset.
+    assert_operator pdf.y, :>, pdf.bounds.absolute_top - (20 * line_height)
+  end
+
+  test "parse_resume_date reads the date formats resumes carry" do
+    service = AtsTemplatePdfService
+    travel_to Date.new(2026, 10, 16) do
+      assert_equal Date.new(2021, 3, 1), service.parse_resume_date("2021-03")
+      assert_equal Date.new(2021, 3, 15), service.parse_resume_date("2021-03-15")
+      assert_equal Date.new(2019, 1, 1), service.parse_resume_date("2019")
+      assert_equal Date.new(2020, 7, 1), service.parse_resume_date("07/2020")
+      assert_equal Date.new(2018, 5, 2), service.parse_resume_date(Date.new(2018, 5, 2))
+      assert_equal Date.new(2026, 10, 16), service.parse_resume_date("Present")
+      assert_nil service.parse_resume_date("")
+      assert_nil service.parse_resume_date(nil)
+      assert_nil service.parse_resume_date("2021-13")
+      assert_nil service.parse_resume_date("someday")
+    end
+  end
+
+  test "sort_experiences_newest_first orders mixed date formats newest first" do
+    experiences = [
+      WorkExperience.new(job_title: "Oldest", start_date: "2010"),
+      WorkExperience.new(job_title: "Unknown", start_date: ""),
+      WorkExperience.new(job_title: "Middle", start_date: "2015-06-01"),
+      WorkExperience.new(job_title: "Current", start_date: "2012-01", is_current: true),
+      WorkExperience.new(job_title: "Recent", start_date: "2020-02")
+    ]
+
+    sorted = AtsTemplatePdfService.sort_experiences_newest_first(experiences)
+
+    assert_equal %w[Current Recent Middle Oldest Unknown], sorted.map(&:job_title)
+  end
+
+  private
+    def sample_data
+      {
+        professional_summary: "Experienced professional with a strong background.",
+        educations: [ { degree: "BSc", institution: "University", start_date: "2018-01", end_date: "2022-01" } ],
+        skills: [ { category: "Technical", details: "Ruby" } ],
+        languages: [ { language: "English", proficiency: "Fluent" } ],
+        certifications: []
+      }
+    end
 end

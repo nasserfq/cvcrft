@@ -1,4 +1,5 @@
 module AtsStylePresets
+  # After adding or changing a style, run `bin/rails ats_previews:generate` to refresh public/ats_previews.
   module AtsStyleCatalog
     def self.styles
       @styles ||= [

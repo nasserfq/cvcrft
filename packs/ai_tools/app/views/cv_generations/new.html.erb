@@ -189,6 +189,8 @@
           preview: "<%= j t('cv_generation.preview') %>",
           download: "<%= j t('cv_generation.download') %>",
           ats_template_label: "<%= j t('cv_generation.ats_template_label') %>",
+          preview_template: "<%= j t('cv_generation.preview_template') %>",
+          use_template: "<%= j t('cv_generation.use_template') %>",
           select_resume_and_job: "<%= j t('cv_generation.select_resume_and_job') %>"
         };
         window.CV_ATS_TEMPLATES = <%= raw ats_template_options_for_cv_generation.to_json %>;
@@ -247,6 +249,127 @@
           }
         };
 
+        // ATS template previews: static page-1 WebP images in public/ats_previews.
+        // Cards load the small thumbnail (1x/2x); the full image loads only in the lightbox.
+        const atsThumbSrc = (template) =>
+          template.thumb_url || '/ats_previews/' + template.key + '-thumb.webp';
+        const atsThumb2xSrc = (template) =>
+          template.thumb_2x_url || '/ats_previews/' + template.key + '-thumb@2x.webp';
+        const atsFullSrc = (template) =>
+          template.full_url || '/ats_previews/' + template.key + '.webp';
+
+        const MagnifierIcon = ({ className }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+            <path d="M11 8v6M8 11h6" />
+          </svg>
+        );
+
+        // Full-size glass lightbox for one template preview.
+        const AtsTemplateLightbox = ({ template, onClose, onUse }) => {
+          const closeRef = React.useRef(null);
+          const panelRef = React.useRef(null);
+          const onCloseRef = React.useRef(onClose);
+          const [imageFailed, setImageFailed] = useState(false);
+          onCloseRef.current = onClose;
+
+          useEffect(() => {
+            const trigger = document.activeElement;
+            const previousOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            if (closeRef.current) closeRef.current.focus();
+
+            const handleKeyDown = (event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                onCloseRef.current();
+                return;
+              }
+              if (event.key !== 'Tab' || !panelRef.current) return;
+              const focusable = panelRef.current.querySelectorAll('button:not([disabled])');
+              if (focusable.length === 0) return;
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+              } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+              }
+            };
+            document.addEventListener('keydown', handleKeyDown);
+
+            return () => {
+              document.removeEventListener('keydown', handleKeyDown);
+              document.body.style.overflow = previousOverflow;
+              if (trigger && typeof trigger.focus === 'function') trigger.focus();
+            };
+          }, []);
+
+          const titleId = 'ats-preview-title-' + template.key;
+
+          // Portal to <body> so a blurred or transformed ancestor cannot trap the fixed overlay.
+          return ReactDOM.createPortal(
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-6"
+              onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+              data-testid="ats-preview-backdrop"
+            >
+              <div
+                ref={panelRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+                className="glass rounded-2xl p-3 sm:p-4 w-full max-w-xl max-h-full flex flex-col text-white"
+              >
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <h2 id={titleId} className="text-base sm:text-lg font-semibold leading-snug">
+                      {template.name}
+                    </h2>
+                    {template.description && (
+                      <p className="text-xs sm:text-sm text-white/60 mt-0.5 line-clamp-2">{template.description}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1 min-h-0 overflow-auto overscroll-contain rounded-xl border border-white/10 bg-white/5 flex items-center justify-center">
+                  {imageFailed ? (
+                    <p className="p-6 text-sm text-white/70 text-center">{template.description || template.name}</p>
+                  ) : (
+                    <img
+                      src={atsFullSrc(template)}
+                      alt={template.name}
+                      decoding="async"
+                      className="block max-h-[calc(100dvh-11rem)] sm:max-h-[85vh] w-auto max-w-full bg-white"
+                      onError={() => setImageFailed(true)}
+                    />
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center justify-end gap-2 mt-3">
+                  <button
+                    ref={closeRef}
+                    type="button"
+                    onClick={onClose}
+                    className="glass-soft sr-btn min-h-[44px] px-4 rounded-xl text-sm font-medium text-white hover:bg-white/10 touch-manipulation"
+                  >
+                    {t.close}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onUse}
+                    className="sr-btn sr-primary min-h-[44px] px-4 rounded-xl text-sm font-semibold touch-manipulation"
+                  >
+                    {t.use_template}
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          );
+        };
+
         const CvGeneratorApp = () => {
           console.log('🔄 CvGeneratorApp component rendering...');
 
@@ -257,6 +380,10 @@
             window.CV_DEFAULT_ATS_TEMPLATE || 'harvard_classic'
           );
           const atsTemplates = window.CV_ATS_TEMPLATES || [];
+          const [previewTemplate, setPreviewTemplate] = useState(null);
+          const [failedPreviews, setFailedPreviews] = useState({});
+          const markPreviewFailed = (key) =>
+            setFailedPreviews((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
           const [isGenerating, setIsGenerating] = useState(false);
           const [isLoading, setIsLoading] = useState(true);
 
@@ -699,27 +826,64 @@
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   {t.ats_template_label}
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 max-h-[min(50vh,28rem)] sm:max-h-none overflow-y-auto overscroll-contain pr-0.5">
+                <div
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-h-[70vh] sm:max-h-none overflow-y-auto sm:overflow-visible overscroll-contain p-0.5"
+                  role="group"
+                  aria-label={t.ats_template_label}
+                  data-testid="ats-template-picker"
+                >
                   {atsTemplates.map((template) => {
                     const isSelected = selectedAtsTemplate === template.key;
+                    const hasImage = !failedPreviews[template.key];
                     return (
-                      <button
-                        key={template.key}
-                        type="button"
-                        onClick={() => setSelectedAtsTemplate(template.key)}
-                        className={`text-start p-3 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
-                          isSelected
-                            ? 'border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/25'
-                            : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-primary/40'
-                        }`}
-                      >
-                        <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug">
-                          {template.name}
-                        </span>
-                        <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                          {template.description}
-                        </span>
-                      </button>
+                      <div key={template.key} className="relative" data-template-key={template.key}>
+                        <button
+                          type="button"
+                          aria-pressed={isSelected}
+                          onClick={() => setSelectedAtsTemplate(template.key)}
+                          className={`flex flex-col w-full h-full text-start p-2 sm:p-2.5 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
+                            isSelected
+                              ? 'border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/25'
+                              : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-primary/40 active:scale-[0.99]'
+                          }`}
+                        >
+                          {hasImage && (
+                            <span className="block w-full aspect-[1/1.294] rounded-lg overflow-hidden border border-white/10 bg-white mb-2 shadow-sm">
+                              <img
+                                src={atsThumbSrc(template)}
+                                srcSet={atsThumbSrc(template) + ' 1x, ' + atsThumb2xSrc(template) + ' 2x'}
+                                width="320"
+                                height="414"
+                                alt={template.name}
+                                loading="lazy"
+                                decoding="async"
+                                className="block w-full h-full object-cover object-top"
+                                onError={() => markPreviewFailed(template.key)}
+                              />
+                            </span>
+                          )}
+                          <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug px-0.5">
+                            {template.name}
+                          </span>
+                          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 px-0.5">
+                            {template.description}
+                          </span>
+                        </button>
+                        {hasImage && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewTemplate(template)}
+                            aria-label={t.preview_template + ': ' + template.name}
+                            title={t.preview_template}
+                            data-testid="ats-preview-button"
+                            className="absolute top-2 end-2 h-11 w-11 inline-flex items-center justify-center rounded-full touch-manipulation group focus-visible:outline-none"
+                          >
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-[#07120D]/70 backdrop-blur-md text-white shadow-md transition-transform group-hover:scale-110 group-focus-visible:ring-2 group-focus-visible:ring-primary">
+                              <MagnifierIcon className="h-4 w-4" />
+                            </span>
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -1081,6 +1245,17 @@
               )}
 
               {/* PDF Preview Modal */}
+              {previewTemplate && (
+                <AtsTemplateLightbox
+                  template={previewTemplate}
+                  onClose={() => setPreviewTemplate(null)}
+                  onUse={() => {
+                    setSelectedAtsTemplate(previewTemplate.key);
+                    setPreviewTemplate(null);
+                  }}
+                />
+              )}
+
               {showPreviewModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                   <div className="bg-white dark:bg-darkBase rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200 dark:border-white/10">
