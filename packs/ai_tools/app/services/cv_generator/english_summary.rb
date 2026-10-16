@@ -27,7 +27,7 @@ module CvGenerator
       return summary if summary.blank? || self.class.pdf_safe?(summary)
 
       response = @llm.complete(system: SYSTEM_PROMPT, user: summary.to_s, temperature: 0.2, max_tokens: 1000)
-      translated = ProfessionalSummaryText.normalize(response.content)
+      translated = response.content.to_s.strip
       raise NotEnglish, "Professional summary is not in English" unless translated.present? && self.class.pdf_safe?(translated)
 
       translated
