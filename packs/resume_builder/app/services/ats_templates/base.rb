@@ -4,7 +4,7 @@ module AtsTemplates
       raise NotImplementedError
     end
 
-    def self.name
+    def self.display_name
       raise NotImplementedError
     end
 
