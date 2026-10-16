@@ -14,11 +14,20 @@ packs/resume_builder:
     - test/integration/security_fixes_test.rb
     - test/services/ats_template_pdf_service_test.rb
     - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsStylePresets::AtsPreviewSample":
+    violations:
+    - privacy
+    files:
+    - lib/tasks/ats_previews.rake
+    - test/services/resume_builder/ats_preview_sample_test.rb
   "::AtsStylePresets::AtsStyleCatalog":
     violations:
     - privacy
     files:
+    - test/helpers/cv_generation_helper_test.rb
+    - test/services/ats_preview_assets_test.rb
     - test/services/ats_template_pdf_service_test.rb
+    - test/services/resume_builder/ats_preview_sample_test.rb
     - test/services/resume_builder/ats_style_presets_test.rb
   "::AtsStylePresets::Base":
     violations:
@@ -44,9 +53,12 @@ packs/resume_builder:
     violations:
     - privacy
     files:
+    - lib/tasks/ats_previews.rake
     - test/jobs/cv_generator_job_test.rb
     - test/services/ats_template_pdf_service_test.rb
+    - test/services/resume_builder/ats_preview_sample_test.rb
     - test/services/resume_builder/ats_style_presets_test.rb
+    - test/system/ats_template_preview_test.rb
   "::AtsTemplates::Base":
     violations:
     - privacy
@@ -125,3 +137,4 @@ packs/resume_builder:
     - privacy
     files:
     - test/models/work_experience_test.rb
+    - test/services/ats_template_pdf_service_test.rb

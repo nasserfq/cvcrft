@@ -196,6 +196,9 @@
   "templates": {
     "title": "Select a Template",
     "ats_picker_label": "Choose ATS template for export",
+    "preview_template": "Preview template",
+    "close": "Close",
+    "use_template": "Use this template",
     "modern": "Modern",
     "classic": "Classic",
     "minimal": "Minimal",

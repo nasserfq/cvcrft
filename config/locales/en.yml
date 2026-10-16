@@ -403,6 +403,8 @@ en:
     job_description_label: "Job Description"
     job_description_placeholder: "Enter the job description you want to apply for..."
     ats_template_label: "Choose ATS template for export"
+    preview_template: "Preview template"
+    use_template: "Use this template"
     select_resume_and_job: "Please select a resume, enter a job description, and choose a template."
     select_resume_label: "Select Resume"
     choose_resume: "Choose one of your CVs first."
