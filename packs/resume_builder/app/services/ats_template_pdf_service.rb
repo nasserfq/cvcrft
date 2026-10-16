@@ -19,71 +19,19 @@ class AtsTemplatePdfService
   def self.generate_pdf(resume, data, options = {})
     template_key = normalize_template_key(options[:template] || options["template"])
 
+    style = AtsStylePresets::AtsStyleCatalog.find(template_key)
     # Preserve the exact original classic output using the legacy generator.
-    if template_key == "original_classic"
-      return AtsPdfGenerator.generate_pdf(resume, data, template: "classic_01")
-    end
+    return AtsPdfGenerator.generate_pdf(resume, data, template: style.legacy_template) if style.legacy_template
 
-    catalog = AtsStylePresets::AtsStyleCatalog.catalog
-    style = catalog.find { |item| item[:key] == template_key } || catalog.first
-    config = style[:config]
+    config = style.config
 
     filename = resume.complete_name.to_s.parameterize.presence&.then { |slug| "#{slug}_resume.pdf" } || "resume.pdf"
     pdf_path = AtsPdfGenerator.unique_pdf_path
 
     Prawn::Document.generate(pdf_path, force_encoding: true, margin: config[:margin] || 36) do |pdf|
       pdf.font "Helvetica", enable_smart_quotes: false do
-        case template_key
-        when "harvard_classic"
-          render_single_column_layout(pdf, resume, data, config)
-        when "white_black_engineering"
-          render_two_column_layout(
-            pdf,
-            resume,
-            data,
-            config,
-            left_width_ratio: 0.28,
-            sidebar_title: "TECH PROFILE",
-            sidebar_sections: [ :contact, :skills, :languages ],
-            main_sections: [ :summary, :education, :work_experience, :certifications ]
-          )
-        when "simple_clean_gray"
-          render_profile_band_layout(pdf, resume, data, config, band_color: "6B7280")
-        when "minimalist_real_estate"
-          render_two_column_layout(
-            pdf,
-            resume,
-            data,
-            config,
-            left_width_ratio: 0.24,
-            sidebar_title: "PROFILE SNAPSHOT",
-            sidebar_sections: [ :contact, :languages ],
-            main_sections: [ :summary, :education, :skills, :work_experience, :certifications ]
-          )
-        when "two_column_corporate"
-          render_two_column_layout(
-            pdf,
-            resume,
-            data,
-            config,
-            left_width_ratio: 0.32,
-            sidebar_title: "CORPORATE PROFILE",
-            sidebar_sections: [ :contact, :languages, :skills ],
-            main_sections: [ :summary, :education, :work_experience, :certifications ]
-          )
-        when "blue_minimal_professional"
-          render_profile_band_layout(pdf, resume, data, config, band_color: "1E3A8A")
-        when "black_white_corporate"
-          render_corporate_layout(pdf, resume, data, config)
-        when "infographic_light"
-          render_infographic_layout(pdf, resume, data, config)
-        when "clean_single_column"
-          render_clean_layout(pdf, resume, data, config)
-        when "business_admin_modern"
-          render_business_admin_layout(pdf, resume, data, config)
-        else
-          render_single_column_layout(pdf, resume, data, config)
-        end
+        layout = style.layout
+        public_send(layout[:renderer], pdf, resume, data, config, **layout[:options])
       end
     end
 

@@ -4,12 +4,22 @@ module AtsStylePresets
       raise NotImplementedError
     end
 
-    def self.name
+    def self.display_name
       raise NotImplementedError
     end
 
     def self.description
       raise NotImplementedError
+    end
+
+    # Which AtsTemplatePdfService renderer draws this style, and its keyword options.
+    def self.layout
+      { renderer: :render_single_column_layout, options: {} }
+    end
+
+    # Set by presets that render through the legacy AtsPdfGenerator.
+    def self.legacy_template
+      nil
     end
 
     # ATS-safe layout and typography tokens.

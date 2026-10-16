@@ -51,7 +51,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to coach_chat_path(chat)
     # Opens with the name question and its two boxes, without calling the model.
     first = chat.messages.sole
-    assert_equal [ "assistant", I18n.t("coach.first_question"), [ { "label" => I18n.t("coach.first_name"), "type" => "text" }, { "label" => I18n.t("coach.last_name"), "type" => "text" } ] ],
+    assert_equal [ "assistant", I18n.t("coach.first_question", locale: :ar), [ { "label" => I18n.t("coach.first_name", locale: :ar), "type" => "text" }, { "label" => I18n.t("coach.last_name", locale: :ar), "type" => "text" } ] ],
                  [ first.role, first.content, first.fields ]
     assert_no_enqueued_jobs(only: Coach::TurnJob)
   end
@@ -116,7 +116,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
       post coach_chats_url, params: { path: "import", pdf_file: fixture_file_upload("cv.pdf", "text/plain") }
     end
     assert_response :unprocessable_entity
-    assert_select "[role=alert]", I18n.t("coach.import.not_pdf")
+    assert_select "[role=alert]", I18n.t("coach.import.not_pdf", locale: :ar)
   end
 
   test "an upload over 10 MB is rejected" do
@@ -221,7 +221,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
       post send_to_seera_coach_chat_url(@chat)
     end
     assert_redirected_to coach_chat_path(@chat)
-    assert_equal I18n.t("coach.send_to_seera.empty"), flash[:alert]
+    assert_equal I18n.t("coach.send_to_seera.empty", locale: :ar), flash[:alert]
   end
 
   test "message is refused once today's cap is reached" do
@@ -231,7 +231,7 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
       post message_coach_chat_url(@chat), params: { content: "One more" }, as: :json
     end
     assert_response :too_many_requests
-    assert_equal I18n.t("coach.daily_cap", limit: Coach::DAILY_LIMIT), response.parsed_body["error"]
+    assert_equal I18n.t("coach.daily_cap", limit: Coach::DAILY_LIMIT, locale: :ar), response.parsed_body["error"]
   end
 
   test "yesterday's messages don't count toward the cap" do

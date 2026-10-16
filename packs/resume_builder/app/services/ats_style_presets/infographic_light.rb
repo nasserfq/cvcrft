@@ -1,8 +1,12 @@
 module AtsStylePresets
   class InfographicLight < Base
     def self.key = "infographic_light"
-    def self.name = "Infographic Light"
+    def self.display_name = "Infographic Light"
     def self.description = "Readable modern layout with ATS-safe typography"
+
+    def self.layout
+      super.merge(renderer: :render_infographic_layout)
+    end
 
     def self.config
       super.merge(

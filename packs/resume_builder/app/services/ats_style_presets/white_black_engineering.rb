@@ -1,8 +1,20 @@
 module AtsStylePresets
   class WhiteBlackEngineering < Base
     def self.key = "white_black_engineering"
-    def self.name = "White/Black Engineering"
+    def self.display_name = "White/Black Engineering"
     def self.description = "Dense technical resume style with compact spacing"
+
+    def self.layout
+      super.merge(
+        renderer: :render_two_column_layout,
+        options: {
+          left_width_ratio: 0.28,
+          sidebar_title: "TECH PROFILE",
+          sidebar_sections: [ :contact, :skills, :languages ],
+          main_sections: [ :summary, :education, :work_experience, :certifications ]
+        }
+      )
+    end
 
     def self.config
       super.merge(

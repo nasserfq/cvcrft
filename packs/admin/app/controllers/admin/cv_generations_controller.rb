@@ -1,5 +1,16 @@
 module Admin
   class CvGenerationsController < Admin::ApplicationController
+    # POST /admin/cv_generations/regenerate_all_pdfs
+    # Rebuilds the PDF of every completed CV generation. Runs synchronously.
+    def regenerate_all_pdfs
+      result = CvGenerationPdfRegenerator.call
+      # The admin area has no locale switching, but I18n.locale is thread-local
+      # and can still hold a previous request's value, so pin the default (en).
+      redirect_to admin_cv_generations_path,
+        notice: t("admin.cv_generations.regenerate_all_pdfs.done",
+                  **result.slice(:success, :total, :failed), locale: I18n.default_locale)
+    end
+
     # Overwrite any of the RESTful controller actions to implement custom behavior
     # For example, you may want to send an email after a foo is updated.
     #

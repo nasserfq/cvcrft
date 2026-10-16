@@ -1,0 +1,94 @@
+{
+  "professional_summary": "مهندس برمجيات ذو خبرة واسعة في تطوير تطبيقات الويب والحوسبة السحابية",
+  "work_experiences": [
+    {
+      "job_title": "Senior Software Engineer",
+      "company": "Tech Solutions Inc",
+      "start_date": "2020-01",
+      "end_date": "Present",
+      "responsibilities": [
+        "Lead development team, code reviews, architecture decisions"
+      ]
+    },
+    {
+      "job_title": "Full Stack Developer",
+      "company": "Digital Agency",
+      "start_date": "2017-06",
+      "end_date": "2019-12",
+      "responsibilities": [
+        "Frontend development, client communication"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "category": "technical",
+      "names": [
+        "Ruby",
+        "JavaScript",
+        "Python",
+        "SQL"
+      ],
+      "details": "Ruby, JavaScript, Python, SQL"
+    },
+    {
+      "category": "soft",
+      "names": [
+        "Leadership",
+        "Teamwork",
+        "Problem Solving"
+      ],
+      "details": "Leadership, Teamwork, Problem Solving"
+    },
+    {
+      "category": "language",
+      "names": [
+        "Arabic (Native)",
+        "English (Fluent)"
+      ],
+      "details": "Arabic (Native), English (Fluent)"
+    }
+  ],
+  "educations": [
+    {
+      "degree": "Bachelor of Computer Science",
+      "institution": "King Saud University",
+      "start_date": "2012-09",
+      "end_date": "2016-06",
+      "gpa": "3.8"
+    },
+    {
+      "degree": "Master of Software Engineering",
+      "institution": "Stanford University",
+      "start_date": "2018-09",
+      "end_date": "2020-06",
+      "gpa": "3.9"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "AWS Solutions Architect Professional",
+      "organization": "Amazon Web Services",
+      "date": "2023-05"
+    },
+    {
+      "name": "Ruby on Rails Certification",
+      "organization": "The Pragmatic Studio",
+      "date": "2022-08"
+    }
+  ],
+  "languages": [
+    {
+      "language": "Arabic",
+      "proficiency": "Native"
+    },
+    {
+      "language": "English",
+      "proficiency": "Fluent"
+    },
+    {
+      "language": "French",
+      "proficiency": "Intermediate"
+    }
+  ]
+}

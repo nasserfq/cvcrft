@@ -50,7 +50,7 @@ bundle exec sidekiq
 
 ```ruby
 # Initialize the service
-service = AzureOpenaiService.new(user_id, resume_id)
+service = CvGenerationService.new(user_id, resume_id)
 
 # Translate Arabic text
 result = service.translate_text("نص عربي للترجمة", {

@@ -403,6 +403,7 @@ ar:
     ats_template_label: "اختر قالب ATS للتصدير"
     select_resume_and_job: "يرجى اختيار سيرة ذاتية وإدخال وصف الوظيفة واختيار قالب."
     select_resume_label: "اختيار السيرة الذاتية"
+    choose_resume: "اختر سيرتك الذاتية أولاً"
     ats:
       original_classic:
         name: "الكلاسيكي الأصلي (قديم)"
@@ -662,3 +663,7 @@ ar:
     accept: "أوافق"
     decline: "أرفض"
     settings: "إعدادات ملفات تعريف الارتباط"
+  admin:
+    cv_generations:
+      regenerate_all_pdfs:
+        done: "اكتملت إعادة إنشاء ملفات PDF: نجح %{success} من %{total}، وفشل %{failed}"

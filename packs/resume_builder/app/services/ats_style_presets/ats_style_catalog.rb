@@ -16,11 +16,15 @@ module AtsStylePresets
       ].freeze
     end
 
+    def self.find(key)
+      styles.find { |style| style.key == key } || styles.first
+    end
+
     def self.catalog
       styles.map do |style|
         {
           key: style.key,
-          name: style.name,
+          name: style.display_name,
           description: style.description,
           config: style.config
         }

@@ -4,6 +4,7 @@ class CvGenerationsController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
   before_action :set_cv_generation, only: [ :show, :status, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :preview, :save_draft, :resume_draft ]
+  before_action :require_saved_resume, only: [ :retry, :resume_draft ]
 
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
@@ -97,10 +98,19 @@ class CvGenerationsController < ApplicationController
     user_id = current_user.id
     Rails.logger.info "Using user_id: #{user_id} for CV generation"
 
-    # Initialize the Azure OpenAI service
+    # Initialize the CV generation service
+    # The AI only rewrites the professional summary of a saved CV, so one is
+    # required. Refuse before a credit is consumed.
+    if cv_generation_params[:resume_id].blank?
+      respond_to do |format|
+        format.html { redirect_to new_cv_generation_path, alert: t("cv_generation.choose_resume") }
+        format.json { render json: { error: t("cv_generation.choose_resume") }, status: :unprocessable_entity }
+      end
+      return
+    end
+
     # resume_id comes from the request: only the user's own resumes may be used.
-    resume_id = cv_generation_params[:resume_id].presence
-    resume_id &&= current_user.resumes.find(resume_id).id
+    resume_id = current_user.resumes.find(cv_generation_params[:resume_id]).id
 
     unless limits.consume!(:job_based_generation)
       respond_to do |format|
@@ -110,7 +120,7 @@ class CvGenerationsController < ApplicationController
       return
     end
 
-    service = AzureOpenaiService.new(user_id, resume_id)
+    service = CvGenerationService.new(user_id, resume_id)
 
     # Generate CV
     ats_template = AtsTemplatePdfService.normalize_template_key(cv_generation_params[:ats_template])
@@ -163,7 +173,7 @@ class CvGenerationsController < ApplicationController
     end
 
     user_id = @cv_generation.user_id
-    service = AzureOpenaiService.new(user_id, @cv_generation.resume_id)
+    service = CvGenerationService.new(user_id, @cv_generation.resume_id)
 
     result = service.retry_cv_generation(@cv_generation.id)
 
@@ -176,7 +186,7 @@ class CvGenerationsController < ApplicationController
 
   def cancel
     user_id = @cv_generation.user_id
-    service = AzureOpenaiService.new(user_id, @cv_generation.resume_id)
+    service = CvGenerationService.new(user_id, @cv_generation.resume_id)
 
     result = service.cancel_cv_generation(@cv_generation.id)
 
@@ -188,7 +198,7 @@ class CvGenerationsController < ApplicationController
   end
 
   def status
-    service = AzureOpenaiService.new(current_user.id, @cv_generation.resume_id)
+    service = CvGenerationService.new(current_user.id, @cv_generation.resume_id)
 
     result = service.get_cv_generation_status(@cv_generation.id)
 
@@ -200,7 +210,7 @@ class CvGenerationsController < ApplicationController
 
   def stats
     user_id = current_user.id
-    service = AzureOpenaiService.new(user_id)
+    service = CvGenerationService.new(user_id)
 
     @stats = service.get_cv_generation_stats
 
@@ -418,7 +428,7 @@ class CvGenerationsController < ApplicationController
 
       # Start the CV generation job
       user_id = @cv_generation.user_id
-      service = AzureOpenaiService.new(user_id, @cv_generation.resume_id)
+      service = CvGenerationService.new(user_id, @cv_generation.resume_id)
 
       draft_data = @cv_generation.resume_data
       service.generate_cv(
@@ -452,68 +462,6 @@ class CvGenerationsController < ApplicationController
     end
   end
 
-
-  # Admin action to regenerate all PDFs (restricted to admins)
-  def regenerate_all_pdfs
-    # Check if user is admin
-    unless current_user&.admin?
-      redirect_to cv_generations_path, alert: "Admin access required"
-      return
-    end
-
-    # Get all completed CV generations with metadata
-    cv_generations = CvGeneration.where(status: "completed")
-                                .where("metadata->>'pdf_generated' = 'true'")
-
-    # Count of PDFs to process
-    total = cv_generations.count
-    processed = 0
-    success = 0
-    failed = 0
-
-    cv_generations.find_each do |cv_gen|
-      begin
-        processed += 1
-
-        # Skip if no data available
-        unless cv_gen.job_description.present? && cv_gen.user_id.present?
-          failed += 1
-          next
-        end
-
-        # Get basic info
-        job_description = cv_gen.job_description
-        user_id = cv_gen.user_id
-        resume_id = cv_gen.resume_id
-
-        # Run the job with force regeneration
-        job = CvGeneratorJob.new
-        job.perform(
-          job_description,
-          user_id,
-          resume_id,
-          { force_pdf_regeneration: true }
-        )
-
-        success += 1
-
-        # Log progress every 5 items
-        if processed % 5 == 0
-          Rails.logger.info "PDF Regeneration: #{processed}/#{total} processed, #{success} successful, #{failed} failed"
-        end
-
-      rescue => e
-        failed += 1
-        Rails.logger.error "Failed to regenerate PDF for CV ##{cv_gen.id}: #{e.message}"
-      end
-    end
-
-    # Final stats
-    message = "PDF regeneration complete: #{success}/#{total} successful, #{failed} failed"
-    Rails.logger.info message
-    redirect_to cv_generations_path, notice: message
-  end
-
   private
 
   def set_cv_generation
@@ -526,6 +474,17 @@ class CvGenerationsController < ApplicationController
       :job_description, :resume_id, :complete_name, :email,
       :temperature, :max_tokens, :ats_template
     )
+  end
+
+  # Older generations made without a saved CV can't be re-run: the job only
+  # rewrites a saved CV's summary. Refuse before a credit is consumed.
+  def require_saved_resume
+    return if @cv_generation.resume_id
+
+    respond_to do |format|
+      format.html { redirect_to new_cv_generation_path, alert: t("cv_generation.choose_resume") }
+      format.json { render json: { success: false, error: t("cv_generation.choose_resume") }, status: :unprocessable_entity }
+    end
   end
 
   def ensure_user_has_resume

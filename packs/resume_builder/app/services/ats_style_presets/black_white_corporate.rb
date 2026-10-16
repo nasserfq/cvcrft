@@ -1,8 +1,12 @@
 module AtsStylePresets
   class BlackWhiteCorporate < Base
     def self.key = "black_white_corporate"
-    def self.name = "Black/White Corporate"
+    def self.display_name = "Black/White Corporate"
     def self.description = "Formal monochrome resume style for senior roles"
+
+    def self.layout
+      super.merge(renderer: :render_corporate_layout)
+    end
 
     def self.config
       super.merge(

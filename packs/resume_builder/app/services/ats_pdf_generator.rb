@@ -11,7 +11,7 @@ class AtsPdfGenerator
   TEMPLATES = [ AtsTemplates::Classic01 ].freeze
 
   def self.template_catalog
-    TEMPLATES.map { |template| { key: template.key, name: template.name, description: template.description } }
+    TEMPLATES.map { |template| { key: template.key, name: template.display_name, description: template.description } }
   end
 
   def self.normalize_template_key(template_key)

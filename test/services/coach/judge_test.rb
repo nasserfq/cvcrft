@@ -15,10 +15,15 @@ class Coach::JudgeTest < ActiveSupport::TestCase
 
   # Stub the whole chain: RubyLLM.chat checks Bedrock credentials, which CI doesn't have.
   def haiku
+    llm = haiku_chain
+    RubyLLM.stubs(:chat).returns(llm)
+    llm
+  end
+
+  def haiku_chain
     llm = stub
     llm.stubs(:with_instructions).returns(llm)
     llm.stubs(:with_schema).returns(llm)
-    RubyLLM.stubs(:chat).returns(llm)
     llm
   end
 
@@ -67,6 +72,49 @@ class Coach::JudgeTest < ActiveSupport::TestCase
 
     assert_includes Coach::Draft::SECTIONS, result["next_step"]
     assert_equal 1.0, result["scores"]["skills"]
+  end
+
+  test "a passed-in llm with judge? asks its judge, not RubyLLM" do
+    fake = mock
+    fake.stubs(:judge?).returns(true)
+    fake.expects(:judge).with { |input, questions:|
+      !input.include?(EMAIL) && questions.key?(:next_step)
+    }.returns(judgment("skills", "skills" => 3.0))
+    fake.expects(:fast_chat).never
+    RubyLLM.expects(:judge).never
+    RubyLLM.expects(:chat).never
+
+    result = Coach::Judge.call(@draft, llm: fake)
+
+    assert_equal "skills", result["next_step"]
+    assert_equal 1.0, result["scores"]["skills"]
+  end
+
+  test "a passed-in llm without judge? answers through its fast chat" do
+    fake = mock
+    fake.stubs(:judge?).returns(false)
+    fake.expects(:judge).never
+    chain = haiku_chain
+    chain.expects(:ask).returns(stub(parsed: { "next_step" => "education", "scores" => { "education" => 0.4 } }))
+    fake.expects(:fast_chat).returns(chain)
+    RubyLLM.expects(:chat).never
+
+    assert_equal "education", Coach::Judge.next_step(@draft, llm: fake)
+  end
+
+  test "a passed-in llm whose judge raises falls back to its fast chat and is reported" do
+    fake = mock
+    fake.stubs(:judge?).returns(true)
+    fake.expects(:judge).raises(RubyLLM::ServerError, "boom")
+    Sentry.expects(:capture_exception).with(instance_of(RubyLLM::ServerError), tags: { pack: "coach" })
+    chain = haiku_chain
+    chain.stubs(:ask).returns(stub(parsed: { "next_step" => "languages", "scores" => { "languages" => 0.5 } }))
+    fake.expects(:fast_chat).returns(chain)
+    RubyLLM.expects(:chat).never
+
+    scores = Coach::Judge.review(@draft, llm: fake)
+
+    assert_equal 0.5, scores["languages"]
   end
 
   private

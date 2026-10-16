@@ -1,8 +1,20 @@
 module AtsStylePresets
   class MinimalistRealEstate < Base
     def self.key = "minimalist_real_estate"
-    def self.name = "Minimalist Real Estate"
+    def self.display_name = "Minimalist Real Estate"
     def self.description = "Minimal profile-forward layout for business roles"
+
+    def self.layout
+      super.merge(
+        renderer: :render_two_column_layout,
+        options: {
+          left_width_ratio: 0.24,
+          sidebar_title: "PROFILE SNAPSHOT",
+          sidebar_sections: [ :contact, :languages ],
+          main_sections: [ :summary, :education, :skills, :work_experience, :certifications ]
+        }
+      )
+    end
 
     def self.config
       super.merge(

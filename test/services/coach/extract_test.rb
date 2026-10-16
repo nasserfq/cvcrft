@@ -3,10 +3,14 @@ require "test_helper"
 class Coach::ExtractTest < ActiveSupport::TestCase
   # Stub the whole chain: RubyLLM.chat checks Bedrock credentials, which CI doesn't have.
   def stub_llm(parsed)
+    RubyLLM.stubs(:chat).returns(chain(parsed))
+  end
+
+  def chain(parsed)
     llm = stub(ask: stub(parsed: parsed))
     llm.stubs(:with_instructions).returns(llm)
     llm.stubs(:with_schema).returns(llm)
-    RubyLLM.stubs(:chat).returns(llm)
+    llm
   end
 
   test "keeps valid sections and drops invalid entries" do
@@ -34,5 +38,13 @@ class Coach::ExtractTest < ActiveSupport::TestCase
     stub_llm(nil)
 
     assert_equal({}, Coach::Extract.call("…"))
+  end
+
+  test "a passed-in llm's fast chat is used instead of RubyLLM" do
+    fake = mock
+    fake.expects(:fast_chat).returns(chain({ "complete_name" => "Sara Ali" }))
+    RubyLLM.expects(:chat).never
+
+    assert_equal "Sara Ali", Coach::Extract.call("Sara Ali", llm: fake)["complete_name"]
   end
 end

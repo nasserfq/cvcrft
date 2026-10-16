@@ -12,6 +12,51 @@ packs/resume_builder:
     - privacy
     files:
     - test/integration/security_fixes_test.rb
+    - test/services/ats_template_pdf_service_test.rb
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsStylePresets::AtsStyleCatalog":
+    violations:
+    - privacy
+    files:
+    - test/services/ats_template_pdf_service_test.rb
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsStylePresets::Base":
+    violations:
+    - privacy
+    files:
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsStylePresets::HarvardClassic":
+    violations:
+    - privacy
+    files:
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsStylePresets::InfographicLight":
+    violations:
+    - privacy
+    files:
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsStylePresets::OriginalClassic":
+    violations:
+    - privacy
+    files:
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsTemplatePdfService":
+    violations:
+    - privacy
+    files:
+    - test/jobs/cv_generator_job_test.rb
+    - test/services/ats_template_pdf_service_test.rb
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsTemplates::Base":
+    violations:
+    - privacy
+    files:
+    - test/services/resume_builder/ats_style_presets_test.rb
+  "::AtsTemplates::Classic01":
+    violations:
+    - privacy
+    files:
+    - test/services/resume_builder/ats_style_presets_test.rb
   "::Certification":
     violations:
     - privacy
