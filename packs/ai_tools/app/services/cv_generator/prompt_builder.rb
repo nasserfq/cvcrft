@@ -91,7 +91,8 @@ module CvGenerator
         "Make the professional summary concise and impactful (3-4 sentences)",
         "Include relevant keywords from the job description",
         "Emphasize achievements and skills that match the role",
-        "Use strong action verbs and specific metrics"
+        "Use strong action verbs and specific metrics",
+        "Write the professional summary in English, even when the job description or the existing CV is in Arabic or another language"
       ]
 
       # The second line of each multi-line string below keeps its leading

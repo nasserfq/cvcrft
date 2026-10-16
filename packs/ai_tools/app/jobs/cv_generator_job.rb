@@ -102,7 +102,9 @@ class CvGeneratorJob
     prompts = CvGenerator::PromptBuilder.new(job_description: @job_description, snapshot: @snapshot)
     response = AiModel.complete(system: prompts.system_prompt, user: prompts.user_prompt,
                                 temperature: (@options[:temperature] || 0.7).to_f, max_tokens: (@options[:max_tokens] || 15000).to_i)
-    CvGenerator::ResponseParser.new(snapshot: @snapshot).call(response)
+    result = CvGenerator::ResponseParser.new(snapshot: @snapshot).call(response)
+    result[:professional_summary] = CvGenerator::EnglishSummary.new.call(result[:professional_summary])
+    result
   end
 
   # --- Data Persistence (Crucial Fix for storing full JSON) ---
