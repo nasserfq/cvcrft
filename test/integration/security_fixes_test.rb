@@ -138,6 +138,16 @@ class SecurityFixesTest < ActionDispatch::IntegrationTest
     assert_equal "/.x@2130706433:6379", controller.send(:posthog_path)
   end
 
+  test "old regenerate_all_pdfs path redirects to the admin area without running" do
+    CvGenerationPdfRegenerator.expects(:call).never
+    sign_in @attacker
+
+    post "/cv_generations/regenerate_all_pdfs"
+
+    assert_response 307
+    assert_equal "http://www.example.com/admin/cv_generations/regenerate_all_pdfs", response.location
+  end
+
   test "debug endpoints are gone" do
     assert_raises(ActionController::RoutingError) do
       Rails.application.routes.recognize_path("/test_sidekiq")

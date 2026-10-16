@@ -662,3 +662,7 @@ ar:
     accept: "أوافق"
     decline: "أرفض"
     settings: "إعدادات ملفات تعريف الارتباط"
+  admin:
+    cv_generations:
+      regenerate_all_pdfs:
+        done: "اكتملت إعادة إنشاء ملفات PDF: نجح %{success} من %{total}، وفشل %{failed}"

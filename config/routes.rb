@@ -103,7 +103,8 @@ Rails.application.routes.draw do
     end
     collection do
       get :stats
-      post :regenerate_all_pdfs # Admin-only action to regenerate all PDFs
+      # Moved to the admin area; 307 keeps the POST method and body.
+      post :regenerate_all_pdfs, to: redirect("/admin/cv_generations/regenerate_all_pdfs", status: 307)
       get :count
     end
   end
@@ -113,7 +114,11 @@ Rails.application.routes.draw do
     root "users#index"
     resources :users
     resources :resumes
-    resources :cv_generations
+    resources :cv_generations do
+      collection do
+        post :regenerate_all_pdfs
+      end
+    end
     resources :ai_translations
     resources :skills
     resources :work_experiences

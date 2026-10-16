@@ -664,3 +664,7 @@ en:
     accept: "Accept"
     decline: "Decline"
     settings: "Cookie settings"
+  admin:
+    cv_generations:
+      regenerate_all_pdfs:
+        done: "PDF regeneration complete: %{success}/%{total} successful, %{failed} failed"
