@@ -1,6 +1,5 @@
 module Coach
   class Agent
-    MODEL = ENV.fetch("COACH_MODEL", "us.anthropic.claude-sonnet-4-6")
     TOOLS = [ Coach::Tools::SaveSection, Coach::Tools::ProposeRewrite, Coach::Tools::NextStep, Coach::Tools::ReviewCv,
               Coach::Tools::AskFields ].freeze
 
@@ -25,8 +24,9 @@ module Coach
       TEXT
     }.freeze
 
-    def initialize(chat)
+    def initialize(chat, llm: Coach::Llm)
       @chat = chat
+      @llm = llm
       @tools = TOOLS.map { |tool| tool.new(@chat) }
     end
 
@@ -39,9 +39,9 @@ module Coach
       *history, last = @chat.messages.order(:id).to_a.drop_while { |m| m.role == "assistant" }
       raise ArgumentError, "the last message must be the user's" unless last&.role == "user"
 
-      llm = RubyLLM.chat(model: MODEL, provider: :bedrock)
-                   .with_instructions(instructions)
-                   .with_tools(*@tools)
+      llm = @llm.chat
+                .with_instructions(instructions)
+                .with_tools(*@tools)
       history.each { |m| llm.add_message(role: m.role.to_sym, content: m.content) }
       llm.ask(last.content) { |chunk| on_text.call(chunk.content) if chunk.content.present? }.content
     end

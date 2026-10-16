@@ -14,17 +14,37 @@ class Coach::AgentTest < ActiveSupport::TestCase
   end
 
   test "the opening question is left out of the model's history" do
+    chat = opened_chat
+    # Stubbed: RubyLLM.chat checks Bedrock credentials, which CI doesn't have.
+    RubyLLM.stubs(:chat).returns(chain)
+
+    assert_equal "Nice to meet you", Coach::Agent.new(chat).reply { }
+  end
+
+  test "a passed-in llm is used instead of RubyLLM" do
+    chat = opened_chat
+    fake = mock
+    fake.expects(:chat).returns(chain)
+    RubyLLM.expects(:chat).never
+
+    assert_equal "Nice to meet you", Coach::Agent.new(chat, llm: fake).reply { }
+  end
+
+  private
+
+  def opened_chat
     chat = Coach::Chat.create!(user: users(:one), path: "scratch")
     chat.messages.create!(role: "assistant", content: "What's your full name?")
     chat.messages.create!(role: "user", content: "First name: Sara")
+    chat
+  end
+
+  def chain
     llm = stub
     llm.stubs(:with_instructions).returns(llm)
     llm.stubs(:with_tools).returns(llm)
     llm.expects(:add_message).never
     llm.expects(:ask).with("First name: Sara").returns(stub(content: "Nice to meet you"))
-    # Stubbed: RubyLLM.chat checks Bedrock credentials, which CI doesn't have.
-    RubyLLM.stubs(:chat).returns(llm)
-
-    assert_equal "Nice to meet you", Coach::Agent.new(chat).reply { }
+    llm
   end
 end
