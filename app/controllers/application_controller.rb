@@ -16,8 +16,9 @@ class ApplicationController < ActionController::Base
   # Make Devise helpers available in views
   helper_method :user_signed_in?, :current_user
 
-  # Set locale before each request
-  before_action :set_locale
+  # Run each request in its locale, restoring the previous one afterwards so it
+  # cannot leak into the next request served by the same thread
+  around_action :switch_locale
 
   # Helper method to get text direction based on locale
   helper_method :text_direction, :current_locale
@@ -53,10 +54,12 @@ class ApplicationController < ActionController::Base
   end
 
   # Set the locale based on: 1) logged-in user preference, 2) cookie, 3) default (ar)
-  def set_locale
+  def switch_locale(&action)
     locale = extract_locale
-    I18n.locale = locale if valid_locale?(locale)
     persist_locale_preference(locale)
+    return yield unless valid_locale?(locale)
+
+    I18n.with_locale(locale, &action)
   end
 
   def extract_locale

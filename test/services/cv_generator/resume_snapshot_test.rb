@@ -43,8 +43,10 @@ class CvGenerator::ResumeSnapshotTest < ActiveSupport::TestCase
     resume.skills.create!(category: "technical", name: "Elixir", skill_names: [ "" ]).update_columns(skill_names: nil)
 
     technical = snapshot(resume)[:skills].find { |s| s[:category] == "technical" }
-    assert_equal [ "Ruby", "JavaScript", "Python", "SQL", "Go", "Rust", "Elixir" ], technical[:names]
-    assert_equal "Ruby, JavaScript, Python, SQL, Go, Rust, Elixir", technical[:details]
+    # resume.skills has no ORDER BY, so row order is up to Postgres; compare as sets.
+    expected = %w[Ruby JavaScript Python SQL Go Rust Elixir]
+    assert_equal expected.sort, technical[:names].sort
+    assert_equal technical[:names].join(", "), technical[:details]
   end
 
   test "gpa is left out when blank" do

@@ -28,7 +28,7 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     get new_cv_generation_url
     assert_redirected_to new_resume_path
     follow_redirect! while response.redirect?
-    assert_select "[role=alert]", text: I18n.t("resume.need_resume_for_job")
+    assert_select "[role=alert]", text: I18n.t("resume.need_resume_for_job", locale: :ar)
   end
 
   test "should redirect to login when not authenticated for index" do
