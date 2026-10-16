@@ -1,33 +1,9 @@
 require "prawn"
 require "prawn/table"
-require "net/http"
-require "uri"
 require "json"
 require "base64"
 require "ostruct" # For potentially complex data parsing
 require "active_support/core_ext/hash/keys" # Needed for deep_symbolize_keys
-
-# Mock classes for demonstration outside a full Rails environment.
-# In a real Rails app, these models (Resume, CvGeneration, User, etc.) would already exist.
-# class Resume < OpenStruct
-#   def work_experiences; self[:work_experiences] || []; end
-#   def skills; self[:skills] || []; end
-#   def educations; self[:educations] || []; end
-#   def certifications; self[:certifications] || []; end
-#   def languages; self[:languages] || []; end
-#   def update!(attributes); self.marshal_load(self.marshal_dump.merge(attributes)); end
-#   def self.find(id); new(id: id); end
-# end
-# class CvGeneration < OpenStruct
-#   def update!(attributes); self.marshal_load(self.marshal_dump.merge(attributes)); end
-#   def self.find(id); new(id: id, metadata: {}); end
-# end
-# class User < OpenStruct
-#   def cv_generations; self[:cv_generations] || []; end
-#   def self.find(id); new(id: id); end
-# end
-# Rails = OpenStruct.new(logger: Logger.new(STDOUT), application: OpenStruct.new(credentials: { azure: { openai_api_key: "FAKE_KEY" } }))
-
 
 class CvGeneratorJob
   include Sidekiq::Job
@@ -77,6 +53,7 @@ class CvGeneratorJob
         Rails.logger.info "📋 Loaded existing resume ID: #{@existing_resume.id}"
         Rails.logger.info "📋 Resume has #{@existing_resume.skills.count} skills"
         Rails.logger.info "📋 First skill: #{@existing_resume.skills.first&.attributes&.inspect}"
+        @snapshot = CvGenerator::ResumeSnapshot.new(@existing_resume).to_h
       end
 
       # Process the CV generation using Azure OpenAI
@@ -123,340 +100,17 @@ class CvGeneratorJob
   end
 
   def call_azure_openai_api
-    system_prompt = build_system_prompt
-    user_prompt = build_user_prompt
-    response = AiModel.complete(system: system_prompt, user: user_prompt,
+    prompts = CvGenerator::PromptBuilder.new(job_description: @job_description, snapshot: @snapshot)
+    response = AiModel.complete(system: prompts.system_prompt, user: prompts.user_prompt,
                                 temperature: (@options[:temperature] || 0.7).to_f, max_tokens: (@options[:max_tokens] || 15000).to_i)
-    parse_openai_response(response)
-  end
-
-
-  # The system prompt ensures the AI provides ALL necessary structured data for the CV
-  def build_system_prompt
-    # ... (This remains the same JSON structure as in the original request, which is correct for generating structured data)
-    <<~PROMPT
-      You are an expert CV writer and ATS optimization specialist. Your task is to generate a complete, professional CV that will pass Applicant Tracking Systems (ATS) and impress hiring managers.
-
-      CRITICAL REQUIREMENTS:
-      1. Generate ONLY real, professional content - NEVER use placeholder text, test data, or sample content
-      2. Create a comprehensive CV with multiple work experiences, skills, education, and certifications
-      3. Generate content that is specific, measurable, and achievement-focused
-      4. Use action verbs and quantifiable results where possible
-      5. Ensure all content is relevant to the job description provided
-      6. Write in clear, professional English suitable for international job applications
-      7. Create enough content to fill 2-3 pages professionally
-
-      FORMAT REQUIREMENTS:
-      Return your response in JSON format with the following structure:
-      {
-        "professional_summary": "A compelling 3-4 sentence professional summary tailored to the job description",
-        "work_experiences": [
-          {
-            "job_title": "Senior Software Engineer",
-            "company": "TechCorp Solutions",
-            "start_date": "2022-01",
-            "end_date": null,
-            "responsibilities": [
-              "Led development of microservices architecture serving 100K+ users",
-              "Mentored team of 5 junior developers and improved code quality by 40%",
-              "Implemented CI/CD pipelines reducing deployment time by 60%",
-              "Collaborated with product managers to deliver features 25% faster"
-            ]
-          }
-          // ... more experiences
-        ],
-        "skills": [
-          {
-            "category": "Technical Skills",
-            "names": ["JavaScript", "Python", "React", "Node.js", "PostgreSQL", "AWS", "Docker", "Git"]
-          }
-          // ... more skills
-        ],
-        "educations": [
-          // ... education entries
-        ],
-        "certifications": [
-          // ... certification entries
-        ],
-        "languages": [
-          // ... language entries
-        ],
-        "ats_optimization_notes": "Optimized for ATS with relevant keywords, quantifiable achievements, and standard formatting",
-        "generation_notes": "Generated comprehensive CV with realistic content tailored to job requirements"
-      }
-
-      IMPORTANT: Generate a complete, professional CV with enough content to create a compelling 2-3 page document. Include realistic work experiences, achievements, and skills that match the job description.
-    PROMPT
-  end
-
-  def build_existing_cv_context
-    return "" unless @existing_resume
-
-    # Use the formatted data
-    context = format_existing_resume_data
-
-    # Create a formatted string with the existing CV data
-    <<~EXISTING_CV
-      EXISTING CV DATA:
-      Please use the following existing CV data as a base and adapt it for the new job description.
-      Keep relevant experiences and skills exactly as they are, ONLY update the professional summary.
-
-      #{JSON.pretty_generate(context)}
-
-      INSTRUCTIONS:
-      1. Keep ALL existing experience data exactly as is - DO NOT modify any dates, companies, or responsibilities
-      2. Keep ALL existing skills, education, certifications, and languages exactly as is
-      3. ONLY rewrite the professional summary to target the new position
-      4. Ensure the new summary highlights the most relevant aspects of the existing experience
-      5. Focus on connecting past achievements to the new role requirements
-    EXISTING_CV
-  end
-
-  def build_user_prompt
-    existing_cv_data = @existing_resume ? build_existing_cv_context : ""
-    base_requirements = []
-
-    if @existing_resume
-      # Focus only on updating the professional summary while preserving other sections
-      base_requirements += [
-        "IMPORTANT: Keep ALL existing work experience, skills, education, certifications, and languages exactly as they are",
-        "ONLY generate a new professional summary that aligns with the job description",
-        "Analyze the existing experience and skills to craft a targeted summary",
-        "Highlight the most relevant aspects of the existing experience for this specific role",
-        "Ensure the summary connects past achievements to the new role's requirements"
-      ]
-    else
-      base_requirements += [
-        "Generate a complete CV with all sections based on the job description",
-        "Create realistic and relevant content that demonstrates expertise in the required areas",
-        "Include quantifiable achievements and metrics where appropriate"
-      ]
-    end
-
-    # Common requirements for the professional summary
-    base_requirements += [
-      "Make the professional summary concise and impactful (3-4 sentences)",
-      "Include relevant keywords from the job description",
-      "Emphasize achievements and skills that match the role",
-      "Use strong action verbs and specific metrics"
-    ]
-
-    <<~PROMPT
-      #{if @existing_resume
-          "Please update ONLY the professional summary of the existing CV to target the following job description.#{' '}
-           Keep all other sections (work experience, skills, education, etc.) EXACTLY as they are."
-        else
-          "Please generate a complete, professional CV for the following job description:"
-        end}
-
-      JOB DESCRIPTION:
-      "#{@job_description}"
-
-      #{existing_cv_data}
-
-      REQUIREMENTS:
-      #{base_requirements.map.with_index(1) { |req, i| "#{i}. #{req}" }.join("\n")}
-
-      #{if @existing_resume
-          "IMPORTANT: Return the existing CV data structure with ONLY the professional_summary field updated.#{' '}
-           DO NOT modify any other fields (work_experiences, skills, education, certifications, languages)."
-        end}
-
-      Return the data in the JSON format specified in the system prompt.
-    PROMPT
-  end
-
-  def format_existing_resume_data
-    return {} unless @existing_resume
-
-    # Return structured data of existing resume
-    {
-      professional_summary: @existing_resume.professional_summary,
-      work_experiences: @existing_resume.work_experiences.map { |exp|
-        # Handle responsibilities based on how they're stored
-        responsibilities = if exp.respond_to?(:responsibilities)
-          if exp.responsibilities.is_a?(Array)
-            exp.responsibilities
-          elsif exp.responsibilities.is_a?(String)
-            exp.responsibilities.split("\n").reject(&:empty?)
-          else
-            []
-          end
-        elsif exp.respond_to?(:description)
-          exp.description.split("\n").map(&:strip).reject(&:empty?)
-        else
-          []
-        end
-
-        {
-          job_title: exp.job_title,
-          company: exp.company,
-          start_date: exp.start_date,
-          end_date: (exp.respond_to?(:is_current) && exp.is_current) ? "Present" : exp.end_date,
-          responsibilities: responsibilities
-        }
-      },
-      skills: @existing_resume.skills.map { |skill|
-        # Use skill_names array if available, otherwise fall back to name
-        skill_list = if skill.skill_names.present?
-          skill.skill_names
-        elsif skill.name.present?
-          [ skill.name ]
-        else
-          []
-        end
-
-        {
-          category: skill.category || "Technical Skills",
-          names: skill_list,
-          details: skill_list.join(", ")  # Add details string for PDF generator
-        }
-      }.group_by { |s| s[:category] }.map { |category, skills|
-        all_names = skills.flat_map { |s| s[:names] }.compact.reject(&:blank?)
-        {
-          category: category,
-          names: all_names,
-          details: all_names.join(", ")  # Convert array to comma-separated string
-        }
-      },
-      educations: @existing_resume.educations.map { |edu|
-        education_data = {
-          degree: edu.degree,
-          institution: edu.institution,
-          start_date: edu.start_date,
-          end_date: edu.end_date
-        }
-        education_data[:gpa] = edu.gpa if edu.respond_to?(:gpa) && edu.gpa.present?
-        education_data
-      },
-      certifications: @existing_resume.certifications.map { |cert|
-        {
-          name: cert.name,
-          organization: cert.organization,
-          date: cert.date
-        }
-      },
-      languages: @existing_resume.languages.map { |lang|
-        {
-          language: lang.language,
-          proficiency: lang.proficiency
-        }
-      }
-    }
-  end
-
-  def parse_openai_response(response)
-    content = response.content
-    tokens_used = AiModel.token_count(response)
-
-    # Models differ on whether they fence their JSON. gpt-4.1-mini returned it
-    # bare; Claude wraps it in ```json. Without this the parse raises and the
-    # rescue below dumps the whole raw response into professional_summary.
-    # The other four jobs already strip the fence.
-    if (fenced = content.match(/```(?:json)?\s*(.*?)\s*```/m))
-      content = fenced[1]
-    end
-
-    begin
-      parsed_content = JSON.parse(content)
-
-      if @existing_resume
-        # When we have an existing resume, preserve ALL existing data
-        existing_data = format_existing_resume_data
-        result = {
-          # Take only the new professional summary
-          professional_summary: parsed_content["professional_summary"],
-          # Explicitly preserve all existing data
-          work_experiences: existing_data[:work_experiences] || [],
-          skills: existing_data[:skills] || [],
-          educations: existing_data[:educations] || [],
-          certifications: existing_data[:certifications] || [],
-          languages: existing_data[:languages] || [],
-          # Include the optimization notes
-          ats_optimization_notes: "Preserved all existing resume data",
-          generation_notes: "Updated only professional summary while preserving all existing data",
-          tokens_used: tokens_used,
-          raw_response: content,
-          using_existing_data: true
-        }
-      else
-        # For new resumes, use all generated content
-        result = {
-          professional_summary: parsed_content["professional_summary"],
-          work_experiences: parsed_content["work_experiences"] || [],
-          skills: parsed_content["skills"] || [],
-          educations: parsed_content["educations"] || [],
-          certifications: parsed_content["certifications"] || [],
-          languages: parsed_content["languages"] || [],
-          ats_optimization_notes: parsed_content["ats_optimization_notes"],
-          generation_notes: parsed_content["generation_notes"],
-          tokens_used: tokens_used,
-          raw_response: content
-        }
-      end
-      result
-    rescue JSON::ParserError
-      # Fallback: if not JSON, use the raw content as the summary
-      {
-        professional_summary: content,
-        work_experiences: [], skills: [], educations: [], certifications: [], languages: [],
-        ats_optimization_notes: "Response was not in expected JSON format",
-        generation_notes: "Response was not in expected JSON format",
-        tokens_used: tokens_used,
-        raw_response: content
-      }
-    end
+    CvGenerator::ResponseParser.new(snapshot: @snapshot).call(response)
   end
 
   # --- Data Persistence (Crucial Fix for storing full JSON) ---
 
   def update_cv_generation_success(result)
-    # Store only the professional summary in the main field, but the FULL structure in metadata
-
-    # If we have an existing resume, use its data instead of AI-generated incomplete data
-    if @existing_resume
-      Rails.logger.info "Using existing resume data for skills, experience, etc."
-
-      existing_data = format_existing_resume_data
-      Rails.logger.info "📊 Existing resume skills count: #{@existing_resume.skills.count}"
-      Rails.logger.info "📊 Formatted skills: #{existing_data[:skills].inspect}"
-
-      generated_data = {
-        professional_summary: result[:professional_summary], # Only use AI-generated summary
-        work_experiences: existing_data[:work_experiences],
-        skills: existing_data[:skills],
-        educations: existing_data[:educations],
-        certifications: existing_data[:certifications],
-        languages: existing_data[:languages]
-      }
-
-      Rails.logger.info "📦 Generated data skills to be stored: #{generated_data[:skills].inspect}"
-    else
-      # For new CVs, use all AI-generated data
-      Rails.logger.info "Using AI-generated data for new CV"
-
-      generated_data = {
-        professional_summary: result[:professional_summary],
-        work_experiences: result[:work_experiences],
-        skills: result[:skills],
-        educations: result[:educations],
-        certifications: result[:certifications],
-        languages: result[:languages]
-      }
-    end
-
-    safe_meta = (@cv_generation.metadata || {})
-    @cv_generation.update!(
-      generated_content: result[:professional_summary],
-      status: "processing",
-      tokens_used: result[:tokens_used],
-      metadata: safe_meta.merge({
-        generated_data: generated_data,
-        ats_optimization_notes: result[:ats_optimization_notes],
-        generation_notes: result[:generation_notes],
-        raw_response: result[:raw_response]
-      })
-    )
+    Rails.logger.info "📊 Existing resume skills count: #{@existing_resume.skills.count}" if @existing_resume
+    CvGenerator::ResultPersister.new(@cv_generation).record!(result, snapshot: @snapshot)
   end
 
   # --- Resume Creation/Update (Remains largely the same, ensuring full population) ---
@@ -471,7 +125,7 @@ class CvGeneratorJob
       # For brand new, AI-only CVs, create a new Resume record and populate sections
       resume = create_new_resume(result)
       # Populate sections for new resumes only (not for existing builder CVs)
-      populate_resume_sections(result)
+      CvGenerator::ResultPersister.new(@cv_generation).populate_sections!(@cv_generation.resume, result)
     end
 
     # Ensure we're not losing any existing data (debug logging)
@@ -484,13 +138,6 @@ class CvGeneratorJob
     resume
   end
 
-  def update_existing_resume(result)
-    # NOTE: This method is now merged/replaced by the logic in create_or_update_resume
-    # but the original code structure might require it to remain for clarity.
-    Rails.logger.info "update_existing_resume is deprecated; no mutation performed."
-    owned_resume
-  end
-
   def create_new_resume(result)
     resume_data = {
       complete_name: @options[:complete_name] || "Generated CV",
@@ -501,122 +148,6 @@ class CvGeneratorJob
     resume = Resume.create!(resume_data.merge(user_id: @user_id))
     @cv_generation.update!(resume_id: resume.id)
     resume
-  end
-
-
-  def populate_resume_sections(result)
-    resume = @resume_id ? owned_resume : @cv_generation.resume
-
-    # Only populate sections for new resumes or when explicitly requested
-    return if @resume_id && !@options[:force_update_sections]
-
-    # Store the original data for existing resumes
-    original_data = format_existing_resume_data if @resume_id
-
-    # For each section, either use the generated data or preserve existing data
-    if @resume_id
-      # For existing resumes, only update if the section is empty
-      populate_work_experiences(resume, original_data[:work_experiences]) if original_data[:work_experiences].present?
-      populate_skills(resume, original_data[:skills]) if original_data[:skills].present?
-      populate_educations(resume, original_data[:educations]) if original_data[:educations].present?
-      populate_certifications(resume, original_data[:certifications]) if original_data[:certifications].present?
-      populate_languages(resume, original_data[:languages]) if original_data[:languages].present?
-    else
-      # For new resumes, use the generated data
-      populate_work_experiences(resume, result[:work_experiences]) if result[:work_experiences].present?
-      populate_skills(resume, result[:skills]) if result[:skills].present?
-      populate_educations(resume, result[:educations]) if result[:educations].present?
-      populate_certifications(resume, result[:certifications]) if result[:certifications].present?
-      populate_languages(resume, result[:languages]) if result[:languages].present?
-    end
-  end
-
-  # The populate_xxx methods are left as placeholders but are assumed to correctly save the data
-  # The original file's implementation of these methods looked correct for data saving.
-  def populate_work_experiences(resume, work_experiences_data)
-    return unless work_experiences_data.present?
-
-    work_experiences_data.each do |exp_data|
-      experience = resume.work_experiences.find_or_initialize_by(
-        company: exp_data[:company],
-        job_title: exp_data[:job_title],
-        start_date: exp_data[:start_date]
-      )
-
-      experience.update!(
-        end_date: exp_data[:end_date],
-        responsibilities: Array(exp_data[:responsibilities])
-      )
-    end
-  end
-
-  def populate_skills(resume, skills_data)
-    return unless skills_data.present?
-
-    # Don't destroy existing skills, just add new ones if needed
-    skills_data.each do |skill_group|
-      category = skill_group[:category]
-      names = if skill_group[:names].is_a?(Array)
-        skill_group[:names]
-      else
-        skill_group[:names].to_s.split(",").map(&:strip)
-      end
-
-      next unless names.present?
-
-      names.compact.each do |name|
-        next if name.blank?
-        # Use find_or_create_by to avoid duplicates
-        existing_skill = resume.skills.find_by(category: category, name: name.strip)
-        resume.skills.create!(category: category, name: name.strip) unless existing_skill
-      end
-    end
-  end
-
-  def populate_educations(resume, educations_data)
-    return unless educations_data.present?
-
-    educations_data.each do |edu_data|
-      education = resume.educations.find_or_initialize_by(
-        degree: edu_data[:degree],
-        institution: edu_data[:institution]
-      )
-
-      education.update!(
-        start_date: edu_data[:start_date],
-        end_date: edu_data[:end_date],
-        gpa: edu_data[:gpa]
-      )
-    end
-  end
-
-  def populate_certifications(resume, certifications_data)
-    return unless certifications_data.present?
-
-    certifications_data.each do |cert_data|
-      certification = resume.certifications.find_or_initialize_by(
-        name: cert_data[:name],
-        organization: cert_data[:organization]
-      )
-
-      certification.update!(
-        date: cert_data[:date]
-      )
-    end
-  end
-
-  def populate_languages(resume, languages_data)
-    return unless languages_data.present?
-
-    languages_data.each do |lang_data|
-      language = resume.languages.find_or_initialize_by(
-        language: lang_data[:language]
-      )
-
-      language.update!(
-        proficiency: lang_data[:proficiency]
-      )
-    end
   end
 
   # --- PDF Generation (Rewritten for ATS compliance) ---

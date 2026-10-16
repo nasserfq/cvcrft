@@ -1,0 +1,19 @@
+Please generate a complete, professional CV for the following job description:
+
+JOB DESCRIPTION:
+"Senior Ruby on Rails engineer to lead a payments platform team. Must know PostgreSQL, Sidekiq and AWS."
+
+
+
+REQUIREMENTS:
+1. Generate a complete CV with all sections based on the job description
+2. Create realistic and relevant content that demonstrates expertise in the required areas
+3. Include quantifiable achievements and metrics where appropriate
+4. Make the professional summary concise and impactful (3-4 sentences)
+5. Include relevant keywords from the job description
+6. Emphasize achievements and skills that match the role
+7. Use strong action verbs and specific metrics
+
+
+
+Return the data in the JSON format specified in the system prompt.

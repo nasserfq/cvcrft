@@ -1,0 +1,128 @@
+Please update ONLY the professional summary of the existing CV to target the following job description. 
+           Keep all other sections (work experience, skills, education, etc.) EXACTLY as they are.
+
+JOB DESCRIPTION:
+"Senior Ruby on Rails engineer to lead a payments platform team. Must know PostgreSQL, Sidekiq and AWS."
+
+EXISTING CV DATA:
+Please use the following existing CV data as a base and adapt it for the new job description.
+Keep relevant experiences and skills exactly as they are, ONLY update the professional summary.
+
+{
+  "professional_summary": "مهندس برمجيات ذو خبرة واسعة في تطوير تطبيقات الويب والحوسبة السحابية",
+  "work_experiences": [
+    {
+      "job_title": "Senior Software Engineer",
+      "company": "Tech Solutions Inc",
+      "start_date": "2020-01",
+      "end_date": "Present",
+      "responsibilities": [
+        "Lead development team, code reviews, architecture decisions"
+      ]
+    },
+    {
+      "job_title": "Full Stack Developer",
+      "company": "Digital Agency",
+      "start_date": "2017-06",
+      "end_date": "2019-12",
+      "responsibilities": [
+        "Frontend development, client communication"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "category": "technical",
+      "names": [
+        "Ruby",
+        "JavaScript",
+        "Python",
+        "SQL"
+      ],
+      "details": "Ruby, JavaScript, Python, SQL"
+    },
+    {
+      "category": "soft",
+      "names": [
+        "Leadership",
+        "Teamwork",
+        "Problem Solving"
+      ],
+      "details": "Leadership, Teamwork, Problem Solving"
+    },
+    {
+      "category": "language",
+      "names": [
+        "Arabic (Native)",
+        "English (Fluent)"
+      ],
+      "details": "Arabic (Native), English (Fluent)"
+    }
+  ],
+  "educations": [
+    {
+      "degree": "Bachelor of Computer Science",
+      "institution": "King Saud University",
+      "start_date": "2012-09",
+      "end_date": "2016-06",
+      "gpa": "3.8"
+    },
+    {
+      "degree": "Master of Software Engineering",
+      "institution": "Stanford University",
+      "start_date": "2018-09",
+      "end_date": "2020-06",
+      "gpa": "3.9"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "AWS Solutions Architect Professional",
+      "organization": "Amazon Web Services",
+      "date": "2023-05"
+    },
+    {
+      "name": "Ruby on Rails Certification",
+      "organization": "The Pragmatic Studio",
+      "date": "2022-08"
+    }
+  ],
+  "languages": [
+    {
+      "language": "Arabic",
+      "proficiency": "Native"
+    },
+    {
+      "language": "English",
+      "proficiency": "Fluent"
+    },
+    {
+      "language": "French",
+      "proficiency": "Intermediate"
+    }
+  ]
+}
+
+INSTRUCTIONS:
+1. Keep ALL existing experience data exactly as is - DO NOT modify any dates, companies, or responsibilities
+2. Keep ALL existing skills, education, certifications, and languages exactly as is
+3. ONLY rewrite the professional summary to target the new position
+4. Ensure the new summary highlights the most relevant aspects of the existing experience
+5. Focus on connecting past achievements to the new role requirements
+
+
+REQUIREMENTS:
+1. IMPORTANT: Keep ALL existing work experience, skills, education, certifications, and languages exactly as they are
+2. ONLY generate a new professional summary that aligns with the job description
+3. Analyze the existing experience and skills to craft a targeted summary
+4. Highlight the most relevant aspects of the existing experience for this specific role
+5. Ensure the summary connects past achievements to the new role's requirements
+6. Make the professional summary concise and impactful (3-4 sentences)
+7. Include relevant keywords from the job description
+8. Emphasize achievements and skills that match the role
+9. Use strong action verbs and specific metrics
+
+IMPORTANT: Return the existing CV data structure with ONLY the professional_summary field updated. 
+           DO NOT modify any other fields (work_experiences, skills, education, certifications, languages).
+
+Return the data in the JSON format specified in the system prompt.
