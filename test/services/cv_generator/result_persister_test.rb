@@ -88,14 +88,32 @@ class CvGenerator::ResultPersisterTest < ActiveSupport::TestCase
     end
   end
 
-  # Pinned as-is: populate_skills creates a skill with only name and category,
-  # and Skill validates skill_names, so a brand new skill fails to save.
-  test "populate_sections! raises on a skill the resume does not have yet" do
+  test "populate_sections! creates a skill the resume does not have yet, one name per skill" do
     resume = create_test_resume(@user)
 
-    assert_raises(ActiveRecord::RecordInvalid) do
-      @persister.populate_sections!(resume, { skills: [ { category: "Tech", names: [ "Elixir" ] } ] })
-    end
+    @persister.populate_sections!(resume, { skills: [ { category: "Tech", names: [ "Elixir", " Go " ] } ] })
+
+    assert_equal [ [ "Tech", "Elixir", [ "Elixir" ] ], [ "Tech", "Go", [ "Go" ] ] ],
+                 resume.skills.order(:id).map { |skill| [ skill.category, skill.name, skill.skill_names ] }
+  end
+
+  test "populate_sections! reads the string-keyed sections JSON.parse gives" do
+    resume = create_test_resume(@user)
+
+    @persister.populate_sections!(resume, JSON.parse({
+      work_experiences: [ { company: "PayCo", job_title: "Lead", start_date: "2021-01", responsibilities: [ "Led" ] } ],
+      skills: [ { category: "Tech", names: "Ruby, Rails" } ],
+      educations: [ { degree: "BSc", institution: "KSU", start_date: "2010-09", end_date: "2014-06" } ],
+      certifications: [ { name: "AWS SA", organization: "Amazon", date: "2020-01" } ],
+      languages: [ { language: "English", proficiency: "Fluent" } ]
+    }.to_json))
+
+    assert_equal [ [ "PayCo", "Lead", "2021-01" ] ], resume.work_experiences.pluck(:company, :job_title, :start_date)
+    assert_equal [ [ "Ruby", [ "Ruby" ] ], [ "Rails", [ "Rails" ] ] ],
+                 resume.skills.order(:id).map { |skill| [ skill.name, skill.skill_names ] }
+    assert_equal [ [ "BSc", "KSU", "2010-09", "2014-06" ] ], resume.educations.pluck(:degree, :institution, :start_date, :end_date)
+    assert_equal [ [ "AWS SA", "Amazon", "2020-01" ] ], resume.certifications.pluck(:name, :organization, :date)
+    assert_equal [ [ "English", "Fluent" ] ], resume.languages.pluck(:language, :proficiency)
   end
 
   test "populate_sections! ignores missing and empty sections" do

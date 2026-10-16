@@ -57,7 +57,10 @@ module CvGenerator
     end
 
     # Only for brand new, AI-only CVs; existing builder CVs are never mutated.
+    # The sections come from JSON.parse, so their hashes are string-keyed;
+    # indifferent access lets them be read the same way as symbol-keyed input.
     def populate_sections!(resume, result)
+      result = result.with_indifferent_access
       populate_work_experiences(resume, result[:work_experiences]) if result[:work_experiences].present?
       populate_skills(resume, result[:skills]) if result[:skills].present?
       populate_educations(resume, result[:educations]) if result[:educations].present?
@@ -102,7 +105,7 @@ module CvGenerator
           next if name.blank?
           # Use find_or_create_by to avoid duplicates
           existing_skill = resume.skills.find_by(category: category, name: name.strip)
-          resume.skills.create!(category: category, name: name.strip) unless existing_skill
+          resume.skills.create!(category: category, name: name.strip, skill_names: [ name.strip ]) unless existing_skill
         end
       end
     end

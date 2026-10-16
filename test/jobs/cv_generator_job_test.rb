@@ -1,7 +1,7 @@
 require "test_helper"
 
 # Characterization tests: written against the job before it was split into
-# CvGenerator::* objects, so they pin what it does today, quirks included.
+# CvGenerator::* objects, so they pin what it does today.
 class CvGeneratorJobTest < ActiveSupport::TestCase
   JOB_DESCRIPTION = "Senior Ruby on Rails engineer to lead a payments platform team. Must know PostgreSQL, Sidekiq and AWS.".freeze
   GOLDEN_DIR = Rails.root.join("test/fixtures/files/cv_generator")
@@ -98,27 +98,34 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
     assert_equal "user@example.com", resume.email
   end
 
-  # Today's behaviour, pinned on purpose: JSON.parse gives string keys, but the
-  # populate_* methods read symbol keys, so a work experience is saved with
-  # nil company/title/start date and fails validation. The run is marked failed.
-  test "new CV whose reply has sections fails while populating the new resume" do
+  test "new CV saves every section of the reply onto the new resume" do
     user = users(:test_user)
     stub_ai_response(AI_REPLY)
 
-    assert_raises(ActiveRecord::RecordInvalid) { run_job(user) }
+    assert_difference -> { user.resumes.count }, 1 do
+      run_job(user)
+    end
 
     generation = last_generation(user)
-    assert_equal "failed", generation.status
-    assert_match(/Company can't be blank/, generation.metadata["error"])
+    assert_equal "completed", generation.status
     assert_equal AI_REPLY[:professional_summary], generation.generated_content
     assert_equal JSON.parse(AI_REPLY.except(:ats_optimization_notes, :generation_notes).to_json),
                  generation.metadata["generated_data"]
     assert_equal "Keyword dense", generation.metadata["ats_optimization_notes"]
-    assert_equal 0, generation.resume.work_experiences.count
+
+    resume = generation.resume
+    assert_equal AI_REPLY[:professional_summary], resume.professional_summary
+    assert_equal [ [ "PayCo", "Lead Engineer", "2021-01", nil, [ "Led a team of six" ].to_s ] ],
+                 resume.work_experiences.pluck(:company, :job_title, :start_date, :end_date, :responsibilities)
+    assert_equal [ [ "BSc Computer Science", "KSU", "2010-09", "2014-06" ] ],
+                 resume.educations.pluck(:degree, :institution, :start_date, :end_date)
+    assert_equal [ [ "Technical Skills", "Ruby", [ "Ruby" ] ], [ "Technical Skills", "Rails", [ "Rails" ] ] ],
+                 resume.skills.order(:id).map { |skill| [ skill.category, skill.name, skill.skill_names ] }
+    assert_equal [ [ "AWS SA", "Amazon", "2020-01" ] ], resume.certifications.pluck(:name, :organization, :date)
+    assert_equal [ [ "English", "Fluent" ] ], resume.languages.pluck(:language, :proficiency)
   end
 
-  # Same string-key quirk: skill groups are skipped silently rather than failing.
-  test "new CV with only skills in the reply completes without saving the skills" do
+  test "new CV with only skills in the reply saves the skills" do
     user = users(:test_user)
     stub_ai_response(AI_REPLY.slice(:professional_summary, :skills))
 
@@ -126,7 +133,8 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
 
     generation = last_generation(user)
     assert_equal "completed", generation.status
-    assert_equal 0, generation.resume.skills.count
+    assert_equal [ [ "Technical Skills", [ "Ruby" ] ], [ "Technical Skills", [ "Rails" ] ] ],
+                 generation.resume.skills.order(:id).map { |skill| [ skill.category, skill.skill_names ] }
     assert_equal [ { "category" => "Technical Skills", "names" => [ "Ruby", "Rails" ] } ],
                  generation.metadata["generated_data"]["skills"]
   end
