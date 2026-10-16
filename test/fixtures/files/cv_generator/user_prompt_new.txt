@@ -13,6 +13,7 @@ REQUIREMENTS:
 5. Include relevant keywords from the job description
 6. Emphasize achievements and skills that match the role
 7. Use strong action verbs and specific metrics
+8. Write the professional summary in English, even when the job description or the existing CV is in Arabic or another language
 
 
 

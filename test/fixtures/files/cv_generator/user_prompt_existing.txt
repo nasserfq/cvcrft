@@ -121,6 +121,7 @@ REQUIREMENTS:
 7. Include relevant keywords from the job description
 8. Emphasize achievements and skills that match the role
 9. Use strong action verbs and specific metrics
+10. Write the professional summary in English, even when the job description or the existing CV is in Arabic or another language
 
 IMPORTANT: Return the existing CV data structure with ONLY the professional_summary field updated. 
            DO NOT modify any other fields (work_experiences, skills, education, certifications, languages).

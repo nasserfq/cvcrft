@@ -174,6 +174,24 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
     assert_equal "Preserved all existing resume data", generation.metadata["ats_optimization_notes"]
   end
 
+  test "an Arabic summary is translated to English before the PDF is drawn" do
+    user = users(:user_with_resumes)
+    resume = resumes(:complete_resume)
+    arabic = AI_REPLY.merge(professional_summary: "مدير منتجات يقود فرق تطوير المنتجات الرقمية.")
+    english = "Product manager who leads digital product teams."
+    AiModel.stubs(:complete).returns(ai_message(arabic)).then.returns(ai_message(english))
+    expected = snapshot_golden.merge("professional_summary" => english).deep_symbolize_keys
+    AtsTemplatePdfService.expects(:generate_pdf)
+                         .with(resume, expected, template: "original_classic")
+                         .returns({ path: @pdf_file.path, filename: "generated_cv.pdf" })
+
+    run_job(user, resume.id)
+
+    generation = last_generation(user)
+    assert_equal "completed", generation.status
+    assert_equal english, generation.generated_content
+  end
+
   test "AI failure marks the generation failed and re-raises" do
     user = users(:user_with_resumes)
     resume = resumes(:complete_resume)
