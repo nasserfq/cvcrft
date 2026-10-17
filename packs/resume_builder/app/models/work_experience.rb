@@ -18,6 +18,11 @@ class WorkExperience < ApplicationRecord
   validates :english_description, length: { maximum: 2000 }, allow_blank: true
   validates :ats_keywords, presence: true, allow_blank: true
 
+  # Duties may be typed in Arabic, but must be translated with AI before they
+  # are saved, since the CV is English only and the PDF fonts cannot draw Arabic.
+  validates :responsibilities, format: { without: ArabicText::PATTERN, message: "must be translated to English with AI" },
+                               if: :responsibilities_changed?, unless: :skip_validations_for_pdf
+
   # Validations
   validate :end_date_after_start_date, if: :end_date?
   validate :start_date_not_in_future

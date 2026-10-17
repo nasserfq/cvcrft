@@ -21,7 +21,9 @@
     "skill_entry_english": "Skill {{n}}: {{field}} — {{message}}",
     "skill_name_english": "Skill {{n}}: \"{{value}}\" — {{message}}",
     "cert_entry_english": "Certification {{n}}: {{field}} — {{message}}",
-    "language_entry_english": "Language {{n}}: {{field}} — {{message}}"
+    "language_entry_english": "Language {{n}}: {{field}} — {{message}}",
+    "summary_translate_required": "Press \"Translate and create professional summary\" to turn your summary into English before you continue",
+    "responsibilities_translate_required": "Experience {{n}}: press \"Translate all responsibilities to English\" before you continue"
   },
   "steps": {
     "personal_info": "Personal Information",

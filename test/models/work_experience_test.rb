@@ -204,6 +204,19 @@ class WorkExperienceTest < ActiveSupport::TestCase
     assert we.arabic_description.include?("تطوير")
   end
 
+  test "rejects Arabic responsibilities that were not translated" do
+    we = work_experiences(:current_job)
+    we.responsibilities = [ "Led the team", "تطوير البرمجيات" ]
+    assert_not we.valid?
+    assert_includes we.errors[:responsibilities], "must be translated to English with AI"
+  end
+
+  test "accepts English responsibilities" do
+    we = work_experiences(:current_job)
+    we.responsibilities = [ "Led the team", "Shipped the café ordering app" ]
+    assert we.valid?
+  end
+
   # ============================================
   # SKIP VALIDATIONS TESTS
   # ============================================

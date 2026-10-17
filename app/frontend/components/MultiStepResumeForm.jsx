@@ -32,6 +32,11 @@ const isEnglishText = (text) => {
  return true;
 };
 
+// The professional summary and work duties may be typed in Arabic, but the CV
+// is English only and the PDF fonts cannot draw Arabic, so those two must go
+// through the AI translate buttons before the user can move on.
+const hasArabic = (text) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text || "");
+
 // Note: ENGLISH_VALIDATION_MSG is now handled via i18n t('validation.english_only')
 
 // Lazy load step components for better initial load performance
@@ -624,6 +629,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    errors.professional_summary = translate("validation.summary_required");
   } else if (formData.professional_summary.trim().length < 5) {
    errors.professional_summary = translate("validation.summary_min_length");
+  } else if (!formData.professional_summary_english?.trim() || hasArabic(formData.professional_summary_english)) {
+   errors.professional_summary = translate("validation.summary_translate_required");
   }
   
   return errors;
@@ -687,7 +694,15 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      });
      break;
     }
-    // Note: responsibilities are NOT validated for English (Arabic allowed)
+   }
+   // Responsibilities may be typed in Arabic, but must be translated with AI.
+   if (!errors.work_experience) {
+    const untranslated = formData.work_experience.findIndex(
+     exp => (exp.responsibilities || []).some(resp => hasArabic(resp))
+    );
+    if (untranslated !== -1) {
+     errors.work_experience = translate("validation.responsibilities_translate_required", { n: untranslated + 1 });
+    }
    }
   }
   
@@ -1884,6 +1899,16 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  };
 
  const exportToPDF = async () => {
+  // A draft can open straight on the review step, so check the AI translation
+  // rule here too and send the user back to the step that still needs it.
+  const step1Errors = validateStep1();
+  const step2Errors = validateStep2();
+  if (Object.keys(step1Errors).length > 0 || Object.keys(step2Errors).length > 0) {
+   setValidationErrors(Object.keys(step1Errors).length > 0 ? step1Errors : step2Errors);
+   handleStepChange(Object.keys(step1Errors).length > 0 ? 1 : 2);
+   return;
+  }
+
   // Check CV Builder limit first
   if (!unlimitedUsage && remainingCvBuilderGenerations <= 0) {
    setTranslationError(translate("export.cv_builder_limit"));
