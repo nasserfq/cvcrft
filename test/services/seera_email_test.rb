@@ -35,7 +35,8 @@ class SeeraEmailTest < ActiveSupport::TestCase
     ses.define_singleton_method(:send_email) { |**args| sent = args }
 
     AmazonSesService.stubs(:new).returns(ses)
-    SendOtpEmailJob.perform_now("user@example.com", "123456")
+    otp = OtpVerification.create!(email: "user@example.com", otp_code: "123456", expires_at: 10.minutes.from_now)
+    SendOtpEmailJob.perform_now(otp.id)
 
     assert_equal "user@example.com", sent[:to]
     assert_equal "رمز الدخول إلى سيرة | Your Seera login code", sent[:subject]

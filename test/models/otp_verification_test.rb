@@ -137,6 +137,22 @@ class OtpVerificationTest < ActiveSupport::TestCase
     assert otp.verified
   end
 
+  test "verify! burns the code after MAX_FAILED_ATTEMPTS guesses, even a right one after" do
+    otp = otp_verifications(:valid_otp)
+    OtpVerification::MAX_FAILED_ATTEMPTS.times { assert_not otp.verify!("000000") }
+
+    assert_not otp.verify!("123456")
+    assert_equal OtpVerification::MAX_FAILED_ATTEMPTS, otp.reload.failed_attempts
+  end
+
+  test "verify! counts guesses in the database, not the loaded copy" do
+    otp = otp_verifications(:valid_otp)
+    stale = OtpVerification.find(otp.id)
+    OtpVerification.where(id: otp.id).update_all(failed_attempts: OtpVerification::MAX_FAILED_ATTEMPTS)
+
+    assert_not stale.verify!("123456")
+  end
+
   # ============================================
   # CLASS METHOD TESTS
   # ============================================
