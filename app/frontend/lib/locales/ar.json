@@ -21,7 +21,9 @@
     "skill_entry_english": "المهارة {{n}}: {{field}} — {{message}}",
     "skill_name_english": "المهارة {{n}}: \"{{value}}\" — {{message}}",
     "cert_entry_english": "الشهادة {{n}}: {{field}} — {{message}}",
-    "language_entry_english": "اللغة {{n}}: {{field}} — {{message}}"
+    "language_entry_english": "اللغة {{n}}: {{field}} — {{message}}",
+    "summary_translate_required": "اضغط «ترجم وأنشئ ملخص مهني» لتحويل الملخص إلى الإنجليزية قبل المتابعة",
+    "responsibilities_translate_required": "الخبرة {{n}}: اضغط «ترجم جميع المسؤوليات إلى الإنجليزية» قبل المتابعة"
   },
   "steps": {
     "personal_info": "المعلومات الشخصية",

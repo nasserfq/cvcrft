@@ -17,7 +17,7 @@ module PosthogTrackable
     return unless analytics_consent?
     return unless current_user
 
-    POSTHOG.capture({
+    PostHog.capture({
       distinct_id: current_user.id.to_s,
       event: event_name,
       properties: default_properties.merge(properties)
@@ -31,7 +31,7 @@ module PosthogTrackable
     return unless analytics_consent?
     return unless user
 
-    POSTHOG.identify({
+    PostHog.identify({
       distinct_id: user.id.to_s,
       properties: {
         email: user.email,

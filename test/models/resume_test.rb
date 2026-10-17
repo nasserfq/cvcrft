@@ -19,6 +19,21 @@ class ResumeTest < ActiveSupport::TestCase
   # VALIDATION TESTS
   # ============================================
 
+  test "rejects an English summary that still contains Arabic" do
+    resume = resumes(:complete_resume)
+    resume.professional_summary = "مهندس برمجيات"
+    resume.professional_summary_english = "مهندس برمجيات"
+    assert_not resume.valid?
+    assert_includes resume.errors[:professional_summary_english], "must be translated to English with AI"
+  end
+
+  test "allows an Arabic summary next to its English translation" do
+    resume = resumes(:complete_resume)
+    resume.professional_summary = "مهندس برمجيات"
+    resume.professional_summary_english = "Software engineer"
+    assert resume.valid?
+  end
+
   test "should not save resume without user_id" do
     resume = Resume.new(complete_name: "Test", email: "test@example.com")
     resume.skip_validations_for_pdf = false

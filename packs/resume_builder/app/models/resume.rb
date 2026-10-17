@@ -55,6 +55,10 @@ class Resume < ApplicationRecord
   # Professional summary validation - minimal for CV Builder
   validates :professional_summary, length: { maximum: 1000 }, allow_blank: true
   validates :professional_summary_english, length: { maximum: 1000 }, allow_blank: true
+  # The summary may be typed in Arabic, but the CV is English only and the PDF
+  # fonts cannot draw Arabic: the English copy must come from the AI translation.
+  validates :professional_summary_english, format: { without: ArabicText::PATTERN, message: "must be translated to English with AI" },
+                                           if: :professional_summary_english_changed?, unless: :skip_validations_for_pdf
 
   # Legacy validations (keeping for backward compatibility)
   validates :title, length: { minimum: 3, maximum: 100 }, allow_blank: true
