@@ -120,7 +120,8 @@ class CvAnalysesControllerTest < ActionDispatch::IntegrationTest
     analysis = CvAnalysis.create!(
       user: @user,
       original_filename: "test.pdf",
-      status: "processing"
+      status: "processing",
+      progress: 42
     )
 
     get cv_analysis_status_path(analysis), as: :json
@@ -128,6 +129,7 @@ class CvAnalysesControllerTest < ActionDispatch::IntegrationTest
 
     json_response = JSON.parse(response.body)
     assert_equal "processing", json_response["status"]
+    assert_equal 42, json_response["progress"]
   end
 
   test "should include redirect_url when completed" do

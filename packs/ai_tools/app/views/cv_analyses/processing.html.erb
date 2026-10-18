@@ -1,102 +1,53 @@
-<div class="min-h-screen bg-gradient-to-b from-white via-primary/5 to-white py-12" dir="rtl">
-  <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-    <div class="text-center py-16">
-      <!-- Animated Spinner -->
-      <div class="relative w-24 h-24 mx-auto mb-8">
-        <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-        <div class="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
-        <div class="absolute inset-3 border-4 border-transparent border-t-primary-soft rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
-      </div>
-      
-      <h2 class="text-2xl font-semibold text-slate-900 mb-4">جاري تحليل سيرتك الذاتية...</h2>
-      <p class="text-slate-600 mb-8">يقوم الذكاء الاصطناعي بتحليل المحتوى وتقييم كل قسم</p>
-      
-      <!-- File info -->
-      <div class="bg-white rounded-xl border border-slate-200 p-4 inline-block mb-8">
-        <p class="text-sm text-slate-600">
-          <span class="font-medium text-slate-800"><%= @cv_analysis.original_filename %></span>
-        </p>
-      </div>
-      
-      <!-- Progress Steps -->
-      <div class="max-w-md mx-auto space-y-3" id="progress-steps">
-        <div class="flex items-center gap-3 text-right">
-          <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          <span class="text-sm text-slate-700">تم رفع الملف</span>
-        </div>
-        <% if @cv_analysis.processing? %>
-        <div class="flex items-center gap-3 text-right">
-          <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          <span class="text-sm text-slate-700">تم استخراج النص</span>
-        </div>
-        <div class="flex items-center gap-3 text-right">
-          <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
-            <div class="w-3 h-3 bg-primary rounded-full"></div>
-          </div>
-          <span class="text-sm text-slate-500">تحليل المحتوى...</span>
-        </div>
-        <% else %>
-        <div class="flex items-center gap-3 text-right">
-          <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
-            <div class="w-3 h-3 bg-primary rounded-full"></div>
-          </div>
-          <span class="text-sm text-slate-500">استخراج النص...</span>
-        </div>
-        <div class="flex items-center gap-3 text-right">
-          <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <div class="w-3 h-3 bg-slate-300 rounded-full"></div>
-          </div>
-          <span class="text-sm text-slate-400">تحليل المحتوى...</span>
-        </div>
-        <% end %>
-        <div class="flex items-center gap-3 text-right">
-          <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <div class="w-3 h-3 bg-slate-300 rounded-full"></div>
-          </div>
-          <span class="text-sm text-slate-400">إنشاء التقرير...</span>
-        </div>
-      </div>
-    </div>
+<% en = @cv_analysis.language == "en" %>
+<% dir = en ? "ltr" : "rtl" %>
+<% content_for :title, en ? "Analyzing your CV" : "جاري تحليل سيرتك الذاتية" %>
+
+<div dir="<%= dir %>" lang="<%= en ? 'en' : 'ar' %>" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee">
+  <%# Lower glows: the layout's ambient layer is fixed to one viewport, so orbs further down the page live here, as on the landing. %>
+  <div aria-hidden="true" class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="sr-orb3" style="position: absolute; top: 900px; right: 4%; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(0,108,53,0.35), rgba(0,108,53,0) 65%); filter: blur(50px)"></div>
+    <div class="sr-orb2" style="position: absolute; top: 1600px; left: -160px; width: 680px; height: 680px; border-radius: 50%; background: radial-gradient(circle, rgba(214,184,119,0.38), rgba(214,184,119,0) 65%); filter: blur(60px)"></div>
+    <div class="sr-orb1" style="position: absolute; top: 2400px; right: 12%; width: 720px; height: 720px; border-radius: 50%; background: radial-gradient(circle, rgba(0,150,85,0.4), rgba(0,150,85,0) 65%); filter: blur(60px)"></div>
+    <div class="sr-orb2" style="position: absolute; top: 3200px; left: 6%; width: 640px; height: 640px; border-radius: 50%; background: radial-gradient(circle, rgba(200,169,106,0.36), rgba(200,169,106,0) 65%); filter: blur(60px)"></div>
+  </div>
+  <div class="relative mx-auto max-w-[820px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-8">
+    <%= render "shared/ai_progress",
+          id: "cv-analysis-progress",
+          dir: dir,
+          badge: en ? "AI CV analysis" : "تحليل السيرة بالذكاء الاصطناعي",
+          title: en ? "Analyzing your CV..." : "جاري تحليل سيرتك الذاتية...",
+          subtitle: en ? "The AI is reading your CV and scoring every section." : "يقرأ الذكاء الاصطناعي سيرتك ويقيّم كل قسم فيها.",
+          filename: @cv_analysis.original_filename,
+          steps: [
+            { label: en ? "File uploaded" : "تم رفع الملف", at: 0 },
+            { label: en ? "Reading your CV" : "قراءة السيرة الذاتية", at: 6 },
+            { label: en ? "Scoring sections" : "تقييم الأقسام", at: 25 },
+            { label: en ? "Writing the report" : "كتابة التقرير", at: 70 }
+          ],
+          error_title: en ? "Something went wrong" : "حدث خطأ",
+          error_text: @cv_analysis.error_message.presence || (en ? "We could not finish the analysis. Please try again." : "حدث خطأ أثناء التحليل، يرجى المحاولة مرة أخرى."),
+          retry_label: en ? "Try again" : "حاول مرة أخرى",
+          retry_href: cv_analysis_path %>
   </div>
 </div>
 
 <script>
-// Poll for status and redirect when complete
-(function() {
-  const analysisId = '<%= @cv_analysis.id %>';
-  const statusUrl = '<%= cv_analysis_status_path(@cv_analysis, format: :json) %>';
-  const showUrl = '<%= cv_analysis_show_path(@cv_analysis) %>';
-  
-  function pollStatus() {
-    fetch(statusUrl)
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'completed') {
-          window.location.href = showUrl;
-        } else if (data.status === 'failed') {
-          // Show error and redirect
-          alert(data.error_message || 'حدث خطأ أثناء التحليل');
-          window.location.href = '<%= cv_analysis_path %>';
-        } else {
-          // Continue polling
-          setTimeout(pollStatus, 2000);
-        }
-      })
-      .catch(error => {
-        console.error('Poll error:', error);
-        setTimeout(pollStatus, 3000);
+  (function () {
+    var el = document.getElementById('cv-analysis-progress');
+    var SP = window.SeeraProgress;
+    if (!el || !SP) return;
+    var showUrl = <%= raw json_escape(cv_analysis_show_path(@cv_analysis).to_json) %>;
+
+    <% if @cv_analysis.failed? %>
+      SP.fail(el);
+    <% else %>
+      SP.start(el, { expectedSeconds: 30, cap: 90 });
+      SP.set(el, <%= @cv_analysis.try(:progress).to_i %>);
+      SP.poll(el, {
+        url: <%= raw json_escape(cv_analysis_status_path(@cv_analysis, format: :json).to_json) %>,
+        interval: 1000,
+        onComplete: function (data) { window.location.href = data.redirect_url || showUrl; }
       });
-  }
-  
-  // Start polling after a short delay
-  setTimeout(pollStatus, 2000);
-})();
+    <% end %>
+  })();
 </script>

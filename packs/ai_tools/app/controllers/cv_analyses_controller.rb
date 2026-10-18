@@ -120,6 +120,7 @@ class CvAnalysesController < ApplicationController
     status_json = {
       id: @cv_analysis.id,
       status: @cv_analysis.status,
+      progress: @cv_analysis.progress,
       completed: @cv_analysis.completed?,
       failed: @cv_analysis.failed?,
       error_message: @cv_analysis.error_message,

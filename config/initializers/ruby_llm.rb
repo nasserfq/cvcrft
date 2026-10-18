@@ -48,11 +48,13 @@ module AiModel
 
   # One completion. Returns the RubyLLM::Message, so callers get both
   # `.content` (the text, which they parse as JSON) and `.tokens` (total
-  # usage, which two of them persist).
-  def self.complete(system:, user:, temperature: 0.7, max_tokens: nil)
+  # usage, which two of them persist). Given a block, the reply streams: the
+  # block gets each RubyLLM::Chunk (`chunk.content` is the new text) and the
+  # full message is still returned at the end.
+  def self.complete(system:, user:, temperature: 0.7, max_tokens: nil, &block)
     chat(temperature: temperature, max_tokens: max_tokens)
       .with_instructions(system.to_s)
-      .ask(user.to_s)
+      .ask(user.to_s, &block)
   end
 
   # The JSON inside a reply. Claude fences it in ```json ... ```; gpt-4.1-mini

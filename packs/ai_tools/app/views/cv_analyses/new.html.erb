@@ -1,432 +1,167 @@
-<div class="min-h-screen bg-gradient-to-b from-white via-primary/5 to-white dark:from-darkBase dark:via-darkBase dark:to-darkBase py-12 transition-colors duration-300" dir="<%= I18n.locale == :ar ? 'rtl' : 'ltr' %>">
-  <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-    
+<% content_for :title, t('cv_analysis.page_title') %>
+<% en = I18n.locale.to_s == "en" %>
+<% arrow = '<svg class="sr-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>'.html_safe %>
+<% gets = [
+     { title: t('cv_analysis.overall_score'), desc: t('cv_analysis.score_desc'), color: "#2fa36b", icon: '<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"></path>' },
+     { title: t('cv_analysis.strengths_title'), desc: t('cv_analysis.strengths_desc'), color: "#2fa36b", icon: '<path d="M5 13l4 4L19 7"></path>' },
+     { title: t('cv_analysis.improvements'), desc: t('cv_analysis.improvements_desc'), color: "#d6b877", icon: '<circle cx="12" cy="12" r="9"></circle><path d="M12 8v4M12 16h.01"></path>' },
+     { title: t('cv_analysis.ats_tips'), desc: t('cv_analysis.ats_tips_desc'), color: "#d6b877", icon: '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0012 3z"></path>' }
+   ] %>
+<% features = [
+     { title: t('cv_analysis.feature_smart'), desc: t('cv_analysis.feature_smart_desc'), icon: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path>' },
+     { title: t('cv_analysis.feature_secure'), desc: t('cv_analysis.feature_secure_desc'), icon: '<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"></path><path d="M9 12l2 2 4-4"></path>' },
+     { title: t('cv_analysis.feature_fast'), desc: t('cv_analysis.feature_fast_desc'), icon: '<path d="M13 3L4 14h7l-1 7 9-11h-7z"></path>' }
+   ] %>
+
+<div dir="<%= text_direction %>" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee">
+  <%# Lower glows: the layout's ambient layer is fixed to one viewport, so orbs further down the page live here, as on the landing. %>
+  <div aria-hidden="true" class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="sr-orb3" style="position: absolute; top: 900px; right: 4%; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(0,108,53,0.35), rgba(0,108,53,0) 65%); filter: blur(50px)"></div>
+    <div class="sr-orb2" style="position: absolute; top: 1600px; left: -160px; width: 680px; height: 680px; border-radius: 50%; background: radial-gradient(circle, rgba(214,184,119,0.38), rgba(214,184,119,0) 65%); filter: blur(60px)"></div>
+    <div class="sr-orb1" style="position: absolute; top: 2400px; right: 12%; width: 720px; height: 720px; border-radius: 50%; background: radial-gradient(circle, rgba(0,150,85,0.4), rgba(0,150,85,0) 65%); filter: blur(60px)"></div>
+    <div class="sr-orb2" style="position: absolute; top: 3200px; left: 6%; width: 640px; height: 640px; border-radius: 50%; background: radial-gradient(circle, rgba(200,169,106,0.36), rgba(200,169,106,0) 65%); filter: blur(60px)"></div>
+  </div>
+  <div class="relative mx-auto max-w-[1040px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-10">
+
     <!-- Upload Section (shown initially) -->
-    <div id="upload-section">
-      <!-- Title -->
-      <div class="text-center mb-10">
-        <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary dark:bg-primary/20 px-3 py-1 text-xs ring-1 ring-primary/20 mb-4">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
-          <span><%= t('cv_analysis.badge') %></span>
-        </div>
-        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
-          <%= t('cv_analysis.page_title') %>
+    <div id="upload-section" class="flex flex-col gap-10">
+      <!-- Hero -->
+      <header class="flex flex-col items-start gap-6">
+        <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+          <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+          <%= t('cv_analysis.badge') %>
+        </span>
+        <h1 class="m-0 font-semibold" style="font-size: clamp(36px, 5vw, 60px); line-height: 1.15; letter-spacing: -0.02em">
+          <% words = t('cv_analysis.page_title').split %>
+          <% delay = 0.1 %>
+          <% words.each_with_index do |word, i| %><span class="sr-w" style="<%= 'color: #d6b877; ' if i == words.size - 1 && words.size > 1 %>animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
         </h1>
-        <p class="text-gray-600 dark:text-gray-300 leading-7 max-w-xl mx-auto">
-          <%= t('cv_analysis.description') %>
-        </p>
-      </div>
+        <p class="sr-up m-0 text-[17px] sm:text-[19px] font-light max-w-[60ch]" style="animation-delay: .5s; color: rgba(238,243,238,0.7)"><%= t('cv_analysis.description') %></p>
+      </header>
 
-      <!-- What You'll Get -->
-      <div class="bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 p-6 mb-8 backdrop-blur-sm">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-          </svg>
-          <%= t('cv_analysis.what_you_get') %>
-        </h2>
-        <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-300">
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <span class="text-primary font-bold text-xs">%</span>
-            </div>
-            <div>
-              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.overall_score') %></p>
-              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.score_desc') %></p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-action/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </div>
-            <div>
-              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.strengths_title') %></p>
-              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.strengths_desc') %></p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-amber-100 dark:bg-amber-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <div>
-              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.improvements') %></p>
-              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.improvements_desc') %></p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-              </svg>
-            </div>
-            <div>
-              <p class="font-medium text-gray-900 dark:text-white"><%= t('cv_analysis.ats_tips') %></p>
-              <p class="text-gray-500 dark:text-gray-400"><%= t('cv_analysis.ats_tips_desc') %></p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="grid gap-5 items-start" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr))">
+        <!-- Upload Form -->
+        <%= form_tag cv_analysis_path, method: :post, multipart: true, id: "upload-form", data: { turbo: false },
+              class: "glass sr-up rounded-[32px] p-6 sm:p-8 flex flex-col gap-6", style: "animation-delay: .6s" do %>
 
-      <!-- Upload Form -->
-      <%= form_tag cv_analysis_path, method: :post, multipart: true, class: "space-y-6", id: "upload-form", data: { turbo: false } do %>
-        
-        <!-- Drop Zone -->
-        <div 
-          id="drop-zone"
-          class="relative border-2 border-dashed border-gray-300 dark:border-white/20 rounded-xl p-12 text-center hover:border-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all cursor-pointer bg-white dark:bg-white/5 backdrop-blur-sm"
-        >
-          <input 
-            type="file" 
-            name="pdf_file" 
-            id="pdf-file-input"
-            accept=".pdf,application/pdf"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <div id="upload-placeholder">
-            <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-            </svg>
-            <p class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2"><%= t('cv_analysis.drop_title') %></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('cv_analysis.drop_subtitle') %></p>
-          </div>
-          <div id="file-selected" class="hidden">
-            <svg class="w-16 h-16 text-action mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <p class="text-lg font-medium text-action mb-2" id="selected-filename"></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400"><%= t('cv_analysis.click_select_another') %></p>
-          </div>
-        </div>
-
-        <!-- Optional Fields -->
-        <div class="bg-gray-50 dark:bg-white/5 rounded-xl p-6 space-y-4 border border-gray-100 dark:border-white/10">
-          <h3 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <%= t('cv_analysis.optional_title') %>
-          </h3>
-          
-          <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label for="target_job" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('cv_analysis.target_job') %></label>
-              <input 
-                type="text" 
-                name="target_job" 
-                id="target_job"
-                placeholder="<%= t('cv_analysis.target_job_placeholder') %>"
-                class="w-full px-4 py-2.5 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-              />
+          <!-- Drop Zone -->
+          <div id="drop-zone" class="sr-lift relative rounded-[24px] px-6 py-12 text-center cursor-pointer" style="background: rgba(255,255,255,0.04); border: 1.5px dashed rgba(255,255,255,0.22); transition: border-color .4s, background-color .4s, transform .5s cubic-bezier(.16,1,.3,1)">
+            <input type="file" name="pdf_file" id="pdf-file-input" accept=".pdf,application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" aria-label="<%= t('cv_analysis.drop_title') %>" />
+            <div id="upload-placeholder" class="flex flex-col items-center gap-3 pointer-events-none">
+              <span class="glass-soft sr-ico w-16 h-16 rounded-[20px] flex items-center justify-center" style="color: #2fa36b">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"></path><path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"></path></svg>
+              </span>
+              <p class="m-0 text-[18px] font-semibold"><%= t('cv_analysis.drop_title') %></p>
+              <p class="m-0 text-sm" style="color: rgba(238,243,238,0.6)"><%= t('cv_analysis.drop_subtitle') %></p>
             </div>
-            <div>
-              <label for="target_industry" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><%= t('cv_analysis.industry') %></label>
-              <input 
-                type="text" 
-                name="target_industry" 
-                id="target_industry"
-                placeholder="<%= t('cv_analysis.industry_placeholder') %>"
-                class="w-full px-4 py-2.5 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-              />
+            <div id="file-selected" class="hidden flex-col items-center gap-3 pointer-events-none">
+              <span class="glass-soft w-16 h-16 rounded-[20px] flex items-center justify-center" style="color: #d6b877">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"></path><path d="M14 3v5h5M9 14l2 2 4-4"></path></svg>
+              </span>
+              <p class="sr-mono m-0 text-[15px] font-semibold break-all" style="color: #d6b877" id="selected-filename" dir="ltr"></p>
+              <p class="m-0 text-sm" style="color: rgba(238,243,238,0.6)"><%= t('cv_analysis.click_select_another') %></p>
             </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><%= t('cv_analysis.analysis_language') %></label>
-            <div class="flex gap-4">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="language" value="ar" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 dark:border-white/30">
-                <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('cv_analysis.arabic') %></span>
+          <!-- Optional Fields -->
+          <fieldset class="glass-soft rounded-[24px] p-5 sm:p-6 flex flex-col gap-4 m-0 border-0">
+            <legend class="sr-only"><%= t('cv_analysis.optional_title') %></legend>
+            <h2 class="m-0 text-[17px] font-semibold flex items-center gap-2.5">
+              <span style="color: #d6b877"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"></path><circle cx="16" cy="6" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg></span>
+              <%= t('cv_analysis.optional_title') %>
+            </h2>
+            <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr))">
+              <label class="flex flex-col gap-1.5 text-sm">
+                <span style="color: rgba(238,243,238,0.8)"><%= t('cv_analysis.target_job') %></span>
+                <input type="text" name="target_job" id="target_job" placeholder="<%= t('cv_analysis.target_job_placeholder') %>" class="glass-soft w-full rounded-2xl px-4 py-3 text-[15px] focus:outline-none" style="color: #eef3ee" />
               </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="language" value="en" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 dark:border-white/30">
-                <span class="text-sm text-gray-700 dark:text-gray-300">English</span>
+              <label class="flex flex-col gap-1.5 text-sm">
+                <span style="color: rgba(238,243,238,0.8)"><%= t('cv_analysis.industry') %></span>
+                <input type="text" name="target_industry" id="target_industry" placeholder="<%= t('cv_analysis.industry_placeholder') %>" class="glass-soft w-full rounded-2xl px-4 py-3 text-[15px] focus:outline-none" style="color: #eef3ee" />
               </label>
             </div>
-          </div>
-        </div>
+            <div class="flex flex-col gap-2">
+              <span class="text-sm" style="color: rgba(238,243,238,0.8)"><%= t('cv_analysis.analysis_language') %></span>
+              <div class="flex flex-wrap gap-2.5" role="radiogroup">
+                <% [ [ "ar", t('cv_analysis.arabic') ], [ "en", "English" ] ].each do |value, label| %>
+                  <label class="sr-lang glass-soft inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl cursor-pointer text-[15px] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#d6b877]" style="transition: border-color .4s, background-color .4s">
+                    <input type="radio" name="language" value="<%= value %>" <%= 'checked' if value == 'ar' %> class="sr-only">
+                    <span class="sr-radio flex-none w-[18px] h-[18px] rounded-full flex items-center justify-center" aria-hidden="true" style="border: 1.5px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.04); transition: border-color .3s, background-color .3s, box-shadow .3s">
+                      <span class="sr-radio-dot w-2 h-2 rounded-full" style="background: #2fa36b; transform: scale(0); transition: transform .35s cubic-bezier(.34,1.56,.64,1)"></span>
+                    </span>
+                    <span><%= label %></span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+          </fieldset>
 
-        <button 
-          type="submit" 
-          id="submit-btn"
-          disabled
-          class="w-full bg-primary text-white py-4 rounded-xl text-center font-semibold hover:bg-primaryHover disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
-          <span><%= t('cv_analysis.start_analysis') %></span>
-        </button>
-      <% end %>
+          <button type="submit" id="submit-btn" disabled
+                  class="sr-btn sr-primary w-full flex items-center justify-between gap-2.5 min-h-[56px] px-6 rounded-2xl font-semibold text-[16px] border-0 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+                  style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)">
+            <span><%= t('cv_analysis.start_analysis') %></span>
+            <span class="sr-ico flex"><%= arrow %></span>
+          </button>
+        <% end %>
+
+        <!-- What You'll Get -->
+        <section class="glass sr-up rounded-[32px] p-6 sm:p-8 flex flex-col gap-5" style="animation-delay: .75s">
+          <h2 class="m-0 text-[22px] font-semibold"><%= t('cv_analysis.what_you_get') %></h2>
+          <ul class="list-none m-0 p-0 flex flex-col gap-2.5">
+            <% gets.each do |item| %>
+              <li class="glass-soft sr-lift rounded-2xl p-4 flex gap-4 items-start">
+                <span class="glass sr-ico flex-none w-11 h-11 rounded-[14px] flex items-center justify-center" style="color: <%= item[:color] %>">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><%= item[:icon].html_safe %></svg>
+                </span>
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-[16px] font-semibold"><%= item[:title] %></span>
+                  <span class="text-[14px] font-light" style="color: rgba(238,243,238,0.65)"><%= item[:desc] %></span>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        </section>
+      </div>
 
       <!-- Features -->
-      <div class="grid md:grid-cols-3 gap-6 mt-12">
-        <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
-          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-            </svg>
-          </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('cv_analysis.feature_smart') %></h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('cv_analysis.feature_smart_desc') %></p>
-        </div>
-        <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
-          <div class="w-12 h-12 bg-action/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-          </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('cv_analysis.feature_secure') %></h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('cv_analysis.feature_secure_desc') %></p>
-        </div>
-        <div class="text-center p-6 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
-          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-          </div>
-          <h3 class="font-semibold text-gray-900 dark:text-white mb-2"><%= t('cv_analysis.feature_fast') %></h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('cv_analysis.feature_fast_desc') %></p>
-        </div>
+      <div class="grid gap-5" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr))">
+        <% features.each do |feature| %>
+          <article class="glass sr-lift sr-reveal rounded-[28px] p-6 sm:p-7 flex flex-col gap-4">
+            <span class="glass-soft sr-ico w-[52px] h-[52px] rounded-2xl flex items-center justify-center" style="color: #2fa36b">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><%= feature[:icon].html_safe %></svg>
+            </span>
+            <h3 class="m-0 text-[20px] font-semibold"><%= feature[:title] %></h3>
+            <p class="m-0 text-[15px] font-light" style="color: rgba(238,243,238,0.68)"><%= feature[:desc] %></p>
+          </article>
+        <% end %>
       </div>
 
       <!-- Back Link -->
-      <div class="text-center mt-8">
-        <a href="<%= root_path %>" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-          <%= t('cv_analysis.back_to_home') %>
-        </a>
+      <div class="text-center">
+        <a href="<%= root_path %>" class="text-sm" style="color: rgba(238,243,238,0.6)"><%= t('cv_analysis.back_to_home') %></a>
       </div>
     </div>
 
-    <!-- Processing Section (hidden initially, shown after upload) -->
-    <div id="processing-section" class="hidden">
-      <div class="text-center py-16">
-        <!-- Animated Spinner -->
-        <div class="relative w-24 h-24 mx-auto mb-8">
-          <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-          <div class="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
-          <div class="absolute inset-3 border-4 border-transparent border-t-action rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
-        </div>
-        
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4"><%= t('cv_analysis.analyzing_title') %></h2>
-        <p class="text-gray-600 dark:text-gray-300 mb-8"><%= t('cv_analysis.analyzing_desc') %></p>
-        
-        <!-- Progress Steps -->
-        <div class="max-w-md mx-auto space-y-3" id="progress-steps">
-          <div class="flex items-center gap-3 text-right" id="step-upload">
-            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </div>
-            <span class="text-sm text-gray-700 dark:text-gray-300"><%= t('cv_analysis.step_file_uploaded') %></span>
-          </div>
-          <div class="flex items-center gap-3 text-right" id="step-extract">
-            <div class="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
-              <div class="w-3 h-3 bg-primary rounded-full"></div>
-            </div>
-            <span class="text-sm text-gray-500 dark:text-gray-400"><%= t('cv_analysis.step_extracting_text') %></span>
-          </div>
-          <div class="flex items-center gap-3 text-right" id="step-analyze">
-            <div class="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <div class="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-            </div>
-            <span class="text-sm text-gray-400 dark:text-gray-500"><%= t('cv_analysis.step_analyzing_content') %></span>
-          </div>
-          <div class="flex items-center gap-3 text-right" id="step-complete">
-            <div class="w-8 h-8 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <div class="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-            </div>
-            <span class="text-sm text-gray-400 dark:text-gray-500"><%= t('cv_analysis.step_creating_report') %></span>
-          </div>
-        </div>
-      </div>
+    <!-- Processing Section (hidden until upload) -->
+    <div id="processing-section" class="max-w-[820px] w-full mx-auto" hidden>
+      <%= render "shared/ai_progress",
+            id: "cv-analysis-progress",
+            badge: t('cv_analysis.badge'),
+            title: t('cv_analysis.analyzing_title'),
+            subtitle: t('cv_analysis.analyzing_desc'),
+            steps: [
+              { label: t('cv_analysis.step_file_uploaded'), at: 0 },
+              { label: en ? "Reading your CV" : "قراءة السيرة الذاتية", at: 6 },
+              { label: en ? "Scoring sections" : "تقييم الأقسام", at: 25 },
+              { label: en ? "Writing the report" : "كتابة التقرير", at: 70 }
+            ],
+            error_title: t('cv_analysis.error_occurred'),
+            error_text: t('cv_analysis.error_message'),
+            retry_label: t('cv_analysis.try_again'),
+            retry_href: cv_analysis_path %>
     </div>
-
-    <!-- Error Section (hidden initially) -->
-    <div id="error-section" class="hidden">
-      <div class="text-center py-16">
-        <div class="w-16 h-16 bg-red-100 dark:bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </div>
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4"><%= t('cv_analysis.error_occurred') %></h2>
-        <p class="text-gray-600 dark:text-gray-300 mb-8" id="error-message"><%= t('cv_analysis.error_message') %></p>
-        <button 
-          onclick="location.reload()" 
-          class="inline-flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-6 py-3 rounded-xl font-semibold transition-all"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          <span><%= t('cv_analysis.try_again') %></span>
-        </button>
-      </div>
-    </div>
-
   </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('pdf-file-input');
-  const submitBtn = document.getElementById('submit-btn');
-  const uploadPlaceholder = document.getElementById('upload-placeholder');
-  const fileSelected = document.getElementById('file-selected');
-  const selectedFilename = document.getElementById('selected-filename');
-  const uploadForm = document.getElementById('upload-form');
-  const uploadSection = document.getElementById('upload-section');
-  const processingSection = document.getElementById('processing-section');
-  const errorSection = document.getElementById('error-section');
-
-  // File selection handler
-  fileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      uploadPlaceholder.classList.add('hidden');
-      fileSelected.classList.remove('hidden');
-      selectedFilename.textContent = file.name;
-      submitBtn.disabled = false;
-      dropZone.classList.add('border-primary', 'bg-primary/5');
-      dropZone.classList.remove('border-gray-300', 'dark:border-white/20');
-    }
-  });
-
-  // Drag and drop handlers
-  dropZone.addEventListener('dragover', function(e) {
-    e.preventDefault();
-    dropZone.classList.add('border-primary', 'bg-primary/5');
-  });
-
-  dropZone.addEventListener('dragleave', function(e) {
-    e.preventDefault();
-    if (!fileInput.files.length) {
-      dropZone.classList.remove('border-primary', 'bg-primary/5');
-    }
-  });
-
-  dropZone.addEventListener('drop', function(e) {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type === 'application/pdf') {
-      fileInput.files = e.dataTransfer.files;
-      uploadPlaceholder.classList.add('hidden');
-      fileSelected.classList.remove('hidden');
-      selectedFilename.textContent = file.name;
-      submitBtn.disabled = false;
-    }
-  });
-
-  // Form submission handler
-  uploadForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Show processing section
-    uploadSection.classList.add('hidden');
-    processingSection.classList.remove('hidden');
-    
-    const formData = new FormData(uploadForm);
-    
-    fetch('<%= cv_analysis_path(format: :json) %>', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-        'Accept': 'application/json'
-      }
-    })
-    .then(response => {
-      if (!response.ok) {
-        return response.text().then(text => { throw new Error(text) });
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success) {
-        // Start polling for status
-        pollStatus(data.analysis_id);
-      } else {
-        showError(data.error || CV_ANALYSIS_TRANSLATIONS.upload_error);
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      showError(CV_ANALYSIS_TRANSLATIONS.upload_error);
-    });
-  });
-
-  function pollStatus(analysisId) {
-    const statusUrl = '<%= cv_analysis_status_path(":id", format: :json) %>'.replace(':id', analysisId);
-    
-    const poll = setInterval(function() {
-      fetch(statusUrl, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        updateProgressSteps(data.status);
-        
-        if (data.status === 'completed') {
-          clearInterval(poll);
-          // Redirect to results page
-          window.location.href = '<%= cv_analysis_show_path(":id") %>'.replace(':id', analysisId);
-        } else if (data.status === 'failed') {
-          clearInterval(poll);
-          showError(data.error_message || CV_ANALYSIS_TRANSLATIONS.analysis_error);
-        }
-      })
-      .catch(error => {
-        console.error('Poll error:', error);
-      });
-    }, 2000);
-  }
-
-  function updateProgressSteps(status) {
-    const stepExtract = document.getElementById('step-extract');
-    const stepAnalyze = document.getElementById('step-analyze');
-    const stepComplete = document.getElementById('step-complete');
-
-    if (status === 'processing') {
-      // Mark extract as done, analyze in progress
-      stepExtract.querySelector('div').classList.remove('bg-gray-100', 'dark:bg-white/10', 'animate-pulse');
-      stepExtract.querySelector('div').classList.add('bg-primary/10');
-      stepExtract.querySelector('div').innerHTML = '<svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-      stepExtract.querySelector('span').classList.remove('text-gray-500', 'dark:text-gray-400');
-      stepExtract.querySelector('span').classList.add('text-gray-700', 'dark:text-gray-300');
-      stepExtract.querySelector('span').textContent = CV_ANALYSIS_TRANSLATIONS.text_extracted;
-
-      stepAnalyze.querySelector('div').classList.remove('bg-gray-100', 'dark:bg-white/10');
-      stepAnalyze.querySelector('div').classList.add('animate-pulse');
-      stepAnalyze.querySelector('div div').classList.remove('bg-gray-300', 'dark:bg-gray-600');
-      stepAnalyze.querySelector('div div').classList.add('bg-primary');
-      stepAnalyze.querySelector('span').classList.remove('text-gray-400', 'dark:text-gray-500');
-      stepAnalyze.querySelector('span').classList.add('text-gray-500', 'dark:text-gray-400');
-    }
-  }
-
-  function showError(message) {
-    processingSection.classList.add('hidden');
-    errorSection.classList.remove('hidden');
-    document.getElementById('error-message').textContent = message;
-  }
-});
-</script>
 
 <!-- Translations for JavaScript -->
 <script>
@@ -435,4 +170,143 @@ document.addEventListener('DOMContentLoaded', function() {
     analysis_error: "<%= j t('cv_analysis.analysis_error') %>",
     text_extracted: "<%= j t('cv_analysis.text_extracted') %>"
   };
+</script>
+
+<script>
+(function () {
+  function init() {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('pdf-file-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const uploadPlaceholder = document.getElementById('upload-placeholder');
+    const fileSelected = document.getElementById('file-selected');
+    const selectedFilename = document.getElementById('selected-filename');
+    const uploadForm = document.getElementById('upload-form');
+    const uploadSection = document.getElementById('upload-section');
+    const processingSection = document.getElementById('processing-section');
+    const progressEl = document.getElementById('cv-analysis-progress');
+    if (!uploadForm || uploadForm.dataset.bound) return;
+    uploadForm.dataset.bound = 'true';
+
+    function highlight(on) {
+      dropZone.style.borderColor = on ? 'rgba(47,163,107,0.75)' : 'rgba(255,255,255,0.22)';
+      dropZone.style.backgroundColor = on ? 'rgba(47,163,107,0.08)' : 'rgba(255,255,255,0.04)';
+    }
+
+    function selectFile(file) {
+      if (!file || file.type !== 'application/pdf') return false;
+      uploadPlaceholder.classList.add('hidden');
+      fileSelected.classList.remove('hidden');
+      fileSelected.classList.add('flex');
+      selectedFilename.textContent = file.name;
+      submitBtn.disabled = false;
+      highlight(true);
+      return true;
+    }
+
+    // Language chips: outline the checked one.
+    const langLabels = document.querySelectorAll('.sr-lang');
+    function paintLanguages() {
+      langLabels.forEach(function (label) {
+        const checked = label.querySelector('input').checked;
+        const ring = label.querySelector('.sr-radio');
+        const dot = label.querySelector('.sr-radio-dot');
+        label.style.borderColor = checked ? 'rgba(47,163,107,0.6)' : '';
+        label.style.backgroundColor = checked ? 'rgba(47,163,107,0.12)' : '';
+        label.style.color = checked ? '#eef3ee' : 'rgba(238,243,238,0.7)';
+        if (ring) {
+          ring.style.borderColor = checked ? '#2fa36b' : 'rgba(255,255,255,0.35)';
+          ring.style.boxShadow = checked ? '0 0 12px rgba(47,163,107,0.55)' : 'none';
+        }
+        if (dot) dot.style.transform = checked ? 'scale(1)' : 'scale(0)';
+      });
+    }
+    langLabels.forEach(function (label) { label.querySelector('input').addEventListener('change', paintLanguages); });
+    paintLanguages();
+
+    fileInput.addEventListener('change', function (e) { selectFile(e.target.files[0]); });
+
+    dropZone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      highlight(true);
+    });
+
+    dropZone.addEventListener('dragleave', function (e) {
+      e.preventDefault();
+      if (!fileInput.files.length) highlight(false);
+    });
+
+    dropZone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (selectFile(file)) fileInput.files = e.dataTransfer.files;
+    });
+
+    function showProcessing() {
+      uploadSection.hidden = true;
+      processingSection.hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(message) {
+      showProcessing();
+      if (window.SeeraProgress) window.SeeraProgress.fail(progressEl, message);
+    }
+
+    uploadForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      showProcessing();
+      if (window.SeeraProgress) window.SeeraProgress.start(progressEl, { expectedSeconds: 30, cap: 90 });
+
+      const formData = new FormData(uploadForm);
+
+      fetch('<%= cv_analysis_path(format: :json) %>', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json'
+        }
+      })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().catch(function () { return {}; }).then(function (data) {
+            throw new Error(data.error || CV_ANALYSIS_TRANSLATIONS.upload_error);
+          });
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        if (data.success) {
+          pollStatus(data.analysis_id);
+        } else {
+          showError(data.error || CV_ANALYSIS_TRANSLATIONS.upload_error);
+        }
+      })
+      .catch(function (error) {
+        console.error('Error:', error);
+        showError(error.message || CV_ANALYSIS_TRANSLATIONS.upload_error);
+      });
+    });
+
+    function pollStatus(analysisId) {
+      const statusUrl = '<%= cv_analysis_status_path(":id", format: :json) %>'.replace(':id', analysisId);
+      const showUrl = '<%= cv_analysis_show_path(":id") %>'.replace(':id', analysisId);
+      window.SeeraProgress.poll(progressEl, {
+        url: statusUrl,
+        interval: 1000,
+        onComplete: function () { window.location.href = showUrl; },
+        onFail: function (data) {
+          if (!data.error_message) window.SeeraProgress.fail(progressEl, CV_ANALYSIS_TRANSLATIONS.analysis_error);
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 </script>

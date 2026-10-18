@@ -38,13 +38,16 @@ class CvAnalysis < ApplicationRecord
   end
 
   # State transitions
+  # Progress starts at 3 so the processing page shows movement before the
+  # first streamed chunk arrives; the job raises it to at most 95.
   def mark_processing!
-    update!(status: "processing")
+    update!(status: "processing", progress: 3)
   end
 
   def mark_completed!(results, model_name = nil, tokens = nil)
     update!(
       status: "completed",
+      progress: 100,
       analysis_results: results,
       ai_model: model_name,
       tokens_used: tokens
