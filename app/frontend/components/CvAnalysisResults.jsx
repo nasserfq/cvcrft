@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { trackEvent } from "../lib/posthog";
 
 const translations = {
@@ -34,7 +34,11 @@ const translations = {
     excellent: "ممتاز",
     good: "جيد",
     needsWork: "يحتاج تحسين",
-    poor: "ضعيف"
+    poor: "ضعيف",
+    outOf: "من 100",
+    strengthsCount: "نقاط قوة",
+    improvementsCount: "تحسينات",
+    missingCount: "كلمات مقترحة"
   },
   en: {
     overallScore: "Overall Score",
@@ -68,112 +72,311 @@ const translations = {
     excellent: "Excellent",
     good: "Good",
     needsWork: "Needs Work",
-    poor: "Poor"
+    poor: "Poor",
+    outOf: "out of 100",
+    strengthsCount: "Strengths",
+    improvementsCount: "Improvements",
+    missingCount: "Suggested keywords"
   }
 };
 
-const ScoreGauge = ({ score, size = "large" }) => {
-  const getScoreColor = (score) => {
-    if (score >= 80) return { main: "#10b981", light: "#d1fae5" }; // emerald
-    if (score >= 60) return { main: "#3b82f6", light: "#dbeafe" }; // blue
-    if (score >= 40) return { main: "#f59e0b", light: "#fef3c7" }; // amber
-    return { main: "#ef4444", light: "#fee2e2" }; // red
-  };
+const MUTED = "rgba(238,243,238,0.7)";
+const SOFT = "rgba(238,243,238,0.6)";
+const RING_CIRCUMFERENCE = 2 * Math.PI * 50;
 
-  const colors = getScoreColor(score);
-  const circumference = 2 * Math.PI * 45;
-  const progress = (score / 100) * circumference;
-  const dimensions = size === "large" ? { w: 160, h: 160 } : { w: 80, h: 80 };
-  const strokeWidth = size === "large" ? 8 : 4;
-  const fontSize = size === "large" ? "text-4xl" : "text-lg";
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const clampScore = (value) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+};
+
+const scoreColor = (score) => {
+  if (score >= 80) return "#2fa36b";
+  if (score >= 60) return "#7fbf86";
+  if (score >= 40) return "#d6b877";
+  return "#e0715f";
+};
+
+// True once the element has scrolled into view (and stays true).
+const useInView = (ref) => {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || inView) return undefined;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return undefined;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [ref, inView]);
+  return inView;
+};
+
+// Counts from 0 to `value` once `active` is true.
+const useCountUp = (value, active, duration = 1600) => {
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (!active) return undefined;
+    if (prefersReducedMotion()) {
+      setShown(value);
+      return undefined;
+    }
+    let raf;
+    const t0 = performance.now();
+    const step = (t) => {
+      const p = Math.min(1, (t - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setShown(Math.round(value * eased));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [value, active, duration]);
+  return shown;
+};
+
+// Scroll reveals for React-rendered blocks in browsers without CSS scroll
+// timelines (site_scripts only observes what exists at page load).
+const useRevealFallback = (rootRef) => {
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !document.documentElement.classList.contains("sr-io")) return undefined;
+    if (typeof IntersectionObserver === "undefined") {
+      root.querySelectorAll(".sr-reveal, .sr-mask").forEach((el) => el.classList.add("is-in"));
+      return undefined;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px" }
+    );
+    root.querySelectorAll(".sr-reveal, .sr-mask").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [rootRef]);
+};
+
+const Icon = ({ d, size = 22, strokeWidth = 1.7 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={d} />
+  </svg>
+);
+
+const ICONS = {
+  chart: "M4 19V9M10 19V5M16 19v-7M22 19H2",
+  check: "M5 13l4 4L19 7",
+  shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3zM9 12l2 2 4-4",
+  alert: "M12 8v4M12 16h.01M12 3a9 9 0 100 18 9 9 0 000-18z",
+  bulb: "M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0012 3z",
+  tag: "M3 12V5a2 2 0 012-2h7l9 9-9 9-9-9zM8 8h.01",
+  doc: "M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5M9 13h6M9 17h4",
+  target: "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7a5 5 0 100 10 5 5 0 000-10zM12 11a1 1 0 100 2 1 1 0 000-2z",
+  sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"
+};
+
+const SectionHeading = ({ icon, color = "#2fa36b", children, count }) => (
+  <div className="flex items-center gap-3.5">
+    <span className="glass-soft sr-ico flex-none w-12 h-12 rounded-2xl flex items-center justify-center" style={{ color }}>
+      <Icon d={ICONS[icon]} />
+    </span>
+    <h2 className="m-0 font-semibold flex-1" style={{ fontSize: "clamp(22px, 2.6vw, 28px)", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+      {children}
+    </h2>
+    {typeof count === "number" && (
+      <span className="glass-soft sr-mono px-3 py-1 rounded-full text-sm" style={{ color: SOFT }} dir="ltr">
+        {count}
+      </span>
+    )}
+  </div>
+);
+
+const ScoreRing = ({ score, label, outOf }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref);
+  const shown = useCountUp(score, inView, 2200);
+  const [drawn, setDrawn] = useState(false);
+  const color = scoreColor(score);
+
+  useEffect(() => {
+    if (!inView) return undefined;
+    // Two frames so the empty ring paints before the transition starts.
+    let r2;
+    const r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => setDrawn(true));
+    });
+    return () => {
+      cancelAnimationFrame(r1);
+      if (r2) cancelAnimationFrame(r2);
+    };
+  }, [inView]);
+
+  const offset = drawn ? RING_CIRCUMFERENCE * (1 - score / 100) : RING_CIRCUMFERENCE;
 
   return (
-    <div className="relative" style={{ width: dimensions.w, height: dimensions.h }}>
-      <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
+    <div ref={ref} className="relative w-[200px] h-[200px] sm:w-[240px] sm:h-[240px]">
+      <div
+        aria-hidden="true"
+        className="absolute inset-4 rounded-full"
+        style={{ background: `radial-gradient(circle, ${color}40, transparent 70%)`, filter: "blur(18px)" }}
+      />
+      <svg width="100%" height="100%" viewBox="0 0 120 120" style={{ transform: "rotate(-90deg)" }} aria-hidden="true">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="9" />
         <circle
-          cx="50"
-          cy="50"
-          r="45"
+          cx="60"
+          cy="60"
+          r="50"
           fill="none"
-          stroke={colors.light}
-          strokeWidth={strokeWidth}
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r="45"
-          fill="none"
-          stroke={colors.main}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference - progress}
+          stroke={color}
+          strokeWidth="9"
           strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
+          strokeDasharray={RING_CIRCUMFERENCE}
+          strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 2.2s cubic-bezier(.65,0,.35,1)" }}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className={`${fontSize} font-bold`} style={{ color: colors.main }}>
-          {score}
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center"
+        role="img"
+        aria-label={`${label}: ${score}/100`}
+      >
+        <span dir="ltr" className="sr-mono font-semibold" style={{ fontSize: "clamp(48px, 7vw, 64px)", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+          {shown}
         </span>
+        <span className="text-[13px] mt-1" style={{ color: SOFT }}>{outOf}</span>
       </div>
     </div>
   );
 };
 
-const SectionScoreCard = ({ title, score, feedback }) => {
-  const getScoreColor = (score) => {
-    if (score >= 80) return "text-emerald-600 bg-emerald-100";
-    if (score >= 60) return "text-emerald-600 bg-emerald-100";
-    if (score >= 40) return "text-amber-600 bg-amber-100";
-    return "text-red-600 bg-red-100";
-  };
-
+const ScoreBar = ({ score, active, delay = 0, rtl }) => {
+  const color = scoreColor(score);
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-slate-900">{title}</h4>
-        <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${getScoreColor(score)}`}>
-          {score}%
-        </span>
-      </div>
-      <p className="text-sm text-slate-600 leading-relaxed">{feedback}</p>
+    <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+      <div
+        className="h-full rounded-full"
+        style={{
+          width: active ? `${score}%` : "0%",
+          background: `linear-gradient(${rtl ? "to left" : "to right"}, ${color}99, ${color})`,
+          boxShadow: `0 0 14px ${color}66`,
+          transition: `width 1.3s cubic-bezier(.65,0,.35,1) ${delay}s`
+        }}
+      />
     </div>
   );
+};
+
+const SectionScoreCard = ({ title, score, feedback, index, rtl }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref);
+  const shown = useCountUp(score, inView, 1300);
+  const color = scoreColor(score);
+
+  return (
+    <article ref={ref} className="glass-soft sr-lift sr-reveal rounded-[24px] p-5 sm:p-6 flex flex-col gap-3.5">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="m-0 text-[17px] font-semibold">{title}</h3>
+        <span dir="ltr" className="sr-mono text-lg font-semibold" style={{ color, fontVariantNumeric: "tabular-nums" }}>
+          {shown}%
+        </span>
+      </div>
+      <ScoreBar score={score} active={inView} delay={0.08 * (index % 2)} rtl={rtl} />
+      {feedback && (
+        <p className="m-0 text-[15px] font-light leading-relaxed" style={{ color: MUTED }}>
+          {feedback}
+        </p>
+      )}
+    </article>
+  );
+};
+
+const PRIORITY_STYLES = {
+  high: { background: "rgba(224,113,95,0.16)", border: "1px solid rgba(224,113,95,0.45)", color: "#f0a493" },
+  medium: { background: "rgba(214,184,119,0.16)", border: "1px solid rgba(214,184,119,0.45)", color: "#d6b877" },
+  low: { background: "rgba(47,163,107,0.16)", border: "1px solid rgba(47,163,107,0.45)", color: "#7fbf86" }
 };
 
 const PriorityBadge = ({ priority, t }) => {
-  const colors = {
-    high: "bg-red-100 text-red-700 ring-red-500/20",
-    medium: "bg-amber-100 text-amber-700 ring-amber-500/20",
-    low: "bg-emerald-100 text-emerald-700 ring-emerald-500/20"
-  };
-
-  const labels = {
-    high: t.high,
-    medium: t.medium,
-    low: t.low
-  };
-
+  const key = String(priority || "").toLowerCase();
+  const labels = { high: t.high, medium: t.medium, low: t.low };
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full ring-1 ${colors[priority] || colors.medium}`}>
-      {labels[priority] || priority}
+    <span
+      className="flex-none inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
+      style={PRIORITY_STYLES[key] || PRIORITY_STYLES.medium}
+    >
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: "currentColor" }} />
+      {labels[key] || priority}
     </span>
   );
 };
 
+const KeywordChips = ({ words, kind }) => {
+  const found = kind === "found";
+  return (
+    <div className="flex flex-wrap gap-2">
+      {words.map((word, index) => (
+        <span
+          key={`${word}-${index}`}
+          className="sr-up inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm"
+          style={{
+            animationDelay: `${Math.min(index, 12) * 0.04}s`,
+            background: found ? "rgba(47,163,107,0.14)" : "rgba(214,184,119,0.1)",
+            border: found ? "1px solid rgba(47,163,107,0.4)" : "1px dashed rgba(214,184,119,0.55)",
+            color: found ? "#a9dcb9" : "#e6cf9c"
+          }}
+        >
+          {found ? <Icon d={ICONS.check} size={13} strokeWidth={2.2} /> : <span aria-hidden="true">+</span>}
+          {word}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const StatChip = ({ value, label, color }) => (
+  <div className="glass-soft rounded-2xl px-4 py-3 flex flex-col gap-0.5 min-w-[120px]">
+    <span dir="ltr" className="sr-mono text-2xl font-semibold self-start" style={{ color }}>
+      {value}
+    </span>
+    <span className="text-[13px]" style={{ color: SOFT }}>{label}</span>
+  </div>
+);
+
 const CvAnalysisResults = ({ analysis, language, targetJob, targetIndustry }) => {
   const t = translations[language] || translations.ar;
-  const isRtl = language === "ar";
+  const isRtl = language !== "en";
+  const rootRef = useRef(null);
+  useRevealFallback(rootRef);
 
   const {
     overall_score = 0,
     section_scores = {},
-    strengths = [],
-    improvements = [],
-    ats_tips = [],
     detailed_feedback = {},
     keyword_analysis = {}
-  } = analysis;
+  } = analysis || {};
+  const asList = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
+  const strengths = asList(analysis?.strengths);
+  const improvements = asList(analysis?.improvements);
+  const ats_tips = asList(analysis?.ats_tips);
 
   // Track when CV analysis results are viewed
   useEffect(() => {
@@ -209,189 +412,210 @@ const CvAnalysisResults = ({ analysis, language, targetJob, targetIndustry }) =>
     return t.poor;
   };
 
+  const overall = clampScore(overall_score);
+  const foundKeywords = Array.isArray(keyword_analysis?.found_keywords) ? keyword_analysis.found_keywords : [];
+  const missingKeywords = Array.isArray(keyword_analysis?.missing_keywords) ? keyword_analysis.missing_keywords : [];
+  const sectionEntries = Object.entries(section_scores || {});
+  const feedbackEntries = Object.entries(detailed_feedback || {}).filter(([, text]) => text);
+  const hasKeywords = foundKeywords.length > 0 || missingKeywords.length > 0 || Boolean(keyword_analysis?.industry_match);
+
   return (
-    <div className="space-y-8">
-      {/* Target Context */}
-      {(targetJob || targetIndustry) && (
-        <div className="bg-primary/5 rounded-xl p-4 flex flex-wrap gap-4 text-sm">
-          {targetJob && (
-            <div>
-              <span className="text-primary font-medium">{t.targetJob}: </span>
-              <span className="text-slate-700">{targetJob}</span>
+    <div ref={rootRef} dir={isRtl ? "rtl" : "ltr"} className="flex flex-col gap-8" style={{ color: "#eef3ee" }}>
+      {/* Overall score */}
+      <section
+        className="glass sr-up relative overflow-hidden rounded-[32px] grid gap-8 sm:gap-12 items-center"
+        style={{
+          animationDelay: ".3s",
+          padding: "clamp(28px, 5vw, 56px)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))"
+        }}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            top: -160,
+            [isRtl ? "right" : "left"]: -120,
+            width: 440,
+            height: 440,
+            background: "radial-gradient(circle, rgba(0,150,85,0.32), rgba(0,150,85,0) 65%)",
+            filter: "blur(30px)"
+          }}
+        />
+        <div className="relative flex justify-center">
+          <ScoreRing score={overall} label={t.overallScore} outOf={t.outOf} />
+        </div>
+        <div className="relative flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <span className="text-sm" style={{ color: SOFT }}>{t.overallScore}</span>
+            <span className="font-semibold" style={{ fontSize: "clamp(30px, 4vw, 44px)", lineHeight: 1.15, letterSpacing: "-0.02em", color: scoreColor(overall) }}>
+              {getScoreLabel(overall)}
+            </span>
+          </div>
+
+          {(targetJob || targetIndustry) && (
+            <div className="flex flex-wrap gap-2">
+              {targetJob && (
+                <span className="glass-soft inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm">
+                  <span style={{ color: "#d6b877" }}><Icon d={ICONS.target} size={15} /></span>
+                  <span style={{ color: SOFT }}>{t.targetJob}:</span>
+                  <span>{targetJob}</span>
+                </span>
+              )}
+              {targetIndustry && (
+                <span className="glass-soft inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm">
+                  <span style={{ color: "#d6b877" }}><Icon d={ICONS.sparkle} size={15} /></span>
+                  <span style={{ color: SOFT }}>{t.targetIndustry}:</span>
+                  <span>{targetIndustry}</span>
+                </span>
+              )}
             </div>
           )}
-          {targetIndustry && (
-            <div>
-              <span className="text-primary font-medium">{t.targetIndustry}: </span>
-              <span className="text-slate-700">{targetIndustry}</span>
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* Overall Score */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8">
-        <h2 className="text-xl font-semibold text-slate-900 mb-6 text-center">{t.overallScore}</h2>
-        <div className="flex flex-col items-center">
-          <ScoreGauge score={overall_score} />
-          <p className="mt-4 text-lg font-medium text-slate-700">{getScoreLabel(overall_score)}</p>
+          <div className="flex flex-wrap gap-2.5">
+            <StatChip value={strengths.length} label={t.strengthsCount} color="#2fa36b" />
+            <StatChip value={improvements.length} label={t.improvementsCount} color="#d6b877" />
+            {missingKeywords.length > 0 && (
+              <StatChip value={missingKeywords.length} label={t.missingCount} color="#e6cf9c" />
+            )}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Section Scores */}
-      {Object.keys(section_scores).length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-4">{t.sectionScores}</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {Object.entries(section_scores).map(([key, data]) => (
+      {/* Section scores */}
+      {sectionEntries.length > 0 && (
+        <section className="flex flex-col gap-5">
+          <SectionHeading icon="chart">{t.sectionScores}</SectionHeading>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}>
+            {sectionEntries.map(([key, data], index) => (
               <SectionScoreCard
                 key={key}
+                index={index}
+                rtl={isRtl}
                 title={sectionLabels[key] || key}
-                score={data?.score || 0}
+                score={clampScore(data?.score)}
                 feedback={data?.feedback || ""}
               />
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Strengths */}
-      {strengths.length > 0 && (
-        <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-6">
-          <h2 className="text-xl font-semibold text-emerald-800 mb-4 flex items-center gap-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t.strengths}
-          </h2>
-          <ul className="space-y-3">
-            {strengths.map((strength, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-emerald-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <span className="text-slate-700">{strength}</span>
-              </li>
-            ))}
-          </ul>
+      {/* Strengths and ATS tips */}
+      {(strengths.length > 0 || ats_tips.length > 0) && (
+        <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 380px), 1fr))" }}>
+          {strengths.length > 0 && (
+            <section className="glass sr-lift sr-reveal rounded-[32px] p-6 sm:p-8 flex flex-col gap-5">
+              <SectionHeading icon="shield" count={strengths.length}>{t.strengths}</SectionHeading>
+              <ul className="list-none m-0 p-0 flex flex-col gap-2.5">
+                {strengths.map((strength, index) => (
+                  <li key={index} className="glass-soft rounded-2xl px-4 py-3.5 flex items-start gap-3">
+                    <span className="flex-none w-7 h-7 rounded-full flex items-center justify-center mt-0.5" style={{ background: "rgba(47,163,107,0.18)", color: "#2fa36b" }}>
+                      <Icon d={ICONS.check} size={15} strokeWidth={2.2} />
+                    </span>
+                    <span className="text-[15px] leading-relaxed" style={{ color: "rgba(238,243,238,0.88)" }}>{strength}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {ats_tips.length > 0 && (
+            <section className="glass sr-lift sr-reveal rounded-[32px] p-6 sm:p-8 flex flex-col gap-5">
+              <SectionHeading icon="bulb" color="#d6b877" count={ats_tips.length}>{t.atsTips}</SectionHeading>
+              <ol className="list-none m-0 p-0 flex flex-col gap-2.5">
+                {ats_tips.map((tip, index) => (
+                  <li key={index} className="glass-soft rounded-2xl px-4 py-3.5 flex items-start gap-3">
+                    <span dir="ltr" className="sr-mono flex-none w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold mt-0.5" style={{ background: "rgba(214,184,119,0.16)", border: "1px solid rgba(214,184,119,0.4)", color: "#d6b877" }}>
+                      {index + 1}
+                    </span>
+                    <span className="text-[15px] leading-relaxed" style={{ color: "rgba(238,243,238,0.88)" }}>{tip}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
         </div>
       )}
 
       {/* Improvements */}
       {improvements.length > 0 && (
-        <div className="bg-amber-50 rounded-2xl border border-amber-200 p-6">
-          <h2 className="text-xl font-semibold text-amber-800 mb-4 flex items-center gap-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t.improvements}
-          </h2>
-          <div className="space-y-4">
-            {improvements.map((improvement, index) => (
-              <div key={index} className="bg-white rounded-xl p-4 border border-amber-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-slate-900">
-                    {improvement.issue || improvement}
-                  </span>
-                  {improvement.priority && (
-                    <PriorityBadge priority={improvement.priority} t={t} />
+        <section className="glass sr-reveal rounded-[32px] p-6 sm:p-8 flex flex-col gap-5">
+          <SectionHeading icon="alert" color="#d6b877" count={improvements.length}>{t.improvements}</SectionHeading>
+          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))" }}>
+            {improvements.map((improvement, index) => {
+              const isObject = improvement && typeof improvement === "object";
+              const issue = isObject ? improvement.issue : improvement;
+              return (
+                <article key={index} className="glass-soft sr-lift rounded-[22px] p-5 flex flex-col gap-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="m-0 text-[16px] font-semibold leading-snug">{issue}</h3>
+                    {isObject && improvement.priority && <PriorityBadge priority={improvement.priority} t={t} />}
+                  </div>
+                  {isObject && improvement.suggestion && (
+                    <p className="m-0 text-[15px] font-light leading-relaxed" style={{ color: MUTED }}>
+                      <span className="font-medium" style={{ color: "#d6b877" }}>{t.suggestion}: </span>
+                      {improvement.suggestion}
+                    </p>
                   )}
-                </div>
-                {improvement.suggestion && (
-                  <p className="text-sm text-slate-600">{improvement.suggestion}</p>
-                )}
-              </div>
-            ))}
+                </article>
+              );
+            })}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* ATS Tips */}
-      {ats_tips.length > 0 && (
-        <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-6">
-          <h2 className="text-xl font-semibold text-emerald-800 mb-4 flex items-center gap-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            {t.atsTips}
-          </h2>
-          <ul className="space-y-3">
-            {ats_tips.map((tip, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-emerald-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-emerald-700 text-xs font-bold">{index + 1}</span>
-                </div>
-                <span className="text-slate-700">{tip}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Keyword Analysis */}
-      {Object.keys(keyword_analysis).length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="text-xl font-semibold text-slate-900 mb-4 flex items-center gap-2">
-            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-            </svg>
-            {t.keywordAnalysis}
-          </h2>
-          
-          <div className="space-y-4">
-            {keyword_analysis.found_keywords?.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-slate-700 mb-2">{t.foundKeywords}</h4>
-                <div className="flex flex-wrap gap-2">
-                  {keyword_analysis.found_keywords.map((keyword, index) => (
-                    <span key={index} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
+      {/* Keyword analysis */}
+      {hasKeywords && (
+        <section className="glass sr-reveal rounded-[32px] p-6 sm:p-8 flex flex-col gap-6">
+          <SectionHeading icon="tag">{t.keywordAnalysis}</SectionHeading>
+          <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}>
+            {foundKeywords.length > 0 && (
+              <div className="flex flex-col gap-3">
+                <h3 className="m-0 text-[15px] font-medium flex items-center gap-2" style={{ color: "#a9dcb9" }}>
+                  {t.foundKeywords}
+                  <span className="sr-mono text-xs" style={{ color: SOFT }} dir="ltr">{foundKeywords.length}</span>
+                </h3>
+                <KeywordChips words={foundKeywords} kind="found" />
               </div>
             )}
-            
-            {keyword_analysis.missing_keywords?.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-slate-700 mb-2">{t.missingKeywords}</h4>
-                <div className="flex flex-wrap gap-2">
-                  {keyword_analysis.missing_keywords.map((keyword, index) => (
-                    <span key={index} className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {keyword_analysis.industry_match && (
-              <div className="mt-4 p-4 bg-slate-50 rounded-xl">
-                <h4 className="text-sm font-medium text-slate-700 mb-1">{t.industryMatch}</h4>
-                <p className="text-sm text-slate-600">{keyword_analysis.industry_match}</p>
+            {missingKeywords.length > 0 && (
+              <div className="flex flex-col gap-3">
+                <h3 className="m-0 text-[15px] font-medium flex items-center gap-2" style={{ color: "#e6cf9c" }}>
+                  {t.missingKeywords}
+                  <span className="sr-mono text-xs" style={{ color: SOFT }} dir="ltr">{missingKeywords.length}</span>
+                </h3>
+                <KeywordChips words={missingKeywords} kind="missing" />
               </div>
             )}
           </div>
-        </div>
+          {keyword_analysis?.industry_match && (
+            <div className="glass-soft rounded-[20px] p-5 flex flex-col gap-1.5">
+              <h3 className="m-0 text-[15px] font-semibold">{t.industryMatch}</h3>
+              <p className="m-0 text-[15px] font-light leading-relaxed" style={{ color: MUTED }}>{keyword_analysis.industry_match}</p>
+            </div>
+          )}
+        </section>
       )}
 
-      {/* Detailed Feedback */}
-      {Object.keys(detailed_feedback).length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-12">
-          <h2 className="text-xl font-semibold text-slate-900 mb-4">{t.detailedFeedback}</h2>
-          <div className="space-y-4">
-            {Object.entries(detailed_feedback).map(([key, feedback]) => (
-              <div key={key} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
-                <h4 className="font-medium text-slate-800 mb-2">
+      {/* Detailed feedback */}
+      {feedbackEntries.length > 0 && (
+        <section className="glass sr-reveal rounded-[32px] p-6 sm:p-8 flex flex-col gap-5">
+          <SectionHeading icon="doc">{t.detailedFeedback}</SectionHeading>
+          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))" }}>
+            {feedbackEntries.map(([key, feedback]) => (
+              <article key={key} className="glass-soft sr-lift rounded-[22px] p-5 flex flex-col gap-2">
+                <h3 className="m-0 text-[16px] font-semibold flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full flex-none" style={{ background: "#d6b877" }} />
                   {feedbackLabels[key] || key}
-                </h4>
-                <p className="text-sm text-slate-600 leading-relaxed">{feedback}</p>
-              </div>
+                </h3>
+                <p className="m-0 text-[15px] font-light leading-relaxed" style={{ color: MUTED }}>
+                  {typeof feedback === "string" ? feedback : JSON.stringify(feedback)}
+                </p>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

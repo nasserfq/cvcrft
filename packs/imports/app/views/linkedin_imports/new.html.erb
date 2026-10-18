@@ -110,74 +110,28 @@
       </div>
     </div>
 
-    <!-- Processing Section (shown while processing) -->
-    <div id="processing-section" class="hidden text-center py-12">
-      <div class="mb-8">
-        <div class="w-20 h-20 mx-auto relative">
-          <svg class="animate-spin w-20 h-20 text-primary" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
+    <!-- Processing Section (shown while processing; also carries the error state) -->
+    <div id="processing-section" class="hidden py-6" style="color: #eef3ee">
+      <%= render "shared/ai_progress",
+            id: "linkedin-progress",
+            dir: (I18n.locale == :ar ? "rtl" : "ltr"),
+            badge: t('linkedin_import.badge'),
+            title: t('linkedin_import.processing_title'),
+            subtitle: t('linkedin_import.processing_desc'),
+            steps: [
+              { label: t('linkedin_import.step_upload'), at: 0 },
+              { label: t('linkedin_import.step_extract'), at: 10 },
+              { label: t('linkedin_import.step_ai'), at: 30 },
+              { label: t('linkedin_import.preparing_editor'), at: 85 }
+            ],
+            error_title: t('linkedin_import.error_occurred'),
+            error_text: t('linkedin_import.processing_failed'),
+            retry_label: t('linkedin_import.upload_another') %>
+      <div id="cancel-upload-wrap" class="text-center mt-6">
+        <button type="button" onclick="resetUpload()" class="sr-btn glass-soft inline-flex items-center gap-2 min-h-[44px] px-5 rounded-2xl text-sm cursor-pointer" style="color: rgba(238,243,238,0.75)">
+          <%= t('linkedin_import.cancel_upload_another') %>
+        </button>
       </div>
-      <h2 class="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
-        <%= t('linkedin_import.processing_title') %>
-      </h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">
-        <%= t('linkedin_import.processing_desc') %>
-      </p>
-      <div class="space-y-3 text-sm text-gray-500 dark:text-gray-400">
-        <div class="flex items-center justify-center gap-3" id="step-upload">
-          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <span><%= t('linkedin_import.step_upload') %></span>
-        </div>
-        <div class="flex items-center justify-center gap-3" id="step-extract">
-          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <span><%= t('linkedin_import.step_extract') %></span>
-        </div>
-        <div class="flex items-center justify-center gap-3" id="step-ai">
-          <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          <span id="step-ai-text"><%= t('linkedin_import.step_ai') %></span>
-        </div>
-        <div class="flex items-center justify-center gap-3" id="step-editor">
-          <svg class="w-5 h-5 text-gray-300 dark:text-gray-600" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          <span id="step-editor-text" class="text-gray-400 dark:text-gray-500"><%= t('linkedin_import.preparing_editor') %></span>
-        </div>
-      </div>
-      <button 
-        onclick="resetUpload()" 
-        class="mt-8 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline transition-colors"
-      >
-        <%= t('linkedin_import.cancel_upload_another') %>
-      </button>
-    </div>
-
-    <!-- Error Section (shown on error) -->
-    <div id="error-section" class="hidden text-center py-12">
-      <div class="mb-6">
-        <svg class="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-      </div>
-      <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4"><%= t('linkedin_import.error_occurred') %></h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-6" id="error-message"><%= t('linkedin_import.processing_failed') %></p>
-      <button 
-        onclick="resetUpload()" 
-        class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primaryHover transition-colors"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-        </svg>
-        <span><%= t('linkedin_import.upload_another') %></span>
-      </button>
     </div>
 
   </div>
@@ -217,8 +171,10 @@
   
   const uploadSection = document.getElementById('upload-section');
   const processingSection = document.getElementById('processing-section');
-  const errorSection = document.getElementById('error-section');
-  const errorMessage = document.getElementById('error-message');
+  const progressEl = document.getElementById('linkedin-progress');
+  const cancelWrap = document.getElementById('cancel-upload-wrap');
+  const retryBtn = progressEl.querySelector('[data-ai-progress-retry]');
+  if (retryBtn) retryBtn.addEventListener('click', function() { resetUpload(); });
 
   // File selection
   fileInput.addEventListener('change', function(e) {
@@ -287,6 +243,8 @@
         // Show processing section
         uploadSection.classList.add('hidden');
         processingSection.classList.remove('hidden');
+        cancelWrap.classList.remove('hidden');
+        window.SeeraProgress.start(progressEl, { expectedSeconds: 20 });
         
         // Start polling for status
         pollStatus(data.id);
@@ -310,26 +268,10 @@
 
       if (data.completed) {
         trackLinkedInEvent('linkedin_import_processing_completed', { import_id: importId });
-        // Update step indicators
-        document.getElementById('step-ai-icon').outerHTML = `
-          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        `;
-        document.getElementById('step-ai-text').textContent = LINKEDIN_TRANSLATIONS.ai_analysis;
-        
-        document.getElementById('step-editor-icon').outerHTML = `
-          <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        `;
-        document.getElementById('step-editor-text').textContent = LINKEDIN_TRANSLATIONS.ready;
-        document.getElementById('step-editor-text').classList.remove('text-gray-400', 'dark:text-gray-500');
-        
-        // Redirect to editor after a short delay
-        setTimeout(() => {
+        // Count up to 100%, then open the editor
+        window.SeeraProgress.done(progressEl, () => {
           window.location.href = `/linkedin-import/${importId}`;
-        }, 500);
+        });
       } else if (data.failed) {
         trackLinkedInEvent('linkedin_import_processing_failed', { import_id: importId, error: data.error_message });
         showError(data.error_message || LINKEDIN_TRANSLATIONS.processing_failed);
@@ -345,15 +287,15 @@
 
   function showError(message) {
     uploadSection.classList.add('hidden');
-    processingSection.classList.add('hidden');
-    errorSection.classList.remove('hidden');
-    errorMessage.textContent = message;
+    processingSection.classList.remove('hidden');
+    cancelWrap.classList.add('hidden');
+    window.SeeraProgress.fail(progressEl, message);
   }
 
   function resetUpload() {
-    // Hide processing and error sections
+    // Stop the progress card and hide it
+    window.SeeraProgress.stop(progressEl);
     processingSection.classList.add('hidden');
-    errorSection.classList.add('hidden');
     
     // Show upload section
     uploadSection.classList.remove('hidden');
@@ -372,28 +314,5 @@
       </svg>
       <span>${LINKEDIN_TRANSLATIONS.start_import}</span>
     `;
-    
-    // Reset processing step icons (in case user comes back)
-    const stepAiIcon = document.getElementById('step-ai-icon');
-    if (stepAiIcon) {
-      stepAiIcon.outerHTML = `
-        <svg class="w-5 h-5 text-gray-400 dark:text-gray-500 animate-pulse" id="step-ai-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-        </svg>
-      `;
-    }
-    document.getElementById('step-ai-text').textContent = LINKEDIN_TRANSLATIONS.step_ai;
-    
-    const stepEditorIcon = document.getElementById('step-editor-icon');
-    if (stepEditorIcon) {
-      stepEditorIcon.outerHTML = `
-        <svg class="w-5 h-5 text-gray-300 dark:text-gray-600" id="step-editor-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-        </svg>
-      `;
-    }
-    const stepEditorText = document.getElementById('step-editor-text');
-    stepEditorText.textContent = LINKEDIN_TRANSLATIONS.preparing_editor;
-    stepEditorText.classList.add('text-gray-400', 'dark:text-gray-500');
   }
 </script>

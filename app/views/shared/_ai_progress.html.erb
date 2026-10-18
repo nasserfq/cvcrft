@@ -1,0 +1,288 @@
+<%#
+  Live AI progress card in the Seera glass style: a big counting percentage,
+  a glass bar with shimmer, step rows that light up as the percentage passes
+  them, and a glass failure state. Driven by window.SeeraProgress (below).
+
+  Locals:
+    id:          element id (required)
+    title:       heading under the number
+    subtitle:    one line under the heading (optional)
+    badge:       pill text above the number (optional)
+    filename:    shown as a mono chip (optional)
+    steps:       [{ label:, at: }] — `at` is the percentage where the row starts
+    dir:         "rtl" or "ltr" (defaults to the page direction)
+    error_title: heading of the failure state
+    error_text:  default failure message
+    retry_label: failure button text
+    retry_href:  failure button link; without it the button carries
+                 data-ai-progress-retry for the page to bind
+    hidden:      render hidden (the page shows it later)
+%>
+<% dir = local_assigns[:dir] || text_direction %>
+<% rtl = dir == "rtl" %>
+<% steps = local_assigns[:steps] || [] %>
+<section id="<%= id %>" data-ai-progress dir="<%= dir %>"
+         class="glass sr-up relative overflow-hidden rounded-[32px] text-center"
+         style="padding: clamp(28px, 5vw, 56px); color: #eef3ee"
+         <%= "hidden" if local_assigns[:hidden] %>>
+  <div aria-hidden="true" class="absolute rounded-full pointer-events-none" style="top: -160px; <%= rtl ? 'left' : 'right' %>: -120px; width: 420px; height: 420px; background: radial-gradient(circle, rgba(0,150,85,0.35), rgba(0,150,85,0) 65%); filter: blur(30px)"></div>
+  <div aria-hidden="true" class="absolute top-0 inset-x-0 pointer-events-none" style="height: 10px; opacity: 0.8">
+    <svg width="100%" height="10"><defs><pattern id="<%= id %>-sadu" width="20" height="10" patternUnits="userSpaceOnUse"><path d="M0 0L5 10L10 0Z" fill="rgba(0,140,78,0.8)"></path><path d="M10 10L15 0L20 10Z" fill="rgba(214,184,119,0.7)"></path></pattern></defs><rect width="100%" height="10" fill="url(#<%= id %>-sadu)"></rect></svg>
+  </div>
+
+  <div data-ai-progress-run class="relative flex flex-col items-center gap-6">
+    <% if local_assigns[:badge].present? %>
+      <span class="glass-soft inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="color: rgba(238,243,238,0.9)">
+        <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+        <%= badge %>
+      </span>
+    <% end %>
+
+    <div class="sr-mono font-semibold flex items-start justify-center" dir="ltr" style="font-size: clamp(72px, 14vw, 132px); line-height: 1; letter-spacing: -0.04em" aria-hidden="true">
+      <span data-ai-progress-value style="font-variant-numeric: tabular-nums">0</span><span style="color: #d6b877; font-size: 0.42em; margin-top: 0.18em; margin-left: 0.06em">%</span>
+    </div>
+
+    <div class="flex flex-col gap-2 max-w-[48ch]">
+      <h2 class="m-0 font-semibold" style="font-size: clamp(22px, 3vw, 30px); line-height: 1.25; letter-spacing: -0.02em"><%= title %></h2>
+      <% if local_assigns[:subtitle].present? %>
+        <p class="m-0 text-[16px] font-light" style="color: rgba(238,243,238,0.7)"><%= subtitle %></p>
+      <% end %>
+    </div>
+
+    <div data-ai-progress-track role="progressbar" aria-label="<%= title %>" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+         class="glass-soft w-full max-w-[560px] rounded-full overflow-hidden" style="height: 16px; padding: 3px">
+      <div data-ai-progress-bar class="sr-shim h-full rounded-full" style="width: 0%; background: linear-gradient(<%= rtl ? 'to left' : 'to right' %>, #0b7f48, #2fa36b 60%, #d6b877); box-shadow: 0 0 18px rgba(47,163,107,0.55), inset 0 1px 0 rgba(255,255,255,0.35)"></div>
+    </div>
+
+    <% if local_assigns[:filename].present? %>
+      <span class="glass-soft sr-mono inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs max-w-full" style="color: rgba(238,243,238,0.75)" dir="ltr">
+        <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg>
+        <span class="truncate"><%= filename %></span>
+      </span>
+    <% end %>
+
+    <% if steps.any? %>
+      <ol class="list-none m-0 p-0 grid gap-2 w-full max-w-[560px] text-start">
+        <% steps.each do |step| %>
+          <li data-ai-step data-at="<%= step[:at].to_i %>" data-state="pending" class="sr-step glass-soft rounded-2xl px-4 py-3 flex items-center gap-3 text-[15px]">
+            <span class="glass flex-none w-8 h-8 rounded-full flex items-center justify-center" style="color: #2fa36b">
+              <span class="sr-step-dot w-2.5 h-2.5 rounded-full"></span>
+              <svg class="sr-step-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg>
+            </span>
+            <span><%= step[:label] %></span>
+          </li>
+        <% end %>
+      </ol>
+    <% end %>
+  </div>
+
+  <div data-ai-progress-fail hidden role="alert" class="relative flex flex-col items-center gap-5">
+    <span class="glass-soft w-16 h-16 rounded-[20px] flex items-center justify-center" style="color: #e0715f">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+    </span>
+    <h2 class="m-0 font-semibold" style="font-size: clamp(22px, 3vw, 30px); line-height: 1.25"><%= local_assigns[:error_title] %></h2>
+    <p data-ai-progress-error class="m-0 text-[16px] font-light max-w-[48ch]" style="color: rgba(238,243,238,0.72)"><%= local_assigns[:error_text] %></p>
+    <% retry_inner = capture do %>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5"></path><path d="M5.5 15a7.5 7.5 0 0 0 13 2M18.5 9a7.5 7.5 0 0 0-13-2"></path></svg>
+      <span><%= local_assigns[:retry_label] %></span>
+    <% end %>
+    <% retry_class = "sr-btn sr-primary inline-flex items-center gap-2.5 min-h-[52px] px-6 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+    <% retry_style = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6); color: #ffffff" %>
+    <% if local_assigns[:retry_href].present? %>
+      <a href="<%= retry_href %>" class="<%= retry_class %>" style="<%= retry_style %>"><%= retry_inner %></a>
+    <% else %>
+      <button type="button" data-ai-progress-retry class="<%= retry_class %>" style="<%= retry_style %>"><%= retry_inner %></button>
+    <% end %>
+  </div>
+</section>
+
+<script>
+  /*
+    window.SeeraProgress — drives a shared/_ai_progress card.
+      start(el, { expectedSeconds, cap })  time-based ease toward `cap` (95)
+      set(el, pct)                         real progress; never goes backwards
+      done(el, callback)                   animate to 100, then callback
+      fail(el, message)                    show the glass failure state
+      stop(el)                             stop animating and polling
+      poll(el, { url, interval, onComplete, onFail })
+                                           GET url every `interval` ms, feed
+                                           `progress`, finish on completed/failed
+    `el` may be the element or its id.
+  */
+  (function () {
+    if (window.SeeraProgress) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var states = new WeakMap();
+    var FRAME = 33;
+
+    function resolve(el) { return typeof el === 'string' ? document.getElementById(el) : el; }
+    function now() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
+
+    function stateFor(el) {
+      var s = states.get(el);
+      if (!s) {
+        s = { shown: 0, server: 0, last: -1, t0: now(), prev: now(), expected: 30, cap: 95, timed: true, finishing: false, stopped: true, timer: null, pollTimer: null, onDone: null };
+        states.set(el, s);
+      }
+      return s;
+    }
+
+    function render(el, s) {
+      var v = Math.floor(s.shown);
+      if (v !== s.last) {
+        s.last = v;
+        var num = el.querySelector('[data-ai-progress-value]');
+        if (num) num.textContent = v;
+        var track = el.querySelector('[data-ai-progress-track]');
+        if (track) track.setAttribute('aria-valuenow', v);
+      }
+      var bar = el.querySelector('[data-ai-progress-bar]');
+      if (bar) bar.style.width = s.shown.toFixed(2) + '%';
+      var steps = el.querySelectorAll('[data-ai-step]');
+      for (var i = 0; i < steps.length; i++) {
+        var at = parseFloat(steps[i].getAttribute('data-at')) || 0;
+        var next = i + 1 < steps.length ? (parseFloat(steps[i + 1].getAttribute('data-at')) || 100) : 100;
+        var state = (s.shown >= next || s.shown >= 100) ? 'done' : (s.shown >= at ? 'active' : 'pending');
+        if (steps[i].getAttribute('data-state') !== state) steps[i].setAttribute('data-state', state);
+      }
+    }
+
+    function timedTarget(s, t) {
+      if (!s.timed) return 0;
+      var secs = (t - s.t0) / 1000;
+      // Reaches ~90% of `cap` at expectedSeconds, then keeps creeping so it never stalls.
+      return s.cap * (1 - Math.exp(-2.4 * secs / s.expected));
+    }
+
+    function tick(el) {
+      var s = states.get(el);
+      if (!s || s.stopped) return;
+      var t = now();
+      var dt = Math.min(0.25, (t - s.prev) / 1000);
+      s.prev = t;
+      var target = s.finishing ? 100 : Math.min(99, Math.max(s.server, timedTarget(s, t)));
+      if (target > s.shown) {
+        if (reduce) {
+          s.shown = target;
+        } else {
+          var rate = s.finishing ? 5 : 2.4;
+          s.shown += (target - s.shown) * Math.min(1, dt * rate) + (s.finishing ? dt * 25 : dt * 0.6);
+          if (s.shown > target) s.shown = target;
+        }
+      }
+      render(el, s);
+      if (s.finishing && s.shown >= 100) {
+        s.stopped = true;
+        var cb = s.onDone;
+        s.onDone = null;
+        if (cb) setTimeout(cb, 350);
+        return;
+      }
+      s.timer = setTimeout(function () { tick(el); }, FRAME);
+    }
+
+    function run(el, s) {
+      if (!s.stopped) return;
+      s.stopped = false;
+      s.prev = now();
+      tick(el);
+    }
+
+    function showRun(el) {
+      var runEl = el.querySelector('[data-ai-progress-run]');
+      var failEl = el.querySelector('[data-ai-progress-fail]');
+      if (runEl) runEl.hidden = false;
+      if (failEl) failEl.hidden = true;
+    }
+
+    function stop(el) {
+      el = resolve(el);
+      if (!el) return;
+      var s = stateFor(el);
+      s.stopped = true;
+      clearTimeout(s.timer);
+      clearTimeout(s.pollTimer);
+      s.pollTimer = null;
+    }
+
+    var api = {
+      start: function (el, opts) {
+        el = resolve(el);
+        if (!el) return;
+        opts = opts || {};
+        stop(el);
+        var s = stateFor(el);
+        s.shown = 0; s.server = 0; s.last = -1; s.finishing = false; s.onDone = null;
+        s.t0 = now();
+        s.expected = Math.max(1, opts.expectedSeconds || 30);
+        s.cap = Math.min(99, opts.cap || 95);
+        s.timed = opts.timed !== false;
+        showRun(el);
+        render(el, s);
+        run(el, s);
+      },
+      set: function (el, pct) {
+        el = resolve(el);
+        if (!el) return;
+        var s = stateFor(el);
+        var value = Number(pct);
+        if (!isFinite(value)) return;
+        s.server = Math.max(s.server, Math.min(99, Math.max(0, value)));
+        run(el, s);
+      },
+      done: function (el, callback) {
+        el = resolve(el);
+        if (!el) { if (callback) callback(); return; }
+        var s = stateFor(el);
+        clearTimeout(s.pollTimer);
+        s.finishing = true;
+        s.onDone = callback || null;
+        run(el, s);
+      },
+      fail: function (el, message) {
+        el = resolve(el);
+        if (!el) return;
+        stop(el);
+        var runEl = el.querySelector('[data-ai-progress-run]');
+        var failEl = el.querySelector('[data-ai-progress-fail]');
+        var msg = el.querySelector('[data-ai-progress-error]');
+        if (msg && message) msg.textContent = message;
+        if (runEl) runEl.hidden = true;
+        if (failEl) failEl.hidden = false;
+        el.hidden = false;
+      },
+      stop: stop,
+      poll: function (el, opts) {
+        el = resolve(el);
+        if (!el || !opts || !opts.url) return;
+        var s = stateFor(el);
+        var interval = opts.interval || 1000;
+        clearTimeout(s.pollTimer);
+        var check = function () {
+          fetch(opts.url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
+            .then(function (res) {
+              if (!res.ok) throw new Error('HTTP ' + res.status);
+              return res.json();
+            })
+            .then(function (data) {
+              if (typeof data.progress === 'number') api.set(el, data.progress);
+              if (data.status === 'completed' || data.completed === true) {
+                api.done(el, function () { if (opts.onComplete) opts.onComplete(data); });
+              } else if (data.status === 'failed' || data.failed === true) {
+                api.fail(el, data.error_message);
+                if (opts.onFail) opts.onFail(data);
+              } else {
+                s.pollTimer = setTimeout(check, interval);
+              }
+            })
+            .catch(function () {
+              s.pollTimer = setTimeout(check, interval * 2);
+            });
+        };
+        check();
+      }
+    };
+
+    window.SeeraProgress = api;
+  })();
+</script>

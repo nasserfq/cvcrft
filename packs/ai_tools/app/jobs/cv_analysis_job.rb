@@ -9,6 +9,18 @@ class CvAnalysisJob
 
   sidekiq_options queue: :default, retry: 3
 
+  # The report is written by two calls that run side by side: one long call
+  # took ~42 s, and output length is what costs time. Part A keeps the scores
+  # and ATS tips together so the tips cannot contradict the ATS feedback.
+  PARTS = %i[scores details].freeze
+
+  # Rough length of each part's reply, in characters, for the progress bar.
+  # Arabic replies run longer than English ones.
+  EXPECTED_CHARS = {
+    "ar" => { scores: 5500, details: 3200 },
+    "en" => { scores: 4500, details: 2600 }
+  }.freeze
+
   def perform(cv_analysis_id)
     @analysis = CvAnalysis.find(cv_analysis_id)
     @analysis.mark_processing!
@@ -32,23 +44,54 @@ class CvAnalysisJob
   private
 
   def analyze_cv
-    system_prompt = build_system_prompt
     user_prompt = build_user_prompt(@analysis.extracted_text, @analysis.target_job, @analysis.target_industry)
+    tracker = ProgressTracker.new(@analysis, EXPECTED_CHARS.fetch(@analysis.language, EXPECTED_CHARS["en"]))
 
-    response = AiModel.complete(system: system_prompt, user: user_prompt,
-                                temperature: 0.3, max_tokens: 8000)
-    analysis_result = parse_openai_response(response)
+    threads = PARTS.map do |part|
+      Thread.new do
+        Thread.current.report_on_exception = false
+        Rails.application.executor.wrap { request_part(part, user_prompt, tracker) }
+      end
+    end
 
-    tokens_used = AiModel.token_count(response) || 0
+    replies = wait_for(threads)
+    parsed = replies.to_h { |part, response| [ part, parse_part(response) ] }
 
     {
-      analysis: analysis_result,
+      analysis: merge_parts(parsed[:scores], parsed[:details]),
       model: AiModel.default,
-      tokens: tokens_used
+      tokens: replies.values.sum { |response| AiModel.token_count(response) || 0 }
     }
   end
 
-  def build_system_prompt
+  def request_part(part, user_prompt, tracker)
+    response = AiModel.complete(system: build_system_prompt(part), user: user_prompt,
+                                temperature: 0.3, max_tokens: 8000) do |chunk|
+      tracker.add(part, chunk.content.to_s.length)
+    end
+    [ part, response ]
+  end
+
+  # Waits for every part before raising, so no thread is left writing to the
+  # analysis after it has been marked failed. Thread#value re-raises the
+  # thread's exception. The job may hold the load interlock; letting it go
+  # while waiting keeps a thread that needs to autoload from deadlocking.
+  def wait_for(threads)
+    outcomes = ActiveSupport::Dependencies.interlock.permit_concurrent_loads do
+      threads.map do |thread|
+        thread.value
+      rescue StandardError => e
+        e
+      end
+    end
+
+    error = outcomes.find { |outcome| outcome.is_a?(Exception) }
+    raise error if error
+
+    outcomes.to_h
+  end
+
+  def build_system_prompt(part)
     language = @analysis.language == "ar" ? "Arabic" : "English"
 
     <<~PROMPT
@@ -56,29 +99,41 @@ class CvAnalysisJob
 
       IMPORTANT: Respond ONLY in #{language}. All text in your response must be in #{language}.
 
+      #{part == :scores ? scores_instructions : details_instructions}
+
+      LENGTH LIMITS (keep the reply concise):
+      - Every feedback text: 2-3 sentences.
+      - Every list item: one sentence.
+
+      Return ONLY valid JSON, no additional text or markdown formatting.
+    PROMPT
+  end
+
+  def scores_instructions
+    <<~PROMPT
       You must return a valid JSON object with the following structure:
       {
         "overall_score": <number 0-100>,
         "section_scores": {
           "ats_compatibility": {
             "score": <number 0-100>,
-            "feedback": "<detailed feedback about what the CV does well AND what needs improvement>"
+            "feedback": "<feedback about what the CV does well AND what needs improvement>"
           },
           "content_quality": {
             "score": <number 0-100>,
-            "feedback": "<detailed feedback>"
+            "feedback": "<feedback>"
           },
           "formatting": {
             "score": <number 0-100>,
-            "feedback": "<detailed feedback>"
+            "feedback": "<feedback>"
           },
           "keyword_optimization": {
             "score": <number 0-100>,
-            "feedback": "<detailed feedback>"
+            "feedback": "<feedback>"
           },
           "impact_statements": {
             "score": <number 0-100>,
-            "feedback": "<detailed feedback>"
+            "feedback": "<feedback>"
           }
         },
         "strengths": [
@@ -93,20 +148,10 @@ class CvAnalysisJob
             "priority": "<high|medium|low>"
           }
         ],
-        "ats_tips": [],
-        "detailed_feedback": {
-          "professional_summary": "<feedback on summary section>",
-          "work_experience": "<feedback on work experience>",
-          "education": "<feedback on education section>",
-          "skills": "<feedback on skills section>",
-          "overall_structure": "<feedback on document structure>"
-        },
-        "keyword_analysis": {
-          "found_keywords": ["<keyword1>", "<keyword2>"],
-          "missing_keywords": ["<suggested keyword1>", "<suggested keyword2>"],
-          "industry_match": "<assessment of industry keyword alignment>"
-        }
+        "ats_tips": []
       }
+
+      Limits: 3-5 strengths, at most 6 improvements, at most 5 ATS tips.
 
       SCORING CRITERIA:
 
@@ -153,7 +198,40 @@ class CvAnalysisJob
       6. If the ATS score is 80% or higher, limit tips to 2-3 minor improvements only
       7. NEVER contradict the ats_compatibility feedback - tips must be consistent with it
 
-      Return ONLY valid JSON, no additional text or markdown formatting.
+      CRITICAL: Your response MUST be internally consistent. The "ats_tips" section must NOT contradict the "ats_compatibility" feedback. If your ats_compatibility feedback says something is done correctly (like date formatting), do NOT include a tip about fixing it.
+
+      Provide:
+      1. Overall score (0-100)
+      2. Section-by-section scores and feedback based on what's ACTUALLY in the CV
+      3. Top strengths - reference specific things from the CV
+      4. Areas for improvement with priorities - only for things that need improving, NOT missing sections that actually exist
+      5. ATS optimization tips specific to THIS CV
+    PROMPT
+  end
+
+  def details_instructions
+    <<~PROMPT
+      You must return a valid JSON object with the following structure:
+      {
+        "detailed_feedback": {
+          "professional_summary": "<feedback on summary section>",
+          "work_experience": "<feedback on work experience>",
+          "education": "<feedback on education section>",
+          "skills": "<feedback on skills section>",
+          "overall_structure": "<feedback on document structure>"
+        },
+        "keyword_analysis": {
+          "found_keywords": ["<keyword1>", "<keyword2>"],
+          "missing_keywords": ["<suggested keyword1>", "<suggested keyword2>"],
+          "industry_match": "<assessment of industry keyword alignment>"
+        }
+      }
+
+      Limits: at most 10 keywords in each keyword list; "industry_match" is 2-3 sentences.
+
+      Provide:
+      1. Detailed section feedback for sections that EXIST in the CV
+      2. Keyword analysis based on the actual content
     PROMPT
   end
 
@@ -165,9 +243,7 @@ class CvAnalysisJob
     context_text = context.any? ? "\n\nContext for Analysis:\n#{context.join("\n")}" : ""
 
     <<~PROMPT
-      Analyze the following CV and provide detailed feedback with scores.#{context_text}
-
-      CRITICAL: Your response MUST be internally consistent. The "ats_tips" section must NOT contradict the "ats_compatibility" feedback. If your ats_compatibility feedback says something is done correctly (like date formatting), do NOT include a tip about fixing it.
+      Analyze the following CV.#{context_text}
 
       IMPORTANT INSTRUCTIONS:
       - Carefully read and analyze the ACTUAL content of the CV below
@@ -182,46 +258,74 @@ class CvAnalysisJob
       #{extracted_text}
       ---
 
-      Provide a comprehensive analysis with:
-      1. Overall score (0-100)
-      2. Section-by-section scores and feedback based on what's ACTUALLY in the CV
-      3. Top strengths (at least 3) - reference specific things from the CV
-      4. Areas for improvement with priorities - only for things that need improving, NOT missing sections that actually exist
-      5. ATS optimization tips specific to THIS CV
-      6. Detailed section feedback for sections that EXIST in the CV
-      7. Keyword analysis based on the actual content
-
-      Return the structured JSON analysis as specified.
+      Return the structured JSON as specified.
     PROMPT
   end
 
+  def parse_part(response)
+    JSON.parse(AiModel.json_body(response.content))
+  rescue JSON::ParserError => e
+    raise "Failed to parse AI response as JSON: #{e.message}"
+  end
 
-  def parse_openai_response(response)
-    content = response.content
-
-    json_content = AiModel.json_body(content)
-
-    begin
-      parsed = JSON.parse(json_content)
-
-      # Validate and normalize the response structure
-      {
-        "overall_score" => parsed["overall_score"] || 0,
-        "section_scores" => parsed["section_scores"] || {},
-        "strengths" => parsed["strengths"] || [],
-        "improvements" => parsed["improvements"] || [],
-        "ats_tips" => parsed["ats_tips"] || [],
-        "detailed_feedback" => parsed["detailed_feedback"] || {},
-        "keyword_analysis" => parsed["keyword_analysis"] || {}
-      }
-    rescue JSON::ParserError => e
-      raise "Failed to parse AI response as JSON: #{e.message}"
-    end
+  # Same analysis_results shape as the single-call version, so the views and
+  # the stored data do not change.
+  def merge_parts(scores, details)
+    {
+      "overall_score" => scores["overall_score"] || 0,
+      "section_scores" => scores["section_scores"] || {},
+      "strengths" => scores["strengths"] || [],
+      "improvements" => scores["improvements"] || [],
+      "ats_tips" => scores["ats_tips"] || [],
+      "detailed_feedback" => details["detailed_feedback"] || {},
+      "keyword_analysis" => details["keyword_analysis"] || {}
+    }
   end
 
   def handle_error(error)
     @analysis.mark_failed!(error.message)
     Rails.logger.error "[CvAnalysis] Failed to analyze CV #{@analysis.id}: #{error.message}"
     Rails.logger.error error.backtrace.first(10).join("\n")
+  end
+
+  # Turns streamed characters into a 5-95 % progress value on the analysis.
+  # Both part threads report here; writes are throttled and only go up.
+  class ProgressTracker
+    THROTTLE_SECONDS = 0.75
+    FLOOR = 5
+    CEILING = 95
+
+    def initialize(analysis, expected_chars, clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
+      @analysis = analysis
+      @clock = clock
+      @expected = expected_chars
+      @received = Hash.new(0)
+      @written = analysis.progress.to_i
+      @last_write_at = nil
+      @mutex = Mutex.new
+    end
+
+    def add(part, chars)
+      @mutex.synchronize do
+        @received[part] += chars
+        now = @clock.call
+        next if @last_write_at && now - @last_write_at < THROTTLE_SECONDS
+
+        value = percent
+        next if value <= @written
+
+        ActiveRecord::Base.connection_pool.with_connection { @analysis.update_column(:progress, value) }
+        @written = value
+        @last_write_at = now
+      end
+    end
+
+    private
+
+    def percent
+      done = @expected.sum { |part, size| [ @received[part], size ].min }
+      ratio = done.to_f / @expected.values.sum
+      (FLOOR + (CEILING - FLOOR) * ratio).round.clamp(FLOOR, CEILING)
+    end
   end
 end

@@ -1,107 +1,69 @@
-<div class="min-h-screen bg-gradient-to-b from-white via-primary/5 to-white py-12" dir="rtl">
-  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-    
-    <% if @cv_analysis.completed? %>
-      <!-- Header -->
-      <div class="text-center mb-10">
-        <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primaryHover px-3 py-1 text-xs ring-1 ring-primary/20 mb-4">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <span>اكتمل التحليل</span>
-        </div>
-        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-2">
-          تحليل سيرتك الذاتية
-        </h1>
-        <p class="text-slate-600">
-          <%= @cv_analysis.original_filename %>
-        </p>
-      </div>
+<% if @cv_analysis.completed? %>
+  <% en = @cv_analysis.language == "en" %>
+  <% dir = en ? "ltr" : "rtl" %>
+  <% content_for :title, en ? "Your CV analysis" : "تحليل سيرتك الذاتية" %>
+  <% arrow = '<svg class="sr-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>'.html_safe %>
 
-      <!-- React Component for Results -->
+  <div dir="<%= dir %>" lang="<%= en ? 'en' : 'ar' %>" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee">
+    <%# Lower glows: the layout's ambient layer is fixed to one viewport, so orbs further down the page live here, as on the landing. %>
+    <div aria-hidden="true" class="absolute inset-0 pointer-events-none overflow-hidden">
+      <div class="sr-orb3" style="position: absolute; top: 900px; right: 4%; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(0,108,53,0.35), rgba(0,108,53,0) 65%); filter: blur(50px)"></div>
+      <div class="sr-orb2" style="position: absolute; top: 1600px; left: -160px; width: 680px; height: 680px; border-radius: 50%; background: radial-gradient(circle, rgba(214,184,119,0.38), rgba(214,184,119,0) 65%); filter: blur(60px)"></div>
+      <div class="sr-orb1" style="position: absolute; top: 2400px; right: 12%; width: 720px; height: 720px; border-radius: 50%; background: radial-gradient(circle, rgba(0,150,85,0.4), rgba(0,150,85,0) 65%); filter: blur(60px)"></div>
+      <div class="sr-orb2" style="position: absolute; top: 3200px; left: 6%; width: 640px; height: 640px; border-radius: 50%; background: radial-gradient(circle, rgba(200,169,106,0.36), rgba(200,169,106,0) 65%); filter: blur(60px)"></div>
+    </div>
+    <div class="relative mx-auto max-w-[1100px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-8">
+
+      <!-- Header -->
+      <header class="flex flex-col items-start gap-5">
+        <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+          <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+          <%= en ? "Analysis complete" : "اكتمل التحليل" %>
+        </span>
+        <h1 class="m-0 font-semibold" style="font-size: clamp(34px, 4.6vw, 56px); line-height: 1.15; letter-spacing: -0.02em">
+          <% delay = 0.1 %>
+          <% (en ? "Your CV" : "تحليل سيرتك").split.each do |word| %><span class="sr-w" style="animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+          <% (en ? "analysis" : "الذاتية").split.each do |word| %><span class="sr-w" style="color: #d6b877; animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+        </h1>
+        <% if @cv_analysis.original_filename.present? %>
+          <span class="glass-soft sr-up sr-mono inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs max-w-full" style="animation-delay: .45s; color: rgba(238,243,238,0.75)" dir="ltr">
+            <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg>
+            <span class="truncate"><%= @cv_analysis.original_filename %></span>
+          </span>
+        <% end %>
+      </header>
+
+      <!-- React component for the results -->
       <div id="cv-analysis-results"></div>
       <script>
-        window.cvAnalysisData = <%= raw @cv_analysis.analysis_results.to_json %>;
-        window.cvAnalysisLanguage = "<%= @cv_analysis.language %>";
-        window.cvAnalysisTargetJob = "<%= @cv_analysis.target_job %>";
-        window.cvAnalysisTargetIndustry = "<%= @cv_analysis.target_industry %>";
+        window.cvAnalysisData = <%= raw json_escape(@cv_analysis.analysis_results.to_json) %>;
+        window.cvAnalysisLanguage = <%= raw json_escape((@cv_analysis.language.presence || "ar").to_json) %>;
+        window.cvAnalysisTargetJob = <%= raw json_escape(@cv_analysis.target_job.to_s.to_json) %>;
+        window.cvAnalysisTargetIndustry = <%= raw json_escape(@cv_analysis.target_industry.to_s.to_json) %>;
       </script>
 
       <!-- Actions -->
-      <div class="flex flex-wrap gap-4 justify-center mt-20 pt-10 border-t border-slate-200">
-        <a href="<%= cv_analysis_path %>" 
-           class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primaryHover transition-all">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          <span>تحليل سيرة أخرى</span>
-        </a>
-        <a href="<%= root_path %>" 
-           class="inline-flex items-center gap-2 bg-white text-slate-700 px-6 py-3 rounded-xl font-semibold border border-slate-200 hover:bg-slate-50 transition-all">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-          </svg>
-          <span>الصفحة الرئيسية</span>
-        </a>
-      </div>
-
-    <% elsif @cv_analysis.processing? %>
-      <!-- Processing State -->
-      <div class="text-center py-16">
-        <div class="relative w-24 h-24 mx-auto mb-8">
-          <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-          <div class="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
+      <section class="glass sr-reveal relative overflow-hidden rounded-[32px] flex flex-wrap items-center justify-center md:justify-between gap-6 text-center md:text-start" style="padding: clamp(28px, 5vw, 48px)">
+        <div aria-hidden="true" class="absolute rounded-full pointer-events-none" style="top: -140px; <%= en ? 'right' : 'left' %>: -80px; width: 380px; height: 380px; background: radial-gradient(circle, rgba(0,150,85,0.32), rgba(0,150,85,0) 65%); filter: blur(30px)"></div>
+        <div class="relative flex flex-col gap-2 max-w-[52ch]">
+          <h2 class="m-0 font-semibold" style="font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.02em; line-height: 1.2"><%= en ? "Ready for the next step?" : "جاهز للخطوة التالية؟" %></h2>
+          <p class="m-0 text-[16px] font-light" style="color: rgba(238,243,238,0.7)"><%= en ? "Apply the suggestions, then analyze your updated CV to see your new score." : "طبّق الاقتراحات ثم حلّل سيرتك المحدّثة لترى تقييمك الجديد." %></p>
         </div>
-        <h2 class="text-2xl font-semibold text-slate-900 mb-4">جاري التحليل...</h2>
-        <p class="text-slate-600 mb-8">يرجى الانتظار بينما يقوم الذكاء الاصطناعي بتحليل سيرتك الذاتية</p>
-      </div>
-
-      <script>
-        // Auto-refresh for processing state
-        setTimeout(function() {
-          location.reload();
-        }, 3000);
-      </script>
-
-    <% elsif @cv_analysis.failed? %>
-      <!-- Failed State -->
-      <div class="text-center py-16">
-        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+        <div class="relative flex flex-wrap justify-center md:justify-end gap-2.5">
+          <a href="<%= cv_analysis_path %>" class="sr-btn sr-primary inline-flex flex-none w-auto items-center gap-3 min-h-[52px] px-5 whitespace-nowrap rounded-2xl font-semibold text-[15px]" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)">
+            <%= en ? "Analyze another CV" : "تحليل سيرة أخرى" %>
+            <span class="sr-ico flex"><%= arrow %></span>
+          </a>
+          <a href="<%= root_path %>" class="sr-btn glass-soft inline-flex flex-none w-auto items-center gap-2.5 min-h-[52px] px-[18px] rounded-2xl text-[15px] whitespace-nowrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>
+            <%= en ? "Home" : "الصفحة الرئيسية" %>
+          </a>
         </div>
-        <h2 class="text-2xl font-semibold text-slate-900 mb-4">حدث خطأ</h2>
-        <p class="text-slate-600 mb-8"><%= @cv_analysis.error_message || 'حدث خطأ أثناء التحليل' %></p>
-        <a href="<%= cv_analysis_path %>" 
-           class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primaryHover transition-all">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          <span>حاول مرة أخرى</span>
-        </a>
-      </div>
-
-    <% else %>
-      <!-- Pending State -->
-      <div class="text-center py-16">
-        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        </div>
-        <h2 class="text-2xl font-semibold text-slate-900 mb-4">في انتظار البدء</h2>
-        <p class="text-slate-600 mb-8">سيبدأ التحليل قريباً...</p>
-      </div>
-
-      <script>
-        setTimeout(function() {
-          location.reload();
-        }, 2000);
-      </script>
-    <% end %>
-
+      </section>
+    </div>
   </div>
-</div>
 
-<%= vite_javascript_tag 'entrypoints/cv_analysis_results.jsx' %>
+  <%= vite_javascript_tag 'entrypoints/cv_analysis_results.jsx' %>
+<% else %>
+  <%= render template: "cv_analyses/processing" %>
+<% end %>

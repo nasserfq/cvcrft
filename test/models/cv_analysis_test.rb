@@ -126,6 +126,23 @@ class CvAnalysisTest < ActiveSupport::TestCase
     assert_equal "processing", @cv_analysis.reload.status
   end
 
+  test "progress defaults to 0" do
+    assert_equal 0, CvAnalysis.new.progress
+  end
+
+  test "mark_processing! restarts progress" do
+    @cv_analysis.progress = 80
+    @cv_analysis.save!
+    @cv_analysis.mark_processing!
+    assert_equal 3, @cv_analysis.reload.progress
+  end
+
+  test "mark_completed! sets progress to 100" do
+    @cv_analysis.save!
+    @cv_analysis.mark_completed!({ "overall_score" => 70 })
+    assert_equal 100, @cv_analysis.reload.progress
+  end
+
   test "mark_completed! updates status and stores results" do
     @cv_analysis.save!
     results = {

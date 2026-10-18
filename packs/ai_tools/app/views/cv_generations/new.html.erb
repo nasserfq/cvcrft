@@ -133,6 +133,26 @@
             <p class="mt-4 text-gray-600 dark:text-gray-300"><%= t('cv_generation.loading_data') %></p>
           </div>
         </div>
+        <%# Live percentage for the generation wait; React moves it into place while generating. %>
+        <% cvgen_en = I18n.locale.to_s == "en" %>
+        <div id="cvgen-progress-home" hidden>
+          <%= render "shared/ai_progress",
+                id: "cvgen-progress",
+                dir: (cvgen_en ? "ltr" : "rtl"),
+                badge: t('cv_generation.badge'),
+                title: t('cv_generation.generating_cv'),
+                subtitle: t('cv_generation.please_wait'),
+                steps: [
+                  { label: cvgen_en ? "Reading your resume" : "قراءة سيرتك الذاتية", at: 0 },
+                  { label: cvgen_en ? "Matching the job description" : "مطابقة الوصف الوظيفي", at: 15 },
+                  { label: cvgen_en ? "Writing your tailored CV" : "كتابة السيرة المخصصة", at: 40 },
+                  { label: cvgen_en ? "Building the PDF" : "تجهيز ملف PDF", at: 85 }
+                ],
+                error_title: t('cv_generation.error_occurred'),
+                error_text: t('cv_generation.unknown_error'),
+                retry_label: t('cv_generation.create_resume'),
+                retry_href: new_cv_generation_path %>
+        </div>
       </div>
       <!-- Pass translations to JavaScript -->
       <script>
@@ -203,6 +223,50 @@
       <script type="text/babel" data-presets="env,react">
         const { useState, useEffect } = React;
         const t = window.CV_TRANSLATIONS;
+
+        // Live percentage while a CV is generating (shared/_ai_progress + window.SeeraProgress).
+        const progressNode = () => document.getElementById('cvgen-progress');
+        const progressHome = () => document.getElementById('cvgen-progress-home');
+
+        const GenerationProgress = () => {
+          const holderRef = React.useRef(null);
+          const el = progressNode();
+
+          useEffect(() => {
+            const node = progressNode();
+            const holder = holderRef.current;
+            if (!node || !holder || !window.SeeraProgress) return undefined;
+            holder.appendChild(node);
+            window.SeeraProgress.start(node, { expectedSeconds: 30 });
+            return () => {
+              window.SeeraProgress.stop(node);
+              const home = progressHome();
+              if (home) home.appendChild(node);
+            };
+          }, []);
+
+          if (!el || !window.SeeraProgress) {
+            return (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="mt-4 text-gray-600 dark:text-gray-300">{t.generating_cv}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t.please_wait}</p>
+              </div>
+            );
+          }
+          return <div ref={holderRef} />;
+        };
+
+        // Count the live percentage up to 100% before showing the result.
+        const finishProgress = (callback) => {
+          const node = progressNode();
+          const home = progressHome();
+          if (window.SeeraProgress && node && home && !home.contains(node)) {
+            window.SeeraProgress.done(node, callback);
+          } else {
+            callback();
+          }
+        };
 
           // NOTE: Inline Babel cannot import local modules. Avoid imports here.
 
@@ -563,12 +627,14 @@
 
                         if (pollData && pollData.status === 'completed') {
                           console.log('✅ CV generation completed!');
-                          setCvData(pollData);
-                          setIsGenerating(false);
+                          finishProgress(() => {
+                            setCvData(pollData);
+                            setIsGenerating(false);
 
-                          if (pollData.metadata?.pdf_generated === true || pollData.metadata?.pdf_generated === 'true') {
-                            setShowPdfModal(true);
-                          }
+                            if (pollData.metadata?.pdf_generated === true || pollData.metadata?.pdf_generated === 'true') {
+                              setShowPdfModal(true);
+                            }
+                          });
                         } else if (pollData && pollData.status === 'failed') {
                           setError('CV generation failed');
                           setIsGenerating(false);
@@ -738,21 +804,23 @@
                         console.log('📄 PDF Generated:', data.metadata?.pdf_generated);
                         console.log('📄 PDF Generated Type:', typeof data.metadata?.pdf_generated);
                         console.log('📄 Has PDF Data:', !!data.metadata?.pdf_data);
-                        setCvData(data);
-                        setIsGenerating(false);
+                        finishProgress(() => {
+                          setCvData(data);
+                          setIsGenerating(false);
 
-                        // Show PDF modal immediately if PDF is generated
-                        const pdfGenerated = data.metadata?.pdf_generated;
-                        console.log('📄 PDF Generated Value:', pdfGenerated);
-                        console.log('📄 PDF Generated Type:', typeof pdfGenerated);
+                          // Show PDF modal immediately if PDF is generated
+                          const pdfGenerated = data.metadata?.pdf_generated;
+                          console.log('📄 PDF Generated Value:', pdfGenerated);
+                          console.log('📄 PDF Generated Type:', typeof pdfGenerated);
 
-                        if (pdfGenerated === true || pdfGenerated === 'true' || pdfGenerated === 1) {
-                          console.log('📄 PDF generated, showing modal immediately');
-                          setShowPdfModal(true);
-                        } else {
-                          console.log('❌ PDF not generated for this CV');
-                          console.log('📄 PDF Error:', data.metadata?.pdf_error);
-                        }
+                          if (pdfGenerated === true || pdfGenerated === 'true' || pdfGenerated === 1) {
+                            console.log('📄 PDF generated, showing modal immediately');
+                            setShowPdfModal(true);
+                          } else {
+                            console.log('❌ PDF not generated for this CV');
+                            console.log('📄 PDF Error:', data.metadata?.pdf_error);
+                          }
+                        });
                       } else if (data && data.status === 'failed') {
                         console.log('❌ CV generation failed');
                         setError('CV generation failed');
@@ -1130,13 +1198,7 @@
               {/* Results Section */}
               {showResults && (
         <div className="mt-8">
-          {isGenerating && (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">{t.generating_cv}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t.please_wait}</p>
-            </div>
-          )}
+          {isGenerating && <GenerationProgress />}
 
           {error && (
             <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">

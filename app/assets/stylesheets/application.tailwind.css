@@ -488,3 +488,17 @@ main.sr-app { padding-top: 6rem; }
   .sr-app > * { animation: none !important; }
   :is(a, button).bg-primary::before, :is(a, button).bg-action::before { display: none; }
 }
+
+/* 11. AI progress (shared/_ai_progress): step rows light up as the
+   percentage passes them. JS sets data-state on each row. */
+.sr-step { opacity: .45; transition: opacity .6s cubic-bezier(.16,1,.3,1), border-color .6s, background-color .6s; }
+.sr-step .sr-step-check { display: none; }
+.sr-step .sr-step-dot { background: rgba(238,243,238,0.35); }
+.sr-step[data-state="active"] { opacity: 1; border-color: rgba(47,163,107,0.45); background-color: rgba(47,163,107,0.08); }
+.sr-step[data-state="active"] .sr-step-dot { background: #2fa36b; animation: sr-pulse 2.4s ease-in-out infinite; }
+.sr-step[data-state="done"] { opacity: .9; }
+.sr-step[data-state="done"] .sr-step-dot { display: none; }
+.sr-step[data-state="done"] .sr-step-check { display: block; }
+@media (prefers-reduced-motion: reduce) {
+  .sr-step[data-state="active"] .sr-step-dot { animation: none !important; }
+}
