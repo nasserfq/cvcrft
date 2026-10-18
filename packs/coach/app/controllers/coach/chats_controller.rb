@@ -58,6 +58,9 @@ module Coach
 
     # A Seera resume is copied into the draft now; a PDF's text becomes the first message and TurnJob extracts it.
     def start_import
+      # An import starts a model turn too, so it counts against the same cap as #message.
+      return import_failed(t("coach.daily_cap", limit: Coach::DAILY_LIMIT), status: :too_many_requests) if Coach.daily_count(current_user) >= Coach::DAILY_LIMIT
+
       if params[:resume_id].present?
         # list only holds the user's own resumes, so another user's id is a 404.
         resume = ResumeBuilder::PublicApi.list(current_user).find { |r| r["id"].to_s == params[:resume_id].to_s }
@@ -90,10 +93,10 @@ module Coach
       t("coach.import.too_big") if file.size > MAX_PDF_SIZE
     end
 
-    def import_failed(message)
+    def import_failed(message, status: :unprocessable_entity)
       flash.now[:alert] = message
       index
-      render :index, status: :unprocessable_entity
+      render :index, status:
     end
 
     # Locked and reloaded so a running turn's propose_rewrite can't race it; accept re-validates through Coach::Draft.

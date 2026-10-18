@@ -14,15 +14,16 @@ class OtpVerification < ApplicationRecord
     expires_at <= Time.current
   end
 
-  # Checks a submitted code. A wrong code counts against this OTP; a right
-  # one consumes it atomically, so the same code cannot sign in twice.
+  # Checks a submitted code. Every guess takes an attempt in the database
+  # before the compare, so parallel requests can't each slip past the cap;
+  # a right code consumes it atomically, so it cannot sign in twice.
   def verify!(code)
-    return false if expired? || verified? || failed_attempts >= MAX_FAILED_ATTEMPTS
+    return false if expired? || verified?
 
-    unless ActiveSupport::SecurityUtils.secure_compare(otp_code, code.to_s)
-      self.class.where(id: id).update_all("failed_attempts = failed_attempts + 1")
-      return false
-    end
+    reserved = self.class.where(id: id).where("failed_attempts < ?", MAX_FAILED_ATTEMPTS)
+                         .update_all("failed_attempts = failed_attempts + 1")
+    return false if reserved.zero?
+    return false unless ActiveSupport::SecurityUtils.secure_compare(otp_code, code.to_s)
 
     self.class.where(id: id, verified: false).update_all(verified: true, updated_at: Time.current) == 1
   end

@@ -38,7 +38,7 @@ class AuthController < ApplicationController
       otp_verification = OtpVerification.generate_for(email)
 
       # Send email via Sidekiq background job
-      SendOtpEmailJob.perform_later(email, otp_verification.otp_code)
+      SendOtpEmailJob.perform_later(otp_verification.id)
 
       flash[:notice] = "تم إرسال رمز التحقق إلى بريدك الإلكتروني"
       redirect_to login_path(otp_sent: "true", email: email, return_to: return_to)

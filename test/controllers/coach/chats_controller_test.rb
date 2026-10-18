@@ -234,6 +234,19 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_equal I18n.t("coach.daily_cap", limit: Coach::DAILY_LIMIT, locale: :ar), response.parsed_body["error"]
   end
 
+  test "an import is refused once today's cap is reached" do
+    stub_pdf_generation
+    resume = ResumeBuilder::PublicApi.create_from_draft(@user, "complete_name" => "Sara Ali", "email" => "sara@example.com")
+    Coach::DAILY_LIMIT.times { @chat.messages.create!(role: "user", content: "Hi") }
+
+    assert_no_difference -> { Coach::Chat.count } do
+      assert_no_enqueued_jobs do
+        post coach_chats_url, params: { path: "import", resume_id: resume.id }
+      end
+    end
+    assert_response :too_many_requests
+  end
+
   test "yesterday's messages don't count toward the cap" do
     travel_to(1.day.ago) { Coach::DAILY_LIMIT.times { @chat.messages.create!(role: "user", content: "Hi") } }
 
