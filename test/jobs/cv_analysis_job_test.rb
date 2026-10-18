@@ -65,6 +65,28 @@ class CvAnalysisJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "job parses a reply wrapped in a json code fence" do
+    Sidekiq::Testing.inline! do
+      stub_ai_response("```json\n" + { overall_score: 82, strengths: [ "Clear" ] }.to_json + "\n```")
+
+      CvAnalysisJob.perform_async(@cv_analysis.id)
+      @cv_analysis.reload
+
+      assert_equal "completed", @cv_analysis.status
+      assert_equal 82, @cv_analysis.analysis_results["overall_score"]
+    end
+  end
+
+  # 4000 cut long analyses off mid-JSON (Sentry RUBY-RAILS-4).
+  test "job leaves room for a long analysis" do
+    Sidekiq::Testing.inline! do
+      reply = Struct.new(:content, :tokens).new({ overall_score: 70 }.to_json, nil)
+      AiModel.expects(:complete).with(has_entry(max_tokens: 8000)).returns(reply)
+
+      CvAnalysisJob.perform_async(@cv_analysis.id)
+    end
+  end
+
   test "job handles missing cv_analysis by raising RecordNotFound" do
     Sidekiq::Testing.inline! do
       assert_raises(ActiveRecord::RecordNotFound) do

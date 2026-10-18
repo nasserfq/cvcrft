@@ -36,7 +36,7 @@ class CvAnalysisJob
     user_prompt = build_user_prompt(@analysis.extracted_text, @analysis.target_job, @analysis.target_industry)
 
     response = AiModel.complete(system: system_prompt, user: user_prompt,
-                                temperature: 0.3, max_tokens: 4000)
+                                temperature: 0.3, max_tokens: 8000)
     analysis_result = parse_openai_response(response)
 
     tokens_used = AiModel.token_count(response) || 0
@@ -199,9 +199,7 @@ class CvAnalysisJob
   def parse_openai_response(response)
     content = response.content
 
-    # Try to extract JSON from the response
-    json_match = content.match(/```json\s*(.*?)\s*```/m)
-    json_content = json_match ? json_match[1] : content
+    json_content = AiModel.json_body(content)
 
     begin
       parsed = JSON.parse(json_content)
