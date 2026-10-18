@@ -50,7 +50,13 @@ class CvAnalysisJob
     threads = PARTS.map do |part|
       Thread.new do
         Thread.current.report_on_exception = false
-        Rails.application.executor.wrap { request_part(part, user_prompt, tracker) }
+        # Rescued inside the wrap so the executor doesn't report it a second
+        # time: the job's own handler marks the analysis failed and re-raises.
+        Rails.application.executor.wrap do
+          request_part(part, user_prompt, tracker)
+        rescue StandardError => e
+          e
+        end
       end
     end
 
@@ -73,16 +79,12 @@ class CvAnalysisJob
   end
 
   # Waits for every part before raising, so no thread is left writing to the
-  # analysis after it has been marked failed. Thread#value re-raises the
-  # thread's exception. The job may hold the load interlock; letting it go
+  # analysis after it has been marked failed. Each thread returns its
+  # exception as its value. The job may hold the load interlock; letting it go
   # while waiting keeps a thread that needs to autoload from deadlocking.
   def wait_for(threads)
     outcomes = ActiveSupport::Dependencies.interlock.permit_concurrent_loads do
-      threads.map do |thread|
-        thread.value
-      rescue StandardError => e
-        e
-      end
+      threads.map(&:value)
     end
 
     error = outcomes.find { |outcome| outcome.is_a?(Exception) }
