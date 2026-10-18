@@ -124,10 +124,7 @@ class LinkedinImportJob
   def parse_openai_response(response)
     content = response.content
 
-    # Try to extract JSON from the response
-    # Sometimes the model wraps it in ```json ... ```
-    json_match = content.match(/```json\s*(.*?)\s*```/m)
-    json_content = json_match ? json_match[1] : content
+    json_content = AiModel.json_body(content)
 
     begin
       parsed = JSON.parse(json_content)

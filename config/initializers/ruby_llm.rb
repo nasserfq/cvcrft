@@ -55,6 +55,18 @@ module AiModel
       .ask(user.to_s)
   end
 
+  # The JSON inside a reply. Claude fences it in ```json ... ```; gpt-4.1-mini
+  # sent it bare. A reply that hits max_tokens loses its closing fence, so
+  # when there is no full pair each fence is stripped on its own.
+  def self.json_body(content)
+    text = content.to_s.strip
+    if (fenced = text.match(/```(?:json)?\s*(.*?)\s*```/m))
+      return fenced[1]
+    end
+
+    text.sub(/\A```(?:json)?\s*/, "").sub(/\s*```\z/, "")
+  end
+
   # `message.tokens` is a RubyLLM::Tokens value object with no #total; the
   # tokens_used columns want a plain integer.
   def self.token_count(message)
