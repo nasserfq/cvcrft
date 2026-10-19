@@ -59,7 +59,7 @@ class CvGenerationsController < ApplicationController
 
   def create
     Rails.logger.info "=== CV GENERATION CREATE ==="
-    Rails.logger.info "Current user: #{current_user&.email} (ID: #{current_user&.id})"
+    Rails.logger.info "Current user ID: #{current_user&.id}"
     Rails.logger.info "User signed in: #{user_signed_in?}"
 
     if current_user.nil?
@@ -76,7 +76,7 @@ class CvGenerationsController < ApplicationController
     current_cv_count = current_user.cv_generations.where(status: "completed").count
 
     if current_cv_count >= max_cv_generations
-      Rails.logger.warn "User #{current_user.email} has reached overall CV generation limit (#{current_cv_count}/#{max_cv_generations})"
+      Rails.logger.warn "User #{current_user.id} has reached overall CV generation limit (#{current_cv_count}/#{max_cv_generations})"
       respond_to do |format|
         format.html { redirect_to cv_generations_path, alert: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً." }
         format.json { render json: { error: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً.", limit_reached: true }, status: :unprocessable_entity }
@@ -87,7 +87,7 @@ class CvGenerationsController < ApplicationController
     # Check job-based generation limit (only count completed)
     limits = current_user.usage_limits
     unless limits.can_generate_job_based?
-      Rails.logger.warn "User #{current_user.email} has reached job-based generation limit (#{limits.job_based_generations_used}/#{limits.max_job_based_generations || '∞'})"
+      Rails.logger.warn "User #{current_user.id} has reached job-based generation limit (#{limits.job_based_generations_used}/#{limits.max_job_based_generations || '∞'})"
       respond_to do |format|
         format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{limits.max_job_based_generations || '∞'})." }
         format.json { render json: { error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{limits.max_job_based_generations || '∞'}).", limit_reached: true, remaining: 0 }, status: :too_many_requests }
@@ -490,7 +490,7 @@ class CvGenerationsController < ApplicationController
   def ensure_user_has_resume
     return if current_user.resumes.not_drafts.exists?
 
-    Rails.logger.info "User #{current_user.email} has no completed resumes, redirecting to resume creation"
+    Rails.logger.info "User #{current_user.id} has no completed resumes, redirecting to resume creation"
 
     respond_to do |format|
       format.html { redirect_to new_resume_path, alert: t("resume.need_resume_for_job") }

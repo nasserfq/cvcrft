@@ -53,7 +53,7 @@ class CvGeneratorJob
       @existing_resume = owned_resume
       Rails.logger.info "📋 Loaded existing resume ID: #{@existing_resume.id}"
       Rails.logger.info "📋 Resume has #{@existing_resume.skills.count} skills"
-      Rails.logger.info "📋 First skill: #{@existing_resume.skills.first&.attributes&.inspect}"
+      Rails.logger.info "📋 First skill ID: #{@existing_resume.skills.first&.id}"
       @snapshot = CvGenerator::ResumeSnapshot.new(@existing_resume).to_h
 
       # Process the CV generation using Azure OpenAI
@@ -142,8 +142,8 @@ class CvGeneratorJob
       # Get the full generated data from the CV generation metadata
       generated_data = @cv_generation.metadata["generated_data"]
 
-      Rails.logger.info "📦 Raw metadata generated_data: #{generated_data.inspect}"
-      Rails.logger.info "📦 Skills in metadata: #{generated_data&.dig('skills').inspect}"
+      Rails.logger.info "📦 Raw metadata generated_data keys: #{generated_data.respond_to?(:keys) ? generated_data.keys.inspect : "none"}"
+      Rails.logger.info "📦 Skills in metadata: #{Array(generated_data&.dig('skills')).size}"
 
       if generated_data.blank?
         Rails.logger.warn "No generated CV data found in metadata. Using resume data as fallback."
@@ -159,7 +159,7 @@ class CvGeneratorJob
           }
         end
 
-        Rails.logger.info "Created work experiences data from resume: #{work_experiences_data.inspect}"
+        Rails.logger.info "Created work experiences data from resume: #{work_experiences_data.size} entries"
 
         generated_data = {
           professional_summary: resume.professional_summary,
@@ -205,7 +205,7 @@ class CvGeneratorJob
             end
           end
 
-          Rails.logger.info "Normalized work experiences: #{generated_data[:work_experiences].first(2).inspect}"
+          Rails.logger.info "Normalized work experiences: #{generated_data[:work_experiences].size} entries"
         end
       end
 

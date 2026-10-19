@@ -64,6 +64,8 @@ gem "image_processing", "~> 1.2"
 gem "administrate"
 # Background job processing
 gem "sidekiq"
+# Recurring jobs (config/schedule.yml), e.g. the daily data retention job
+gem "sidekiq-cron", "~> 2.4"
 
 # Redis for caching, Sidekiq, and session storage
 gem "redis", "~> 5.0"

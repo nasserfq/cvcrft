@@ -7,7 +7,9 @@ class Resume < ApplicationRecord
   has_many :languages, dependent: :destroy
   has_many :ai_translations, dependent: :destroy
   has_many :cv_generations, dependent: :destroy
-  has_one :linkedin_import, dependent: :nullify
+  has_one :linkedin_import
+  has_many :linkedin_imports, dependent: :nullify
+  has_many :cv_imports, dependent: :nullify
 
   # Find linkedin import for editing - either directly associated or find by user
   def linkedin_import_for_edit

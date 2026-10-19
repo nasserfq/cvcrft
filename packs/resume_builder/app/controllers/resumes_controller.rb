@@ -123,7 +123,7 @@ class ResumesController < ApplicationController
 
   def create
     Rails.logger.info "=== RESUME CREATE ==="
-    Rails.logger.info "Current user: #{current_user&.email} (ID: #{current_user&.id})"
+    Rails.logger.info "Current user ID: #{current_user&.id}"
     Rails.logger.info "User signed in: #{user_signed_in?}"
     Rails.logger.info "Request format: #{request.format}"
 

@@ -13,6 +13,7 @@ class User < ApplicationRecord
   has_many :cv_analyses, dependent: :destroy
   has_many :credit_ledger_entries, dependent: :delete_all
   has_many :credit_purchases, dependent: :delete_all
+  has_many :coupon_redemptions, dependent: :delete_all
 
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }

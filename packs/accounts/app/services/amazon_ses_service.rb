@@ -5,9 +5,7 @@ class AmazonSesService
     @client = Aws::SES::Client.new(
       region: Rails.application.credentials.aws[:region] || "us-east-1",
       access_key_id: Rails.application.credentials.aws[:access_key_id],
-      secret_access_key: Rails.application.credentials.aws[:secret_access_key],
-      # Disable SSL verification to bypass macOS CRL check issues
-      ssl_verify_peer: false
+      secret_access_key: Rails.application.credentials.aws[:secret_access_key]
     )
   end
 

@@ -1,0 +1,14 @@
+# Labels for the privacy page shell (app/views/pages/privacy.html.erb).
+# The policy text itself lives in app/views/pages/privacy/_body_ar.html.erb.
+ar:
+  pdpl_pages:
+    privacy:
+      title: "سياسة الخصوصية — سيرة"
+      meta_description: "سياسة الخصوصية لموقع سيرة وفق نظام حماية البيانات الشخصية في المملكة العربية السعودية"
+      badge: "حماية خصوصيتك أولويتنا"
+      heading_html: "سياسة <span class=\"bg-gradient-to-l from-primary to-action bg-clip-text text-transparent\">الخصوصية</span>"
+      last_updated: "آخر تحديث: %{date}"
+      back_home: "العودة للصفحة الرئيسية"
+    terms:
+      privacy_link_html: "تخضع معالجة بياناتك الشخصية لـ%{link}، وهي جزء لا يتجزأ من هذه الشروط."
+      privacy_link_text: "سياسة الخصوصية"

@@ -215,6 +215,27 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.valid_password?("wrongpassword")
   end
 
+  # ============================================
+  # PDPL ERASURE
+  # ============================================
+
+  test "destroying a user with imports and coupon redemptions removes them all" do
+    stub_pdf_generation
+    user = User.create!(email: "erase-model-#{SecureRandom.hex(4)}@example.com", name: "Erase Model",
+                        password: "password123", password_confirmation: "password123")
+    resume = create_test_resume(user, complete_name: "Erase Model", email: "erase-model-r-#{SecureRandom.hex(4)}@example.com")
+    CvImport.create!(user: user, resume: resume, status: "completed", original_filename: "cv.pdf")
+    coupon_id = ActiveRecord::Base.connection.select_value(<<~SQL)
+      INSERT INTO coupons (code, created_at, updated_at)
+      VALUES ('MODEL#{SecureRandom.hex(3).upcase}', NOW(), NOW()) RETURNING id
+    SQL
+    CouponRedemption.create!(user: user, coupon_id: coupon_id, redeemed_at: Time.current)
+
+    assert_difference("User.count", -1) { user.destroy! }
+    assert_equal 0, CouponRedemption.where(user_id: user.id).count
+    assert_equal 0, CvImport.where(user_id: user.id).count
+  end
+
   private
 
   def new_errors_for(record, attribute)

@@ -1,0 +1,5 @@
+en:
+  pdpl_profile:
+    export_button: "Download my data"
+    export_hint: "Get a copy of everything we store about you (profile, CVs, imports, coach chats and credits) as a JSON file."
+    deleted_notice: "Your account and all its data have been deleted."

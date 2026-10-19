@@ -8,6 +8,9 @@ Sentry.init do |config|
   config.enabled_environments = %w[production]
   config.breadcrumbs_logger = [ :active_support_logger, :http_logger ]
 
+  # PDPL: never attach user IPs, cookies or user details to events.
+  config.send_default_pii = false
+
   # Performance: trace 20% of requests and jobs.
   config.traces_sample_rate = ENV.fetch("SENTRY_TRACES_SAMPLE_RATE", "0.2").to_f
 

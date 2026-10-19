@@ -23,6 +23,16 @@ Sidekiq.configure_server do |config|
   # end
 end
 
+# Recurring jobs (sidekiq-cron). The gem loads config/schedule.yml in its own
+# configure_server startup hook, so only Sidekiq server processes touch the
+# schedule; web/console boots never talk to Redis for it. load_from_hash!
+# there also removes jobs that were dropped from the file. Disabled in tests
+# so nothing is ever scheduled from the test suite.
+Sidekiq::Cron.configure do |config|
+  config.cron_schedule_file = Rails.root.join("config/schedule.yml").to_s
+  config.enabled = !Rails.env.test?
+end
+
 Sidekiq.configure_client do |config|
   config.redis = { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0") }
 end

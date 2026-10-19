@@ -56,33 +56,28 @@ class ProfilesController < ApplicationController
     redirect_to profile_path, alert: t("coupons.invalid_or_expired")
   end
 
+  def export
+    export = UserDataExport.new(current_user)
+
+    send_data export.to_json,
+              filename: export.filename,
+              type: "application/json",
+              disposition: "attachment"
+  end
+
+  # PDPL erasure: nothing identifying goes to PostHog, and everything tied to
+  # the account is removed in one transaction (resumes, imports, coupons and
+  # chats through User associations and FK cascades; OTPs by email).
   def destroy
-    @user = current_user
+    user = current_user
 
-    # Capture stats before deletion for tracking
-    deletion_stats = {
-      user_id: @user.id,
-      email: @user.email,
-      total_resumes: @user.resumes.count,
-      total_cv_generations: @user.cv_generations.count,
-      total_translations: @user.ai_translations.count,
-      account_age_days: ((Time.current - @user.created_at) / 1.day).round
-    }
+    ActiveRecord::Base.transaction do
+      OtpVerification.where(email: user.email).delete_all
+      user.destroy!
+    end
+    CouponRedemptionStore.forget_user!(user.id)
 
-    # Track account deletion event BEFORE signing out
-    track_event("account_deleted", deletion_stats)
-
-    # Sign out first
-    sign_out(@user)
-
-    # Delete all associated data
-    @user.resumes.destroy_all
-    @user.cv_generations.destroy_all
-    @user.ai_translations.destroy_all
-
-    # Delete the user
-    @user.destroy
-
-    redirect_to root_path, notice: "تم حذف حسابك بنجاح. نأسف لرؤيتك تغادر!"
+    sign_out(user)
+    redirect_to root_path, notice: t("pdpl_profile.deleted_notice")
   end
 end

@@ -53,7 +53,7 @@
             الشروط <span class="bg-gradient-to-l from-primary to-action bg-clip-text text-transparent">والأحكام</span>
           </h1>
           <p class="text-gray-600 dark:text-gray-400">
-            آخر تحديث: <%= Date.today.strftime("%d/%m/%Y") %>
+            آخر تحديث: <%= PrivacyPolicy.last_updated.strftime("%d/%m/%Y") %>
           </p>
         </div>
 
@@ -68,6 +68,9 @@
             </h2>
             <p class="text-gray-600 dark:text-gray-300 leading-8">
               مرحبًا بك في "سيرة". باستخدامك لموقعنا وخدماتنا، فإنك توافق على الالتزام بهذه الشروط والأحكام. يرجى قراءتها بعناية قبل استخدام الخدمة.
+            </p>
+            <p class="text-gray-600 dark:text-gray-300 leading-8 mt-4">
+              <%= t("pdpl_pages.terms.privacy_link_html", locale: :ar, link: link_to(t("pdpl_pages.terms.privacy_link_text", locale: :ar), privacy_path, class: "text-primary hover:text-primaryHover transition-colors")) %>
             </p>
           </section>
 

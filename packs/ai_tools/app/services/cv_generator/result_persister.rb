@@ -17,7 +17,7 @@ module CvGenerator
       Rails.logger.info "Using existing resume data for skills, experience, etc."
 
       existing_data = snapshot
-      Rails.logger.info "📊 Formatted skills: #{existing_data[:skills].inspect}"
+      Rails.logger.info "📊 Formatted skills: #{Array(existing_data[:skills]).size}"
 
       generated_data = {
         professional_summary: result[:professional_summary], # Only use AI-generated summary
@@ -28,7 +28,7 @@ module CvGenerator
         languages: existing_data[:languages]
       }
 
-      Rails.logger.info "📦 Generated data skills to be stored: #{generated_data[:skills].inspect}"
+      Rails.logger.info "📦 Generated data skills to be stored: #{Array(generated_data[:skills]).size}"
 
       safe_meta = (@cv_generation.metadata || {})
       @cv_generation.update!(

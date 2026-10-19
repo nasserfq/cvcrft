@@ -36,6 +36,7 @@ Rails.application.routes.draw do
 
   # User profile route
   resource :profile, only: [ :show, :destroy ] do
+    get :export, on: :member
     post :redeem_coupon, on: :member
   end
 

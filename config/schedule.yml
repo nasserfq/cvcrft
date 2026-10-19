@@ -1,0 +1,10 @@
+# Recurring jobs, loaded by sidekiq-cron when a Sidekiq server process starts
+# (see config/initializers/sidekiq.rb). Times are in the server's time zone.
+# Jobs removed from this file are also removed from Redis on the next start.
+
+# PDPL retention: drops old OTP codes and failed imports/analyses, and clears
+# extracted CV text after 30 days. See docs/pdpl.md for the retention table.
+data_retention:
+  cron: "15 3 * * *"
+  class: "DataRetentionJob"
+  queue: default
