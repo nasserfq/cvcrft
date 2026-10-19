@@ -1,0 +1,16 @@
+<% colors = { "submitted" => "#7fd3a6", "approved" => "#9fd0ff", "in_progress" => "#9fd0ff", "needs_user" => "#d6b877", "failed" => "#ff9b8a", "skipped" => "rgba(238,243,238,0.55)", "queued" => "rgba(238,243,238,0.78)" } %>
+<% posting = application.posting %>
+<tr id="<%= dom_id(application) %>" class="border-t" style="border-color: rgba(255,255,255,0.08)">
+  <td class="py-3 pe-3 align-top">
+    <span class="glass-soft inline-block rounded-full px-3 py-1 text-[12px] whitespace-nowrap" style="color: <%= colors.fetch(application.status, '#eef3ee') %>" data-status="<%= application.status %>"><%= t("auto_apply.status.#{application.status}") %></span>
+  </td>
+  <td class="py-3 pe-3 align-top"><%= posting.employer.name %></td>
+  <td class="py-3 pe-3 align-top">
+    <span class="break-words"><%= posting.title %></span>
+    <%= link_to t('auto_apply.tracker.view_posting'), posting.url, target: "_blank", rel: "noopener noreferrer nofollow", class: "block text-[12px] underline", style: "color: rgba(238,243,238,0.6)" %>
+  </td>
+  <td class="py-3 pe-3 align-top whitespace-nowrap sr-mono text-[13px]"><%= (application.submitted_at || application.created_at).to_date.iso8601 %></td>
+  <td class="py-3 align-top text-end">
+    <%= button_to t('auto_apply.tracker.delete'), auto_apply_application_path(application), method: :delete, data: { turbo: false }, form: { onsubmit: "return confirm(#{t('auto_apply.tracker.delete_confirm').to_json})" }, class: "sr-btn glass-soft rounded-xl px-3 py-1.5 text-[13px] cursor-pointer", style: "color: #ff9b8a" %>
+  </td>
+</tr>

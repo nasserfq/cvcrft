@@ -187,13 +187,30 @@
 
   // --- step 1: CAPTCHA and login walls --------------------------------------
 
+  // Only what is actually on screen: size, display/visibility/opacity and
+  // whether the box overlaps the viewport (challenge frames wait off-screen).
+  function onScreen(el) {
+    if (!isVisible(el)) return { visible: false, width: 0, height: 0 };
+    const rect = el.getBoundingClientRect();
+    let node = el;
+    while (node && node.nodeType === 1) {
+      if (Number(getComputedStyle(node).opacity) === 0) return { visible: false, width: rect.width, height: rect.height };
+      node = node.parentElement;
+    }
+    // Below the fold still counts (the user scrolls); pushed off the page's
+    // top or left edge does not.
+    const onPage = rect.bottom + scrollY > 0 && rect.right + scrollX > 0;
+    return { visible: onPage, width: rect.width, height: rect.height };
+  }
+
   function captchaSignals(doc) {
     const d = doc || document;
     return {
-      iframeSrcs: Array.from(d.querySelectorAll("iframe")).map((f) => f.src || f.getAttribute("src") || ""),
-      scriptSrcs: Array.from(d.querySelectorAll("script[src]")).map((s) => s.src || s.getAttribute("src") || ""),
-      classNames: Array.from(d.querySelectorAll(".g-recaptcha, .grecaptcha-badge, .h-captcha, .cf-turnstile")).flatMap(
-        (el) => Array.from(el.classList),
+      iframes: Array.from(d.querySelectorAll("iframe")).map((f) =>
+        Object.assign({ src: f.src || f.getAttribute("src") || "" }, onScreen(f)),
+      ),
+      widgets: Array.from(d.querySelectorAll(".g-recaptcha, .h-captcha, .cf-turnstile")).map((el) =>
+        Object.assign({ className: el.className, size: el.getAttribute("data-size") || "" }, onScreen(el)),
       ),
     };
   }
@@ -509,10 +526,9 @@
     for (;;) {
       const state = pageState();
       if (state.confirmed) return { status: "submitted" };
-      if (Date.now() - start > 1500) {
-        if (state.errors > 0) return { status: "needs_user", error: "validation_errors" };
-        if (state.captcha) return { status: "needs_user", error: "captcha", details: { captcha: state.captcha } };
-      }
+      // A challenge shown after the click goes to the user; it is never solved.
+      if (state.captcha) return { status: "needs_user", error: "captcha", details: { captcha: state.captcha } };
+      if (Date.now() - start > 1500 && state.errors > 0) return { status: "needs_user", error: "validation_errors" };
       if (Date.now() >= end) return { status: "failed", error: "no_confirmation" };
       await sleep(500);
     }

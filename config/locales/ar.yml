@@ -9,6 +9,7 @@ ar:
   # Navigation
   nav:
     coach: "المدرب الذكي"
+    auto_apply: "التقديم التلقائي"
     my_cv: "سيرتي الذاتية"
     features: "المميزات"
     how_it_works: "كيف يعمل"

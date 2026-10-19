@@ -14,6 +14,10 @@ class User < ApplicationRecord
   has_many :credit_ledger_entries, dependent: :delete_all
   has_many :credit_purchases, dependent: :delete_all
   has_many :coupon_redemptions, dependent: :delete_all
+  # Auto-apply (packs/job_applications). The FKs cascade too.
+  has_one :auto_apply_preference, class_name: "JobApplications::Preference", dependent: :delete
+  has_many :auto_apply_applications, class_name: "JobApplications::Application", dependent: :delete_all
+  has_many :auto_apply_tokens, class_name: "JobApplications::Token", dependent: :delete_all
 
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }

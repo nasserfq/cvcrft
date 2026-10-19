@@ -1,0 +1,75 @@
+<% field = "glass-soft rounded-2xl px-4 py-3 text-[15px] w-full" %>
+<% hint = "text-[13px]" %>
+<section id="preferences" class="glass sr-up rounded-[28px] p-7 flex flex-col gap-5">
+  <h2 class="m-0 text-[22px] font-semibold"><%= t('auto_apply.preferences.heading') %></h2>
+  <%= form_with url: auto_apply_preferences_path, method: :patch, scope: :preference, data: { turbo: false }, class: "flex flex-col gap-4" do |f| %>
+    <label class="flex flex-col gap-1.5 text-[14px]">
+      <span class="font-semibold"><%= t('auto_apply.preferences.titles') %></span>
+      <%= f.text_area :titles, value: preference.titles.join(", "), rows: 2, maxlength: 900, class: field, style: "color: #eef3ee" %>
+      <span class="<%= hint %>" style="color: rgba(238,243,238,0.6)"><%= t('auto_apply.preferences.titles_hint') %></span>
+    </label>
+
+    <fieldset class="flex flex-col gap-2 text-[14px] border-0 p-0 m-0">
+      <legend class="font-semibold mb-1.5"><%= t('auto_apply.preferences.countries') %></legend>
+      <%= hidden_field_tag "preference[countries][]", "" %>
+      <div class="flex flex-wrap gap-2">
+        <% JobApplications::COUNTRIES.each do |code| %>
+          <label class="glass-soft rounded-xl px-3 py-2 flex items-center gap-2 cursor-pointer">
+            <%= check_box_tag "preference[countries][]", code, preference.countries.include?(code), id: "preference_countries_#{code}" %>
+            <span><%= t("auto_apply.countries.#{code}") %></span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="flex flex-col gap-1.5 text-[14px]">
+        <span class="font-semibold"><%= t('auto_apply.preferences.min_score') %></span>
+        <%= f.number_field :min_score, value: preference.min_score, min: 1, max: 10, class: field, style: "color: #eef3ee" %>
+        <span class="<%= hint %>" style="color: rgba(238,243,238,0.6)"><%= t('auto_apply.preferences.min_score_hint') %></span>
+      </label>
+      <label class="flex flex-col gap-1.5 text-[14px]">
+        <span class="font-semibold"><%= t('auto_apply.preferences.daily_cap') %></span>
+        <%= f.number_field :daily_cap, value: preference.daily_cap, min: 1, max: JobApplications::DAILY_CAP_MAX, class: field, style: "color: #eef3ee" %>
+        <span class="<%= hint %>" style="color: rgba(238,243,238,0.6)"><%= t('auto_apply.preferences.daily_cap_hint', max: JobApplications::DAILY_CAP_MAX) %></span>
+      </label>
+    </div>
+
+    <fieldset class="flex flex-col gap-2 text-[14px] border-0 p-0 m-0">
+      <legend class="font-semibold mb-1.5"><%= t('auto_apply.preferences.mode') %></legend>
+      <% JobApplications::Preference::MODES.each do |mode| %>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <%= f.radio_button :mode, mode, checked: preference.mode == mode %>
+          <span><%= t("auto_apply.preferences.modes.#{mode}") %></span>
+        </label>
+      <% end %>
+    </fieldset>
+
+    <label class="flex flex-col gap-1.5 text-[14px]">
+      <span class="font-semibold"><%= t('auto_apply.preferences.linkedin_url') %></span>
+      <%= f.url_field :linkedin_url, value: preference.linkedin_url, placeholder: "https://www.linkedin.com/in/...", dir: "ltr", class: field, style: "color: #eef3ee" %>
+      <span class="<%= hint %>" style="color: rgba(238,243,238,0.6)"><%= t('auto_apply.preferences.linkedin_hint') %></span>
+    </label>
+
+    <label class="flex items-center gap-2 text-[14px] cursor-pointer">
+      <%= f.check_box :paused, { checked: preference.paused }, "1", "0" %>
+      <span><%= t('auto_apply.preferences.paused') %></span>
+    </label>
+
+    <div class="glass-soft rounded-2xl p-4 flex flex-col gap-3" data-testid="consent">
+      <h3 class="m-0 text-[16px] font-semibold"><%= t('auto_apply.consent.heading') %></h3>
+      <p class="m-0 text-[14px] leading-7" style="color: rgba(238,243,238,0.78)"><%= t('auto_apply.consent.body') %></p>
+      <label class="flex items-center gap-2 text-[14px] font-semibold cursor-pointer">
+        <%= f.check_box :consent, { checked: preference.consent_accepted? }, "1", "0" %>
+        <span><%= t('auto_apply.consent.label') %></span>
+      </label>
+      <% if preference.consent_accepted? %>
+        <span class="text-[13px]" style="color: #7fd3a6"><%= t('auto_apply.consent.accepted_on', date: preference.consent_accepted_at.to_date.iso8601) %></span>
+      <% else %>
+        <span class="text-[13px]" style="color: #d6b877"><%= t('auto_apply.consent.required') %></span>
+      <% end %>
+    </div>
+
+    <%= f.button t('auto_apply.preferences.save'), type: "submit", class: "sr-btn sr-primary w-full min-h-[52px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+  <% end %>
+</section>

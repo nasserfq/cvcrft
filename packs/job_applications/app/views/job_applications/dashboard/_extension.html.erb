@@ -1,0 +1,31 @@
+<% button = "sr-btn min-h-[48px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+<section id="extension" class="glass sr-up rounded-[28px] p-7 flex flex-col gap-5">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="m-0 text-[22px] font-semibold"><%= t('auto_apply.extension.heading') %></h2>
+    <span class="glass-soft rounded-full px-3 py-1 text-[13px]" style="color: <%= token ? '#7fd3a6' : 'rgba(238,243,238,0.6)' %>">
+      <%= token ? t('auto_apply.extension.connected') : t('auto_apply.extension.not_connected') %>
+    </span>
+  </div>
+  <p class="m-0 text-[15px]" style="color: rgba(238,243,238,0.7)"><%= t('auto_apply.extension.body') %></p>
+
+  <% if new_token.present? %>
+    <div class="glass-soft rounded-2xl p-4 flex flex-col gap-2" data-testid="new-token">
+      <label for="auto_apply_token" class="text-[14px] font-semibold"><%= t('auto_apply.extension.token_label') %></label>
+      <input id="auto_apply_token" type="text" readonly value="<%= new_token %>" dir="ltr" class="glass-soft rounded-xl px-3 py-2 text-[13px] sr-mono w-full" style="color: #eef3ee" onclick="this.select()">
+      <span class="text-[13px]" style="color: #d6b877"><%= t('auto_apply.extension.token_once') %></span>
+    </div>
+  <% end %>
+
+  <% if token %>
+    <p class="m-0 text-[14px]" style="color: rgba(238,243,238,0.7)">
+      <%= token.last_used_at ? t('auto_apply.extension.last_used', time: token.last_used_at.strftime("%Y-%m-%d %H:%M")) : t('auto_apply.extension.never_used') %>
+    </p>
+  <% end %>
+
+  <div class="flex flex-wrap gap-3 mt-auto">
+    <%= button_to (token ? t('auto_apply.extension.reconnect') : t('auto_apply.extension.connect')), auto_apply_token_path, method: :post, data: { turbo: false }, class: "#{button} sr-primary" %>
+    <% if token %>
+      <%= button_to t('auto_apply.extension.revoke'), auto_apply_token_path, method: :delete, data: { turbo: false }, class: "#{button} glass-soft", style: "color: #eef3ee" %>
+    <% end %>
+  </div>
+</section>

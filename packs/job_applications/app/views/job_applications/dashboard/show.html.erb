@@ -1,0 +1,33 @@
+<% content_for :title, t('auto_apply.title') %>
+<div dir="<%= text_direction %>" class="sr-page relative leading-relaxed" style="color: #eef3ee">
+  <div class="relative mx-auto max-w-[1040px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-8">
+    <% if flash[:alert].present? %>
+      <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #d6b877" role="alert"><%= flash[:alert] %></p>
+    <% end %>
+    <% if flash[:notice].present? %>
+      <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #7fd3a6" role="status"><%= flash[:notice] %></p>
+    <% end %>
+
+    <section class="glass sr-up rounded-[32px] p-7 sm:p-10 flex flex-col gap-3">
+      <h1 class="m-0 font-semibold" style="font-size: clamp(30px, 4vw, 44px); line-height: 1.2; letter-spacing: -0.02em"><%= t('auto_apply.title') %></h1>
+      <p class="m-0 font-light text-[16px] max-w-[60ch]" style="color: rgba(238,243,238,0.7)"><%= t('auto_apply.subtitle') %></p>
+      <p class="m-0 text-[14px] sr-mono" style="color: rgba(238,243,238,0.6)" data-testid="today"><%= t('auto_apply.today', submitted: @today["submitted"], remaining: @daily_remaining) %></p>
+    </section>
+
+    <% unless @resume %>
+      <section class="glass sr-up rounded-[28px] p-7 flex flex-col gap-3" data-testid="no-resume">
+        <h2 class="m-0 text-[22px] font-semibold"><%= t('auto_apply.no_resume.title') %></h2>
+        <p class="m-0 text-[15px]" style="color: rgba(238,243,238,0.7)"><%= t('auto_apply.no_resume.body') %></p>
+        <div><%= link_to t('auto_apply.no_resume.cta'), resumes_path, class: "sr-btn sr-primary inline-flex items-center min-h-[48px] px-5 rounded-2xl font-semibold text-[15px]" %></div>
+      </section>
+    <% end %>
+
+    <div class="grid gap-5" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr))">
+      <%= render "job_applications/dashboard/preferences", preference: @preference %>
+      <%= render "job_applications/dashboard/extension", token: @token, new_token: @new_token %>
+    </div>
+
+    <%= render "job_applications/dashboard/queue", queue: @queue %>
+    <%= render "job_applications/dashboard/tracker", applications: @applications %>
+  </div>
+</div>

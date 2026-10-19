@@ -49,8 +49,9 @@ module JobApplications
 
       ids = []
       questions.map.with_index do |q, i|
-        q = q.to_h.stringify_keys if q.respond_to?(:to_h)
         raise Invalid, "question #{i + 1} is not an object" unless q.is_a?(Hash)
+
+        q = q.stringify_keys
 
         id = q["id"].to_s
         raise Invalid, "question #{i + 1} needs an id" if id.blank? || id.size > 100

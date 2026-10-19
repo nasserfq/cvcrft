@@ -1,0 +1,27 @@
+<section id="queue" class="glass sr-up rounded-[28px] p-7 flex flex-col gap-4">
+  <h2 class="m-0 text-[22px] font-semibold"><%= t('auto_apply.queue.heading') %></h2>
+  <% if queue.empty? %>
+    <p class="m-0 text-[15px]" style="color: rgba(238,243,238,0.7)"><%= t('auto_apply.queue.empty') %></p>
+  <% else %>
+    <ul class="m-0 p-0 list-none flex flex-col gap-3">
+      <% queue.each do |application| %>
+        <% posting = application.posting %>
+        <li id="<%= dom_id(application) %>" class="glass-soft rounded-2xl p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col gap-1 min-w-0">
+            <span class="font-semibold text-[16px] break-words"><%= posting.title %></span>
+            <span class="text-[14px]" style="color: rgba(238,243,238,0.7)"><%= posting.employer.name %><%= " · #{posting.location}" if posting.location.present? %></span>
+            <span class="text-[13px]" style="color: #7fd3a6"><%= t('auto_apply.queue.score', score: application.score) %></span>
+            <% if application.score_reason.present? %>
+              <span class="text-[13px]" style="color: rgba(238,243,238,0.6)"><%= application.score_reason %></span>
+            <% end %>
+            <%= link_to t('auto_apply.queue.view_posting'), posting.url, target: "_blank", rel: "noopener noreferrer nofollow", class: "text-[13px] underline", style: "color: rgba(238,243,238,0.78)" %>
+          </div>
+          <div class="flex gap-2 flex-none">
+            <%= button_to t('auto_apply.queue.approve'), approve_auto_apply_application_path(application), method: :post, data: { turbo: false }, class: "sr-btn sr-primary min-h-[44px] px-4 rounded-xl font-semibold text-[14px] border-0 cursor-pointer" %>
+            <%= button_to t('auto_apply.queue.skip'), skip_auto_apply_application_path(application), method: :post, data: { turbo: false }, class: "sr-btn glass-soft min-h-[44px] px-4 rounded-xl font-semibold text-[14px] cursor-pointer", style: "color: #eef3ee" %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

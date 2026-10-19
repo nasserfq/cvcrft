@@ -4,7 +4,7 @@ module JobApplications
     LATIN = {
       "SA" => [ "saudi", "saudi arabia", "ksa", "riyadh", "jeddah", "jiddah", "dammam", "khobar", "al khobar", "dhahran",
                 "mecca", "makkah", "medina", "madinah", "tabuk", "abha", "jubail", "yanbu", "neom", "qassim", "buraidah",
-                "taif", "hail", "kingdom of saudi arabia" ],
+                "taif", "hail", "kingdom of saudi arabia", "kaec", "king abdullah economic city", "jazan", "jizan", "najran", "alula", "al ula" ],
       "AE" => [ "uae", "u.a.e", "united arab emirates", "emirates", "dubai", "abu dhabi", "sharjah", "ajman" ],
       "QA" => [ "qatar", "doha" ],
       "KW" => [ "kuwait" ],

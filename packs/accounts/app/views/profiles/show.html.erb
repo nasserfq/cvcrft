@@ -242,6 +242,19 @@
 
       <!-- Sidebar (1/3) -->
       <div class="space-y-8">
+        <% if JobApplications.enabled_for?(current_user) %>
+          <!-- Auto-apply Card -->
+          <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm" data-testid="auto-apply-card">
+            <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white"><%= t('auto_apply.profile_card.title') %></h2>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400"><%= t('auto_apply.profile_card.body') %></p>
+              <%= link_to t('auto_apply.profile_card.cta'), auto_apply_root_path, class: "w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primaryHover text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200" %>
+            </div>
+          </div>
+        <% end %>
+
         <!-- Coupon Redemption Card -->
         <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
           <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">

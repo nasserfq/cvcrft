@@ -15,6 +15,7 @@ names don't change: `packs/accounts/app/models/user.rb` is still `User`.
 | `billing` | Credits (ledger and balance), credit packs, Moyasar checkout. Off unless `BILLING_ENABLED` |
 | `admin` | Administrate dashboards, admin controllers, email load tests |
 | `coach` | AI Coach. Off unless `COACH_ENABLED` |
+| `job_applications` | Job feeds, matching, auto-apply queue and extension API. Off unless `AUTO_APPLY_ENABLED` |
 
 What stays in `app/`: the shared base classes (`ApplicationController`,
 `ApplicationRecord`, `ApplicationJob`), the landing, SEO, static pages and

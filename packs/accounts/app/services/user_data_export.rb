@@ -28,6 +28,9 @@ class UserDataExport
       "coach_chats" => coach_chats,
       "credit_ledger_entries" => rows(user.credit_ledger_entries),
       "credit_purchases" => rows(user.credit_purchases),
+      "auto_apply_preference" => user.auto_apply_preference&.attributes,
+      "auto_apply_applications" => auto_apply_applications,
+      "auto_apply_tokens" => user.auto_apply_tokens.order(:id).map { |t| t.attributes.except("token_digest") },
       "exported_at" => now.iso8601,
       "privacy_policy_version" => PrivacyPolicy::VERSION
     }
@@ -60,6 +63,16 @@ class UserDataExport
   def cv_generations
     user.cv_generations.order(:id).map do |generation|
       generation.attributes.merge("metadata" => (generation.metadata || {}).except("pdf_data"))
+    end
+  end
+
+  # Each application with the job it was for; token digests never leave the server.
+  def auto_apply_applications
+    user.auto_apply_applications.includes(posting: :employer).order(:id).map do |application|
+      posting = application.posting
+      application.attributes.merge(
+        "posting" => { "title" => posting.title, "company" => posting.employer.name, "url" => posting.url, "location" => posting.location }
+      )
     end
   end
 

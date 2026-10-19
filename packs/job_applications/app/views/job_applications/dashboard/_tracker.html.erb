@@ -1,0 +1,23 @@
+<section id="tracker" class="glass sr-up rounded-[28px] p-7 flex flex-col gap-4">
+  <h2 class="m-0 text-[22px] font-semibold"><%= t('auto_apply.tracker.heading') %></h2>
+  <% if applications.empty? %>
+    <p class="m-0 text-[15px]" style="color: rgba(238,243,238,0.7)"><%= t('auto_apply.tracker.empty') %></p>
+  <% else %>
+    <div class="overflow-x-auto">
+      <table class="w-full text-[14px] border-collapse">
+        <thead>
+          <tr style="color: rgba(238,243,238,0.6)">
+            <th class="text-start font-semibold py-2 pe-3"><%= t('auto_apply.tracker.status') %></th>
+            <th class="text-start font-semibold py-2 pe-3"><%= t('auto_apply.tracker.company') %></th>
+            <th class="text-start font-semibold py-2 pe-3"><%= t('auto_apply.tracker.job_title') %></th>
+            <th class="text-start font-semibold py-2 pe-3"><%= t('auto_apply.tracker.date') %></th>
+            <th class="py-2"><span class="sr-only"><%= t('auto_apply.tracker.delete') %></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= render partial: "job_applications/dashboard/application_row", collection: applications, as: :application %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

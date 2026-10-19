@@ -1,0 +1,524 @@
+# Seed list of employers with public ATS job feeds. verified = feed checked on 2026-10-19.
+# Workable: checked via apply.workable.com/api/v1/widget/accounts/{sub}. SmartRecruiters: the postings API
+# was not fetchable from the research tool, so careers.smartrecruiters.com/{id} was checked instead.
+# Workday: the career-site page at https://{host}/{site} resolved (bogus sites error). verified: false = account
+# exists but had no open jobs (may be dormant), or the identifier could not be confirmed.
+# 'global' in a comment = worldwide board; filter postings to Gulf locations.
+- name: Careem
+  ats: greenhouse
+  identifier: careem
+  host: null
+  site: null
+  country: AE
+  verified: true  # 14 jobs; Dubai, Amman, Karachi
+- name: Tamara
+  ats: greenhouse
+  identifier: tamara
+  host: null
+  site: null
+  country: SA
+  verified: true  # also on EU board job-boards.eu.greenhouse.io/tamara
+- name: HALA
+  ats: greenhouse
+  identifier: hala
+  host: null
+  site: null
+  country: SA
+  verified: true  # all Riyadh
+- name: Deliveroo
+  ats: greenhouse
+  identifier: deliveroo
+  host: null
+  site: null
+  country: AE
+  verified: true  # global board; filter to UAE/Kuwait/Qatar
+- name: Ogilvy MENA
+  ats: greenhouse
+  identifier: ogilvymena
+  host: null
+  site: null
+  country: GULF
+  verified: true  # Doha, Riyadh, Beirut, Baghdad
+- name: Lucid Motors
+  ats: greenhouse
+  identifier: lucidmotors
+  host: null
+  site: null
+  country: SA
+  verified: true  # global board; KAEC factory roles
+- name: Aldar Properties
+  ats: lever
+  identifier: aldar
+  host: null
+  site: null
+  country: AE
+  verified: true  # Abu Dhabi / Dubai
+- name: SOUM
+  ats: lever
+  identifier: soum
+  host: null
+  site: null
+  country: SA
+  verified: true  # Riyadh, Jeddah
+- name: Flow
+  ats: lever
+  identifier: flowlife
+  host: null
+  site: null
+  country: SA
+  verified: true  # global board; Riyadh roles
+- name: Binance
+  ats: lever
+  identifier: binance
+  host: null
+  site: null
+  country: AE
+  verified: true  # global board; Dubai roles
+- name: Strategic Gears
+  ats: lever
+  identifier: strategicgears
+  host: null
+  site: null
+  country: SA
+  verified: true  # Saudi consultancy; open roles currently Cairo
+- name: Lean Technologies
+  ats: ashby
+  identifier: LeanTech
+  host: null
+  site: null
+  country: SA
+  verified: true  # Riyadh, Dubai
+- name: Ziina
+  ats: ashby
+  identifier: ziina
+  host: null
+  site: null
+  country: AE
+  verified: true  # Dubai
+- name: Sarj.ai
+  ats: ashby
+  identifier: sarjai
+  host: null
+  site: null
+  country: SA
+  verified: true  # Riyadh
+- name: Echelon
+  ats: ashby
+  identifier: echeloncareers
+  host: null
+  site: null
+  country: SA
+  verified: true  # Riyadh
+- name: Checkout.com
+  ats: ashby
+  identifier: checkout.com
+  host: null
+  site: null
+  country: GULF
+  verified: true  # global board; Dubai / KSA roles
+- name: Foodics
+  ats: workable
+  identifier: foodics
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Lucidya
+  ats: workable
+  identifier: lucidya
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Qiddiya Investment Company
+  ats: workable
+  identifier: qiddiya-investment-company-1
+  host: null
+  site: null
+  country: SA
+  verified: true  # 140+ jobs, Riyadh
+- name: Salla
+  ats: workable
+  identifier: salla
+  host: null
+  site: null
+  country: SA
+  verified: true  # Jeddah, Makkah
+- name: Jeeny
+  ats: workable
+  identifier: jeeny
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Gathern
+  ats: workable
+  identifier: gathern
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Madar
+  ats: workable
+  identifier: madarplatform
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Squadio
+  ats: workable
+  identifier: squadio23
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Master-Works
+  ats: workable
+  identifier: masterworksco
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: "Al-Watania Information Systems (WiSys)"
+  ats: workable
+  identifier: alwatania-information-systems
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Ninja
+  ats: workable
+  identifier: ananinja
+  host: null
+  site: null
+  country: SA
+  verified: true  # q-commerce; not the 'ninja' account
+- name: United Motors Group
+  ats: workable
+  identifier: umg-careers
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: TAWANTECH
+  ats: workable
+  identifier: tawantech
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Rawafid
+  ats: workable
+  identifier: rawafid
+  host: null
+  site: null
+  country: SA
+  verified: true  # Jeddah
+- name: Adree
+  ats: workable
+  identifier: adree
+  host: null
+  site: null
+  country: SA
+  verified: true  # Riyadh
+- name: ZainTECH
+  ats: workable
+  identifier: zaintech
+  host: null
+  site: null
+  country: GULF
+  verified: true  # Riyadh, Dubai, Kuwait, Amman
+- name: "Bayut & dubizzle"
+  ats: workable
+  identifier: bayutdubizzle
+  host: null
+  site: null
+  country: AE
+  verified: true  # Dubai + KSA
+- name: Abu Dhabi Investment Authority
+  ats: workable
+  identifier: adia
+  host: null
+  site: null
+  country: AE
+  verified: true
+- name: Deeplight
+  ats: workable
+  identifier: deeplight
+  host: null
+  site: null
+  country: AE
+  verified: true
+- name: Platinumlist
+  ats: workable
+  identifier: platinum-list
+  host: null
+  site: null
+  country: AE
+  verified: true
+- name: BlackStone eIT
+  ats: workable
+  identifier: blackstone-eit-2
+  host: null
+  site: null
+  country: AE
+  verified: true
+- name: Tabby
+  ats: workable
+  identifier: tabby
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs; real ATS unknown
+- name: Jahez
+  ats: workable
+  identifier: jahez
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Mrsool
+  ats: workable
+  identifier: mrsool
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Zid
+  ats: workable
+  identifier: zid
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Sary
+  ats: workable
+  identifier: sary
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Unifonic
+  ats: workable
+  identifier: unifonic
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs; site uses own HubSpot pages
+- name: Nana
+  ats: workable
+  identifier: nana
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Mozn
+  ats: workable
+  identifier: mozn
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Barq
+  ats: workable
+  identifier: barq
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Rasan
+  ats: workable
+  identifier: rasan
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Lendo
+  ats: workable
+  identifier: lendo
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Jisr
+  ats: workable
+  identifier: jisr
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Geidea
+  ats: workable
+  identifier: geidea
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Cenomi
+  ats: workable
+  identifier: cenomi
+  host: null
+  site: null
+  country: SA
+  verified: false  # account exists, 0 jobs
+- name: Kitopi
+  ats: workable
+  identifier: kitopi
+  host: null
+  site: null
+  country: AE
+  verified: false  # account exists, 0 jobs; old jobs.lever.co/kitopi now 404
+- name: Property Finder
+  ats: workable
+  identifier: propertyfinder
+  host: null
+  site: null
+  country: AE
+  verified: false  # account exists, 0 jobs; reportedly on Greenhouse, token not found
+- name: Bayzat
+  ats: workable
+  identifier: bayzat
+  host: null
+  site: null
+  country: AE
+  verified: false  # account exists, 0 jobs
+- name: Masdar
+  ats: smartrecruiters
+  identifier: masdar
+  host: null
+  site: null
+  country: AE
+  verified: true  # checked careers.smartrecruiters.com page
+- name: Etihad Airways
+  ats: smartrecruiters
+  identifier: EtihadAirways5
+  host: null
+  site: null
+  country: AE
+  verified: true  # checked careers.smartrecruiters.com page
+- name: Bosch Group
+  ats: smartrecruiters
+  identifier: BoschGroup
+  host: null
+  site: null
+  country: GULF
+  verified: true  # global; Riyadh roles
+- name: "Delivery Hero (talabat)"
+  ats: smartrecruiters
+  identifier: DeliveryHero
+  host: null
+  site: null
+  country: GULF
+  verified: true  # global; talabat jobs shown on careers.deliveryhero.com, may not all be in this feed
+- name: Accor
+  ats: smartrecruiters
+  identifier: AccorHotel
+  host: null
+  site: null
+  country: GULF
+  verified: true  # page redirects to careers.accor.com; job URLs seen on jobs.smartrecruiters.com/AccorHotel
+- name: Aramex
+  ats: smartrecruiters
+  identifier: Aramex
+  host: null
+  site: null
+  country: AE
+  verified: false  # company page exists, 0 jobs
+- name: Parsons
+  ats: workday
+  identifier: parsons
+  host: parsons.wd5.myworkdayjobs.com
+  site: Search
+  country: SA
+  verified: true  # global; heavy KSA giga-project hiring
+- name: KBR
+  ats: workday
+  identifier: kbr
+  host: kbr.wd5.myworkdayjobs.com
+  site: KBR_Careers
+  country: GULF
+  verified: true  # global; Riyadh, Abu Dhabi
+- name: Visa
+  ats: workday
+  identifier: visa
+  host: visa.wd5.myworkdayjobs.com
+  site: Visa
+  country: GULF
+  verified: true  # global
+- name: Minor Hotels
+  ats: workday
+  identifier: minor
+  host: minor.wd102.myworkdayjobs.com
+  site: Careers
+  country: QA
+  verified: true  # Doha roles
+- name: Georgetown University in Qatar
+  ats: workday
+  identifier: georgetown
+  host: georgetown.wd1.myworkdayjobs.com
+  site: Georgetown_Qatar_Careers
+  country: QA
+  verified: true
+- name: Motorola Solutions
+  ats: workday
+  identifier: motorolasolutions
+  host: motorolasolutions.wd5.myworkdayjobs.com
+  site: Careers
+  country: GULF
+  verified: true  # global; Riyadh roles
+- name: Hewlett Packard Enterprise
+  ats: workday
+  identifier: hpe
+  host: hpe.wd5.myworkdayjobs.com
+  site: Jobsathpe
+  country: GULF
+  verified: true  # global
+- name: Airbus
+  ats: workday
+  identifier: ag
+  host: ag.wd3.myworkdayjobs.com
+  site: Airbus
+  country: GULF
+  verified: true  # global
+- name: Mastercard
+  ats: workday
+  identifier: mastercard
+  host: mastercard.wd1.myworkdayjobs.com
+  site: CorporateCareers
+  country: GULF
+  verified: true  # global
+- name: LSEG
+  ats: workday
+  identifier: lseg
+  host: lseg.wd3.myworkdayjobs.com
+  site: Careers
+  country: GULF
+  verified: true  # global
+- name: Medtronic
+  ats: workday
+  identifier: medtronic
+  host: medtronic.wd1.myworkdayjobs.com
+  site: MedtronicCareers
+  country: GULF
+  verified: true  # global
+- name: Hitachi
+  ats: workday
+  identifier: hitachi
+  host: hitachi.wd1.myworkdayjobs.com
+  site: hitachi
+  country: GULF
+  verified: true  # global
+- name: KONE
+  ats: workday
+  identifier: kone
+  host: kone.wd3.myworkdayjobs.com
+  site: Careers
+  country: GULF
+  verified: true  # global
+- name: IFF
+  ats: workday
+  identifier: iff
+  host: iff.wd5.myworkdayjobs.com
+  site: IFF_Careers
+  country: GULF
+  verified: true  # global

@@ -1,0 +1,5 @@
+{"jobs":[
+ {"id":101,"title":"Senior Product Manager","location":{"name":"Riyadh, Saudi Arabia"},"absolute_url":"https://job-boards.greenhouse.io/acme/jobs/101","content":"&lt;p&gt;Own the &lt;strong&gt;roadmap&lt;/strong&gt;.&lt;/p&gt;","updated_at":"2026-10-18T10:00:00-04:00"},
+ {"id":102,"title":"Data Analyst","location":{"name":"London, UK"},"absolute_url":"https://job-boards.greenhouse.io/acme/jobs/102","content":"","updated_at":"2026-10-18T10:00:00-04:00"},
+ {"id":103,"title":"Backend Engineer","location":{"name":"دبي"},"absolute_url":"https://job-boards.greenhouse.io/acme/jobs/103","content":"","updated_at":"2026-10-17T10:00:00Z"}
+]}

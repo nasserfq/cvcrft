@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Product Manager - Acme</title>
+<style>.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}</style></head>
+<body>
+  <!-- Mimics job-boards.greenhouse.io: labelled fields, hidden file input behind a button, custom questions. -->
+  <h1>Product Manager</h1>
+  <p>Riyadh, Saudi Arabia</p>
+  <!-- Invisible reCAPTCHA as live Greenhouse boards load it: script, badge, hidden challenge frame. -->
+  <script src="https://www.google.com/recaptcha/api.js?render=explicit"></script>
+  <div class="grecaptcha-badge" style="width:256px;height:60px;position:fixed;bottom:14px;right:-186px">
+    <iframe title="reCAPTCHA" width="256" height="60" src="https://www.google.com/recaptcha/api2/anchor?ar=1&amp;k=6LfTEST&amp;size=invisible"></iframe>
+  </div>
+  <div class="g-recaptcha" data-size="invisible" data-sitekey="6LfTEST"></div>
+  <div style="visibility:hidden;position:absolute;top:-10000px"><iframe title="recaptcha challenge" width="400" height="580" src="https://www.google.com/recaptcha/api2/bframe?k=6LfTEST"></iframe></div>
+  <form id="application-form" novalidate>
+    <div class="field"><label for="first_name">First Name<span class="asterisk">*</span></label><input id="first_name" name="first_name" type="text" aria-required="true"></div>
+    <div class="field"><label for="last_name">Last Name<span class="asterisk">*</span></label><input id="last_name" name="last_name" type="text" aria-required="true"></div>
+    <div class="field"><label for="email">Email<span class="asterisk">*</span></label><input id="email" name="email" type="text" aria-required="true"></div>
+    <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel"></div>
+    <div class="field">
+      <div class="label" id="resume-label">Resume/CV<span class="asterisk">*</span></div>
+      <button type="button" class="btn">Attach</button>
+      <input id="resume" name="resume" type="file" class="visually-hidden" aria-labelledby="resume-label" accept=".pdf,.doc,.docx">
+    </div>
+    <div class="field"><label for="cover_letter_text">Cover Letter</label><textarea id="cover_letter_text" name="cover_letter_text"></textarea></div>
+    <div class="field"><label for="question_1">LinkedIn Profile</label><input id="question_1" name="job_application[answers_attributes][0][text_value]" type="text"></div>
+    <div class="field"><label for="question_2">Years of experience with SQL<span class="asterisk">*</span></label><input id="question_2" name="job_application[answers_attributes][1][text_value]" type="text" required></div>
+    <div class="field"><label for="question_3">Are you legally authorized to work in Saudi Arabia?<span class="asterisk">*</span></label>
+      <select id="question_3" name="job_application[answers_attributes][2][boolean_value]" required>
+        <option value="">Select...</option><option value="1">Yes</option><option value="0">No</option>
+      </select></div>
+    <fieldset class="field"><legend>Languages</legend>
+      <label><input type="checkbox" name="langs[]" value="ar"> Arabic</label>
+      <label><input type="checkbox" name="langs[]" value="en"> English</label>
+      <label><input type="checkbox" name="langs[]" value="fr"> French</label>
+    </fieldset>
+    <div class="field"><label for="question_5">What are your salary expectations?</label><input id="question_5" name="job_application[answers_attributes][4][text_value]" type="text"></div>
+    <div class="field"><label for="question_6">How did you hear about this job?</label>
+      <select id="question_6" name="job_application[answers_attributes][5][text_value]">
+        <option value="">Please select</option><option>LinkedIn</option><option>Company website</option><option>Referral</option>
+      </select></div>
+    <button type="submit" id="submit_app">Submit Application</button>
+  </form>
+  <script>
+    document.getElementById("application-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      document.body.innerHTML = "<h1>Thank you for applying.</h1><p>Your application has been received.</p>";
+    });
+  </script>
+</body>
+</html>
