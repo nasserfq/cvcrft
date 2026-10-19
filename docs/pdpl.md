@@ -6,8 +6,8 @@ privacy policy version `2026-10-19` (`PrivacyPolicy::VERSION`).
 This is an engineering record, not legal advice. A Saudi-qualified lawyer should review it before
 anyone relies on it with SDAIA or in a contract.
 
-- Controller: Seera (cvcrft). The legal entity name is still to be filled in by the owner.
-- Privacy contact: `privacy@cvcrft.com`
+- Controller: Hodab Altiqnia Company (Unified National Number 7053973447), operating Seera (cvcrft).
+- Privacy contact: `nasser@cvcrft.com`
 - Users: mainly Saudi residents. We do not offer the service to anyone under 18.
 - Public notice: `/privacy` (Arabic and English) and `/terms`.
 
@@ -61,7 +61,7 @@ Rights: access, a copy (export), correction, deletion, withdrawal of consent, an
 | Correction | Self-service: users edit their profile and CVs |
 | Deletion | Self-service: profile page, "Delete my account". One transaction removes the user, CVs, imports, AI results, generated PDFs, credit ledger, purchases, coupon redemptions and OTP rows, then clears the coupon store. Nothing identifying is sent to PostHog |
 | Withdraw consent | Cookie banner for analytics; account deletion for everything else |
-| Anything else, or a user who cannot sign in | Email `privacy@cvcrft.com` |
+| Anything else, or a user who cannot sign in | Email `nasser@cvcrft.com` |
 
 For email requests:
 
@@ -78,7 +78,7 @@ A breach is any unauthorized access, disclosure, loss or change of personal data
 processor.
 
 1. **Detect and contain (immediately).** Sources: Sentry alerts, server logs, processor notices,
-   user reports to `privacy@cvcrft.com`. Stop the leak: rotate keys and credentials, revoke
+   user reports to `nasser@cvcrft.com`. Stop the leak: rotate keys and credentials, revoke
    sessions, block the access path, take the affected part offline if needed. Keep the evidence
    (logs, timestamps), do not wipe it.
 2. **Assess (within 24 hours of awareness).** What data, how many users, which processors, whether
@@ -99,7 +99,6 @@ draft amendments, so check them again when they are final.
 
 ## 5. Open owner actions
 
-- Fill in the controller's legal entity name; create the `privacy@cvcrft.com` mailbox.
 - Register on SDAIA's National Data Governance Platform.
 - Sign the processor DPAs listed in section 1.
 - With a lawyer: a DPIA for the AI features, a transfer risk assessment, and a decision on whether

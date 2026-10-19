@@ -8,7 +8,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "html[lang=ar][dir=rtl]"
-    assert_includes response.body, "privacy@cvcrft.com"
+    assert_includes response.body, "nasser@cvcrft.com"
     assert_includes response.body, "SDAIA"
     assert_includes response.body, "سدايا"
     assert_includes response.body, VERSION_DATE
@@ -22,7 +22,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "html[lang=en][dir=ltr]"
     assert_select "h2", text: /Transfers outside Saudi Arabia/
-    assert_includes response.body, "privacy@cvcrft.com"
+    assert_includes response.body, "nasser@cvcrft.com"
     assert_includes response.body, "SDAIA"
     assert_includes response.body, VERSION_DATE
     assert_not_includes response.body, "OpenAI"
