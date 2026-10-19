@@ -62,4 +62,14 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       assert_select "svg[aria-hidden=true]"
     end
   end
+
+  test "privacy and terms keep the ambient background moving" do
+    [ privacy_url(locale: "ar"), terms_url ].each do |url|
+      get url
+
+      assert_response :success
+      assert_select "div[aria-hidden=true] .sr-orb1"
+      assert_select "div[aria-hidden=true] svg.sr-spin"
+    end
+  end
 end

@@ -7,6 +7,10 @@
 
   The signal is a cookie rather than localStorage because the server-side
   tracker (PosthogTrackable) has to read it too.
+
+  The banner markup is shared/consent_banner. Pages that render this partial
+  in <head> should pass banner: false and render the banner after <body>,
+  otherwise the <div> closes <head> early and the stylesheet lands in <body>.
 %>
 <script>
   (function () {
@@ -65,31 +69,4 @@
   })();
 </script>
 
-<% unless cookies[:analytics_consent].present? %>
-  <div id="consent-banner" hidden role="dialog" aria-live="polite"
-       aria-label="<%= t('consent.title') %>"
-       class="fixed bottom-0 inset-x-0 z-[9999] p-4 sm:p-6">
-    <div class="mx-auto max-w-3xl bg-white/80 dark:bg-darkCard/70 backdrop-blur-xl text-ink dark:text-mist
-                border border-borderLight dark:border-borderDark rounded-[20px]
-                shadow-glass
-                p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="flex-1">
-        <p class="font-semibold text-base mb-1"><%= t("consent.title") %></p>
-        <p class="text-sm leading-relaxed">
-          <%= t("consent.body") %>
-          <a href="<%= privacy_path %>" class="underline font-semibold"><%= t("consent.privacy_link") %></a>
-        </p>
-      </div>
-      <div class="flex gap-3 shrink-0">
-        <button type="button" onclick="window.analyticsConsent.decline()"
-                class="min-h-11 px-4 rounded-xl text-sm font-medium border border-borderLight dark:border-borderDark bg-white/60 dark:bg-white/5">
-          <%= t("consent.decline") %>
-        </button>
-        <button type="button" onclick="window.analyticsConsent.accept()"
-                class="min-h-11 px-5 rounded-xl text-sm font-semibold bg-primary text-white">
-          <%= t("consent.accept") %>
-        </button>
-      </div>
-    </div>
-  </div>
-<% end %>
+<%= render "shared/consent_banner" unless local_assigns[:banner] == false %>

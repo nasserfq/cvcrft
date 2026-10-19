@@ -9,7 +9,7 @@
     <link rel="canonical" href="https://cvcrft.com/terms" />
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-    <%= render 'shared/posthog' %>
+    <%= render 'shared/posthog', banner: false %>
     <link rel="icon" href="/icon.png?v=7" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,7 +27,8 @@
       }
     </style>
   </head>
-  <body class="sr-app antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen flex flex-col">
+  <body class="sr-app sr-app-long relative antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen flex flex-col">
+    <%= render 'shared/consent_banner' %>
     <!-- Background Accents -->
     <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>
@@ -37,7 +38,8 @@
 
     <!-- Header -->
     <%= render 'layouts/header' %>
-<%= render 'shared/ambient', fixed: true %>
+<%# The ambient scrolls with the page here: pinned under the long glass card it would be re-blurred on every scroll frame. %>
+<%= render 'shared/ambient' %>
 
     <!-- Main Content -->
     <main class="flex-1 pt-24 pb-12 sm:pt-28 sm:pb-16">
