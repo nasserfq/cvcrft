@@ -51,4 +51,15 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, VERSION_DATE
     assert_not_includes response.body, "OpenAI"
   end
+
+  test "legal pages render icons inline without the iconify runtime" do
+    [ privacy_url(locale: "ar"), privacy_url(locale: "en"), terms_url ].each do |url|
+      get url
+
+      assert_response :success
+      assert_not_includes response.body, "iconify-icon"
+      assert_not_includes response.body, "cdn.jsdelivr.net/npm/iconify"
+      assert_select "svg[aria-hidden=true]"
+    end
+  end
 end

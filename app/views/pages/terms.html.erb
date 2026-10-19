@@ -16,7 +16,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" /></noscript>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
     <style>
       .glass-card {
         background: rgba(255, 255, 255, 0.8);
@@ -46,7 +45,7 @@
         <!-- Page Header -->
         <div class="text-center mb-12">
           <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-sm font-medium mb-6">
-            <iconify-icon icon="solar:document-text-bold" width="16"></iconify-icon>
+            <%= seera_icon("solar:document-text-bold", width: 16) %>
             اتفاقية الاستخدام
           </div>
           <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -83,19 +82,19 @@
             <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">"سيرة" هي منصة لإنشاء السير الذاتية باستخدام الذكاء الاصطناعي، وتقدم الخدمات التالية:</p>
             <ul class="space-y-4 text-gray-600 dark:text-gray-300">
               <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:document-add-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <%= seera_icon("solar:document-add-bold", width: 20, class: "text-action flex-shrink-0 mt-0.5") %>
                 <span>إنشاء سير ذاتية احترافية بتنسيقات متعددة</span>
               </li>
               <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:magic-stick-3-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <%= seera_icon("solar:magic-stick-3-bold", width: 20, class: "text-action flex-shrink-0 mt-0.5") %>
                 <span>تحسين المحتوى باستخدام الذكاء الاصطناعي</span>
               </li>
               <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:import-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <%= seera_icon("solar:import-bold", width: 20, class: "text-action flex-shrink-0 mt-0.5") %>
                 <span>استيراد البيانات من LinkedIn</span>
               </li>
               <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:chart-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
+                <%= seera_icon("solar:chart-bold", width: 20, class: "text-action flex-shrink-0 mt-0.5") %>
                 <span>تحليل التوافق مع أنظمة ATS</span>
               </li>
             </ul>
@@ -157,15 +156,15 @@
             <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">نسعى لتقديم أفضل خدمة ممكنة، ولكن:</p>
             <ul class="space-y-4 text-gray-600 dark:text-gray-300">
               <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:info-circle-bold" width="20" class="text-primary flex-shrink-0 mt-0.5"></iconify-icon>
+                <%= seera_icon("solar:info-circle-bold", width: 20, class: "text-primary flex-shrink-0 mt-0.5") %>
                 <span>الخدمة مقدمة "كما هي" دون ضمانات صريحة أو ضمنية</span>
               </li>
               <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:info-circle-bold" width="20" class="text-primary flex-shrink-0 mt-0.5"></iconify-icon>
+                <%= seera_icon("solar:info-circle-bold", width: 20, class: "text-primary flex-shrink-0 mt-0.5") %>
                 <span>لا نتحمل مسؤولية نتائج استخدام السيرة الذاتية في التقدم للوظائف</span>
               </li>
               <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:info-circle-bold" width="20" class="text-primary flex-shrink-0 mt-0.5"></iconify-icon>
+                <%= seera_icon("solar:info-circle-bold", width: 20, class: "text-primary flex-shrink-0 mt-0.5") %>
                 <span>قد تتعرض الخدمة لانقطاعات مؤقتة للصيانة أو أسباب تقنية</span>
               </li>
             </ul>
@@ -204,7 +203,7 @@
             </p>
             <div class="p-5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
               <div class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-                <iconify-icon icon="solar:mailbox-bold" width="24" class="text-primary"></iconify-icon>
+                <%= seera_icon("solar:mailbox-bold", width: 24, class: "text-primary") %>
                 <span>nasser@cvcrft.com</span>
               </div>
             </div>
@@ -215,7 +214,7 @@
         <!-- Back to Home -->
         <div class="mt-8 text-center">
           <a href="/" class="inline-flex items-center gap-2 text-primary hover:text-primaryHover transition-colors">
-            <iconify-icon icon="solar:arrow-right-bold" width="20"></iconify-icon>
+            <%= seera_icon("solar:arrow-right-bold", width: 20) %>
             العودة للصفحة الرئيسية
           </a>
         </div>
