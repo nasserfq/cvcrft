@@ -2,14 +2,14 @@ require "test_helper"
 
 class UserDataExportTest < ActiveSupport::TestCase
   setup do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    stub_pdf_generation
     @user = User.create!(email: "export-svc-#{SecureRandom.hex(4)}@example.com", name: "Export Service",
                          password: "password123", password_confirmation: "password123")
   end
 
   test "includes every section and the policy version" do
-    resume = Resume.create!(user: @user, title: "Service Resume", complete_name: "Export Service",
-                            email: "svc-#{SecureRandom.hex(4)}@example.com")
+    resume = create_test_resume(@user, title: "Service Resume", complete_name: "Export Service",
+                                       email: "svc-#{SecureRandom.hex(4)}@example.com")
     resume.skills.create!(category: "technical", skill_names: [ "Ruby" ])
     chat = Coach::Chat.create!(user: @user, path: "scratch")
     chat.messages.create!(role: "user", content: "Hello coach")

@@ -220,10 +220,10 @@ class UserTest < ActiveSupport::TestCase
   # ============================================
 
   test "destroying a user with imports and coupon redemptions removes them all" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+    stub_pdf_generation
     user = User.create!(email: "erase-model-#{SecureRandom.hex(4)}@example.com", name: "Erase Model",
                         password: "password123", password_confirmation: "password123")
-    resume = Resume.create!(user: user, complete_name: "Erase Model", email: "erase-model-r-#{SecureRandom.hex(4)}@example.com")
+    resume = create_test_resume(user, complete_name: "Erase Model", email: "erase-model-r-#{SecureRandom.hex(4)}@example.com")
     CvImport.create!(user: user, resume: resume, status: "completed", original_filename: "cv.pdf")
     coupon_id = ActiveRecord::Base.connection.select_value(<<~SQL)
       INSERT INTO coupons (code, created_at, updated_at)
