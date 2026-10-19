@@ -1,10 +1,11 @@
+<% privacy_locale = I18n.locale.to_s == "en" ? "en" : "ar" %>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
+<html lang="<%= privacy_locale %>" dir="<%= privacy_locale == "en" ? "ltr" : "rtl" %>" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>سياسة الخصوصية — سيرة</title>
-    <meta name="description" content="سياسة الخصوصية لموقع سيرة - منشئ السيرة الذاتية بالذكاء الاصطناعي" />
+    <title><%= t("pdpl_pages.privacy.title") %></title>
+    <meta name="description" content="<%= t("pdpl_pages.privacy.meta_description") %>" />
     <meta name="theme-color" content="#07120D" />
     <link rel="canonical" href="https://cvcrft.com/privacy" />
     <link rel="icon" href="/icon.png?v=7" type="image/png" />
@@ -47,187 +48,26 @@
         <div class="text-center mb-12">
           <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-sm font-medium mb-6">
             <iconify-icon icon="solar:shield-check-bold" width="16"></iconify-icon>
-            حماية خصوصيتك أولويتنا
+            <%= t("pdpl_pages.privacy.badge") %>
           </div>
           <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            سياسة <span class="bg-gradient-to-l from-primary to-action bg-clip-text text-transparent">الخصوصية</span>
+            <%= t("pdpl_pages.privacy.heading_html") %>
           </h1>
           <p class="text-gray-600 dark:text-gray-400">
-            آخر تحديث: <%= Date.today.strftime("%d/%m/%Y") %>
+            <%= t("pdpl_pages.privacy.last_updated", date: PrivacyPolicy.last_updated.strftime("%d/%m/%Y")) %>
           </p>
         </div>
 
         <!-- Privacy Policy Content -->
         <div class="glass-card rounded-2xl border border-gray-200 dark:border-white/10 shadow-xl p-6 sm:p-8 lg:p-10 space-y-8">
-          
-          <!-- Introduction -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">1</span>
-              مقدمة
-            </h2>
-            <p class="text-gray-600 dark:text-gray-300 leading-8">
-              نحن في "سيرة" نلتزم بحماية خصوصيتك وأمان بياناتك الشخصية. توضح هذه السياسة كيفية جمع واستخدام وحماية المعلومات التي تقدمها عند استخدام خدماتنا لإنشاء السيرة الذاتية.
-            </p>
-          </section>
-
-          <!-- Data We Collect -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">2</span>
-              البيانات التي نجمعها
-            </h2>
-            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">نجمع أنواعًا محددة من المعلومات لتقديم خدماتنا:</p>
-            <ul class="space-y-4 text-gray-600 dark:text-gray-300">
-              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <span class="mt-1 w-2 h-2 rounded-full bg-action flex-shrink-0"></span>
-                <span><strong class="text-gray-900 dark:text-white">معلومات الحساب:</strong> البريد الإلكتروني والاسم عند التسجيل</span>
-              </li>
-              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <span class="mt-1 w-2 h-2 rounded-full bg-action flex-shrink-0"></span>
-                <span><strong class="text-gray-900 dark:text-white">بيانات السيرة الذاتية:</strong> الخبرات المهنية، المهارات، التعليم، والمعلومات الأخرى التي تدخلها</span>
-              </li>
-              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <span class="mt-1 w-2 h-2 rounded-full bg-action flex-shrink-0"></span>
-                <span><strong class="text-gray-900 dark:text-white">بيانات الاستخدام:</strong> معلومات تقنية عن كيفية تفاعلك مع الموقع</span>
-              </li>
-            </ul>
-          </section>
-
-          <!-- How We Use Data -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">3</span>
-              كيف نستخدم بياناتك
-            </h2>
-            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">نستخدم بياناتك للأغراض التالية:</p>
-            <ul class="space-y-4 text-gray-600 dark:text-gray-300">
-              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:magic-stick-3-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
-                <span>إنشاء وتخصيص سيرتك الذاتية باستخدام الذكاء الاصطناعي</span>
-              </li>
-              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:cloud-storage-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
-                <span>حفظ سيرك الذاتية وإتاحة الوصول إليها من حسابك</span>
-              </li>
-              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:chart-2-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
-                <span>تحسين خدماتنا وتجربة المستخدم</span>
-              </li>
-              <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <iconify-icon icon="solar:letter-bold" width="20" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
-                <span>التواصل معك بشأن حسابك أو تحديثات الخدمة</span>
-              </li>
-            </ul>
-          </section>
-
-          <!-- AI Processing -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">4</span>
-              معالجة الذكاء الاصطناعي
-            </h2>
-            <div class="p-5 rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
-              <p class="text-gray-600 dark:text-gray-300 leading-8">
-                نستخدم خدمات الذكاء الاصطناعي (مثل OpenAI) لتحسين محتوى سيرتك الذاتية وترجمته. البيانات المرسلة لهذه الخدمات تُعالج وفقًا لسياسات الخصوصية الخاصة بها، ونحرص على إرسال الحد الأدنى من المعلومات اللازمة فقط.
-              </p>
-            </div>
-          </section>
-
-          <!-- Data Protection -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">5</span>
-              حماية البيانات
-            </h2>
-            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">نتخذ إجراءات أمنية صارمة لحماية بياناتك:</p>
-            <div class="grid gap-4 sm:grid-cols-3">
-              <div class="p-5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-center">
-                <iconify-icon icon="solar:lock-keyhole-bold" width="32" class="text-primary mx-auto mb-3"></iconify-icon>
-                <p class="text-sm text-gray-600 dark:text-gray-300">تشفير البيانات أثناء النقل باستخدام HTTPS</p>
-              </div>
-              <div class="p-5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-center">
-                <iconify-icon icon="solar:server-bold" width="32" class="text-primary mx-auto mb-3"></iconify-icon>
-                <p class="text-sm text-gray-600 dark:text-gray-300">تخزين آمن للبيانات مع تشفير كلمات المرور</p>
-              </div>
-              <div class="p-5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-center">
-                <iconify-icon icon="solar:shield-user-bold" width="32" class="text-primary mx-auto mb-3"></iconify-icon>
-                <p class="text-sm text-gray-600 dark:text-gray-300">عدم مشاركة بياناتك مع أطراف ثالثة إلا بموافقتك</p>
-              </div>
-            </div>
-          </section>
-
-          <!-- Your Rights -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">6</span>
-              حقوقك
-            </h2>
-            <p class="text-gray-600 dark:text-gray-300 leading-8 mb-4">لديك الحقوق التالية فيما يتعلق ببياناتك:</p>
-            <div class="space-y-4">
-              <div class="flex items-start gap-4 p-5 rounded-xl bg-action/5 dark:bg-action/10 border border-action/20">
-                <iconify-icon icon="solar:eye-bold" width="24" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
-                <div>
-                  <h3 class="font-semibold text-gray-900 dark:text-white mb-1">حق الوصول</h3>
-                  <p class="text-gray-600 dark:text-gray-300 text-sm">يمكنك طلب نسخة من بياناتك</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-4 p-5 rounded-xl bg-action/5 dark:bg-action/10 border border-action/20">
-                <iconify-icon icon="solar:pen-bold" width="24" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
-                <div>
-                  <h3 class="font-semibold text-gray-900 dark:text-white mb-1">حق التصحيح</h3>
-                  <p class="text-gray-600 dark:text-gray-300 text-sm">يمكنك تحديث معلوماتك في أي وقت</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-4 p-5 rounded-xl bg-action/5 dark:bg-action/10 border border-action/20">
-                <iconify-icon icon="solar:trash-bin-trash-bold" width="24" class="text-action flex-shrink-0 mt-0.5"></iconify-icon>
-                <div>
-                  <h3 class="font-semibold text-gray-900 dark:text-white mb-1">حق الحذف</h3>
-                  <p class="text-gray-600 dark:text-gray-300 text-sm">يمكنك حذف حسابك وجميع بياناتك من صفحة الملف الشخصي</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Cookies -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">7</span>
-              ملفات تعريف الارتباط
-            </h2>
-            <p class="text-gray-600 dark:text-gray-300 leading-8">
-              نستخدم ملفات تعريف الارتباط (Cookies) الضرورية لتشغيل الموقع، مثل حفظ جلسة تسجيل الدخول. قد نستخدم أيضًا أدوات تحليلية لفهم كيفية استخدام الموقع وتحسين تجربتك.
-            </p>
-          </section>
-
-          <!-- Contact -->
-          <section>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-action text-white grid place-items-center text-sm font-bold shadow-lg shadow-primary/25">8</span>
-              تواصل معنا
-            </h2>
-            <p class="text-gray-600 dark:text-gray-300 leading-8">
-              إذا كان لديك أي أسئلة أو استفسارات حول سياسة الخصوصية، يمكنك التواصل معنا عبر البريد الإلكتروني أو من خلال نموذج الاتصال في الموقع.
-            </p>
-          </section>
-
-          <!-- Updates -->
-          <section class="pt-6 border-t border-gray-200 dark:border-white/10">
-            <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5">
-              <iconify-icon icon="solar:info-circle-bold" width="20" class="text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5"></iconify-icon>
-              <p class="text-gray-500 dark:text-gray-400 text-sm leading-7">
-                قد نقوم بتحديث سياسة الخصوصية من وقت لآخر. سنقوم بإعلامك بأي تغييرات جوهرية عبر البريد الإلكتروني أو إشعار على الموقع.
-              </p>
-            </div>
-          </section>
-
+          <%= render "pages/privacy/body_#{privacy_locale}" %>
         </div>
 
         <!-- Back to Home Button -->
         <div class="mt-10 text-center">
           <a href="/" class="inline-flex items-center gap-2 rounded-xl bg-action hover:bg-actionHover text-darkBase font-semibold px-8 py-4 shadow-lg shadow-action/25 transition-all duration-300 hover:scale-105">
             <iconify-icon icon="solar:home-2-bold" width="20"></iconify-icon>
-            العودة للصفحة الرئيسية
+            <%= t("pdpl_pages.privacy.back_home") %>
           </a>
         </div>
       </div>

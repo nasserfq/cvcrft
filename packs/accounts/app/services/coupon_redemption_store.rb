@@ -19,6 +19,10 @@ class CouponRedemptionStore
       end
     end
 
+    def forget_user!(user_id)
+      backend.forget_user!(user_id)
+    end
+
     def reset!
       backend.reset!
     end
@@ -56,6 +60,11 @@ class CouponRedemptionStore
       true
     end
 
+    def forget_user!(user_id)
+      @redemptions.each_value { |user_ids| user_ids.delete(user_id.to_s) }
+      true
+    end
+
     def reset!
       @redemptions.clear
     end
@@ -68,6 +77,11 @@ class CouponRedemptionStore
 
     def redeem!(user_id, code)
       redis.sadd(key(code), user_id.to_s)
+    end
+
+    def forget_user!(user_id)
+      CouponRegistry.all.each { |coupon| redis.srem(key(coupon.code), user_id.to_s) }
+      true
     end
 
     def reset!

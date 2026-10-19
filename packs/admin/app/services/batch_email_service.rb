@@ -70,7 +70,7 @@ class BatchEmailService
 
       { success: true, email: email_data[:email] }
     rescue => e
-      Rails.logger.error "Failed to send email to #{email_data[:email]}: #{e.message}"
+      Rails.logger.error "Failed to send #{email_type} email: #{e.class}: #{e.message}"
       { success: false, email: email_data[:email], error: e.message }
     end
   end

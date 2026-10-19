@@ -1,0 +1,14 @@
+# Labels for the privacy page shell (app/views/pages/privacy.html.erb).
+# The policy text itself lives in app/views/pages/privacy/_body_en.html.erb.
+en:
+  pdpl_pages:
+    privacy:
+      title: "Privacy Policy — Seera"
+      meta_description: "Seera's privacy policy under the Saudi Personal Data Protection Law (PDPL)"
+      badge: "Your privacy comes first"
+      heading_html: "Privacy <span class=\"bg-gradient-to-l from-primary to-action bg-clip-text text-transparent\">Policy</span>"
+      last_updated: "Last updated: %{date}"
+      back_home: "Back to home"
+    terms:
+      privacy_link_html: "Processing of your personal data is governed by our %{link}, which forms part of these terms."
+      privacy_link_text: "Privacy Policy"

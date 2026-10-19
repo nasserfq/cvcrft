@@ -408,6 +408,17 @@
             </h2>
           </div>
           <div class="p-6">
+            <p class="text-gray-600 dark:text-gray-300 text-base mb-3 leading-relaxed">
+              <%= t('pdpl_profile.export_hint') %>
+            </p>
+            <%= link_to export_profile_path,
+                data: { turbo: false },
+                class: "w-full inline-flex items-center justify-center gap-3 px-6 py-4 mb-6 bg-white dark:bg-white/5 border-2 border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98] backdrop-blur-sm" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <%= t('pdpl_profile.export_button') %>
+            <% end %>
             <p class="text-gray-600 dark:text-gray-300 text-base mb-5 leading-relaxed">
               <%= t('profile.danger_warning') %>
             </p>

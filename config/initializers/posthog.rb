@@ -29,8 +29,8 @@ PostHog::Rails.configure do |config|
   # Instrument ActiveJob background jobs
   config.auto_instrument_active_job = true
 
-  # Include user info in exceptions
-  config.capture_user_context = true
+  # No user info in exceptions (PDPL): exceptions are not gated on analytics consent
+  config.capture_user_context = false
 
   # Method to get current user in controllers
   config.current_user_method = :current_user

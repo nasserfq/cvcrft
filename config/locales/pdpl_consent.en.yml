@@ -1,0 +1,7 @@
+# Consent checkbox on the login page (AuthController#send_otp).
+en:
+  pdpl_consent:
+    checkbox_html: "I agree to the %{privacy_link} and the %{terms_link}"
+    privacy_link: "Privacy Policy"
+    terms_link: "Terms of Service"
+    required: "Please agree to the Privacy Policy and Terms of Service to continue"

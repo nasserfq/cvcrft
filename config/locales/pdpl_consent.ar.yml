@@ -1,0 +1,7 @@
+# Consent checkbox on the login page (AuthController#send_otp).
+ar:
+  pdpl_consent:
+    checkbox_html: "أوافق على %{privacy_link} و%{terms_link}"
+    privacy_link: "سياسة الخصوصية"
+    terms_link: "شروط الخدمة"
+    required: "يرجى الموافقة على سياسة الخصوصية وشروط الخدمة للمتابعة"

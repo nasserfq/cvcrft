@@ -33,6 +33,12 @@ class AuthController < ApplicationController
       redirect_to login_path(return_to: return_to) and return
     end
 
+    # PDPL: no code is sent until the user accepts the privacy policy and terms.
+    unless privacy_consent_given?
+      flash[:alert] = t("pdpl_consent.required")
+      redirect_to login_path(return_to: return_to) and return
+    end
+
     begin
       # Generate OTP
       otp_verification = OtpVerification.generate_for(email)
@@ -78,6 +84,7 @@ class AuthController < ApplicationController
 
       # Ensure user is saved
       user.save! if user.changed?
+      record_privacy_consent(user)
 
       sign_in(:user, user)
       Rails.logger.info "User #{user.id} signed in"
@@ -119,6 +126,18 @@ class AuthController < ApplicationController
   end
 
   private
+
+  def privacy_consent_given?
+    params[:privacy_consent] == "1"
+  end
+
+  # The OTP form carries the email form's consent. Links already sitting in
+  # mailboxes have no flag: they still log in, they just record nothing.
+  def record_privacy_consent(user)
+    return unless privacy_consent_given?
+
+    user.update_columns(privacy_accepted_at: Time.current, privacy_policy_version: PrivacyPolicy::VERSION)
+  end
 
   # Only same-site paths: "/x" is fine, "//host" and "/\\host" are not.
   def safe_return_to(path)

@@ -105,6 +105,21 @@
                   placeholder="<%= t('auth.email_placeholder') %>"
                 />
               </div>
+              <div class="flex items-start gap-3">
+                <input
+                  id="privacy_consent"
+                  name="privacy_consent"
+                  type="checkbox"
+                  value="1"
+                  required
+                  class="mt-1 h-4 w-4 shrink-0 rounded border-borderLight dark:border-borderDark text-primary focus:ring-2 focus:ring-primary/40"
+                />
+                <label for="privacy_consent" class="text-sm text-gray-600 dark:text-gray-300 leading-6">
+                  <%= t('pdpl_consent.checkbox_html',
+                        privacy_link: link_to(t('pdpl_consent.privacy_link'), privacy_path, target: "_blank", rel: "noopener", class: "text-primary hover:text-primaryHover dark:text-action underline transition-colors"),
+                        terms_link: link_to(t('pdpl_consent.terms_link'), terms_path, target: "_blank", rel: "noopener", class: "text-primary hover:text-primaryHover dark:text-action underline transition-colors")) %>
+                </label>
+              </div>
               <button 
                 type="submit" 
                 class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primaryHover text-white text-sm font-medium px-4 py-3.5 shadow-glow hover:shadow-lg transition-all"
@@ -124,6 +139,7 @@
               <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
               <%= hidden_field_tag :email, params[:email] %>
               <%= hidden_field_tag :return_to, params[:return_to] %>
+              <%= hidden_field_tag :privacy_consent, "1" %>
               
               <!-- Success Message -->
               <div class="rounded-xl bg-action/10 border border-action/30 p-4">
@@ -165,7 +181,7 @@
         <div class="text-center">
           <p class="text-xs text-gray-500 dark:text-gray-400">
             <%= t('auth.terms_agreement') %>
-            <a href="#" class="text-primary hover:text-primaryHover dark:text-action transition-colors"><%= t('auth.terms_of_service') %></a>
+            <a href="<%= terms_path %>" class="text-primary hover:text-primaryHover dark:text-action transition-colors"><%= t('auth.terms_of_service') %></a>
             <%= t('auth.and') %>
             <a href="<%= privacy_path %>" class="text-primary hover:text-primaryHover dark:text-action transition-colors"><%= t('auth.privacy_policy') %></a>
           </p>

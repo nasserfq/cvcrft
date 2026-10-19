@@ -9,11 +9,10 @@ class SendOtpEmailJob < ApplicationJob
     otp = OtpVerification.find_by(id: otp_verification_id)
     return unless otp # replaced by a newer code before this ran
 
-    email = otp.email
-    Rails.logger.info "Sending OTP email to #{email}"
+    Rails.logger.info "Sending OTP email (otp_verification_id=#{otp.id})"
 
-    SeeraEmail.otp(otp.otp_code).deliver_to(email)
-    Rails.logger.info "OTP email sent successfully to #{email}"
+    SeeraEmail.otp(otp.otp_code).deliver_to(otp.email)
+    Rails.logger.info "OTP email sent (otp_verification_id=#{otp.id})"
   rescue => e
     Rails.logger.error "Error in SendOtpEmailJob: #{e.message}"
     raise e
