@@ -37,7 +37,7 @@
     <meta name="locale" content="<%= current_locale %>">
     <%= yield :head %>
     
-    <%= render 'shared/posthog' %>
+    <%= render 'shared/posthog', banner: false %>
     
     <%# Prevent Turbo from caching pages with user state - refresh on back navigation %>
     <meta name="turbo-cache-control" content="no-cache">
@@ -135,6 +135,7 @@
     -->
   </head>
   <body class="bg-darkBase text-mist selection:bg-gold selection:text-darkBase overflow-x-hidden text-lg">
+    <%= render 'shared/consent_banner' %>
     <%= render 'shared/ambient', fixed: true %>
     <%= render 'layouts/header' %>
     <main id="main" class="sr-app relative">

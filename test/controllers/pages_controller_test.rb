@@ -63,12 +63,13 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "privacy and terms keep the background still so the glass card scrolls smoothly" do
+  test "privacy and terms keep the ambient background moving" do
     [ privacy_url(locale: "ar"), terms_url ].each do |url|
       get url
 
       assert_response :success
-      assert_no_match(/class="sr-(orb[123]|spin)"/, response.body)
+      assert_select "div[aria-hidden=true] .sr-orb1"
+      assert_select "div[aria-hidden=true] svg.sr-spin"
     end
   end
 end
