@@ -8,3 +8,10 @@ data_retention:
   cron: "15 3 * * *"
   class: "DataRetentionJob"
   queue: default
+
+# Auto-apply (packs/job_applications): reads public ATS job feeds, then
+# matches consenting users. Returns at once unless AUTO_APPLY_ENABLED/TESTERS.
+auto_apply_fetch:
+  cron: "30 4 * * *"
+  class: "JobApplications::FetchPostingsJob"
+  queue: default

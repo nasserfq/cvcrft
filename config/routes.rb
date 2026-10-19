@@ -62,6 +62,20 @@ Rails.application.routes.draw do
     end
   end
 
+  # Auto-apply (packs/job_applications), off unless AUTO_APPLY_ENABLED
+  scope :auto_apply, module: :job_applications, as: :auto_apply do
+    get "/", to: "dashboard#show", as: :root
+    patch "preferences", to: "preferences#update", as: :preferences
+    post "token", to: "tokens#create", as: :token
+    delete "token", to: "tokens#destroy"
+    resources :applications, only: [ :destroy ] do
+      member do
+        post :approve
+        post :skip
+      end
+    end
+  end
+
   # Resume routes with nested resources
   resources :resumes do
     resources :work_experiences, only: [ :create, :update, :destroy ]
@@ -189,5 +203,17 @@ Rails.application.routes.draw do
     post "export_pdf", to: "translations#export_pdf", as: :export_pdf_post_translations
     get "pdf_status", to: "translations#pdf_status", as: :pdf_status_translations
     post "redeem_coupon", to: "coupons#redeem"
+
+    # Auto-apply browser extension (packs/job_applications), token auth via X-Seera-Token
+    namespace :extension do
+      namespace :v1 do
+        get "me", to: "me#show"
+        get "profile", to: "profiles#show"
+        get "resume.pdf", to: "resumes#show", as: :resume_pdf, format: false
+        get "applications/next", to: "applications#next"
+        post "applications/:id/answers", to: "applications#answers", as: :application_answers
+        patch "applications/:id", to: "applications#update", as: :application
+      end
+    end
   end
 end

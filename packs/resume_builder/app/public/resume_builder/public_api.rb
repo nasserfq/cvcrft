@@ -28,6 +28,22 @@ module ResumeBuilder
       end
     end
 
+    # Newest finished (non-draft) resume, as {"id"=>..., "title"=>..., "updated_at"=>...}, or nil.
+    def latest_complete(user)
+      resume = user.resumes.not_drafts.order(updated_at: :desc, id: :desc).first
+      resume && { "id" => resume.id, "title" => resume.title.presence || resume.complete_name, "updated_at" => resume.updated_at }
+    end
+
+    # {filename: "Name_CV.pdf", data: "<binary>"} for one of the user's non-draft resumes.
+    # ResumePdfService.generate_pdf returns either the bytes or {path:}.
+    def pdf(user, resume_id)
+      resume = user.resumes.not_drafts.find(resume_id)
+      result = ResumePdfService.generate_pdf(resume)
+      data = result.is_a?(Hash) ? File.binread((result[:path] || result["path"]).to_s) : result.to_s
+      name = (resume.complete_name.presence || resume.title.presence || "resume").gsub(/[^\p{L}\p{N}]+/, "_").gsub(/\A_+|_+\z/, "")
+      { filename: "#{name.presence || 'resume'}_CV.pdf", data: data.b }
+    end
+
     def read(user, resume_id)
       resume = user.resumes.find(resume_id)
 

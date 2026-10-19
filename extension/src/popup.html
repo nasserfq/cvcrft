@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Seera Auto-apply</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="card">
+      <header class="head">
+        <img src="../icons/48.png" alt="" width="28" height="28" />
+        <div>
+          <h1 data-t="title"></h1>
+          <p class="muted small" data-t="tagline"></p>
+        </div>
+      </header>
+
+      <section id="pair" class="section" hidden>
+        <label for="token" class="label" data-t="token_label"></label>
+        <div class="row">
+          <input id="token" type="password" autocomplete="off" spellcheck="false" />
+          <button id="save" class="btn primary" type="button" data-t="save"></button>
+        </div>
+        <p class="muted small" data-t="token_help"></p>
+      </section>
+
+      <section id="paired" class="section" hidden>
+        <div class="row between">
+          <span id="who" class="small"></span>
+          <button id="forget" class="btn ghost small" type="button" data-t="forget"></button>
+        </div>
+        <div class="row between">
+          <span id="state" class="pill"></span>
+          <button id="toggle" class="btn primary" type="button"></button>
+        </div>
+        <p id="today" class="small"></p>
+        <label class="switch">
+          <input id="dryRun" type="checkbox" />
+          <span data-t="dry_run"></span>
+        </label>
+        <p class="muted small" data-t="dry_run_help"></p>
+      </section>
+
+      <p id="message" class="message small" role="status" hidden></p>
+
+      <section class="section">
+        <h2 class="label" data-t="recent"></h2>
+        <ul id="history" class="history"></ul>
+      </section>
+
+      <details class="section">
+        <summary class="small" data-t="advanced"></summary>
+        <label for="origin" class="label" data-t="server"></label>
+        <select id="origin"></select>
+        <a id="dashboard" class="small link" target="_blank" rel="noopener noreferrer" data-t="open_dashboard"></a>
+      </details>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -29,6 +29,99 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_000100) do
     t.index ["metadata"], name: "index_ai_translations_on_metadata", using: :gin
     t.index ["resume_id"], name: "index_ai_translations_on_resume_id"
     t.index ["user_id"], name: "index_ai_translations_on_user_id"
+  end
+
+  create_table "auto_apply_ai_usages", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "day", null: false
+    t.integer "scores", default: 0, null: false
+    t.integer "answers", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "day"], name: "index_auto_apply_ai_usages_on_user_id_and_day", unique: true
+  end
+
+  create_table "auto_apply_applications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "posting_id", null: false
+    t.bigint "resume_id"
+    t.string "status", default: "queued", null: false
+    t.integer "score"
+    t.text "score_reason"
+    t.text "cover_letter"
+    t.text "error"
+    t.jsonb "details", default: {}, null: false
+    t.datetime "started_at"
+    t.datetime "submitted_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["posting_id"], name: "index_auto_apply_applications_on_posting_id"
+    t.index ["user_id", "posting_id"], name: "index_auto_apply_applications_on_user_id_and_posting_id", unique: true
+    t.index ["user_id", "status", "created_at"], name: "idx_on_user_id_status_created_at_e0b13c9802"
+  end
+
+  create_table "auto_apply_employers", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "ats", null: false
+    t.string "identifier", null: false
+    t.string "host"
+    t.string "site"
+    t.string "country"
+    t.boolean "verified", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "last_fetched_at"
+    t.text "last_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ats", "identifier"], name: "index_auto_apply_employers_on_ats_and_identifier", unique: true
+  end
+
+  create_table "auto_apply_postings", force: :cascade do |t|
+    t.bigint "employer_id", null: false
+    t.string "external_id", null: false
+    t.string "title", null: false
+    t.string "location"
+    t.string "country"
+    t.string "url", null: false
+    t.string "apply_url", null: false
+    t.text "description"
+    t.datetime "posted_at"
+    t.datetime "fetched_at", null: false
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["closed_at"], name: "index_auto_apply_postings_on_closed_at"
+    t.index ["employer_id", "external_id"], name: "index_auto_apply_postings_on_employer_id_and_external_id", unique: true
+    t.index ["employer_id"], name: "index_auto_apply_postings_on_employer_id"
+    t.index ["posted_at"], name: "index_auto_apply_postings_on_posted_at"
+  end
+
+  create_table "auto_apply_preferences", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "titles", default: [], null: false, array: true
+    t.string "countries", default: ["SA"], null: false, array: true
+    t.integer "min_score", default: 7, null: false
+    t.integer "daily_cap", default: 10, null: false
+    t.string "mode", default: "review", null: false
+    t.string "linkedin_url"
+    t.datetime "consent_accepted_at"
+    t.string "consent_version"
+    t.boolean "paused", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_auto_apply_preferences_on_user_id", unique: true
+  end
+
+  create_table "auto_apply_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token_digest", null: false
+    t.datetime "last_used_at"
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_digest"], name: "index_auto_apply_tokens_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_auto_apply_tokens_on_user_id"
   end
 
   create_table "certifications", force: :cascade do |t|
@@ -307,6 +400,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_000100) do
 
   add_foreign_key "ai_translations", "resumes"
   add_foreign_key "ai_translations", "users"
+  add_foreign_key "auto_apply_ai_usages", "users", on_delete: :cascade
+  add_foreign_key "auto_apply_applications", "auto_apply_postings", column: "posting_id", on_delete: :cascade
+  add_foreign_key "auto_apply_applications", "users", on_delete: :cascade
+  add_foreign_key "auto_apply_postings", "auto_apply_employers", column: "employer_id", on_delete: :cascade
+  add_foreign_key "auto_apply_preferences", "users", on_delete: :cascade
+  add_foreign_key "auto_apply_tokens", "users", on_delete: :cascade
   add_foreign_key "certifications", "resumes"
   add_foreign_key "coach_chats", "users", on_delete: :cascade
   add_foreign_key "coach_messages", "coach_chats", on_delete: :cascade

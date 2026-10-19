@@ -1,0 +1,10 @@
+{
+  "name": "seera-auto-apply",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/",
+    "check:fixtures": "node scripts/check-fixtures.mjs"
+  }
+}
