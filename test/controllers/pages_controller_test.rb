@@ -9,8 +9,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "html[lang=ar][dir=rtl]"
     assert_includes response.body, "nasser@cvcrft.com"
-    assert_includes response.body, "SDAIA"
     assert_includes response.body, "سدايا"
+    assert_not_includes response.body, "حق تقديم شكوى"
     assert_includes response.body, VERSION_DATE
     assert_includes response.body, PrivacyPolicy::VERSION
     assert_not_includes response.body, "OpenAI"
@@ -24,6 +24,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: /Transfers outside Saudi Arabia/
     assert_includes response.body, "nasser@cvcrft.com"
     assert_includes response.body, "SDAIA"
+    assert_not_includes response.body, "Right to complain"
     assert_includes response.body, VERSION_DATE
     assert_not_includes response.body, "OpenAI"
   end
@@ -49,5 +50,16 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "main a[href=?]", privacy_path
     assert_includes response.body, VERSION_DATE
     assert_not_includes response.body, "OpenAI"
+  end
+
+  test "legal pages render icons inline without the iconify runtime" do
+    [ privacy_url(locale: "ar"), privacy_url(locale: "en"), terms_url ].each do |url|
+      get url
+
+      assert_response :success
+      assert_not_includes response.body, "iconify-icon"
+      assert_not_includes response.body, "cdn.jsdelivr.net/npm/iconify"
+      assert_select "svg[aria-hidden=true]"
+    end
   end
 end

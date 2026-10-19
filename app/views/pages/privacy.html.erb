@@ -17,7 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" /></noscript>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
     <style>
       .glass-card {
         background: rgba(255, 255, 255, 0.8);
@@ -47,7 +46,7 @@
         <!-- Page Header -->
         <div class="text-center mb-12">
           <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-sm font-medium mb-6">
-            <iconify-icon icon="solar:shield-check-bold" width="16"></iconify-icon>
+            <%= seera_icon("solar:shield-check-bold", width: 16) %>
             <%= t("pdpl_pages.privacy.badge") %>
           </div>
           <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -66,7 +65,7 @@
         <!-- Back to Home Button -->
         <div class="mt-10 text-center">
           <a href="/" class="inline-flex items-center gap-2 rounded-xl bg-action hover:bg-actionHover text-darkBase font-semibold px-8 py-4 shadow-lg shadow-action/25 transition-all duration-300 hover:scale-105">
-            <iconify-icon icon="solar:home-2-bold" width="20"></iconify-icon>
+            <%= seera_icon("solar:home-2-bold", width: 20) %>
             <%= t("pdpl_pages.privacy.back_home") %>
           </a>
         </div>
