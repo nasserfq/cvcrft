@@ -1,7 +1,7 @@
 <%# Shows a redirect's alert, such as why generating for a job sent the user here. %>
 <% if flash[:alert].present? %>
-  <div role="alert" class="mb-6 flex items-start gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 text-ink dark:text-mist">
-    <iconify-icon icon="solar:info-circle-linear" width="22" class="shrink-0 text-gold-deep dark:text-gold"></iconify-icon>
-    <p class="text-sm leading-relaxed"><%= flash[:alert] %></p>
+  <div role="alert" class="glass-soft sr-up mb-6 flex items-start gap-3 rounded-2xl px-4 py-3" style="border-color: rgba(214,184,119,0.4); background: rgba(214,184,119,0.1); color: #eef3ee">
+    <iconify-icon icon="solar:info-circle-linear" width="22" class="shrink-0" style="color: #d6b877"></iconify-icon>
+    <p class="m-0 text-[15px] leading-relaxed"><%= flash[:alert] %></p>
   </div>
 <% end %>

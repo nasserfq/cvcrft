@@ -134,9 +134,14 @@
       Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
     -->
   </head>
-  <body class="bg-darkBase text-mist selection:bg-gold selection:text-darkBase overflow-x-hidden text-lg">
+  <body class="relative bg-darkBase text-mist selection:bg-gold selection:text-darkBase overflow-x-hidden text-lg <%= yield(:body_class) %>">
     <%= render 'shared/consent_banner' %>
-    <%= render 'shared/ambient', fixed: true %>
+    <%# Long pages let the ambient scroll with them, as /privacy and /terms do: pinned under a long glass card it is re-blurred on every scroll frame. %>
+    <% if content_for?(:ambient_scrolls) %>
+      <%= render 'shared/ambient' %>
+    <% else %>
+      <%= render 'shared/ambient', fixed: true %>
+    <% end %>
     <%= render 'layouts/header' %>
     <main id="main" class="sr-app relative">
       <%= yield %>

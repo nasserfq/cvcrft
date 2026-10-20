@@ -459,6 +459,7 @@ main.sr-app { padding-top: 6rem; }
 @keyframes sr-riseUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
 .sr-app-long > * { animation-name: sr-riseUp; }
 .sr-app-long > main { animation: none; }
+.sr-app-long .sr-app > * { animation-name: sr-riseUp; }
 .sr-app-long > main > div > :first-child { animation: sr-riseUp 1s cubic-bezier(.16,1,.3,1) .24s backwards; }
 /* Primary and gold buttons get the landing's shine sweep. */
 :is(a, button).bg-primary,

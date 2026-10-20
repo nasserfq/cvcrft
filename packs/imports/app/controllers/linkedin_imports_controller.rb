@@ -1,4 +1,5 @@
 class LinkedinImportsController < ApplicationController
+  include CreditsUpsell
   before_action :authenticate_user!
   before_action :set_linkedin_import, only: [ :status, :show, :update, :destroy, :download_pdf, :save_to_cv ]
 
@@ -25,8 +26,12 @@ class LinkedinImportsController < ApplicationController
       return reject_upload("حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت", :unprocessable_entity)
     end
 
-    unless current_user.usage_limits.consume!(:document_ai)
-      return reject_upload("لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", :too_many_requests)
+    # Free allowance first, then 1 credit each while billing is on
+    charge_key = SecureRandom.uuid
+    charge = Billing::UsageGate.allow!(current_user, :document_ai, key: charge_key)
+    if charge == :blocked
+      return reject_upload("لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", :too_many_requests,
+                           limit_reached: true, **credits_upsell)
     end
 
     begin
@@ -44,13 +49,14 @@ class LinkedinImportsController < ApplicationController
 
       if @linkedin_import.save
         # Queue the background job for AI processing
-        LinkedinImportJob.perform_async(@linkedin_import.id)
+        LinkedinImportJob.perform_async(@linkedin_import.id, *(charge_key if charge == :credit))
 
         respond_to do |format|
           format.html { redirect_to linkedin_import_status_path(@linkedin_import) }
           format.json { render json: { success: true, id: @linkedin_import.id, status_url: linkedin_import_status_path(@linkedin_import, format: :json) } }
         end
       else
+        refund_import(charge, charge_key)
         respond_to do |format|
           format.html do
             flash[:alert] = "Failed to create import: #{@linkedin_import.errors.full_messages.join(', ')}"
@@ -60,6 +66,7 @@ class LinkedinImportsController < ApplicationController
         end
       end
     rescue LinkedinPdfParserService::LinkedinPdfParseError => e
+      refund_import(charge, charge_key)
       respond_to do |format|
         format.html do
           flash[:alert] = "Failed to parse PDF: #{e.message}"
@@ -144,13 +151,18 @@ class LinkedinImportsController < ApplicationController
 
   private
 
-  def reject_upload(message, status)
+  # Gives the credit back when the import it paid for didn't start.
+  def refund_import(charge, key)
+    Billing::UsageGate.refund!(current_user, :document_ai, key: key) if charge == :credit
+  end
+
+  def reject_upload(message, status, **extra)
     respond_to do |format|
       format.html do
         flash[:alert] = message
         redirect_to linkedin_import_path
       end
-      format.json { render json: { success: false, error: message }, status: status }
+      format.json { render json: { success: false, error: message, **extra }, status: status }
     end
   end
 

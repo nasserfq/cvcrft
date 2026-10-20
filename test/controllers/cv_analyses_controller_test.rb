@@ -68,6 +68,14 @@ class CvAnalysesControllerTest < ActionDispatch::IntegrationTest
     assert json_response["error"].present?
   end
 
+  test "missing file error follows the requested locale" do
+    post cv_analysis_path, params: { locale: "en" }, as: :json
+    assert_equal "Please upload a PDF file", JSON.parse(response.body)["error"]
+
+    post cv_analysis_path, params: { locale: "ar" }, as: :json
+    assert_equal "الرجاء رفع ملف PDF", JSON.parse(response.body)["error"]
+  end
+
   # ============================================
   # SHOW ACTION TESTS
   # ============================================

@@ -1,0 +1,18 @@
+en:
+  ux_overage:
+    will_use_credit: "This will use 1 credit"
+    profile:
+      then_credit_each: "When the free uses run out, translations, job-based CVs and CV imports cost 1 credit each. Your balance: %{count} credits."
+    translations:
+      summary_translation:
+        limit_reached: "You've used all %{max} professional summary translations available."
+        no_credits: "You've used your %{max} free professional summary translations and have no credits left. Each extra one costs 1 credit."
+      jobs_translation:
+        limit_reached: "You've used all %{max} job description translations available."
+        no_credits: "You've used your %{max} free job description translations and have no credits left. Each extra one costs 1 credit."
+  billing:
+    reasons:
+      overage_summary_translation: "Professional summary translation"
+      overage_jobs_translation: "Job description translation"
+      overage_job_based_generation: "Job-based CV generation"
+      overage_document_ai: "CV import"

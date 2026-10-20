@@ -1,0 +1,56 @@
+<%# Confirmation dialog for destructive actions, driven by confirm_delete_controller.js.
+    Render it inside an element with data-controller="confirm-delete". %>
+<style>
+  .sr-confirm-dialog::backdrop { background: rgba(2, 12, 7, 0.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .sr-confirm-dialog[open] { animation: sr-confirm-in .18s cubic-bezier(.16,1,.3,1); }
+  @keyframes sr-confirm-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .sr-confirm-dialog[open] { animation: none; } }
+</style>
+<dialog class="sr-confirm-dialog m-auto w-[calc(100%-2rem)] max-w-md p-0 bg-transparent text-inherit"
+        dir="<%= text_direction %>"
+        aria-labelledby="sr-confirm-title"
+        aria-describedby="sr-confirm-body"
+        data-confirm-delete-target="dialog"
+        data-action="click->confirm-delete#backdropClick close->confirm-delete#close">
+  <form method="dialog"
+        class="glass rounded-[28px] p-6 sm:p-7" style="background: linear-gradient(155deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03)), rgba(11,26,19,0.9); color: #eef3ee"
+        data-action="submit->confirm-delete#confirm">
+    <div class="flex items-start gap-4">
+      <span class="glass-soft shrink-0 flex items-center justify-center w-11 h-11 rounded-[14px]" style="color: #fca5a5; background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.32)" aria-hidden="true">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </span>
+      <div class="min-w-0 flex-1">
+        <h2 id="sr-confirm-title" class="m-0 text-[19px] font-semibold leading-snug" data-confirm-delete-target="title"></h2>
+        <p id="sr-confirm-body" class="mt-2 mb-0 text-[15px] leading-relaxed whitespace-pre-line" style="color: rgba(238,243,238,0.72)" data-confirm-delete-target="body"></p>
+      </div>
+    </div>
+
+    <div class="mt-5" hidden data-confirm-delete-target="phraseField">
+      <label for="sr-confirm-phrase"
+             class="block text-sm font-medium mb-2" style="color: rgba(238,243,238,0.85)"
+             data-confirm-delete-target="phraseLabel"
+             data-template="<%= t('ux_confirm.type_to_confirm', phrase: '%{phrase}') %>"></label>
+      <input id="sr-confirm-phrase" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false"
+             class="sr-mono glass-soft w-full min-h-[48px] px-4 py-3 rounded-2xl text-base focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400" style="color: #eef3ee; border-color: rgba(248,113,113,0.4)"
+             data-confirm-delete-target="phraseInput"
+             data-action="input->confirm-delete#checkPhrase">
+    </div>
+
+    <div class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+      <button type="button"
+              data-confirm-delete-cancel
+              data-action="confirm-delete#cancel"
+              class="sr-btn glass-soft min-h-[48px] px-5 rounded-2xl text-[15px] font-medium cursor-pointer" style="color: #eef3ee">
+        <%= t('ux_confirm.cancel') %>
+      </button>
+      <button type="submit"
+              data-confirm-delete-target="confirmButton"
+              data-default-label="<%= t('ux_confirm.delete') %>"
+              class="sr-btn min-h-[48px] px-5 rounded-2xl text-[15px] font-semibold bg-red-600 hover:bg-red-500 text-white border-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 18px 40px -18px rgba(220,38,38,0.6)">
+        <%= t('ux_confirm.delete') %>
+      </button>
+    </div>
+  </form>
+</dialog>

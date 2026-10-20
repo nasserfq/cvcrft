@@ -23,7 +23,7 @@ const EditableField = ({ value, onChange, placeholder, className = "", multiline
   const textAlign = center ? "center" : "left";
   const widthClass = inline ? "" : "w-full";
   const paddingClass = inline ? "px-0" : "px-1";
-  const baseClassName = `bg-transparent border-none outline-none focus:bg-yellow-50 transition-colors rounded ${paddingClass} ${widthClass} ${bold ? "font-bold" : ""} ${className}`;
+  const baseClassName = `bg-transparent border-none transition-colors rounded-lg hover:bg-white/[0.04] focus:bg-white/[0.06] max-sm:!text-base ${paddingClass} ${widthClass} ${bold ? "font-bold" : ""} ${className}`;
 
   if (multiline) {
     return (
@@ -88,7 +88,7 @@ const EditableBullet = ({ value, onChange, onRemove, onAddAfter }) => {
 
   return (
     <div className="flex items-start gap-2 group">
-      <span className="text-slate-600 mt-0.5">•</span>
+      <span className="text-mist/70 mt-0.5">•</span>
       <textarea
         ref={textareaRef}
         value={localValue}
@@ -97,12 +97,12 @@ const EditableBullet = ({ value, onChange, onRemove, onAddAfter }) => {
         dir="ltr"
         rows={1}
         placeholder="Add responsibility..."
-        className="flex-1 bg-transparent border-none outline-none focus:bg-yellow-50 transition-colors rounded px-1 resize-none overflow-hidden"
+        className="flex-1 bg-transparent border-none transition-colors rounded-lg px-1 resize-none overflow-hidden hover:bg-white/[0.04] focus:bg-white/[0.06] max-sm:!text-base"
         style={{ textAlign: "left", minHeight: "1.5rem" }}
       />
       <button
         onClick={onRemove}
-        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"
+        className="shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-xl sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-opacity"
         title="Remove"
       >
         ×
@@ -114,8 +114,8 @@ const EditableBullet = ({ value, onChange, onRemove, onAddAfter }) => {
 // Section header component
 const SectionHeader = ({ title }) => (
   <div className="mb-3">
-    <h2 className="text-lg font-bold text-slate-900 tracking-wide">{title}</h2>
-    <hr className="border-slate-400" />
+    <h2 className="text-lg font-semibold text-gold tracking-wide">{title}</h2>
+    <hr className="border-0 h-px bg-gradient-to-r from-gold/50 via-white/10 to-transparent" />
   </div>
 );
 
@@ -373,9 +373,9 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
   return (
     <div className="max-w-4xl mx-auto">
       {/* Toolbar */}
-      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-slate-200 py-3 px-4 mb-6 flex items-center justify-between z-10">
+      <div className="glass sticky top-3 z-10 rounded-[24px] py-3 px-4 mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-mist/55">
             {saving ? (
               <span className="flex items-center gap-2">
                 <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -394,7 +394,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
         <button
           onClick={handleSaveToResume}
           disabled={savingToResume}
-          className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 disabled:bg-slate-300 transition-all flex items-center gap-2"
+          className="sr-btn sr-primary min-h-[48px] px-6 rounded-2xl font-semibold text-[15px] shadow-glow disabled:opacity-50 flex items-center gap-2"
         >
           {savingToResume ? (
             <>
@@ -416,24 +416,24 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
       </div>
 
       {/* CV Preview/Editor - Looks like actual PDF */}
-      <div className="bg-white shadow-lg rounded-lg p-8 min-h-screen" dir="ltr">
+      <div className="glass rounded-[32px] p-5 sm:p-8 min-h-screen text-mist" dir="ltr">
         {/* Header */}
         <div className="text-center mb-6">
           <EditableField
             value={data.complete_name}
             onChange={(v) => updateField("complete_name", v)}
             placeholder="Your Full Name"
-            className="text-2xl text-slate-900"
+            className="text-2xl text-mist"
             bold
             center
           />
-          <div className="text-sm text-slate-600 mt-1 flex items-center justify-center flex-wrap">
+          <div className="text-sm text-mist/70 mt-1 flex items-center justify-center flex-wrap">
             <span
               contentEditable
               suppressContentEditableWarning
               dir="ltr"
               onBlur={(e) => updateField("email", e.target.innerText)}
-              className="outline-none focus:bg-yellow-50"
+              className="outline-none"
             >{data.email || "email@example.com"}</span>
             <span className="px-2">|</span>
             <span
@@ -441,7 +441,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
               suppressContentEditableWarning
               dir="ltr"
               onBlur={(e) => updateField("phone_number", e.target.innerText)}
-              className="outline-none focus:bg-yellow-50"
+              className="outline-none"
             >{data.phone_number || "+1234567890"}</span>
             <span className="px-2">|</span>
             <span
@@ -449,7 +449,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
               suppressContentEditableWarning
               dir="ltr"
               onBlur={(e) => updateField("city", e.target.innerText)}
-              className="outline-none focus:bg-yellow-50"
+              className="outline-none"
             >{data.city || "City"}</span>
             <span>, </span>
             <span
@@ -457,7 +457,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
               suppressContentEditableWarning
               dir="ltr"
               onBlur={(e) => updateField("country", e.target.innerText)}
-              className="outline-none focus:bg-yellow-50"
+              className="outline-none"
             >{data.country || "Country"}</span>
           </div>
         </div>
@@ -469,7 +469,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
             value={data.professional_summary}
             onChange={(v) => updateField("professional_summary", v)}
             placeholder="Write a professional summary..."
-            className="text-sm text-slate-700 leading-relaxed"
+            className="text-sm text-mist/70 leading-relaxed"
             multiline
           />
         </div>
@@ -485,11 +485,11 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                     value={edu.degree}
                     onChange={(v) => updateEducation(index, "degree", v)}
                     placeholder="Degree"
-                    className="text-sm text-slate-900"
+                    className="text-sm text-mist"
                     bold
                   />
                 </div>
-                <div className="text-sm text-slate-600 flex items-center shrink-0">
+                <div className="text-sm text-mist/70 flex items-center shrink-0">
                   {(edu.start_date || edu.end_date) && (
                     <>
                       <EditableField
@@ -517,7 +517,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                   )}
                   <button
                     onClick={() => removeEducation(index)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none ml-2"
+                    className="shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-xl sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-opacity text-lg leading-none ms-2"
                     title="Remove education"
                   >
                     ×
@@ -528,13 +528,13 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                 value={edu.institution}
                 onChange={(v) => updateEducation(index, "institution", v)}
                 placeholder="University/Institution Name"
-                className="text-sm text-slate-600"
+                className="text-sm text-mist/70"
               />
             </div>
           ))}
           <button
             onClick={addEducation}
-            className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1 mt-2"
+            className="text-sm text-primary-soft hover:text-mist flex items-center gap-1 mt-2 min-h-[44px] px-1 rounded-xl transition-colors"
           >
             <span>+</span> Add Education
           </button>
@@ -551,11 +551,11 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                     value={exp.job_title}
                     onChange={(v) => updateWorkExperience(expIndex, "job_title", v)}
                     placeholder="Job Title"
-                    className="text-sm text-slate-900"
+                    className="text-sm text-mist"
                     bold
                   />
                 </div>
-                <div className="text-sm text-slate-600 flex items-center shrink-0">
+                <div className="text-sm text-mist/70 flex items-center shrink-0">
                   <EditableField
                     value={exp.start_date}
                     onChange={(v) => updateWorkExperience(expIndex, "start_date", v)}
@@ -578,7 +578,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                   />
                   <button
                     onClick={() => removeWorkExperience(expIndex)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none ml-2"
+                    className="shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-xl sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-opacity text-lg leading-none ms-2"
                     title="Remove experience"
                   >
                     ×
@@ -589,7 +589,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                 value={exp.company}
                 onChange={(v) => updateWorkExperience(expIndex, "company", v)}
                 placeholder="Company Name"
-                className="text-sm text-slate-600"
+                className="text-sm text-mist/70"
               />
               <div className="mt-2 space-y-1">
                 {(exp.responsibilities || []).map((resp, respIndex) => (
@@ -603,7 +603,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                 ))}
                 <button
                   onClick={() => addResponsibility(expIndex, (exp.responsibilities || []).length - 1)}
-                  className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1 ml-4"
+                  className="text-sm text-mist/55 hover:text-mist flex items-center gap-1 ms-4 min-h-[44px]"
                 >
                   <span>+</span> Add bullet point
                 </button>
@@ -612,7 +612,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
           ))}
           <button
             onClick={addWorkExperience}
-            className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1 mt-2"
+            className="text-sm text-primary-soft hover:text-mist flex items-center gap-1 mt-2 min-h-[44px] px-1 rounded-xl transition-colors"
           >
             <span>+</span> Add Work Experience
           </button>
@@ -625,23 +625,23 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
             <div key={index} className="mb-3 group">
               <div className="flex justify-between items-start">
                 <div className="text-sm flex-1">
-                <div className="font-bold text-slate-900">
+                <div className="font-bold text-mist">
                   <span
                     contentEditable
                     suppressContentEditableWarning
                     dir="ltr"
                     onBlur={(e) => updateSkillGroup(index, "category", e.target.innerText)}
-                    className="outline-none focus:bg-yellow-50"
+                    className="outline-none"
                     style={{ minWidth: '20px', display: 'inline-block' }}
                   >{skillGroup.category || "Category"}</span>:
                 </div>
-                <div className="text-slate-600 ml-4">
+                <div className="text-mist/70 ms-4">
                   <textarea
                     value={(skillGroup.skill_names || []).join(", ")}
                     onChange={(e) => updateSkillGroup(index, "skill_names", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
                     placeholder="Skill 1, Skill 2, Skill 3"
                     dir="ltr"
-                    className="w-full bg-transparent border-none outline-none focus:bg-yellow-50 resize-none"
+                    className="w-full bg-transparent border-none rounded-lg resize-none hover:bg-white/[0.04] focus:bg-white/[0.06] max-sm:!text-base"
                     style={{ padding: '0', margin: '0' }}
                     rows={2}
                   />
@@ -649,7 +649,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
               </div>
               <button
                 onClick={() => removeSkillGroup(index)}
-                className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none ml-2"
+                className="shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-xl sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-opacity text-lg leading-none ms-2"
                 title="Remove skill group"
               >
                 ×
@@ -659,7 +659,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
           ))}
           <button
             onClick={addSkillGroup}
-            className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1 mt-2"
+            className="text-sm text-primary-soft hover:text-mist flex items-center gap-1 mt-2 min-h-[44px] px-1 rounded-xl transition-colors"
           >
             <span>+</span> Add Skill Category
           </button>
@@ -676,7 +676,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                     value={cert.name}
                     onChange={(v) => updateCertification(index, "name", v)}
                     placeholder="Certification Name"
-                    className="text-sm text-slate-900"
+                    className="text-sm text-mist"
                     bold
                     inline
                   />
@@ -684,7 +684,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                     value={cert.organization || ""}
                     onChange={(v) => updateCertification(index, "organization", v)}
                     placeholder="Organization"
-                    className="text-sm text-slate-600"
+                    className="text-sm text-mist/70"
                     inline
                   />
                 </div>
@@ -693,12 +693,12 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                     value={cert.date || ""}
                     onChange={(v) => updateCertification(index, "date", v)}
                     placeholder="Date"
-                    className="text-sm text-slate-600 shrink-0"
+                    className="text-sm text-mist/70 shrink-0"
                     inline
                   />
                   <button
                     onClick={() => removeCertification(index)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none"
+                    className="shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-xl sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-opacity text-lg leading-none"
                     title="Remove certification"
                   >
                     ×
@@ -709,7 +709,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
           ))}
           <button
             onClick={addCertification}
-            className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1 mt-2"
+            className="text-sm text-primary-soft hover:text-mist flex items-center gap-1 mt-2 min-h-[44px] px-1 rounded-xl transition-colors"
           >
             <span>+</span> Add Certification
           </button>
@@ -725,7 +725,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                   value={lang.language}
                   onChange={(v) => updateLanguage(index, "language", v)}
                   placeholder="Language"
-                  className="text-sm text-slate-900"
+                  className="text-sm text-mist"
                   bold
                   inline
                 />
@@ -734,12 +734,12 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
                     value={lang.proficiency}
                     onChange={(v) => updateLanguage(index, "proficiency", v)}
                     placeholder="Fluent"
-                    className="text-sm text-slate-600"
+                    className="text-sm text-mist/70"
                     inline
                   />
                   <button
                     onClick={() => removeLanguage(index)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity text-lg leading-none"
+                    className="shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-xl sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-opacity text-lg leading-none"
                     title="Remove language"
                   >
                     ×
@@ -750,7 +750,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
           ))}
           <button
             onClick={addLanguage}
-            className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1 mt-2"
+            className="text-sm text-primary-soft hover:text-mist flex items-center gap-1 mt-2 min-h-[44px] px-1 rounded-xl transition-colors"
           >
             <span>+</span> Add Language
           </button>

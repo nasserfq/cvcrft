@@ -58,14 +58,14 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
 
  if (loading) {
   return (
-   <div className="bg-gradient-to-br from-emerald-50 to-primary/5 rounded-xl shadow-lg border border-emerald-200 p-6 mb-6">
+   <div className="glass sr-up rounded-[28px] p-5 sm:p-6 mb-6 text-mist">
     <div className="flex items-center justify-center h-64">
      <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <div className="animate-spin rounded-full h-12 w-12 border-2 border-white/10 border-t-gold mx-auto mb-4"></div>
+      <h3 className="text-lg font-semibold text-mist mb-2">
        Loading PDF Preview
       </h3>
-      <p className="text-gray-600">Please wait while we prepare your CV...</p>
+      <p className="text-mist/70">Please wait while we prepare your CV...</p>
      </div>
     </div>
    </div>
@@ -74,11 +74,11 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
 
  if (error) {
   return (
-   <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl shadow-lg border border-red-200 p-6 mb-6">
+   <div className="glass sr-up rounded-[28px] p-5 sm:p-6 mb-6 text-mist">
     <div className="text-center py-8">
-     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+     <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
       <svg
-       className="w-8 h-8 text-red-600"
+       className="w-8 h-8 text-red-300"
        fill="none"
        stroke="currentColor"
        viewBox="0 0 24 24"
@@ -91,25 +91,25 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
        />
       </svg>
      </div>
-     <h3 className="text-lg font-semibold text-red-800 mb-2">
+     <h3 className="text-lg font-semibold text-red-300 mb-2">
       PDF Preview Error
      </h3>
-     <p className="text-red-600 mb-4">{error}</p>
-     <p className="text-gray-600">Unable to display PDF preview</p>
+     <p className="text-red-300 mb-4">{error}</p>
+     <p className="text-mist/70">Unable to display PDF preview</p>
     </div>
    </div>
   );
  }
 
  return (
-  <div className="bg-gradient-to-br from-emerald-50 to-primary/5 rounded-xl shadow-lg border border-emerald-200 p-6 mb-6">
+  <div className="glass sr-up rounded-[28px] p-5 sm:p-6 mb-6 text-mist">
    {/* Header with Success Animation */}
    <div className="flex items-center justify-between mb-6">
-    <div className="flex items-center space-x-3">
-     <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
+    <div className="flex items-center gap-3">
+     <div className="glass-soft flex items-center justify-center w-12 h-12 rounded-[16px]">
       <div className="animate-pulse">
        <svg
-        className="w-6 h-6 text-green-600"
+        className="w-6 h-6 text-primary-soft"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -124,20 +124,20 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
       </div>
      </div>
      <div>
-      <h2 className="text-2xl font-bold text-gray-900">
+      <h2 className="text-2xl font-semibold text-mist">
        CV Generated Successfully!
       </h2>
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-mist/70">
        Your professional CV is ready for download and preview
       </p>
      </div>
     </div>
 
     {/* Action Buttons */}
-    <div className="flex space-x-3">
+    <div className="flex flex-wrap gap-3">
      <button
       onClick={handleDownload}
-      className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2"
+      className="sr-btn sr-primary min-h-[48px] px-6 rounded-2xl font-semibold text-[15px] shadow-glow flex items-center gap-2"
      >
       <svg
        className="w-5 h-5"
@@ -156,7 +156,7 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
      </button>
      <button
       onClick={handleOpenInNewTab}
-      className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2"
+      className="sr-btn glass-soft text-mist min-h-[48px] px-6 rounded-2xl font-semibold text-[15px] flex items-center gap-2"
      >
       <svg
        className="w-5 h-5"
@@ -177,14 +177,14 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
    </div>
 
    {/* PDF Preview Container */}
-   <div className="bg-white rounded-lg shadow-inner border border-gray-200 overflow-hidden">
+   <div className="rounded-[22px] border border-white/10 bg-white/[0.04] overflow-hidden">
     {/* PDF Header */}
-    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+    <div className="px-4 sm:px-6 py-4 border-b border-white/10">
      <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-3">
-       <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
+      <div className="flex items-center gap-3">
+       <div className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center">
         <svg
-         className="w-5 h-5 text-red-600"
+         className="w-5 h-5 text-red-300"
          fill="currentColor"
          viewBox="0 0 20 20"
         >
@@ -196,17 +196,17 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
         </svg>
        </div>
        <div>
-        <h3 className="font-semibold text-gray-900">
+        <h3 className="font-semibold text-mist">
          {filename || "generated_cv.pdf"}
         </h3>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-mist/55">
          {fileSize ? `${(fileSize / 1024).toFixed(1)} KB` : "Unknown size"} •
          PDF Document
         </p>
        </div>
       </div>
-      <div className="flex items-center space-x-2">
-       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <div className="flex items-center gap-2">
+       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary-soft">
         ✓ Ready
        </span>
       </div>
@@ -224,11 +224,11 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
       onLoad={() => setLoading(false)}
       className="transition-opacity duration-300"
      >
-      <div className="flex items-center justify-center h-full bg-gray-50">
+      <div className="flex items-center justify-center h-full bg-white/[0.03]">
        <div className="text-center p-8">
-        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
          <svg
-          className="w-8 h-8 text-gray-400"
+          className="w-8 h-8 text-mist/55"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -241,18 +241,18 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
           />
          </svg>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-mist mb-2">
          PDF Preview Not Available
         </h3>
-        <p className="text-gray-600 mb-4">
+        <p className="text-mist/70 mb-4">
          Your browser doesn't support PDF preview
         </p>
         <button
          onClick={handleDownload}
-         className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+         className="sr-btn sr-primary inline-flex items-center gap-2 min-h-[44px] px-5 rounded-2xl font-semibold text-[15px] shadow-glow"
         >
          <svg
-          className="w-4 h-4 mr-2"
+          className="w-4 h-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -273,11 +273,11 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
    </div>
 
    {/* Success Message */}
-   <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-    <div className="flex items-start space-x-3">
+   <div className="mt-6 p-4 bg-primary/10 border border-primary/30 rounded-[20px]">
+    <div className="flex items-start gap-3">
      <div className="flex-shrink-0">
       <svg
-       className="w-5 h-5 text-green-600"
+       className="w-5 h-5 text-primary-soft"
        fill="currentColor"
        viewBox="0 0 20 20"
       >
@@ -289,10 +289,10 @@ const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
       </svg>
      </div>
      <div>
-      <h4 className="text-sm font-semibold text-green-800">
+      <h4 className="text-sm font-semibold text-primary-soft">
        PDF Auto-Preview Active
       </h4>
-      <p className="text-sm text-green-700 mt-1">
+      <p className="text-sm text-primary-soft mt-1">
        Your CV is automatically displayed above. You can scroll, zoom, download,
        or open in a new tab using the controls above.
       </p>

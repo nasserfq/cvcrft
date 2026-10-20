@@ -94,7 +94,7 @@ export default function LocationCombobox({ value, onChange, onPick, options, cla
           setQuery(null);
           setOpen((o) => !o);
         }}
-        className="absolute inset-y-0 end-0 flex items-center px-3 text-gray-400 dark:text-white/50"
+        className="absolute inset-y-0 end-0 flex items-center px-3 text-mist/50 hover:text-mist transition-colors"
       >
         <svg className={`w-5 h-5 transition-transform ${showList ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
@@ -105,7 +105,7 @@ export default function LocationCombobox({ value, onChange, onPick, options, cla
           id={listId}
           ref={listRef}
           role="listbox"
-          className="absolute z-30 mt-2 w-full max-h-64 overflow-auto rounded-xl border border-borderLight dark:border-white/10 bg-white dark:bg-[#0f2219] p-1 shadow-xl"
+          className="absolute z-30 mt-2 w-full max-h-64 overflow-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0f2219]/95 backdrop-blur-xl p-1.5"
         >
           {results.map((option, i) => {
             const primary = isArabic ? option.ar : option.value;
@@ -123,15 +123,15 @@ export default function LocationCombobox({ value, onChange, onPick, options, cla
                   pick(option);
                 }}
                 onMouseEnter={() => setActive(i)}
-                className={`flex items-baseline justify-between gap-3 rounded-lg px-3 py-2.5 cursor-pointer ${
-                  i === active ? "bg-primary/15 text-gray-900 dark:text-white" : "text-gray-700 dark:text-white/85"
+                className={`flex min-h-[44px] items-center justify-between gap-3 rounded-xl px-3 py-2.5 cursor-pointer transition-colors ${
+                  i === active ? "bg-primary/20 text-mist" : "text-mist/85"
                 }`}
               >
                 <span>
                   {primary}
-                  {place && <span className="text-xs text-gray-500 dark:text-white/45">{isArabic ? "، " : ", "}{place}</span>}
+                  {place && <span className="text-xs text-mist/50">{isArabic ? "، " : ", "}{place}</span>}
                 </span>
-                {secondary !== primary && <span className="text-xs text-gray-500 dark:text-white/45" dir="auto">{secondary}</span>}
+                {secondary !== primary && <span className="text-xs text-mist/50" dir="auto">{secondary}</span>}
               </li>
             );
           })}

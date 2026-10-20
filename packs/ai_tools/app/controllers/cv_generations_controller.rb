@@ -1,5 +1,5 @@
 class CvGenerationsController < ApplicationController
-  layout false, only: [ :new ]
+  include CreditsUpsell
 
   before_action :authenticate_user!
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
@@ -78,19 +78,20 @@ class CvGenerationsController < ApplicationController
     if current_cv_count >= max_cv_generations
       Rails.logger.warn "User #{current_user.id} has reached overall CV generation limit (#{current_cv_count}/#{max_cv_generations})"
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, alert: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً." }
-        format.json { render json: { error: "لقد وصلت إلى الحد الأقصى من إنشاء السير الذاتية (#{max_cv_generations}). يرجى المحاولة لاحقاً.", limit_reached: true }, status: :unprocessable_entity }
+        format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.overall_limit_reached", max: max_cv_generations) }
+        format.json { render json: { error: t("ux_i18n2.cv_generations.overall_limit_reached", max: max_cv_generations), limit_reached: true }, status: :unprocessable_entity }
       end
       return
     end
 
     # Check job-based generation limit (only count completed)
+    # Free allowance first, then 1 credit each while billing is on
     limits = current_user.usage_limits
-    unless limits.can_generate_job_based?
+    unless Billing::UsageGate.available?(current_user, :job_based_generation)
       Rails.logger.warn "User #{current_user.id} has reached job-based generation limit (#{limits.job_based_generations_used}/#{limits.max_job_based_generations || '∞'})"
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{limits.max_job_based_generations || '∞'})." }
-        format.json { render json: { error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة (#{limits.max_job_based_generations || '∞'}).", limit_reached: true, remaining: 0 }, status: :too_many_requests }
+        format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.job_credits_used_with_max", max: limits.max_job_based_generations || "∞") }
+        format.json { render json: { error: t("ux_i18n2.cv_generations.job_credits_used_with_max", max: limits.max_job_based_generations || "∞"), limit_reached: true, remaining: 0, **credits_upsell }, status: :too_many_requests }
       end
       return
     end
@@ -112,10 +113,12 @@ class CvGenerationsController < ApplicationController
     # resume_id comes from the request: only the user's own resumes may be used.
     resume_id = current_user.resumes.find(cv_generation_params[:resume_id]).id
 
-    unless limits.consume!(:job_based_generation)
+    charge_key = SecureRandom.uuid
+    charge = Billing::UsageGate.allow!(current_user, :job_based_generation, key: charge_key)
+    if charge == :blocked
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة." }
-        format.json { render json: { error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة.", limit_reached: true, remaining: 0 }, status: :too_many_requests }
+        format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.job_credits_used") }
+        format.json { render json: { error: t("ux_i18n2.cv_generations.job_credits_used"), limit_reached: true, remaining: 0, **credits_upsell }, status: :too_many_requests }
       end
       return
     end
@@ -134,8 +137,9 @@ class CvGenerationsController < ApplicationController
         max_tokens: (cv_generation_params[:max_tokens].presence || 15000).to_i.clamp(1000, 15000),
         ats_template: ats_template,
         force_pdf_regeneration: true,  # Always regenerate PDF when user creates a new CV
-        source: "job_description"  # Track the source for limit counting
-      }
+        source: "job_description",  # Track the source for limit counting
+        overage_key: overage_key(charge, charge_key)
+      }.compact
     )
 
     if result[:status] == "queued"
@@ -152,6 +156,7 @@ class CvGenerationsController < ApplicationController
         end
       end
     else
+      refund_generation(charge, charge_key)
       respond_to do |format|
         format.html { render :new, status: :unprocessable_entity, alert: "Failed to queue CV generation job" }
         format.json { render json: { error: "Failed to queue CV generation job" }, status: :unprocessable_entity }
@@ -162,14 +167,20 @@ class CvGenerationsController < ApplicationController
   def destroy
     @cv_generation.destroy
     respond_to do |format|
-      format.html { redirect_to resumes_path, notice: "تم حذف السيرة المولدة بنجاح" }
+      format.html { redirect_to resumes_path, notice: t("ux_i18n2.cv_generations.deleted") }
       format.json { head :no_content }
     end
   end
 
   def retry
-    if @cv_generation.status == "failed" && !current_user.usage_limits.consume!(:job_based_generation)
-      return redirect_to @cv_generation, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة."
+    if @cv_generation.status == "failed"
+      charge_key = "retry:#{@cv_generation.id}:#{SecureRandom.uuid}"
+      charge = charge_generation(charge_key)
+      return redirect_to @cv_generation, alert: t("ux_i18n2.cv_generations.job_credits_used") if charge == :blocked
+
+      # The retried job runs with the generation's metadata as its options.
+      metadata = (@cv_generation.metadata || {}).except("overage_key")
+      @cv_generation.update!(metadata: metadata.merge({ "overage_key" => overage_key(charge, charge_key) }.compact))
     end
 
     user_id = @cv_generation.user_id
@@ -178,6 +189,7 @@ class CvGenerationsController < ApplicationController
     result = service.retry_cv_generation(@cv_generation.id)
 
     if result[:error]
+      refund_generation(charge, charge_key)
       redirect_to @cv_generation, alert: result[:error]
     else
       redirect_to @cv_generation, notice: result[:message]
@@ -233,9 +245,9 @@ class CvGenerationsController < ApplicationController
     # Check if we need to force regenerate the PDF
     if params[:regenerate] == "true"
       # Regenerating runs the AI again, so it uses the same allowance as a new generation.
-      unless current_user.usage_limits.consume!(:job_based_generation)
-        return redirect_to @cv_generation, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة."
-      end
+      charge_key = "regenerate:#{@cv_generation.id}:#{SecureRandom.uuid}"
+      charge = charge_generation(charge_key)
+      return redirect_to @cv_generation, alert: t("ux_i18n2.cv_generations.job_credits_used") if charge == :blocked
 
       # Call the CV generator job synchronously to regenerate the PDF
       begin
@@ -258,6 +270,7 @@ class CvGenerationsController < ApplicationController
         # Refresh the CV generation object
         @cv_generation.reload
       rescue => e
+        refund_generation(charge, charge_key)
         Rails.logger.error "Error regenerating PDF: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
         return redirect_to @cv_generation, alert: "Failed to regenerate PDF: #{e.message}"
@@ -322,9 +335,9 @@ class CvGenerationsController < ApplicationController
     # Check if we need to force regenerate the PDF
     if params[:regenerate] == "true"
       # Regenerating runs the AI again, so it uses the same allowance as a new generation.
-      unless current_user.usage_limits.consume!(:job_based_generation)
-        return redirect_to @cv_generation, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة."
-      end
+      charge_key = "regenerate:#{@cv_generation.id}:#{SecureRandom.uuid}"
+      charge = charge_generation(charge_key)
+      return redirect_to @cv_generation, alert: t("ux_i18n2.cv_generations.job_credits_used") if charge == :blocked
 
       # Use the same regeneration logic as in download_pdf
       begin
@@ -345,6 +358,7 @@ class CvGenerationsController < ApplicationController
 
         @cv_generation.reload
       rescue => e
+        refund_generation(charge, charge_key)
         Rails.logger.error "Error regenerating PDF for view: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
         return redirect_to @cv_generation, alert: "Failed to regenerate PDF: #{e.message}"
@@ -390,10 +404,10 @@ class CvGenerationsController < ApplicationController
       @cv_generation.save_draft(draft_data)
 
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, notice: "تم حفظ المسودة بنجاح. يمكنك العودة إليها لاحقاً." }
+        format.html { redirect_to cv_generations_path, notice: t("ux_i18n2.cv_generations.draft_saved_flash") }
         format.json { render json: {
           success: true,
-          message: "تم حفظ المسودة بنجاح",
+          message: t("ux_i18n2.cv_generations.draft_saved"),
           cv_generation_id: @cv_generation.id,
           draft_data: @cv_generation.draft_data
         } }
@@ -401,10 +415,10 @@ class CvGenerationsController < ApplicationController
     rescue => e
       Rails.logger.error "Error saving draft: #{e.message}"
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, alert: "حدث خطأ أثناء حفظ المسودة." }
+        format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.draft_save_failed_flash") }
         format.json { render json: {
           success: false,
-          error: "حدث خطأ أثناء حفظ المسودة: #{e.message}"
+          error: t("ux_i18n2.cv_generations.draft_save_failed", error: e.message)
         }, status: :unprocessable_entity }
       end
     end
@@ -414,10 +428,15 @@ class CvGenerationsController < ApplicationController
     Rails.logger.info "=== RESUME DRAFT ==="
     Rails.logger.info "CV Generation ID: #{@cv_generation.id}"
 
-    if @cv_generation.can_be_resumed? && !current_user.usage_limits.consume!(:job_based_generation)
+    if @cv_generation.can_be_resumed?
+      charge_key = "draft:#{@cv_generation.id}:#{SecureRandom.uuid}"
+      charge = charge_generation(charge_key)
+    end
+
+    if charge == :blocked
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, alert: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة." }
-        format.json { render json: { success: false, error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية من وصف الوظيفة.", limit_reached: true }, status: :too_many_requests }
+        format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.job_credits_used") }
+        format.json { render json: { success: false, error: t("ux_i18n2.cv_generations.job_credits_used"), limit_reached: true, **credits_upsell }, status: :too_many_requests }
       end
       return
     end
@@ -431,38 +450,56 @@ class CvGenerationsController < ApplicationController
       service = CvGenerationService.new(user_id, @cv_generation.resume_id)
 
       draft_data = @cv_generation.resume_data
-      service.generate_cv(
+      result = service.generate_cv(
         draft_data["job_description"],
         {
           complete_name: draft_data["complete_name"],
           email: draft_data["email"],
           temperature: (draft_data["temperature"].presence || 0.7).to_f.clamp(0.0, 1.0),
           max_tokens: (draft_data["max_tokens"].presence || 15000).to_i.clamp(1000, 15000),
-          source: "job_description"
-        }
+          source: "job_description",
+          overage_key: overage_key(charge, charge_key)
+        }.compact
       )
+      refund_generation(charge, charge_key) unless result[:status] == "queued"
 
       respond_to do |format|
-        format.html { redirect_to new_cv_generation_path(cv_generation_id: @cv_generation.id), notice: "تم استئناف إنشاء السيرة الذاتية بنجاح!" }
+        format.html { redirect_to new_cv_generation_path(cv_generation_id: @cv_generation.id), notice: t("ux_i18n2.cv_generations.draft_resumed_flash") }
         format.json { render json: {
           success: true,
-          message: "تم استئناف إنشاء السيرة الذاتية بنجاح",
+          message: t("ux_i18n2.cv_generations.draft_resumed"),
           cv_generation_id: @cv_generation.id,
           redirect_url: new_cv_generation_path(cv_generation_id: @cv_generation.id)
         } }
       end
     else
       respond_to do |format|
-        format.html { redirect_to cv_generations_path, alert: "لا يمكن استئناف هذه المسودة." }
+        format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.draft_not_resumable_flash") }
         format.json { render json: {
           success: false,
-          error: "لا يمكن استئناف هذه المسودة"
+          error: t("ux_i18n2.cv_generations.draft_not_resumable")
         }, status: :unprocessable_entity }
       end
     end
   end
 
   private
+
+  # One job-based generation: free allowance first, then 1 credit while
+  # billing is on (Billing::UsageGate). Returns :free, :credit or :blocked.
+  def charge_generation(key)
+    Billing::UsageGate.allow!(current_user, :job_based_generation, key: key)
+  end
+
+  # Passed to CvGeneratorJob so a final failure refunds the credit.
+  def overage_key(charge, key)
+    key if charge == :credit
+  end
+
+  # Gives the credit back when the generation it paid for didn't start.
+  def refund_generation(charge, key)
+    Billing::UsageGate.refund!(current_user, :job_based_generation, key: key) if charge == :credit
+  end
 
   def set_cv_generation
     @cv_generation = current_user.cv_generations.find(params[:id])
@@ -494,7 +531,7 @@ class CvGenerationsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to new_resume_path, alert: t("resume.need_resume_for_job") }
-      format.json { render json: { error: "\u064A\u062C\u0628 \u0639\u0644\u064A\u0643 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631\u0629 \u0630\u0627\u062A\u064A\u0629 \u0623\u0648\u0644\u0627\u064B \u0642\u0628\u0644 \u0625\u0646\u0634\u0627\u0621 \u0633\u064A\u0631 \u0630\u0627\u062A\u064A\u0629 \u0645\u062E\u0635\u0635\u0629 \u0628\u0646\u0627\u0621\u064B \u0639\u0644\u0649 \u0648\u0635\u0641 \u0627\u0644\u0648\u0638\u064A\u0641\u0629.", redirect_url: new_resume_path }, status: :unprocessable_entity }
+      format.json { render json: { error: t("ux_i18n2.cv_generations.need_resume_first"), redirect_url: new_resume_path }, status: :unprocessable_entity }
     end
   end
 end

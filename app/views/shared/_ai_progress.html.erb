@@ -17,10 +17,17 @@
     retry_href:  failure button link; without it the button carries
                  data-ai-progress-retry for the page to bind
     hidden:      render hidden (the page shows it later)
+    timeout_title, timeout_text, recheck_label:
+                 shown when poll() gives up (time limit or repeated network
+                 errors); bilingual defaults below
 %>
 <% dir = local_assigns[:dir] || text_direction %>
 <% rtl = dir == "rtl" %>
 <% steps = local_assigns[:steps] || [] %>
+<% ar = I18n.locale.to_s.start_with?("ar") %>
+<% timeout_title = local_assigns[:timeout_title] || (ar ? "يستغرق الأمر وقتاً أطول من المعتاد" : "This is taking longer than usual") %>
+<% timeout_text = local_assigns[:timeout_text] || (ar ? "لم نتمكن من الحصول على تحديث. تحقق من اتصالك ثم أعد المحاولة، قد تكون النتيجة جاهزة." : "We couldn't get an update. Check your connection and try again — your result may already be ready.") %>
+<% recheck_label = local_assigns[:recheck_label] || (ar ? "التحقق مرة أخرى" : "Check again") %>
 <section id="<%= id %>" data-ai-progress dir="<%= dir %>"
          class="glass sr-up relative overflow-hidden rounded-[32px] text-center"
          style="padding: clamp(28px, 5vw, 56px); color: #eef3ee"
@@ -80,19 +87,25 @@
     <span class="glass-soft w-16 h-16 rounded-[20px] flex items-center justify-center" style="color: #e0715f">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4M12 16h.01"></path></svg>
     </span>
-    <h2 class="m-0 font-semibold" style="font-size: clamp(22px, 3vw, 30px); line-height: 1.25"><%= local_assigns[:error_title] %></h2>
-    <p data-ai-progress-error class="m-0 text-[16px] font-light max-w-[48ch]" style="color: rgba(238,243,238,0.72)"><%= local_assigns[:error_text] %></p>
+    <h2 data-ai-progress-error-title data-default="<%= local_assigns[:error_title] %>" data-timeout="<%= timeout_title %>" class="m-0 font-semibold" style="font-size: clamp(22px, 3vw, 30px); line-height: 1.25"><%= local_assigns[:error_title] %></h2>
+    <p data-ai-progress-error data-timeout="<%= timeout_text %>" class="m-0 text-[16px] font-light max-w-[48ch]" style="color: rgba(238,243,238,0.72)"><%= local_assigns[:error_text] %></p>
     <% retry_inner = capture do %>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5"></path><path d="M5.5 15a7.5 7.5 0 0 0 13 2M18.5 9a7.5 7.5 0 0 0-13-2"></path></svg>
       <span><%= local_assigns[:retry_label] %></span>
     <% end %>
     <% retry_class = "sr-btn sr-primary inline-flex items-center gap-2.5 min-h-[52px] px-6 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
     <% retry_style = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6); color: #ffffff" %>
-    <% if local_assigns[:retry_href].present? %>
-      <a href="<%= retry_href %>" class="<%= retry_class %>" style="<%= retry_style %>"><%= retry_inner %></a>
-    <% else %>
-      <button type="button" data-ai-progress-retry class="<%= retry_class %>" style="<%= retry_style %>"><%= retry_inner %></button>
-    <% end %>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <button type="button" data-ai-progress-recheck hidden class="<%= retry_class %>" style="<%= retry_style %>">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5"></path><path d="M5.5 15a7.5 7.5 0 0 0 13 2M18.5 9a7.5 7.5 0 0 0-13-2"></path></svg>
+        <span><%= recheck_label %></span>
+      </button>
+      <% if local_assigns[:retry_href].present? %>
+        <a href="<%= retry_href %>" class="<%= retry_class %>" style="<%= retry_style %>"><%= retry_inner %></a>
+      <% else %>
+        <button type="button" data-ai-progress-retry class="<%= retry_class %>" style="<%= retry_style %>"><%= retry_inner %></button>
+      <% end %>
+    </div>
   </div>
 </section>
 
@@ -104,9 +117,14 @@
       done(el, callback)                   animate to 100, then callback
       fail(el, message)                    show the glass failure state
       stop(el)                             stop animating and polling
-      poll(el, { url, interval, onComplete, onFail })
+      poll(el, { url, interval, onComplete, onFail, onTimeout,
+                 maxSeconds, maxNetworkErrors })
                                            GET url every `interval` ms, feed
-                                           `progress`, finish on completed/failed
+                                           `progress`, finish on completed/failed.
+                                           Gives up after `maxSeconds` (180) or
+                                           `maxNetworkErrors` (6) failures in a
+                                           row and shows the timeout state with
+                                           a "Check again" button that re-polls.
     `el` may be the element or its id.
   */
   (function () {
@@ -203,6 +221,7 @@
       clearTimeout(s.timer);
       clearTimeout(s.pollTimer);
       s.pollTimer = null;
+      s.pollToken = null;
     }
 
     var api = {
@@ -246,6 +265,10 @@
         var runEl = el.querySelector('[data-ai-progress-run]');
         var failEl = el.querySelector('[data-ai-progress-fail]');
         var msg = el.querySelector('[data-ai-progress-error]');
+        var title = el.querySelector('[data-ai-progress-error-title]');
+        var recheck = el.querySelector('[data-ai-progress-recheck]');
+        if (title && title.hasAttribute('data-default')) title.textContent = title.getAttribute('data-default');
+        if (recheck) recheck.hidden = true;
         if (msg && message) msg.textContent = message;
         if (runEl) runEl.hidden = true;
         if (failEl) failEl.hidden = false;
@@ -257,26 +280,64 @@
         if (!el || !opts || !opts.url) return;
         var s = stateFor(el);
         var interval = opts.interval || 1000;
+        var maxMs = (opts.maxSeconds || 180) * 1000;
+        var maxErrors = opts.maxNetworkErrors || 6;
+        var startedAt = now();
+        var errors = 0;
+        var token = {};
+        s.pollToken = token;
         clearTimeout(s.pollTimer);
+        var giveUp = function () {
+          if (s.pollToken !== token) return;
+          s.pollToken = null;
+          api.fail(el);
+          var title = el.querySelector('[data-ai-progress-error-title]');
+          var msg = el.querySelector('[data-ai-progress-error]');
+          var recheck = el.querySelector('[data-ai-progress-recheck]');
+          if (title && title.getAttribute('data-timeout')) title.textContent = title.getAttribute('data-timeout');
+          if (msg && msg.getAttribute('data-timeout')) msg.textContent = msg.getAttribute('data-timeout');
+          if (recheck) {
+            recheck.hidden = false;
+            recheck.onclick = function () {
+              var reached = s.server;
+              api.start(el, { expectedSeconds: 20 });
+              api.set(el, reached);
+              api.poll(el, opts);
+            };
+          }
+          if (opts.onTimeout) opts.onTimeout();
+        };
+        var schedule = function (delay) {
+          if (s.pollToken !== token) return;
+          if (now() - startedAt >= maxMs) { giveUp(); return; }
+          s.pollTimer = setTimeout(check, delay);
+        };
         var check = function () {
+          if (s.pollToken !== token) return;
           fetch(opts.url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
             .then(function (res) {
               if (!res.ok) throw new Error('HTTP ' + res.status);
               return res.json();
             })
             .then(function (data) {
+              if (s.pollToken !== token) return;
+              errors = 0;
               if (typeof data.progress === 'number') api.set(el, data.progress);
               if (data.status === 'completed' || data.completed === true) {
+                s.pollToken = null;
                 api.done(el, function () { if (opts.onComplete) opts.onComplete(data); });
               } else if (data.status === 'failed' || data.failed === true) {
+                s.pollToken = null;
                 api.fail(el, data.error_message);
                 if (opts.onFail) opts.onFail(data);
               } else {
-                s.pollTimer = setTimeout(check, interval);
+                schedule(interval);
               }
-            })
-            .catch(function () {
-              s.pollTimer = setTimeout(check, interval * 2);
+            }, function () {
+              if (s.pollToken !== token) return;
+              errors += 1;
+              if (errors >= maxErrors) { giveUp(); return; }
+              schedule(interval * 2);
             });
         };
         check();

@@ -1,0 +1,10 @@
+en:
+  ux_next:
+    cv_analysis:
+      improve_with_coach: "Improve with Coach"
+      edit_in_builder: "Edit in builder"
+      analyze_another: "Analyze another CV"
+    login:
+      resend_code: "Resend code"
+      resend_in: "Resend code in %{seconds}s"
+      change_email: "Change email"

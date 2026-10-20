@@ -9,6 +9,8 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
+  // Set when the server says a limit was hit and credits can lift it.
+  const [upgrade, setUpgrade] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
   const pollingRef = useRef(null);
@@ -107,6 +109,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
 
       if (!response.ok || !data.success) {
         setError(data.error || t("import.upload_failed"));
+        setUpgrade(data.upgrade_url ? { url: data.upgrade_url, label: data.upgrade_label } : null);
         setIsUploading(false);
         return;
       }
@@ -133,6 +136,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
     }
     setFile(null);
     setError("");
+    setUpgrade(null);
     setIsUploading(false);
     setIsProcessing(false);
     setUploadProgress(0);
@@ -190,7 +194,17 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                 <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <div className="text-sm text-red-700 dark:text-red-300">{error}</div>
+                <div className="text-sm text-red-700 dark:text-red-300">
+                  <p>{error}</p>
+                  {upgrade && (
+                    <a
+                      href={upgrade.url}
+                      className="mt-2 inline-flex items-center min-h-[44px] font-semibold underline underline-offset-4"
+                    >
+                      {upgrade.label}
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           )}

@@ -90,15 +90,15 @@ const CvGenerationShow = ({ cvGenerationId }) => {
  const getStatusColor = (status) => {
   switch (status) {
    case "completed":
-    return "bg-green-100 text-green-800";
+    return "bg-primary/10 text-primary-soft";
    case "processing":
-    return "bg-yellow-100 text-yellow-800";
+    return "bg-gold/10 text-gold";
    case "failed":
-    return "bg-red-100 text-red-800";
+    return "bg-red-500/10 text-red-300";
    case "cancelled":
-    return "bg-gray-100 text-gray-800";
+    return "bg-white/5 text-mist";
    default:
-    return "bg-gray-100 text-gray-800";
+    return "bg-white/5 text-mist";
   }
  };
 
@@ -106,8 +106,8 @@ const CvGenerationShow = ({ cvGenerationId }) => {
   return (
    <div className="container mx-auto px-4 py-8">
     <div className="flex items-center justify-center h-64">
-     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-     <span className="ml-3 text-gray-600">Loading CV generation...</span>
+     <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/10 border-t-gold"></div>
+     <span className="ms-3 text-mist/70">Loading CV generation...</span>
     </div>
    </div>
   );
@@ -117,12 +117,12 @@ const CvGenerationShow = ({ cvGenerationId }) => {
   return (
    <div className="container mx-auto px-4 py-8">
     <div className="text-center py-12">
-     <div className="text-red-500 text-lg mb-4">
+     <div className="text-red-300 text-lg mb-4">
       ❌ {error || "CV generation not found"}
      </div>
      <button
       onClick={() => (window.location.href = "/cv_generations")}
-      className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded"
+      className="sr-btn sr-primary inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-2xl font-semibold text-[15px] shadow-glow"
      >
       Back to CV Generations
      </button>
@@ -135,14 +135,14 @@ const CvGenerationShow = ({ cvGenerationId }) => {
   <div className="container mx-auto px-4 py-8">
    <div className="max-w-6xl mx-auto">
     {/* Header */}
-    <div className="flex justify-between items-center mb-8">
-     <h1 className="text-3xl font-bold text-gray-900">
+    <div className="sr-up flex flex-wrap justify-between items-center gap-4 mb-8">
+     <h1 className="text-3xl font-semibold text-mist">
       CV Generation #{cvGeneration.id}
      </h1>
-     <div className="flex space-x-2">
+     <div className="flex flex-wrap gap-2">
       <button
        onClick={() => (window.location.href = "/cv_generations")}
-       className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+       className="sr-btn glass-soft inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-2xl font-medium text-[15px] text-mist"
       >
        Back to List
       </button>
@@ -151,13 +151,13 @@ const CvGenerationShow = ({ cvGenerationId }) => {
         onClick={() =>
          (window.location.href = `/cv_generations/${cvGeneration.id}/retry`)
         }
-        className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+        className="sr-btn inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-2xl bg-action text-darkBase hover:bg-actionHover font-semibold text-[15px] shadow-glow-gold"
        >
         Retry
        </button>
       )}
       {cvGeneration.metadata?.pdf_generated === true && (
-       <div className="flex space-x-2">
+       <div className="flex flex-wrap gap-2">
         <button
          onClick={() => {
           const previewWindow = window.open("", "_blank");
@@ -226,16 +226,16 @@ const CvGenerationShow = ({ cvGenerationId }) => {
            `);
           previewWindow.document.close();
          }}
-         className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center"
+         className="sr-btn glass-soft inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-2xl font-medium text-[15px] text-mist"
         >
-         <span className="mr-2">👁️</span>
+         <span>👁️</span>
          Preview CV
         </button>
         <a
          href={`/cv_generations/${cvGeneration.id}/download`}
-         className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center"
+         className="sr-btn sr-primary inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-2xl font-semibold text-[15px] shadow-glow"
         >
-         <span className="mr-2">⬇️</span>
+         <span>⬇️</span>
          Download CV
         </a>
        </div>
@@ -245,13 +245,13 @@ const CvGenerationShow = ({ cvGenerationId }) => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
      {/* Status and Info Panel */}
      <div className="lg:col-span-1">
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-       <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="glass sr-up rounded-[28px] p-5 sm:p-6 mb-6">
+       <h2 className="text-xl font-semibold text-mist mb-4">
         Status & Information
        </h2>
        <div className="space-y-4">
         <div>
-         <label className="block text-sm font-medium text-gray-700">
+         <label className="block text-sm font-medium text-mist/70">
           Status
          </label>
          <span
@@ -264,41 +264,41 @@ const CvGenerationShow = ({ cvGenerationId }) => {
          </span>
         </div>
         <div>
-         <label className="block text-sm font-medium text-gray-700">
+         <label className="block text-sm font-medium text-mist/70">
           Created
          </label>
-         <p className="text-sm text-gray-600">
+         <p className="text-sm text-mist/70">
           {formatDate(cvGeneration.created_at)}
          </p>
         </div>
         <div>
-         <label className="block text-sm font-medium text-gray-700">
+         <label className="block text-sm font-medium text-mist/70">
           Last Updated
          </label>
-         <p className="text-sm text-gray-600">
+         <p className="text-sm text-mist/70">
           {formatDate(cvGeneration.updated_at)}
          </p>
         </div>
         {cvGeneration.tokens_used && (
          <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-mist/70">
            Tokens Used
           </label>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-mist/70">
            {cvGeneration.tokens_used.toLocaleString()}
           </p>
          </div>
         )}
         {cvGeneration.resume_id && (
          <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-mist/70">
            Resume ID
           </label>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-mist/70">
            {cvGeneration.resume_id}
            <a
             href={`/resumes/${cvGeneration.resume_id}`}
-            className="text-emerald-600 hover:text-emerald-800 ml-2"
+            className="text-primary-soft hover:text-mist ms-2 underline underline-offset-4"
            >
             View Resume
            </a>
@@ -306,30 +306,30 @@ const CvGenerationShow = ({ cvGenerationId }) => {
          </div>
         )}
         <div>
-         <label className="block text-sm font-medium text-gray-700">
+         <label className="block text-sm font-medium text-mist/70">
           AI Model
          </label>
-         <p className="text-sm text-gray-600">{cvGeneration.ai_model}</p>
+         <p className="text-sm text-mist/70">{cvGeneration.ai_model}</p>
         </div>
 
         {/* CV Generation Limit */}
-        <div className="border-t pt-4">
-         <label className="block text-sm font-medium text-gray-700">
+        <div className="border-t border-white/10 pt-4">
+         <label className="block text-sm font-medium text-mist/70">
           CV Generations
          </label>
          <div className="mt-2">
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
+          <div className="flex justify-between text-sm text-mist/70 mb-1">
            <span>Used: {userCvCount}</span>
            <span>Limit: {maxCvGenerations}</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
            <div
             className={`h-2 rounded-full transition-all duration-300 ${
              userCvCount >= maxCvGenerations
-              ? "bg-red-500"
+              ? "bg-red-400"
               : userCvCount >= maxCvGenerations * 0.8
-              ? "bg-yellow-500"
-              : "bg-green-500"
+              ? "bg-gold"
+              : "bg-primary-soft"
             }`}
             style={{
              width: `${Math.min((userCvCount / maxCvGenerations) * 100, 100)}%`,
@@ -337,13 +337,13 @@ const CvGenerationShow = ({ cvGenerationId }) => {
            ></div>
           </div>
           {userCvCount >= maxCvGenerations && (
-           <p className="text-xs text-red-600 mt-1">
+           <p className="text-xs text-red-300 mt-1">
             ⚠️ You've reached the maximum CV generations limit
            </p>
           )}
           {userCvCount >= maxCvGenerations * 0.8 &&
            userCvCount < maxCvGenerations && (
-            <p className="text-xs text-yellow-600 mt-1">
+            <p className="text-xs text-gold mt-1">
              ⚠️ You're approaching the CV generations limit
             </p>
            )}
@@ -356,12 +356,12 @@ const CvGenerationShow = ({ cvGenerationId }) => {
      {/* Main Content */}
      <div className="lg:col-span-2">
       {/* Job Description */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-       <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="glass sr-up rounded-[28px] p-5 sm:p-6 mb-6">
+       <h2 className="text-xl font-semibold text-mist mb-4">
         Job Description
        </h2>
-       <div className="bg-gray-50 p-4 rounded border">
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+       <div className="rounded-[18px] border border-white/10 bg-white/[0.04] p-4">
+        <p className="text-sm text-mist/70 whitespace-pre-wrap">
          {cvGeneration.job_description}
         </p>
        </div>
@@ -371,12 +371,12 @@ const CvGenerationShow = ({ cvGenerationId }) => {
       {(cvGeneration.professional_summary_english ||
        cvGeneration.generated_content ||
        cvGeneration.professional_summary) && (
-       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+       <div className="glass sr-up rounded-[28px] p-5 sm:p-6 mb-6">
+        <h2 className="text-xl font-semibold text-mist mb-4">
          Generated Professional Summary
         </h2>
-        <div className="bg-gray-50 p-4 rounded border">
-         <p className="text-sm text-gray-700 whitespace-pre-wrap">
+        <div className="rounded-[18px] border border-white/10 bg-white/[0.04] p-4">
+         <p className="text-sm text-mist/70 whitespace-pre-wrap">
           {cvGeneration.professional_summary_english ||
            cvGeneration.generated_content ||
            cvGeneration.professional_summary}
@@ -384,8 +384,8 @@ const CvGenerationShow = ({ cvGenerationId }) => {
         </div>
         {(cvGeneration.metadata?.pdf_generated === true ||
          cvGeneration.metadata?.pdf_generated === "true") && (
-         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
-          <p className="text-sm text-green-700">
+         <div className="mt-4 p-3 bg-primary/10 border border-primary/30 rounded-xl">
+          <p className="text-sm text-primary-soft">
            <strong>✓ PDF Generated Successfully</strong> - Size:{" "}
            {cvGeneration.metadata?.pdf_size
             ? `${(cvGeneration.metadata?.pdf_size / 1024).toFixed(1)} KB`
@@ -396,8 +396,8 @@ const CvGenerationShow = ({ cvGenerationId }) => {
          </div>
         )}
         {cvGeneration.metadata?.pdf_error && (
-         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
-          <p className="text-sm text-red-700">
+         <div className="mt-4 p-3 bg-red-500/10 border border-red-400/30 rounded-xl" role="alert">
+          <p className="text-sm text-red-300">
            <strong>✗ PDF Generation Failed:</strong>{" "}
            {cvGeneration.metadata.pdf_error}
           </p>
@@ -409,11 +409,11 @@ const CvGenerationShow = ({ cvGenerationId }) => {
       {/* Success Status for PDF */}
       {(cvGeneration.metadata?.pdf_generated === true ||
        cvGeneration.metadata?.pdf_generated === "true") && (
-       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
-        <div className="flex items-center space-x-3">
+       <div className="glass-soft rounded-[22px] border border-primary/30 p-4 mb-6">
+        <div className="flex items-center gap-3">
          <div className="flex-shrink-0">
           <svg
-           className="w-6 h-6 text-green-600"
+           className="w-6 h-6 text-primary-soft"
            fill="currentColor"
            viewBox="0 0 20 20"
           >
@@ -425,10 +425,10 @@ const CvGenerationShow = ({ cvGenerationId }) => {
           </svg>
          </div>
          <div>
-          <h3 className="text-lg font-semibold text-green-800">
+          <h3 className="text-lg font-semibold text-primary-soft">
            PDF Generated Successfully
           </h3>
-          <p className="text-sm text-green-700">
+          <p className="text-sm text-primary-soft">
            Your CV PDF is ready for download and preview. File size:{" "}
            {cvGeneration.metadata?.pdf_size
             ? `${(cvGeneration.metadata.pdf_size / 1024).toFixed(1)} KB`
@@ -453,17 +453,17 @@ const CvGenerationShow = ({ cvGenerationId }) => {
 
       {/* Processing Status */}
       {cvGeneration.status === "processing" && (
-       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+       <div className="bg-gold/10 border border-gold/30 rounded-[22px] p-6">
         <div className="flex items-center">
-         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-3"></div>
+         <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/10 border-t-gold me-3"></div>
          <div>
-          <h3 className="text-lg font-medium text-yellow-800">
+          <h3 className="text-lg font-medium text-gold">
            Processing CV Generation
           </h3>
-          <p className="text-sm text-yellow-700">
+          <p className="text-sm text-gold">
            Your CV is being generated. This may take a few minutes.
            {refreshing && (
-            <span className="ml-2 text-emerald-600">
+            <span className="ms-2 text-primary-soft">
              🔄 Checking for updates...
             </span>
            )}
@@ -475,9 +475,9 @@ const CvGenerationShow = ({ cvGenerationId }) => {
 
       {/* Error Status */}
       {cvGeneration.status === "failed" && (
-       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-red-800">Generation Failed</h3>
-        <p className="text-sm text-red-700">
+       <div className="bg-red-500/10 border border-red-400/30 rounded-[22px] p-6" role="alert">
+        <h3 className="text-lg font-medium text-red-300">Generation Failed</h3>
+        <p className="text-sm text-red-300">
          There was an error generating your CV. You can try again using the
          retry button above.
         </p>

@@ -1,0 +1,5 @@
+ar:
+  ux_credits:
+    get_credits: "اشحن رصيدك"
+    chip_label: "رصيدك: %{count}"
+    credits: "الرصيد"

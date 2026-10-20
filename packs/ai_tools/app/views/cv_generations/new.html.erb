@@ -1,136 +1,65 @@
-<% unless user_signed_in? %>
-  <script>
-    window.location.href = '/auth/login';
-  </script>
-<% else %>
-  <!DOCTYPE html>
-  <html lang="<%= I18n.locale %>" dir="<%= I18n.locale == :ar ? 'rtl' : 'ltr' %>" class="dark">
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <title><%= t('cv_generation.page_title', default: 'AI Resume Builder — CV•AI') %></title>
-      <meta name="description" content="<%= t('cv_generation.page_description', default: 'Create a professional resume in minutes using AI. Modern templates, automatic bullet point optimization, and high-quality PDF export.') %>" />
-      <meta name="theme-color" content="#07120D" />
-      <meta name="csrf-token" content="<%= form_authenticity_token %>" />
-      <%= render 'shared/posthog' %>
-      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-      <meta name="format-detection" content="telephone=no" />
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-      <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-      <script src="https://unpkg.com/lucide@latest"></script>
-      <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
-      <style>
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        
-        iconify-icon {
-            display: inline-block;
-            vertical-align: middle;
-        }
+<% content_for :title, t('cv_generation.page_title', default: 'AI Resume Builder — CV•AI') %>
+<% content_for :body_class, "sr-app-long" %>
+<%# Long page: the layout lets the ambient scroll with it, so its orbs run the full page height. %>
+<% content_for :ambient_scrolls, true %>
+<% content_for :description, t('cv_generation.page_description', default: 'Create a professional resume in minutes using AI. Modern templates, automatic bullet point optimization, and high-quality PDF export.') %>
+<% content_for :head do %>
+  <%# The generator below is compiled by in-browser Babel on DOMContentLoaded, which a
+      Turbo Drive visit never fires, so arriving here always loads the page in full. %>
+  <meta name="turbo-visit-control" content="reload">
+  <style>
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pdf-viewer {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #ffffff;
+    }
+    @media (max-width: 768px) {
+      .pdf-modal iframe {
+        min-height: 60vh;
+      }
+    }
+    .pdf-preview-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+<% end %>
+<% muted = "color: rgba(238,243,238,0.7)" %>
 
-        /* PDF viewer styles */
-        .pdf-viewer {
-          width: 100%;
-          height: 100%;
-          border: none;
-          background: #f8f9fa;
-        }
+<div dir="<%= text_direction %>" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee; animation-name: sr-riseUp">
+  <div class="relative mx-auto max-w-[1240px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-8">
+    <%= render 'shared/flash_alert' %>
 
-        .pdf-container {
-          position: relative;
-          width: 100%;
-          height: 100vh;
-          overflow: hidden;
-        }
+    <!-- Header -->
+    <header class="flex flex-col items-center text-center gap-5">
+      <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+        <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+        <%= t('cv_generation.badge') %>
+      </span>
+      <h1 class="m-0 font-semibold" style="font-size: clamp(34px, 4.6vw, 56px); line-height: 1.15; letter-spacing: -0.02em">
+        <% words = t('cv_generation.title').split %>
+        <% delay = 0.1 %>
+        <% words.each_with_index do |word, i| %><span class="sr-w" style="<%= 'color: #d6b877; ' if i == words.size - 1 && words.size > 1 %>animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+      </h1>
+      <p class="sr-up m-0 font-light text-[17px] max-w-[56ch]" style="animation-delay: .35s; <%= muted %>"><%= t('cv_generation.description') %></p>
+    </header>
 
-        /* Mobile-friendly PDF modal */
-        @media (max-width: 768px) {
-          .pdf-modal {
-            padding: 1rem;
-          }
-          .pdf-modal .modal-content {
-            max-height: 90vh;
-            margin: 0;
-          }
-          .pdf-modal iframe {
-            min-height: 60vh;
-          }
-        }
-
-        /* PDF preview window styles */
-        .pdf-preview-window {
-          width: 100%;
-          height: 100vh;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
-        }
-
-        .pdf-preview-frame {
-          width: 100%;
-          height: 100%;
-          border: none;
-          margin: 0;
-          padding: 0;
-        }
-      </style>
-    </head>
-    <body class="sr-app antialiased min-h-screen flex flex-col bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden" style="font-family: 'Readex Pro', ui-sans-serif, system-ui, -apple-system, sans-serif;">
-      <!-- Navbar -->
-      <%= render 'layouts/header' %>
-<%= render 'shared/ambient', fixed: true %>
-      
-      <!-- Background Blobs -->
-      <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-        <div class="bg-primary/5 dark:bg-primary/20 w-64 h-64 md:w-96 md:h-96 rounded-full absolute top-[-10%] left-[-10%]"></div>
-        <div class="bg-action/5 dark:bg-action/10 w-64 h-64 md:w-[500px] md:h-[500px] rounded-full absolute bottom-[-10%] right-[-10%]"></div>
-      </div>
-      
-      <!-- Main Content -->
-      <main class="flex-1">
-      <!-- Flash Messages -->
-      <% if flash[:notice] %>
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
-          <div class="rounded-lg bg-action/10 dark:bg-action/20 border border-action/30 p-4">
-            <div class="flex items-center gap-3">
-              <i data-lucide="check-circle" class="w-5 h-5 text-action"></i>
-              <p class="text-sm text-action dark:text-action"><%= flash[:notice] %></p>
-            </div>
-          </div>
-        </div>
-      <% end %>
-      <% if flash[:alert] %>
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
-          <div class="rounded-lg bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 p-4">
-            <div class="flex items-center gap-3">
-              <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
-              <p class="text-sm text-red-800 dark:text-red-300"><%= flash[:alert] %></p>
-            </div>
-          </div>
-        </div>
-      <% end %>
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 pb-8">
-        <!-- Header -->
-        <div class="mb-8 text-center">
-          <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 dark:bg-primary/20 text-primary px-3 py-1 text-xs ring-1 ring-primary/30 mb-4">
-            <i data-lucide="sparkles" class="w-4 h-4"></i>
-            <span><%= t('cv_generation.badge') %></span>
-          </div>
-          <h1 class="text-3xl md:text-4xl font-bold text-primary mb-3"><%= t('cv_generation.title') %></h1>
-          <p class="text-gray-600 dark:text-gray-300 text-base leading-relaxed max-w-2xl mx-auto"><%= t('cv_generation.description') %></p>
-        </div>
-        <!-- React Component Container -->
         <div id="cv-generation-results">
-          <div id="cv-generation-bootstrapping" class="text-center py-8">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p class="mt-4 text-gray-600 dark:text-gray-300"><%= t('cv_generation.loading_data') %></p>
+          <div id="cv-generation-bootstrapping" class="glass sr-up rounded-[32px] py-14 px-6 flex flex-col items-center gap-4 text-center" style="animation-delay: .45s" role="status">
+            <span class="glass-soft sr-float w-14 h-14 rounded-2xl flex items-center justify-center" style="color: #d6b877">
+              <svg class="sr-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 3a9 9 0 019 9"></path><circle cx="12" cy="12" r="9" stroke-opacity="0.2"></circle></svg>
+            </span>
+            <p class="m-0 text-[15px]" style="color: rgba(238,243,238,0.7)"><%= t('cv_generation.loading_data') %></p>
           </div>
         </div>
         <%# Live percentage for the generation wait; React moves it into place while generating. %>
@@ -211,10 +140,94 @@
           ats_template_label: "<%= j t('cv_generation.ats_template_label') %>",
           preview_template: "<%= j t('cv_generation.preview_template') %>",
           use_template: "<%= j t('cv_generation.use_template') %>",
-          select_resume_and_job: "<%= j t('cv_generation.select_resume_and_job') %>"
+          select_resume_and_job: "<%= j t('cv_generation.select_resume_and_job') %>",
+          toast_close: "<%= j t('cv_generation_toast.close') %>",
+          get_more_credits: "<%= j t('cv_generation_toast.get_more_credits') %>"
         };
         window.CV_ATS_TEMPLATES = <%= raw ats_template_options_for_cv_generation.to_json %>;
         window.CV_DEFAULT_ATS_TEMPLATE = <%= raw @default_ats_template.to_json %>;
+      </script>
+      <!-- Glass toast: replaces window.alert() on this standalone page -->
+      <div id="cv-toast-region" class="fixed inset-x-0 bottom-4 z-[60] flex flex-col items-center gap-2 px-4 pointer-events-none"></div>
+      <script>
+        window.cvSafeUrl = function (url) {
+          // Only same-origin paths or http(s) URLs; never javascript: or data:.
+          if (typeof url !== 'string' || !url.trim()) return null;
+          try {
+            const parsed = new URL(url, window.location.origin);
+            return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? parsed.href : null;
+          } catch (_) {
+            return null;
+          }
+        };
+
+        window.cvToast = function (message, options) {
+          const opts = options || {};
+          const region = document.getElementById('cv-toast-region');
+          if (!region) { console.warn(message); return; }
+
+          const toast = document.createElement('div');
+          toast.setAttribute('role', opts.type === 'info' ? 'status' : 'alert');
+          toast.className = 'glass pointer-events-auto w-full max-w-md rounded-2xl px-4 py-3 text-sm text-white shadow-2xl flex items-start gap-3 border ' +
+            (opts.type === 'info' ? 'border-white/15' : 'border-red-400/40');
+          toast.style.transition = 'opacity .2s ease, transform .2s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+
+          const dot = document.createElement('span');
+          dot.className = 'mt-1.5 h-2 w-2 shrink-0 rounded-full ' + (opts.type === 'info' ? 'bg-primary' : 'bg-red-400');
+          dot.setAttribute('aria-hidden', 'true');
+
+          const body = document.createElement('div');
+          body.className = 'min-w-0 flex-1 leading-relaxed';
+          const text = document.createElement('p');
+          text.textContent = String(message || '');
+          body.appendChild(text);
+
+          const href = window.cvSafeUrl(opts.linkUrl);
+          if (href) {
+            const link = document.createElement('a');
+            link.href = href;
+            link.textContent = opts.linkLabel || href;
+            link.className = 'mt-1 inline-block font-semibold text-action underline underline-offset-2';
+            body.appendChild(link);
+          }
+
+          const close = document.createElement('button');
+          close.type = 'button';
+          close.className = 'shrink-0 -m-1 h-8 w-8 inline-flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10';
+          close.setAttribute('aria-label', (window.CV_TRANSLATIONS && window.CV_TRANSLATIONS.toast_close) || 'Dismiss');
+          close.textContent = '\u00D7';
+
+          let timer = null;
+          const dismiss = function () {
+            clearTimeout(timer);
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(8px)';
+            setTimeout(function () { toast.remove(); }, 200);
+          };
+          close.addEventListener('click', dismiss);
+
+          toast.appendChild(dot);
+          toast.appendChild(body);
+          toast.appendChild(close);
+          region.appendChild(toast);
+          while (region.children.length > 3) region.firstElementChild.remove();
+
+          requestAnimationFrame(function () {
+            toast.style.opacity = '1';
+            toast.style.transform = 'none';
+          });
+          timer = setTimeout(dismiss, href ? 10000 : 5000);
+          toast.addEventListener('mouseenter', function () { clearTimeout(timer); });
+          toast.addEventListener('mouseleave', function () { timer = setTimeout(dismiss, 3000); });
+        };
+
+        window.cvEscapeHtml = function (value) {
+          return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        };
       </script>
       <!-- React Libraries -->
       <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
@@ -247,11 +260,7 @@
 
           if (!el || !window.SeeraProgress) {
             return (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p className="mt-4 text-gray-600 dark:text-gray-300">{t.generating_cv}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t.please_wait}</p>
-              </div>
+              <GlassLoader label={t.generating_cv} hint={t.please_wait} />
             );
           }
           return <div ref={holderRef} />;
@@ -289,9 +298,9 @@
           render() {
             if (this.state.hasError) {
               return (
-                <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
-                  <h2 className="text-red-800 dark:text-red-300 font-medium">{t.error_occurred}</h2>
-                  <p className="text-red-600 dark:text-red-400 text-sm mt-2">{this.state.error?.message || t.unknown_error}</p>
+                <div role="alert" className="glass-soft rounded-2xl p-4" style={{ borderColor: 'rgba(248,113,113,0.4)' }}>
+                  <h2 className="m-0 text-red-200 font-medium">{t.error_occurred}</h2>
+                  <p className="m-0 text-red-300/80 text-sm mt-2">{this.state.error?.message || t.unknown_error}</p>
                 </div>
               );
             }
@@ -305,9 +314,9 @@
           } catch (error) {
             console.error('🔴 Render Error:', error);
             return (
-              <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
-                <h2 className="text-red-800 dark:text-red-300 font-medium">{t.render_error}</h2>
-                <p className="text-red-600 dark:text-red-400 text-sm mt-2">{error.message}</p>
+              <div role="alert" className="glass-soft rounded-2xl p-4" style={{ borderColor: 'rgba(248,113,113,0.4)' }}>
+                <h2 className="m-0 text-red-200 font-medium">{t.render_error}</h2>
+                <p className="m-0 text-red-300/80 text-sm mt-2">{error.message}</p>
               </div>
             );
           }
@@ -328,6 +337,47 @@
             <path d="M20 20l-3.5-3.5" />
             <path d="M11 8v6M8 11h6" />
           </svg>
+        );
+
+        // Line icons drawn inline, matching the landing's 24px stroke set.
+        const ICON_PATHS = {
+          eye: <><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>,
+          download: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
+          trash: <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3" />,
+          check: <><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-6" /></>,
+          alert: <><circle cx="12" cy="12" r="9" /><path d="M12 7v6M12 16.5v.01" /></>,
+          doc: <><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></>,
+          spark: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />,
+          close: <path d="M6 6l12 12M18 6L6 18" />,
+          external: <><path d="M14 4h6v6" /><path d="M20 4l-9 9" /><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5" /></>
+        };
+
+        const Icon = ({ name, className }) => (
+          <svg className={'shrink-0 ' + (className || 'w-4 h-4')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+            {ICON_PATHS[name]}
+          </svg>
+        );
+
+        // Numbered section heading for the three steps of the form.
+        const StepTitle = ({ number, label }) => (
+          <div className="flex items-center gap-3">
+            <span className="glass-soft sr-mono flex-none w-9 h-9 rounded-xl inline-flex items-center justify-center text-sm font-semibold" style={{ color: '#d6b877' }}>{number}</span>
+            <h2 className="m-0 text-[18px] sm:text-[20px] font-semibold text-mist">{label}</h2>
+          </div>
+        );
+
+        // Glass loading card with the landing's slow spinner.
+        const GlassLoader = ({ label, hint }) => (
+          <div className="glass rounded-[32px] py-14 px-6 flex flex-col items-center gap-4 text-center" role="status">
+            <span className="glass-soft sr-float w-14 h-14 rounded-2xl flex items-center justify-center" style={{ color: '#d6b877' }}>
+              <svg className="sr-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <path d="M12 3a9 9 0 019 9" />
+                <circle cx="12" cy="12" r="9" strokeOpacity="0.2" />
+              </svg>
+            </span>
+            <p className="m-0 text-[15px] text-mist/70">{label}</p>
+            {hint && <p className="m-0 text-sm text-mist/50">{hint}</p>}
+          </div>
         );
 
         // Full-size glass lightbox for one template preview.
@@ -406,7 +456,7 @@
                       src={atsFullSrc(template)}
                       alt={template.name}
                       decoding="async"
-                      className="block max-h-[calc(100dvh-11rem)] sm:max-h-[85vh] w-auto max-w-full bg-white"
+                      className="block max-h-[calc(100dvh-11rem)] sm:max-h-[85vh] w-auto max-w-full bg-white keep-light"
                       onError={() => setImageFailed(true)}
                     />
                   )}
@@ -454,6 +504,7 @@
           // Results state
           const [cvData, setCvData] = useState(null);
           const [error, setError] = useState(null);
+          const [upgradeUrl, setUpgradeUrl] = useState(null);
           const [showPdfModal, setShowPdfModal] = useState(false);
           const [showResults, setShowResults] = useState(false);
           const [resumes, setResumes] = useState([]);
@@ -497,7 +548,7 @@
               window.URL.revokeObjectURL(downloadUrl);
             } catch (error) {
               console.error('Download error:', error);
-              alert(t.download_failed);
+              window.cvToast(t.download_failed);
             }
           };
 
@@ -681,7 +732,7 @@
               );
             } catch (error) {
               console.error('Error downloading PDF:', error);
-              alert(t.download_failed);
+              window.cvToast(t.download_failed);
             }
           };
 
@@ -705,11 +756,11 @@
               } else {
                 const txt = await res.text();
                 console.error('Failed to delete resume:', res.status, txt);
-                alert(t.delete_failed);
+                window.cvToast(t.delete_failed);
               }
             } catch (e) {
               console.error('Error deleting resume:', e);
-              alert(t.delete_error);
+              window.cvToast(t.delete_error);
             }
           };
 
@@ -731,11 +782,11 @@
               } else {
                 const txt = await res.text();
                 console.error('Failed to delete CV generation:', res.status, txt);
-                alert(t.delete_generated_failed);
+                window.cvToast(t.delete_generated_failed);
               }
             } catch (e) {
               console.error('Error deleting CV generation:', e);
-              alert(t.delete_generated_error);
+              window.cvToast(t.delete_generated_error);
             }
           };
 
@@ -745,18 +796,19 @@
             e.preventDefault();
 
             if (!selectedResumeId || !jobDescription.trim() || !selectedAtsTemplate) {
-              alert(t.select_resume_and_job);
+              window.cvToast(t.select_resume_and_job, { type: 'info' });
               return;
             }
 
             // Check CV generation limit
             if (userCvCount >= maxCvGenerations) {
-              alert(t.max_limit_reached.replace('{max}', maxCvGenerations));
+              window.cvToast(t.max_limit_reached.replace('{max}', maxCvGenerations));
               return;
             }
 
             setIsGenerating(true);
             setError(null);
+            setUpgradeUrl(null);
             setShowResults(true);
 
             try {
@@ -847,7 +899,13 @@
               } else {
                 const errorText = await response.text();
                 console.error('❌ Form submission failed:', response.status, errorText);
-                setError(`Failed to submit CV generation request (Status: ${response.status})`);
+                let errorPayload = null;
+                try { errorPayload = JSON.parse(errorText); } catch (_) { errorPayload = null; }
+                const serverMessage = errorPayload && typeof errorPayload === 'object'
+                  ? [errorPayload.error, errorPayload.message].find((m) => typeof m === 'string' && m.trim())
+                  : null;
+                setError(serverMessage || `Failed to submit CV generation request (Status: ${response.status})`);
+                setUpgradeUrl(window.cvSafeUrl(errorPayload && errorPayload.upgrade_url));
                 setIsGenerating(false);
               }
             } catch (err) {
@@ -859,41 +917,49 @@
 
 
           if (isLoading) {
-            return (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p className="mt-4 text-gray-600 dark:text-gray-300">{t.loading_data}</p>
-              </div>
-            );
+            return <GlassLoader label={t.loading_data} />;
           }
 
+          const pdfIsReady = (meta) => meta?.pdf_generated === true || meta?.pdf_generated === 'true' || meta?.pdf_generated === 1;
+          const formDisabled = isGenerating || !selectedResumeId || !jobDescription.trim() || !selectedAtsTemplate || userCvCount >= maxCvGenerations;
+          const chipBase = 'glass-soft inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium';
+          const smallBtn = 'sr-btn glass-soft flex-1 inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 rounded-xl text-xs font-medium text-mist touch-manipulation';
+          const smallDangerBtn = smallBtn + ' hover:text-red-300';
+
           return (
-            <div className="cv-generator-app">
+            <div className="cv-generator-app flex flex-col gap-6">
               {error && (
-                <div className="mb-4 bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
-                  <p className="text-red-800 dark:text-red-300">{error}</p>
+                <div role="alert" className="glass-soft sr-up rounded-2xl p-4 flex items-start gap-3" style={{ borderColor: 'rgba(248,113,113,0.4)' }}>
+                  <span className="mt-0.5 text-red-300"><Icon name="alert" className="w-5 h-5" /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="m-0 text-[15px] text-red-200">{error}</p>
+                    {upgradeUrl && (
+                      <a
+                        href={upgradeUrl}
+                        className="sr-btn sr-primary mt-3 inline-flex min-h-[44px] items-center px-4 rounded-xl text-sm font-semibold touch-manipulation"
+                      >
+                        {t.get_more_credits}
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Job Description Section */}
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t.job_description_label}
-                </label>
+              {/* Step 1: Job description */}
+              <section className="glass sr-up rounded-[32px] p-5 sm:p-8 flex flex-col gap-4" style={{ animationDelay: '.45s' }}>
+                <StepTitle number="1" label={t.job_description_label} />
                 <textarea
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder={t.job_description_placeholder}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
-                  rows="4"
+                  className="glass-soft w-full px-4 py-3.5 rounded-2xl text-[15px] leading-relaxed text-mist placeholder:text-mist/40 focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary/60 resize-none"
+                  rows="5"
                 />
-              </div>
+              </section>
 
-              {/* ATS Template Selection */}
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {t.ats_template_label}
-                </label>
+              {/* Step 2: ATS template */}
+              <section className="glass sr-up rounded-[32px] p-5 sm:p-8 flex flex-col gap-4" style={{ animationDelay: '.55s' }}>
+                <StepTitle number="2" label={t.ats_template_label} />
                 <div
                   className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-h-[70vh] sm:max-h-none overflow-y-auto sm:overflow-visible overscroll-contain p-0.5"
                   role="group"
@@ -909,14 +975,14 @@
                           type="button"
                           aria-pressed={isSelected}
                           onClick={() => setSelectedAtsTemplate(template.key)}
-                          className={`flex flex-col w-full h-full text-start p-2 sm:p-2.5 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
+                          className={`sr-lift flex flex-col w-full h-full text-start p-2 sm:p-2.5 rounded-[20px] border transition-all touch-manipulation min-h-[44px] ${
                             isSelected
-                              ? 'border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/25'
-                              : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-primary/40 active:scale-[0.99]'
+                              ? 'border-primary bg-primary/15 ring-2 ring-primary/30'
+                              : 'glass-soft hover:border-white/25 active:scale-[0.99]'
                           }`}
                         >
                           {hasImage && (
-                            <span className="block w-full aspect-[1/1.294] rounded-lg overflow-hidden border border-white/10 bg-white mb-2 shadow-sm">
+                            <span className="block w-full aspect-[1/1.294] rounded-[14px] overflow-hidden border border-white/10 bg-white keep-light mb-2 shadow-sm">
                               <img
                                 src={atsThumbSrc(template)}
                                 srcSet={atsThumbSrc(template) + ' 1x, ' + atsThumb2xSrc(template) + ' 2x'}
@@ -930,10 +996,11 @@
                               />
                             </span>
                           )}
-                          <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug px-0.5">
+                          <span className="flex items-center gap-1.5 text-sm font-medium text-mist leading-snug px-0.5">
+                            {isSelected && <span className="text-[#2fa36b]"><Icon name="check" className="w-4 h-4" /></span>}
                             {template.name}
                           </span>
-                          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 px-0.5">
+                          <span className="block text-xs text-mist/60 mt-1 line-clamp-2 px-0.5">
                             {template.description}
                           </span>
                         </button>
@@ -955,358 +1022,349 @@
                     );
                   })}
                 </div>
-              </div>
+              </section>
 
-              {/* Resume Selection */}
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t.select_resume_label}
-                </label>
+              {/* Step 3: Resume selection */}
+              <section className="glass sr-up rounded-[32px] p-5 sm:p-8 flex flex-col gap-5" style={{ animationDelay: '.65s' }}>
+                <StepTitle number="3" label={t.select_resume_label} />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {resumes && resumes.length > 0 ? resumes.map(resume => {
                     const resumeId = resume.id || resume.cv_gen_id;
-                    // Always show AI-generated summary for raw CVs if available, otherwise fallback
-                    let displaySummary = '';
-                    let summarySource = '';
-                    if (resume.is_cv_builder) {
-                      // CV Builder resume
-                      displaySummary = resume.professional_summary || '';
-                      summarySource = 'CV_BUILDER';
-                    } else {
-                      // Generated CV (from /cv_generations.json)
-                      displaySummary = resume.professional_summary_english || resume.professional_summary || '';
-                      summarySource = 'AI_GENERATED';
-                    }
-                    // Debug log for summary source
-                    console.log(`CV Card [${resumeId}] summary source: ${summarySource}`, displaySummary);
+                    const isSelected = selectedResumeId === resumeId.toString();
+                    const gen = resume.latest_cv_generation;
+                    const genSummary = gen && (gen.professional_summary_english || gen.professional_summary);
+                    const builderSummary = resume.professional_summary_english || resume.professional_summary;
+                    const statusTone = !gen ? null :
+                      gen.status === 'completed' ? { color: '#2fa36b', label: t.pdf_available } :
+                      gen.status === 'processing' ? { color: '#d6b877', label: t.processing } :
+                      gen.status === 'failed' ? { color: '#fca5a5', label: t.generation_failed } :
+                      { color: 'rgba(238,243,238,0.6)', label: t.not_specified };
                     return (
                       <div
                         key={resumeId}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all bg-white dark:bg-white/5 ${
-                          selectedResumeId === resumeId.toString()
-                            ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                            : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
+                        className={`sr-lift rounded-[24px] p-4 sm:p-5 cursor-pointer flex flex-col gap-3 border transition-all ${
+                          isSelected
+                            ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
+                            : 'glass-soft hover:border-white/25'
                         }`}
                         onClick={() => setSelectedResumeId(resumeId.toString())}
+                        onKeyDown={(e) => {
+                          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                            e.preventDefault();
+                            setSelectedResumeId(resumeId.toString());
+                          }
+                        }}
                       >
-                      {/* Header */}
-                      <div className="mb-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-medium text-gray-900 dark:text-white">{resume.complete_name}</h3>
-                          {resume.is_cv_builder && (
-                            <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full font-medium">
-                              CV Builder
-                            </span>
-                          )}
-                          {resume.is_ai_generated && (
-                            <span className="px-2 py-1 text-xs bg-action/10 text-action rounded-full font-medium">
-                              {t.ai_generated}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{resume.email}</p>
-                      </div>
-
-                      {/* Professional Summary Preview */}
-                      {/* Remove the original professional summary preview for CV Builder resumes */}
-
-                      {/* Job Description for AI Generated CVs */}
-                      {resume.is_ai_generated && resume.job_description && (
-                        <div className="mb-3">
-                          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">{t.job_description_prefix}</p>
-                          <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-relaxed">
-                            {resume.job_description.substring(0, 80)}
-                            {resume.job_description.length > 80 ? '...' : ''}
-                          </p>
-                        </div>
-                      )}
-                      {/* CV Generation Info */}
-                      {resume.latest_cv_generation ? (
-                        <div className="mb-3 p-2 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{t.last_generated}</span>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              {resume.last_generated ? new Date(resume.last_generated).toLocaleDateString('en-GB') : t.not_specified}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <div className={`w-2 h-2 rounded-full ${
-                                resume.latest_cv_generation.status === 'completed' ? 'bg-action' :
-                                resume.latest_cv_generation.status === 'processing' ? 'bg-yellow-500' :
-                                resume.latest_cv_generation.status === 'failed' ? 'bg-red-500' : 'bg-gray-500'
-                              }`}></div>
-                              <span className={`text-xs ${
-                                resume.latest_cv_generation.status === 'completed' ? 'text-action' :
-                                resume.latest_cv_generation.status === 'processing' ? 'text-yellow-600 dark:text-yellow-400' :
-                                resume.latest_cv_generation.status === 'failed' ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
-                              }`}>
-                                {resume.latest_cv_generation.status === 'completed' ? t.pdf_available :
-                                 resume.latest_cv_generation.status === 'processing' ? t.processing :
-                                 resume.latest_cv_generation.status === 'failed' ? t.generation_failed : t.not_specified}
+                        {/* Header */}
+                        <div className="flex flex-col gap-1.5 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="m-0 text-[16px] font-semibold text-mist truncate">{resume.complete_name}</h3>
+                            {resume.is_cv_builder && (
+                              <span className={chipBase} style={{ background: 'rgba(47,163,107,0.12)', borderColor: 'rgba(47,163,107,0.35)', color: '#2fa36b' }}>
+                                CV Builder
                               </span>
-                            </div>
-                            {resume.latest_cv_generation.metadata?.pdf_size && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {(resume.latest_cv_generation.metadata.pdf_size / 1024).toFixed(1)} KB
+                            )}
+                            {resume.is_ai_generated && (
+                              <span className={chipBase} style={{ background: 'rgba(214,184,119,0.12)', borderColor: 'rgba(214,184,119,0.4)', color: '#d6b877' }}>
+                                <Icon name="spark" className="w-3 h-3" />
+                                {t.ai_generated}
                               </span>
                             )}
                           </div>
-                          {/* Show AI-generated summary for latest built CV */}
-                          {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary) && (
-                            <div className="text-xs text-action mt-2">
-                              <span className="font-semibold">{t.professional_summary}</span>
-                              <span> {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary).substring(0, 120)}
-                                {(resume.latest_cv_generation.professional_summary_english || resume.latest_cv_generation.professional_summary).length > 120 ? '...' : ''}
+                          <p className="m-0 text-sm text-mist/60 truncate" dir="ltr" style={{ textAlign: 'start' }}>{resume.email}</p>
+                        </div>
+
+                        {/* Job description for AI generated CVs */}
+                        {resume.is_ai_generated && resume.job_description && (
+                          <div>
+                            <p className="m-0 text-xs text-mist/60 font-medium mb-1">{t.job_description_prefix}</p>
+                            <p className="m-0 text-xs text-mist/75 line-clamp-2 leading-relaxed">
+                              {resume.job_description.substring(0, 80)}
+                              {resume.job_description.length > 80 ? '...' : ''}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* CV generation info */}
+                        {gen ? (
+                          <div className="glass-soft rounded-[16px] p-3 flex flex-col gap-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-medium text-mist/75">{t.last_generated}</span>
+                              <span className="sr-mono text-xs text-mist/60" dir="ltr">
+                                {resume.last_generated ? new Date(resume.last_generated).toLocaleDateString('en-GB') : t.not_specified}
                               </span>
                             </div>
-                          )}
-                        </div>
-                      ) : resume.is_cv_builder ? (
-                        <div className="mb-3 p-2 bg-primary/5 dark:bg-primary/10 rounded border border-primary/20">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-primary rounded-full"></div>
-                              <span className="text-xs text-primary font-medium">{t.cv_builder_resume}</span>
-                            </div>
-                            <span className="text-xs text-primary/70">{t.ready_to_enhance}</span>
-                          </div>
-                          <div className="text-xs text-primary/70 mt-1">
-                            {t.created_on} {resume.created_at ? new Date(resume.created_at).toLocaleDateString('en-GB') : t.not_specified}
-                          </div>
-                          {/* Show fallback summary for CV Builder resumes if no latest CV */}
-                          {(resume.professional_summary_english || resume.professional_summary) && (
-                            <div className="text-xs text-primary mt-2">
-                              <span className="font-semibold">{t.professional_summary}</span>
-                              <span> {(resume.professional_summary_english || resume.professional_summary).substring(0, 120)}
-                                {(resume.professional_summary_english || resume.professional_summary).length > 120 ? '...' : ''}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="inline-flex items-center gap-1.5 text-xs" style={{ color: statusTone.color }}>
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'currentColor' }}></span>
+                                {statusTone.label}
                               </span>
+                              {gen.metadata?.pdf_size && (
+                                <span className="sr-mono text-xs text-mist/50" dir="ltr">
+                                  {(gen.metadata.pdf_size / 1024).toFixed(1)} KB
+                                </span>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="mb-3 p-2 bg-gray-50 dark:bg-white/5 rounded border border-gray-200 dark:border-white/10">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></div>
-                              <span className="text-xs text-gray-600 dark:text-gray-400">{t.basic_resume}</span>
-                            </div>
+                            {genSummary && (
+                              <p className="m-0 text-xs leading-relaxed" style={{ color: '#d6b877' }}>
+                                <span className="font-semibold">{t.professional_summary}</span>
+                                <span> {genSummary.substring(0, 120)}{genSummary.length > 120 ? '...' : ''}</span>
+                              </p>
+                            )}
                           </div>
-                        </div>
-                      )}
-                      {/* Contact Info */}
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {resume.phone_number && <div>📞 {resume.phone_number}</div>}
-                        {resume.city && resume.country && <div>📍 {resume.city}, {resume.country}</div>}
-                      </div>
-                      {/* CV Actions */}
-                      <div className="mt-3 space-y-2">
-                        {/* Actions for AI Generated CVs */}
-                        {resume.is_ai_generated && resume.latest_cv_generation?.metadata?.pdf_generated && (
-                          <div className="flex gap-2">
+                        ) : resume.is_cv_builder ? (
+                          <div className="glass-soft rounded-[16px] p-3 flex flex-col gap-1.5" style={{ background: 'rgba(47,163,107,0.08)', borderColor: 'rgba(47,163,107,0.25)' }}>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: '#2fa36b' }}>
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'currentColor' }}></span>
+                                {t.cv_builder_resume}
+                              </span>
+                              <span className="text-xs text-mist/60">{t.ready_to_enhance}</span>
+                            </div>
+                            <div className="text-xs text-mist/60">
+                              {t.created_on} <span className="sr-mono" dir="ltr">{resume.created_at ? new Date(resume.created_at).toLocaleDateString('en-GB') : t.not_specified}</span>
+                            </div>
+                            {builderSummary && (
+                              <p className="m-0 text-xs leading-relaxed text-mist/75">
+                                <span className="font-semibold" style={{ color: '#2fa36b' }}>{t.professional_summary}</span>
+                                <span> {builderSummary.substring(0, 120)}{builderSummary.length > 120 ? '...' : ''}</span>
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="glass-soft rounded-[16px] p-3">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-mist/60">
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'currentColor' }}></span>
+                              {t.basic_resume}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Contact info */}
+                        {(resume.phone_number || (resume.city && resume.country)) && (
+                          <div className="text-xs text-mist/55 flex flex-col gap-0.5">
+                            {resume.phone_number && <div dir="ltr" style={{ textAlign: 'start' }}>{resume.phone_number}</div>}
+                            {resume.city && resume.country && <div>{resume.city}, {resume.country}</div>}
+                          </div>
+                        )}
+
+                        {/* Actions for AI generated CVs */}
+                        {resume.is_ai_generated && pdfIsReady(gen?.metadata) && (
+                          <div className="mt-auto flex gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
+                              type="button"
                               onClick={() => {
-                                setPreviewPdfUrl(`/cv_generations/${resume.latest_cv_generation.id}/view_pdf`);
+                                setPreviewPdfUrl(`/cv_generations/${gen.id}/view_pdf`);
                                 setPreviewTitle(resume.complete_name);
                                 setShowPreviewModal(true);
                               }}
-                              className="flex-1 bg-primary hover:bg-primaryHover text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className={smallBtn}
                             >
-                              <i data-lucide="eye" className="w-3 h-3"></i>
+                              <Icon name="eye" className="w-3.5 h-3.5" />
                               {t.preview}
                             </button>
                             <button
-                              onClick={() => handleDownload(`/cv_generations/${resume.latest_cv_generation.id}/download_pdf`, `cv_generated_${resume.latest_cv_generation.id}.pdf`)}
-                              className="flex-1 bg-action hover:bg-action/90 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              type="button"
+                              onClick={() => handleDownload(`/cv_generations/${gen.id}/download_pdf`, `cv_generated_${gen.id}.pdf`)}
+                              className={smallBtn}
                             >
-                              <i data-lucide="download" className="w-3 h-3"></i>
+                              <Icon name="download" className="w-3.5 h-3.5" />
                               {t.download}
                             </button>
                             <button
-                              onClick={() => deleteCvGeneration(resume.latest_cv_generation.id)}
-                              className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              type="button"
+                              onClick={() => deleteCvGeneration(gen.id)}
+                              className={smallDangerBtn}
                             >
-                              <i data-lucide="trash" className="w-3 h-3"></i>
+                              <Icon name="trash" className="w-3.5 h-3.5" />
                               {t.delete}
                             </button>
                           </div>
                         )}
-                        {/* Actions for CV Builder Resumes */}
+                        {/* Actions for CV Builder resumes */}
                         {resume.is_cv_builder && (
-                          <div className="flex gap-2">
+                          <div className="mt-auto flex gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
+                              type="button"
                               onClick={() => {
-                                console.log('🔍 Opening CV Builder preview for resume:', resume);
-                                console.log('📄 PDF URL from database:', resume.pdf_url);
-                                 const pdfUrl = resume.pdf_url ? `${resume.pdf_url}?preview=true` : `/resumes/${resume.id}/generate_pdf?preview=true`;
-                                 console.log('📄 Final PDF URL with preview param:', pdfUrl);
-                                 setPreviewPdfUrl(pdfUrl);
+                                const pdfUrl = resume.pdf_url ? `${resume.pdf_url}?preview=true` : `/resumes/${resume.id}/generate_pdf?preview=true`;
+                                setPreviewPdfUrl(pdfUrl);
                                 setPreviewTitle(resume.complete_name);
                                 setShowPreviewModal(true);
                               }}
-                              className="flex-1 bg-primary hover:bg-primaryHover text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className={smallBtn}
                             >
-                              <i data-lucide="eye" className="w-3 h-3"></i>
+                              <Icon name="eye" className="w-3.5 h-3.5" />
                               {t.preview}
                             </button>
                             <button
+                              type="button"
                               onClick={() => handleDownload(`/resumes/${resume.id}/generate_pdf`, `${resume.complete_name || 'resume'}_${resume.id}.pdf`)}
-                              className="flex-1 bg-action hover:bg-action/90 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className={smallBtn}
                             >
-                              <i data-lucide="download" className="w-3 h-3"></i>
+                              <Icon name="download" className="w-3.5 h-3.5" />
                               {t.download}
                             </button>
                             <button
+                              type="button"
                               onClick={() => deleteResume(resume.id)}
-                              className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center gap-1"
+                              className={smallDangerBtn}
                             >
-                              <i data-lucide="trash" className="w-3 h-3"></i>
+                              <Icon name="trash" className="w-3.5 h-3.5" />
                               {t.delete}
                             </button>
                           </div>
                         )}
-                      </div>
-                      {/* Selection Indicator */}
-                      {selectedResumeId === resumeId.toString() && (
-                        <div className="mt-3 flex items-center justify-center">
-                          <div className="flex items-center gap-2 text-primary">
-                            <i data-lucide="check-circle" className="w-4 h-4"></i>
-                            <span className="text-sm font-medium">{t.selected}</span>
+
+                        {/* Selection indicator */}
+                        {isSelected && (
+                          <div className="flex items-center justify-center gap-2 text-sm font-medium" style={{ color: '#2fa36b' }}>
+                            <Icon name="check" className="w-4 h-4" />
+                            <span>{t.selected}</span>
                           </div>
-                        </div>
-                      )}
+                        )}
                       </div>
                     );
                   }) : (
-                    <div className="col-span-full text-center py-8">
-                      <p className="text-gray-600 dark:text-gray-400">{t.no_resumes}</p>
+                    <div className="col-span-full glass-soft rounded-[24px] text-center py-10 px-4">
+                      <p className="m-0 text-mist/70">{t.no_resumes}</p>
                     </div>
                   )}
                 </div>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={isGenerating || !selectedResumeId || !jobDescription.trim() || !selectedAtsTemplate || userCvCount >= maxCvGenerations}
-                  className="w-full bg-action text-white px-6 py-3 rounded-lg font-medium hover:bg-action/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  disabled={formDisabled}
+                  className="sr-btn sr-primary w-full inline-flex items-center justify-center gap-2.5 min-h-[56px] px-6 rounded-2xl font-semibold text-[16px] border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)' }}
                 >
+                  <Icon name="spark" className="w-5 h-5" />
                   {isGenerating ? t.generating :
                    userCvCount >= maxCvGenerations ? t.max_reached.replace('{max}', maxCvGenerations) :
                    t.create_resume}
                 </button>
-              </div>
+              </section>
 
-              {/* Results Section */}
+              {/* Results */}
               {showResults && (
-        <div className="mt-8">
-          {isGenerating && <GenerationProgress />}
+                <div className="flex flex-col gap-4">
+                  {isGenerating && <GenerationProgress />}
 
-          {error && (
-            <div className="bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
-              <p className="text-red-800 dark:text-red-300">{error}</p>
-            </div>
-          )}
+                  {error && (
+                    <div className="glass-soft rounded-2xl p-4 flex items-start gap-3" style={{ borderColor: 'rgba(248,113,113,0.4)' }}>
+                      <span className="mt-0.5 text-red-300"><Icon name="alert" className="w-5 h-5" /></span>
+                      <p className="m-0 text-[15px] text-red-200">{error}</p>
+                    </div>
+                  )}
 
-          {cvData && !isGenerating && (
-            <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-6">
-              {/* CV Actions Integration */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t.cv_created_success}</h3>
-                  <div className="flex items-center gap-2 text-action">
-                    <i data-lucide="file-text" className="w-5 h-5"></i>
-                    <span className="text-sm font-medium">{t.pdf_ready}</span>
-                  </div>
-                </div>
+                  {cvData && !isGenerating && (
+                    <section className="glass sr-up relative overflow-hidden rounded-[32px] p-6 sm:p-8 flex flex-col gap-5">
+                      <div aria-hidden="true" className="absolute rounded-full pointer-events-none" style={{ top: '-140px', insetInlineEnd: '-80px', width: '380px', height: '380px', background: 'radial-gradient(circle, rgba(0,150,85,0.32), rgba(0,150,85,0) 65%)', filter: 'blur(30px)' }}></div>
+                      <div className="relative flex items-center justify-between gap-3 flex-wrap">
+                        <h3 className="m-0 text-[22px] font-semibold text-mist">{t.cv_created_success}</h3>
+                        <span className={chipBase} style={{ background: 'rgba(47,163,107,0.12)', borderColor: 'rgba(47,163,107,0.35)', color: '#2fa36b' }}>
+                          <Icon name="doc" className="w-3.5 h-3.5" />
+                          {t.pdf_ready}
+                        </span>
+                      </div>
 
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">{t.new_professional_summary}</h4>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{cvData.generated_content}</p>
-                </div>
-              {/* Show PDF buttons only if PDF was generated */}
-              {(cvData.metadata?.pdf_generated === true || cvData.metadata?.pdf_generated === 'true' || cvData.metadata?.pdf_generated === 1) ? (
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => setShowPdfModal(true)}
-                    className="flex-1 bg-action text-white px-4 py-3 rounded-lg hover:bg-action/90 flex items-center justify-center gap-2 font-medium transition-colors"
-                  >
-                    <i data-lucide="eye" className="w-4 h-4"></i>
-                    {t.preview_pdf}
-                  </button>
-                  <button
-                    onClick={downloadPdf}
-                    className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-primaryHover flex items-center justify-center gap-2 font-medium transition-colors"
-                  >
-                    <i data-lucide="download" className="w-4 h-4"></i>
-                    {t.download_pdf}
-                  </button>
-                </div>
-              ) : (
-                <div className="bg-yellow-50 dark:bg-yellow-500/20 border border-yellow-200 dark:border-yellow-500/30 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                    <i data-lucide="alert-circle" className="w-5 h-5"></i>
-                    <span className="font-medium">{t.pdf_not_available}</span>
-                  </div>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
-                    {t.pdf_not_generated}
-                  </p>
-                  {cvData.metadata?.pdf_error && (
-                    <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-2">
-                      {t.error_prefix} {cvData.metadata.pdf_error}
-                    </p>
+                      <div className="relative flex flex-col gap-2">
+                        <h4 className="m-0 text-sm font-medium" style={{ color: '#d6b877' }}>{t.new_professional_summary}</h4>
+                        <div className="glass-soft rounded-[20px] p-4">
+                          <p className="m-0 text-[15px] text-mist/85 leading-relaxed whitespace-pre-wrap">{cvData.generated_content}</p>
+                        </div>
+                      </div>
+
+                      {pdfIsReady(cvData.metadata) ? (
+                        <div className="relative flex flex-col sm:flex-row gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowPdfModal(true)}
+                            className="sr-btn sr-primary flex-1 inline-flex items-center justify-center gap-2.5 min-h-[52px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer"
+                            style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)' }}
+                          >
+                            <Icon name="eye" className="w-4 h-4" />
+                            {t.preview_pdf}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={downloadPdf}
+                            className="sr-btn glass-soft flex-1 inline-flex items-center justify-center gap-2.5 min-h-[52px] px-5 rounded-2xl text-[15px] text-mist cursor-pointer"
+                          >
+                            <Icon name="download" className="w-4 h-4" />
+                            {t.download_pdf}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative glass-soft rounded-[20px] p-4 flex flex-col gap-1" style={{ borderColor: 'rgba(214,184,119,0.4)' }}>
+                          <div className="flex items-center gap-2" style={{ color: '#d6b877' }}>
+                            <Icon name="alert" className="w-5 h-5" />
+                            <span className="font-medium">{t.pdf_not_available}</span>
+                          </div>
+                          <p className="m-0 text-sm text-mist/70">{t.pdf_not_generated}</p>
+                          {cvData.metadata?.pdf_error && (
+                            <p className="m-0 text-xs text-mist/55 mt-1">
+                              {t.error_prefix} {cvData.metadata.pdf_error}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </section>
                   )}
                 </div>
               )}
-              </div>
-          </div>
-        )}
-        </div>
-              )}
 
-        {/* PDF Preview Integration */}
-              {showPdfModal && cvData && (
-                <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-darkBase">
-                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t.cv_preview}</h3>
+              {/* Generated CV PDF, full screen */}
+              {showPdfModal && cvData && ReactDOM.createPortal(
+                <div className="fixed inset-0 z-50 flex flex-col bg-[#07120D]/95 backdrop-blur-xl text-mist" role="dialog" aria-modal="true" aria-label={t.cv_preview}>
+                  <div className="flex items-center justify-between gap-3 p-4 border-b border-white/10">
+                    <h3 className="m-0 text-lg font-semibold">{t.cv_preview}</h3>
                     <button
+                      type="button"
                       onClick={() => setShowPdfModal(false)}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xl font-bold"
+                      aria-label={t.close}
+                      className="sr-btn glass-soft h-11 w-11 inline-flex items-center justify-center rounded-full text-mist/80 hover:text-white"
                     >
-                      ✕
+                      <Icon name="close" className="w-5 h-5" />
                     </button>
                   </div>
 
-                  {/* PDF Content */}
-                  <div className="flex-1 overflow-hidden">
-                    <iframe
-                      src={cvData.metadata?.pdf_path ? `/${cvData.metadata.pdf_path}` : `/cv_generations/${cvData.id}/download_pdf`}
-                      title="CV Preview"
-                      className="w-full h-full pdf-viewer"
-                      onLoad={() => console.log('✅ PDF iframe loaded successfully')}
-                      onError={() => console.error('❌ PDF iframe failed to load')}
-                    />
+                  <div className="flex-1 overflow-hidden p-2 sm:p-4">
+                    <div className="h-full rounded-[20px] overflow-hidden border border-white/10 bg-white keep-light">
+                      <iframe
+                        src={cvData.metadata?.pdf_path ? `/${cvData.metadata.pdf_path}` : `/cv_generations/${cvData.id}/download_pdf`}
+                        title={t.cv_preview}
+                        className="w-full h-full pdf-viewer"
+                      />
+                    </div>
                   </div>
-                  {/* Mobile-friendly action buttons */}
-                  <div className="p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
-                    <div className="flex gap-3">
+                  <div className="p-4 border-t border-white/10">
+                    <div className="flex gap-3 max-w-xl mx-auto">
                       <button
+                        type="button"
                         onClick={downloadPdf}
-                        className="flex-1 bg-action text-white px-4 py-3 rounded-lg hover:bg-action/90 flex items-center justify-center gap-2 font-medium transition-colors"
+                        className="sr-btn sr-primary flex-1 inline-flex items-center justify-center gap-2 min-h-[48px] px-4 rounded-2xl font-semibold border-0 cursor-pointer"
                       >
-                        <i data-lucide="download" className="w-4 h-4"></i>
+                        <Icon name="download" className="w-4 h-4" />
                         {t.download_pdf}
                       </button>
                       <button
+                        type="button"
                         onClick={() => setShowPdfModal(false)}
-                        className="px-6 py-3 border border-gray-300 dark:border-white/20 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 font-medium transition-colors"
+                        className="sr-btn glass-soft min-h-[48px] px-6 rounded-2xl font-medium text-mist cursor-pointer"
                       >
                         {t.close}
                       </button>
                     </div>
                   </div>
-                </div>
+                </div>,
+                document.body
               )}
 
-              {/* PDF Preview Modal */}
+              {/* ATS template lightbox */}
               {previewTemplate && (
                 <AtsTemplateLightbox
                   template={previewTemplate}
@@ -1318,44 +1376,58 @@
                 />
               )}
 
-              {showPreviewModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white dark:bg-darkBase rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200 dark:border-white/10">
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10">
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t.cv_preview}</h2>
-                      <button onClick={() => setShowPreviewModal(false)} className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 font-bold text-lg">×</button>
-                    </div>
-                    <div className="flex-1 overflow-hidden relative">
-                      {/* PDF Loading Indicator */}
-                      <div id="pdf-loading" className="absolute inset-0 flex items-center justify-center bg-white dark:bg-darkBase z-10">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <span className="ml-3 text-primary">{t.loading_pdf}</span>
-                      </div>
-                      {/* PDF Preview Iframe */}
-                      <iframe
-                        className="pdf-preview-frame"
-                        src={previewPdfUrl}
-                        style={{ width: '100%', height: '80vh', border: 'none', background: '#f8f9fa' }}
-                        onLoad={() => { const el = document.getElementById('pdf-loading'); if (el) el.style.display = 'none'; }}
-                      ></iframe>
-                    </div>
-                    <div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+              {/* Saved CV preview */}
+              {showPreviewModal && ReactDOM.createPortal(
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-6"
+                  onClick={(event) => { if (event.target === event.currentTarget) setShowPreviewModal(false); }}
+                >
+                  <div role="dialog" aria-modal="true" aria-label={previewTitle || t.cv_preview} className="glass rounded-[28px] w-full max-w-4xl max-h-[92vh] flex flex-col text-mist overflow-hidden">
+                    <div className="flex items-center justify-between gap-3 p-4 border-b border-white/10">
+                      <h2 className="m-0 text-lg font-semibold truncate">{previewTitle || t.cv_preview}</h2>
                       <button
-                        className="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
-                        onClick={() => window.open(previewPdfUrl, '_blank')}
+                        type="button"
+                        onClick={() => setShowPreviewModal(false)}
+                        aria-label={t.close}
+                        className="sr-btn glass-soft h-10 w-10 flex-none inline-flex items-center justify-center rounded-full text-mist/80 hover:text-white"
                       >
-                        <span className="mr-2">👁️</span>
+                        <Icon name="close" className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-hidden relative p-2 sm:p-3">
+                      <div id="pdf-loading" className="absolute inset-0 flex items-center justify-center z-10">
+                        <GlassLoader label={t.loading_pdf} />
+                      </div>
+                      <div className="rounded-[18px] overflow-hidden border border-white/10 bg-white keep-light">
+                        <iframe
+                          className="pdf-preview-frame"
+                          src={previewPdfUrl}
+                          title={previewTitle || t.cv_preview}
+                          style={{ width: '100%', height: '74vh', border: 'none', background: '#ffffff' }}
+                          onLoad={() => { const el = document.getElementById('pdf-loading'); if (el) el.style.display = 'none'; }}
+                        ></iframe>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 p-4 border-t border-white/10">
+                      <button
+                        type="button"
+                        className="sr-btn sr-primary inline-flex items-center gap-2 min-h-[44px] px-4 rounded-xl text-sm font-semibold border-0 cursor-pointer"
+                        onClick={() => window.open(previewPdfUrl, '_blank', 'noopener')}
+                      >
+                        <Icon name="external" className="w-4 h-4" />
                         {t.open_in_new_window}
                       </button>
                       <button
-                        className="bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg inline-flex items-center transition-colors duration-150"
+                        type="button"
+                        className="sr-btn glass-soft min-h-[44px] px-4 rounded-xl text-sm font-medium text-mist cursor-pointer"
                         onClick={() => setShowPreviewModal(false)}
                       >
                         {t.close}
                       </button>
                     </div>
                   </div>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           );
@@ -1391,7 +1463,7 @@
             console.error('🔴 Error starting React app:', error);
             const container = document.getElementById('cv-generation-results');
             if (container) {
-              container.innerHTML = '<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-500/30 dark:bg-red-500/20 dark:text-red-300"><p className="font-medium">' + (t.render_error || 'Render error') + '</p><p className="mt-2 text-sm">' + error.message + '</p></div>';
+              container.innerHTML = '<div role="alert" class="glass-soft rounded-2xl p-4 text-red-200" style="border-color: rgba(248,113,113,0.4)"><p class="m-0 font-medium">' + window.cvEscapeHtml(t.render_error || 'Render error') + '</p><p class="m-0 mt-2 text-sm text-red-300/80">' + window.cvEscapeHtml(error.message) + '</p></div>';
             }
           }
         };
@@ -1399,7 +1471,7 @@
         window.addEventListener('error', function(event) {
           const container = document.getElementById('cv-generation-results');
           if (!container || container.dataset.mounted === 'true') return;
-          container.innerHTML = '<div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-500/30 dark:bg-red-500/20 dark:text-red-300"><p className="font-medium">' + (t.render_error || 'Render error') + '</p><p className="mt-2 text-sm">' + (event.error?.message || event.message || 'Unknown error') + '</p></div>';
+          container.innerHTML = '<div role="alert" class="glass-soft rounded-2xl p-4 text-red-200" style="border-color: rgba(248,113,113,0.4)"><p class="m-0 font-medium">' + window.cvEscapeHtml(t.render_error || 'Render error') + '</p><p class="m-0 mt-2 text-sm text-red-300/80">' + window.cvEscapeHtml(event.error?.message || event.message || 'Unknown error') + '</p></div>';
         });
 
         // Initialize the app when the document is ready
@@ -1409,55 +1481,4 @@
           startApp();
         }
       </script>
-      <script>
-        // Initialize Lucide icons
-        document.addEventListener('DOMContentLoaded', () => {
-          if (typeof lucide !== 'undefined') {
-            lucide.createIcons({
-              attrs: { 'stroke-width': 1.5 }
-            });
-          }
-        });
-      </script>
-      <script>
-        // Theme Logic
-        const html = document.documentElement;
-
-        // Initialize Theme
-        html.classList.add('dark'); // the Seera design is dark only
-
-        // Mobile Menu Logic
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const closeMobileMenu = document.getElementById('closeMobileMenu');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-
-        function openMenu() {
-            if (mobileMenu) {
-                mobileMenu.classList.remove('translate-x-full');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeMenu() {
-            if (mobileMenu) {
-                mobileMenu.classList.add('translate-x-full');
-                document.body.style.overflow = '';
-            }
-        }
-
-        if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMenu);
-        if (closeMobileMenu) closeMobileMenu.addEventListener('click', closeMenu);
-
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', closeMenu);
-        });
-      </script>
-      </main>
-      
-      <!-- Footer -->
-      <%= render 'layouts/footer' %>
-    <%= render 'shared/site_scripts' %>
-</body>
-  </html>
-<% end %>
+</div>

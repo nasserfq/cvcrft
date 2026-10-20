@@ -1,444 +1,349 @@
 <% content_for :title, t('profile.title') %>
+<%# Long page: rise without the blur, and let the ambient orbs scroll with it (layout hooks; harmless if absent). %>
+<% content_for :body_class, "sr-app-long" %>
+<% content_for :ambient_scrolls, true %>
+<% icons = {
+     add: '<path d="M12 5v14M5 12h14"></path>',
+     doc: '<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"></path><path d="M14 3v5h5M9 13h6M9 17h4"></path>',
+     pen: '<path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path>',
+     eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle>',
+     download: '<path d="M12 4v11M7 10l5 5 5-5"></path><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"></path>',
+     trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"></path>',
+     clock: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
+     calendar: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',
+     tag: '<path d="M3 12V5a2 2 0 012-2h7l9 9-9 9z"></path><circle cx="8" cy="8" r="1.5"></circle>',
+     check: '<circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path>',
+     translate: '<path d="M4 5h9M8.5 3v2M6 5c.6 3.2 2.6 6 5.5 7.5M11 5c-.6 3.6-3 6.8-6.5 8.5"></path><path d="M13 21l4-9 4 9M14.5 18h5"></path>',
+     warning: '<path d="M12 3l10 18H2z"></path><path d="M12 10v4M12 17.5v.01"></path>',
+     folder: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>',
+     coin: '<circle cx="12" cy="12" r="9"></circle><path d="M9 9.5c0-1 1.3-1.8 3-1.8s3 .8 3 1.8-1.3 1.6-3 2-3 1-3 2 1.3 1.8 3 1.8 3-.8 3-1.8M12 6v1.7M12 16.3V18"></path>'
+   } %>
+<% svg = ->(name, size = 18) { "<svg class=\"shrink-0\" width=\"#{size}\" height=\"#{size}\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">#{icons[name]}</svg>".html_safe } %>
+<% arrow = '<svg class="sr-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>'.html_safe %>
+<% muted = "color: rgba(238,243,238,0.6)" %>
+<% soft = "color: rgba(238,243,238,0.72)" %>
+<% primary_class = "sr-btn sr-primary inline-flex items-center justify-center gap-2.5 min-h-[52px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+<% primary_style = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+<% secondary_class = "sr-btn glass-soft inline-flex items-center justify-center gap-2.5 min-h-[52px] px-[18px] rounded-2xl text-[15px]" %>
+<% card_class = "glass sr-reveal rounded-[28px] p-5 sm:p-7 flex flex-col gap-5" %>
+<% card_title = "m-0 text-[19px] font-semibold flex items-center gap-3" %>
+<% title_icon = "glass-soft sr-ico flex-none w-11 h-11 rounded-[14px] flex items-center justify-center" %>
+<% icon_btn = "glass-soft flex-none w-11 h-11 rounded-xl flex items-center justify-center transition-colors duration-300" %>
+<% pct = ->(left, max) { max.to_f.positive? ? ((left.to_f / max) * 100).clamp(0, 100).to_i : 0 } %>
+<% display_name = @user.name.presence || @user.email.split('@').first %>
+<% initial = @user.name&.first&.upcase || @user.email&.first&.upcase || "U" %>
 
-<div dir="<%= text_direction %>" class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-darkBase dark:via-darkBase dark:to-darkBase transition-colors duration-300">
-  <!-- Top Navigation Bar -->
-  <div class="bg-white dark:bg-white/5 border-b border-gray-200 dark:border-white/10 backdrop-blur-sm">
-    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-4">
-          <%= link_to root_path, class: "flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" do %>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
-            <span class="font-medium"><%= t('profile.home') %></span>
-          <% end %>
-          <span class="text-gray-300 dark:text-gray-600">|</span>
-          <%= link_to resumes_path, class: "flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" do %>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <span class="font-medium"><%= t('profile.my_cv') %></span>
-          <% end %>
-        </div>
-        <div class="flex items-center gap-3">
-          <% if Billing.enabled_for?(current_user) %>
-            <%= link_to credits_path, class: "inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:text-primary transition-colors" do %>
-              <%= t('billing.title') %>
-              <span class="font-mono" dir="ltr"><%= Billing::Credits.balance(current_user) %></span>
-            <% end %>
-          <% end %>
-          <%= link_to new_resume_path, class: "inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primaryHover text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]" do %>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            <%= t('profile.new_resume') %>
-          <% end %>
-        </div>
-      </div>
-    </div>
-  </div>
+<%# A long page: the wrapper rises without sr-fadeUp's blur so it paints fast on phones. %>
+<div dir="<%= text_direction %>" data-controller="confirm-delete" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee; animation-name: sr-riseUp">
+  <div class="relative mx-auto max-w-[1240px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-10">
 
-  <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Profile Header Card -->
-    <div class="bg-white dark:bg-white/5 rounded-2xl shadow-xl border border-gray-100 dark:border-white/10 overflow-hidden mb-8 backdrop-blur-sm">
-      <!-- Gradient Header -->
-      <div class="relative bg-gradient-to-br from-primary via-primary to-action px-6 sm:px-10 py-10 sm:py-12">
-        <!-- Decorative circles -->
-        <div class="absolute top-0 left-0 w-40 h-40 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-        <div class="absolute bottom-0 right-0 w-60 h-60 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3"></div>
-        
-        <div class="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <!-- Avatar -->
-          <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg ring-4 ring-white/30">
-            <%= @user.name&.first&.upcase || @user.email&.first&.upcase || "U" %>
-          </div>
-          
-          <!-- User Info -->
-          <div class="text-center sm:text-right flex-1">
-            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-1">
-              <%= @user.name.presence || @user.email.split('@').first %>
-            </h1>
-            <p class="text-white/80 text-lg mb-3"><%= @user.email %></p>
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-white/60 text-sm">
-              <span class="flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                <%= t('profile.member_since', date: @user.created_at.strftime("%B %Y")) %>
-              </span>
-            </div>
+    <!-- Profile header -->
+    <header class="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 min-w-0">
+        <span class="glass sr-up sr-mono flex-none w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] flex items-center justify-center text-4xl sm:text-5xl font-semibold" style="animation-delay: 0s; color: #d6b877; background: linear-gradient(155deg, rgba(214,184,119,0.22), rgba(0,108,53,0.18))" aria-hidden="true"><%= initial %></span>
+        <div class="flex flex-col items-start gap-3 min-w-0">
+          <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: .05s; color: rgba(238,243,238,0.9)">
+            <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+            <%= t('profile.title') %>
+          </span>
+          <h1 class="m-0 font-semibold break-words max-w-full" style="font-size: clamp(30px, 4.4vw, 52px); line-height: 1.15; letter-spacing: -0.02em">
+            <% words = display_name.split %>
+            <% delay = 0.1 %>
+            <% words.each_with_index do |word, i| %><span class="sr-w" style="<%= 'color: #d6b877; ' if i == words.size - 1 && words.size > 1 %>animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+          </h1>
+          <div class="sr-up flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[15px] min-w-0" style="animation-delay: .4s; <%= muted %>">
+            <span class="sr-mono truncate max-w-full" dir="ltr"><%= @user.email %></span>
+            <span class="inline-flex items-center gap-1.5"><%= svg.call(:calendar, 16) %><%= t('profile.member_since', date: @user.created_at.strftime("%B %Y")) %></span>
           </div>
         </div>
       </div>
-      
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-2 lg:grid-cols-4">
-        <div class="p-6 text-center border-b lg:border-b-0 border-l border-gray-100 dark:border-white/10 hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-3">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-          </div>
-          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_resumes] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.completed_resumes') %></p>
-        </div>
-        <div class="p-6 text-center border-b lg:border-b-0 border-gray-100 dark:border-white/10 hover:bg-amber-50/50 dark:hover:bg-amber-500/10 transition-colors">
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 mb-3">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-          </div>
-          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_drafts] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.drafts_in_progress') %></p>
-        </div>
-        <div class="p-6 text-center border-l border-gray-100 dark:border-white/10 hover:bg-action/5 dark:hover:bg-action/10 transition-colors">
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-action/10 text-action mb-3">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-            </svg>
-          </div>
-          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_cv_generations] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.pdf_files') %></p>
-        </div>
-        <div class="p-6 text-center hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-3">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-            </svg>
-          </div>
-          <p class="text-3xl font-bold text-gray-900 dark:text-white"><%= @stats[:total_translations] %></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.ai_translations') %></p>
-        </div>
+      <div class="sr-up flex flex-wrap items-center gap-2.5" style="animation-delay: .5s">
+        <% if Billing.enabled_for?(current_user) %>
+          <%= link_to credits_path, class: secondary_class do %>
+            <span style="color: #d6b877"><%= svg.call(:coin) %></span>
+            <%= t('billing.title') %>
+            <span class="sr-mono font-semibold" dir="ltr" style="color: #d6b877"><%= Billing::Credits.balance(current_user) %></span>
+          <% end %>
+        <% end %>
+        <%= link_to resumes_path, class: secondary_class do %>
+          <%= svg.call(:folder) %>
+          <%= t('profile.my_cv') %>
+        <% end %>
+        <%= link_to new_resume_path, class: primary_class, style: primary_style do %>
+          <%= svg.call(:add) %>
+          <%= t('profile.new_resume') %>
+          <span class="sr-ico flex"><%= arrow %></span>
+        <% end %>
       </div>
+    </header>
+
+    <% if flash[:notice].present? || flash[:alert].present? %>
+      <div class="flex flex-col gap-3">
+        <% if flash[:notice].present? %>
+          <div role="status" class="glass-soft sr-up flex items-start gap-3 rounded-2xl px-4 py-3.5" style="animation-delay: .55s; border-color: rgba(47,163,107,0.4); background: rgba(47,163,107,0.1)">
+            <span style="color: #2fa36b"><%= svg.call(:check, 20) %></span>
+            <p class="m-0 text-[15px]"><%= flash[:notice] %></p>
+          </div>
+        <% end %>
+        <% if flash[:alert].present? %>
+          <div role="alert" class="glass-soft sr-up flex items-start gap-3 rounded-2xl px-4 py-3.5" style="animation-delay: .55s; border-color: rgba(214,184,119,0.45); background: rgba(214,184,119,0.1)">
+            <span style="color: #d6b877"><%= svg.call(:warning, 20) %></span>
+            <p class="m-0 text-[15px]"><%= flash[:alert] %></p>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- Stats -->
+    <div class="sr-up grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" style="animation-delay: .6s">
+      <% [
+           [ @stats[:total_resumes], t('profile.completed_resumes'), "#eef3ee", :doc ],
+           [ @stats[:total_drafts], t('profile.drafts_in_progress'), "#d6b877", :pen ],
+           [ @stats[:total_cv_generations], t('profile.pdf_files'), "#2fa36b", :download ],
+           [ @stats[:total_translations], t('profile.ai_translations'), "#2fa36b", :translate ]
+         ].each do |value, label, color, icon| %>
+        <div class="glass sr-lift rounded-[24px] p-5 flex flex-col gap-3">
+          <span class="glass-soft sr-ico w-10 h-10 rounded-xl flex items-center justify-center" style="color: <%= color %>"><%= svg.call(icon) %></span>
+          <span class="sr-mono font-semibold" style="font-size: clamp(26px, 3vw, 34px); line-height: 1.1; color: <%= color %>"><%= value %></span>
+          <span class="text-sm" style="<%= muted %>"><%= label %></span>
+        </div>
+      <% end %>
     </div>
 
-    <!-- Two Column Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Main Content (2/3) -->
-      <div class="lg:col-span-2 space-y-8">
-        <!-- Resumes Section -->
-        <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
-          <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10 flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 text-primary">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-              </span>
+    <!-- Two columns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+      <!-- Main (2/3) -->
+      <div class="lg:col-span-2 flex flex-col gap-5 min-w-0">
+        <!-- Resumes -->
+        <section class="<%= card_class %>">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <h2 class="<%= card_title %>">
+              <span class="<%= title_icon %>" style="color: #2fa36b"><%= svg.call(:doc, 20) %></span>
               <%= t('profile.resumes') %>
-              <span class="text-sm font-normal text-gray-400 dark:text-gray-500">(<%= @resumes.count %>)</span>
+              <span class="sr-mono text-sm font-normal" style="<%= muted %>">(<%= @resumes.count %>)</span>
             </h2>
-            <%= link_to new_resume_path, class: "inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primaryHover text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]" do %>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
+            <%= link_to new_resume_path, class: primary_class, style: primary_style do %>
+              <%= svg.call(:add) %>
               <%= t('profile.create_new_resume') %>
             <% end %>
           </div>
-          
-          <div class="p-6">
-            <% if @resumes.any? %>
-              <div class="space-y-4">
-                <% @resumes.each do |resume| %>
-                  <div class="group flex items-center justify-between p-5 bg-gradient-to-l from-gray-50 to-white dark:from-white/5 dark:to-transparent rounded-xl border border-gray-200 dark:border-white/10 hover:border-primary/50 dark:hover:border-primary/30 hover:shadow-md transition-all">
-                    <div class="flex-1 min-w-0">
-                      <h3 class="font-semibold text-gray-900 dark:text-white text-lg truncate"><%= resume.complete_name.presence || t('profile.no_name') %></h3>
-                      <p class="text-gray-500 dark:text-gray-400 text-sm truncate"><%= resume.email %></p>
-                      <div class="flex items-center gap-3 mt-2 text-xs text-gray-400 dark:text-gray-500">
-                        <span class="flex items-center gap-1">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                          </svg>
-                          <%= resume.updated_at.strftime("%Y-%m-%d") %>
-                        </span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <%= link_to resume_path(resume), class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors", title: t('profile.view') do %>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                      <% end %>
-                      <%= link_to edit_resume_path(resume), class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-action hover:bg-action/10 rounded-lg transition-colors", title: t('profile.edit') do %>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                      <% end %>
-                      <%= link_to "/api/export_pdf?resume_id=#{resume.id}", class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors", title: t('profile.download_pdf') do %>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                      <% end %>
-                      <%= button_to resume_path(resume), method: :delete, class: "p-2.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors", title: t('profile.delete'), data: { turbo_confirm: t('profile.delete_resume_confirm') } do %>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                      <% end %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div class="text-center py-12">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                  <svg class="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
-                </div>
-                <p class="text-gray-500 dark:text-gray-400 text-lg mb-2"><%= t('profile.no_resumes_yet') %></p>
-                <p class="text-gray-400 dark:text-gray-500 text-sm mb-6"><%= t('profile.start_creating') %></p>
-                <%= link_to new_resume_path, class: "inline-flex items-center gap-3 px-8 py-4 bg-action hover:bg-action/90 text-white text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]" do %>
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                  </svg>
-                  <%= t('profile.create_first_resume') %>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        </div>
 
-        <!-- Drafts Section -->
-        <% if @drafts.any? %>
-          <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
-            <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                </span>
-                <%= t('profile.drafts') %>
-                <span class="text-sm font-normal text-gray-400 dark:text-gray-500">(<%= @drafts.count %>)</span>
-              </h2>
-            </div>
-            <div class="p-6 space-y-4">
-              <% @drafts.each do |draft| %>
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-gradient-to-l from-amber-50 to-white dark:from-amber-500/10 dark:to-transparent rounded-xl border border-amber-200 dark:border-amber-500/20 hover:border-amber-300 dark:hover:border-amber-500/30 hover:shadow-md transition-all">
-                  <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-gray-900 dark:text-white truncate text-base"><%= draft.complete_name.presence || t('profile.draft_no_name') %></p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= t('profile.last_edited', date: draft.updated_at.strftime("%Y-%m-%d %H:%M")) %></p>
+          <% if @resumes.any? %>
+            <ul class="list-none m-0 p-0 flex flex-col gap-2.5">
+              <% @resumes.each do |resume| %>
+                <% resume_name = resume.complete_name.presence || t('profile.no_name') %>
+                <li class="glass-soft sr-lift rounded-[20px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="flex-1 min-w-0 flex flex-col gap-1">
+                    <h3 class="m-0 text-[17px] font-semibold truncate"><%= resume_name %></h3>
+                    <p class="m-0 text-sm truncate" style="<%= muted %>" dir="ltr"><%= resume.email %></p>
+                    <span class="inline-flex items-center gap-1.5 text-xs" style="color: rgba(238,243,238,0.5)">
+                      <%= svg.call(:clock, 14) %>
+                      <span class="sr-mono" dir="ltr"><%= resume.updated_at.strftime("%Y-%m-%d") %></span>
+                    </span>
                   </div>
-                  <div class="flex items-center gap-3">
-                    <%= link_to edit_resume_path(draft), class: "inline-flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]" do %>
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
-                      <%= t('profile.continue_editing') %>
+                  <div class="flex items-center gap-2">
+                    <%= link_to resume_path(resume), class: "#{icon_btn} hover:text-[#2fa36b]", style: soft, title: t('profile.view'), aria: { label: t('ux_confirm.aria.view_resume', name: resume_name) } do %>
+                      <%= svg.call(:eye) %>
                     <% end %>
-                    <%= button_to resume_path(draft), method: :delete, class: "p-3 text-gray-400 dark:text-gray-500 hover:text-red-600 bg-white dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl border border-gray-200 dark:border-white/10 hover:border-red-200 dark:hover:border-red-500/30 transition-all shadow-sm", data: { turbo_confirm: t('profile.delete_draft_confirm') } do %>
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
+                    <%= link_to edit_resume_path(resume), class: "#{icon_btn} hover:text-[#d6b877]", style: soft, title: t('profile.edit'), aria: { label: t('ux_confirm.aria.edit_resume', name: resume_name) } do %>
+                      <%= svg.call(:pen) %>
+                    <% end %>
+                    <%= link_to "/api/export_pdf?resume_id=#{resume.id}", class: "#{icon_btn} hover:text-[#2fa36b]", style: soft, title: t('profile.download_pdf'), aria: { label: t('ux_confirm.aria.download_pdf', name: resume_name) } do %>
+                      <%= svg.call(:download) %>
+                    <% end %>
+                    <%= button_to resume_path(resume), method: :delete, class: "#{icon_btn} cursor-pointer hover:text-red-300", style: soft, title: t('profile.delete'),
+                        aria: { label: t('ux_confirm.aria.delete_resume', name: resume_name) },
+                        form: {
+                          data: {
+                            action: "submit->confirm-delete#intercept",
+                            confirm_delete_title_param: t('ux_confirm.resume_title'),
+                            confirm_delete_body_param: t('ux_confirm.resume_body', name: resume_name),
+                            confirm_delete_confirm_label_param: t('ux_confirm.resume_confirm')
+                          }
+                        } do %>
+                      <%= svg.call(:trash) %>
                     <% end %>
                   </div>
-                </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <div class="glass-soft rounded-[24px] px-6 py-12 flex flex-col items-center text-center gap-3">
+              <span class="glass sr-float w-16 h-16 rounded-[20px] flex items-center justify-center" style="color: #2fa36b"><%= svg.call(:doc, 28) %></span>
+              <p class="m-0 text-[18px] font-semibold"><%= t('profile.no_resumes_yet') %></p>
+              <p class="m-0 text-sm mb-3" style="<%= muted %>"><%= t('profile.start_creating') %></p>
+              <%= link_to new_resume_path, class: primary_class, style: primary_style do %>
+                <%= svg.call(:add) %>
+                <%= t('profile.create_first_resume') %>
+                <span class="sr-ico flex"><%= arrow %></span>
               <% end %>
             </div>
-          </div>
+          <% end %>
+        </section>
+
+        <!-- Drafts -->
+        <% if @drafts.any? %>
+          <section class="<%= card_class %>">
+            <h2 class="<%= card_title %>">
+              <span class="<%= title_icon %>" style="color: #d6b877"><%= svg.call(:pen, 20) %></span>
+              <%= t('profile.drafts') %>
+              <span class="sr-mono text-sm font-normal" style="<%= muted %>">(<%= @drafts.count %>)</span>
+            </h2>
+            <ul class="list-none m-0 p-0 flex flex-col gap-2.5">
+              <% @drafts.each do |draft| %>
+                <% draft_name = draft.complete_name.presence || t('profile.draft_no_name') %>
+                <li class="glass-soft sr-lift rounded-[20px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="border-color: rgba(214,184,119,0.28)">
+                  <div class="flex-1 min-w-0 flex flex-col gap-1">
+                    <p class="m-0 text-[17px] font-semibold truncate"><%= draft_name %></p>
+                    <p class="m-0 text-sm" style="<%= muted %>"><%= t('profile.last_edited', date: draft.updated_at.strftime("%Y-%m-%d %H:%M")) %></p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <%= link_to edit_resume_path(draft), class: "sr-btn glass-soft inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-xl text-[15px] font-medium", style: "color: #d6b877; border-color: rgba(214,184,119,0.4); background: rgba(214,184,119,0.1)" do %>
+                      <%= svg.call(:pen) %>
+                      <%= t('profile.continue_editing') %>
+                    <% end %>
+                    <%= button_to resume_path(draft), method: :delete, class: "#{icon_btn} cursor-pointer hover:text-red-300", style: soft,
+                        title: t('profile.delete'),
+                        aria: { label: t('ux_confirm.aria.delete_draft', name: draft_name) },
+                        form: {
+                          data: {
+                            action: "submit->confirm-delete#intercept",
+                            confirm_delete_title_param: t('ux_confirm.draft_title'),
+                            confirm_delete_body_param: t('ux_confirm.draft_body', name: draft_name),
+                            confirm_delete_confirm_label_param: t('ux_confirm.draft_confirm')
+                          }
+                        } do %>
+                      <%= svg.call(:trash) %>
+                    <% end %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          </section>
         <% end %>
       </div>
 
       <!-- Sidebar (1/3) -->
-      <div class="space-y-8">
-        <!-- Coupon Redemption Card -->
-        <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
-          <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
-              </svg>
-              <%= t('profile.coupon_code') %>
-            </h2>
-          </div>
-          <div class="p-6">
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4"><%= t('profile.coupon_hint') %></p>
-            <%= form_with url: redeem_coupon_profile_path, method: :post, local: true, class: "flex flex-col gap-3" do |f| %>
-              <%= f.text_field :code, placeholder: random_coupon_code_placeholder, class: "w-full rounded-xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-darkCard/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary uppercase", autocomplete: "off" %>
-              <%= f.submit t('profile.apply_coupon'), class: "w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primaryHover text-white text-sm font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98] cursor-pointer" %>
-            <% end %>
-          </div>
-        </div>
+      <div class="flex flex-col gap-5 min-w-0">
+        <!-- Coupon -->
+        <section class="<%= card_class %>">
+          <h2 class="<%= card_title %>">
+            <span class="<%= title_icon %>" style="color: #2fa36b"><%= svg.call(:tag, 20) %></span>
+            <%= t('profile.coupon_code') %>
+          </h2>
+          <p class="m-0 text-sm" style="<%= soft %>"><%= t('profile.coupon_hint') %></p>
+          <%= form_with url: redeem_coupon_profile_path, method: :post, local: true, class: "flex flex-col gap-3" do |f| %>
+            <%= f.text_field :code, placeholder: random_coupon_code_placeholder, autocomplete: "off", "aria-label": t('profile.coupon_code'),
+                  class: "sr-mono glass-soft w-full min-h-[52px] rounded-2xl px-4 py-3 text-base uppercase focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d6b877]", style: "color: #eef3ee" %>
+            <button type="submit" class="<%= primary_class %> w-full" style="<%= primary_style %>">
+              <%= t('profile.apply_coupon') %>
+            </button>
+          <% end %>
+        </section>
 
-        <!-- Generation Credits Card -->
-        <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
-          <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <%= t('profile.generation_credits') %>
+        <!-- Generation credits -->
+        <% [
+             [ t('profile.generation_credits'), :check, "#d6b877", [
+                 [ t('profile.cv_builder_generation'), @stats[:cv_builder_remaining], @stats[:cv_builder_max], "#d6b877" ],
+                 [ t('profile.job_based_generation'), @stats[:job_based_remaining], @stats[:job_based_max], "#2fa36b" ]
+               ] ],
+             [ t('profile.translation_credits'), :translate, "#2fa36b", [
+                 [ t('profile.professional_summary'), @stats[:remaining_summary_translations], @stats[:summary_translations_max], "#2fa36b" ],
+                 [ t('profile.job_descriptions'), @stats[:remaining_jobs_translations], @stats[:jobs_translations_max], "#2fa36b" ]
+               ] ]
+           ].each do |title, icon, color, rows| %>
+          <section class="<%= card_class %>">
+            <h2 class="<%= card_title %>">
+              <span class="<%= title_icon %>" style="color: <%= color %>"><%= svg.call(icon, 20) %></span>
+              <%= title %>
             </h2>
-          </div>
-          <div class="p-6 space-y-5">
-            <!-- CV Builder Credits -->
-            <div class="p-4 bg-gradient-to-l from-action/10 to-white dark:from-action/20 dark:to-transparent rounded-xl border border-action/20">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.cv_builder_generation') %></span>
-                <span class="text-sm font-bold text-action">
-                  <% if @stats[:unlimited] %>
-                    <%= t('profile.unlimited') %>
-                  <% else %>
-                    <%= @stats[:cv_builder_remaining] %>/<%= @stats[:cv_builder_max] %>
-                  <% end %>
-                </span>
-              </div>
-              <div class="w-full bg-action/20 rounded-full h-2.5">
-                <div class="bg-action h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:cv_builder_remaining].to_f / @stats[:cv_builder_max] * 100).to_i %>%"></div>
-              </div>
-            </div>
-            
-            <!-- Job-Based CV Credits -->
-            <div class="p-4 bg-gradient-to-l from-amber-50 to-white dark:from-amber-500/10 dark:to-transparent rounded-xl border border-amber-100 dark:border-amber-500/20">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.job_based_generation') %></span>
-                <span class="text-sm font-bold text-amber-600 dark:text-amber-400">
-                  <% if @stats[:unlimited] %>
-                    <%= t('profile.unlimited') %>
-                  <% else %>
-                    <%= @stats[:job_based_remaining] %>/<%= @stats[:job_based_max] %>
-                  <% end %>
-                </span>
-              </div>
-              <div class="w-full bg-amber-100 dark:bg-amber-500/20 rounded-full h-2.5">
-                <div class="bg-amber-500 h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:job_based_remaining].to_f / @stats[:job_based_max] * 100).to_i %>%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Translation Credits Card -->
-        <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
-          <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-              </svg>
-              <%= t('profile.translation_credits') %>
-            </h2>
-          </div>
-          <div class="p-6 space-y-5">
-            <!-- Summary Translations -->
-            <div class="p-4 bg-gradient-to-l from-primary/10 to-white dark:from-primary/20 dark:to-transparent rounded-xl border border-primary/20">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.professional_summary') %></span>
-                <span class="text-sm font-bold text-primary">
-                  <% if @stats[:unlimited] %>
-                    <%= t('profile.unlimited') %>
-                  <% else %>
-                    <%= @stats[:remaining_summary_translations] %>/<%= @stats[:summary_translations_max] %>
-                  <% end %>
-                </span>
-              </div>
-              <div class="w-full bg-primary/20 rounded-full h-2.5">
-                <div class="bg-primary h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:remaining_summary_translations].to_f / @stats[:summary_translations_max] * 100).to_i %>%"></div>
-              </div>
-            </div>
-            
-            <!-- Jobs Translations -->
-            <div class="p-4 bg-gradient-to-l from-primary/10 to-white dark:from-primary/20 dark:to-transparent rounded-xl border border-primary/20">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200"><%= t('profile.job_descriptions') %></span>
-                <span class="text-sm font-bold text-primary">
-                  <% if @stats[:unlimited] %>
-                    <%= t('profile.unlimited') %>
-                  <% else %>
-                    <%= @stats[:remaining_jobs_translations] %>/<%= @stats[:jobs_translations_max] %>
-                  <% end %>
-                </span>
-              </div>
-              <div class="w-full bg-primary/20 rounded-full h-2.5">
-                <div class="bg-primary h-2.5 rounded-full transition-all" style="width: <%= @stats[:unlimited] ? 100 : (@stats[:remaining_jobs_translations].to_f / @stats[:jobs_translations_max] * 100).to_i %>%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- PDF History Card -->
-        <% if @cv_generations.any? %>
-          <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-100 dark:border-white/10 overflow-hidden backdrop-blur-sm">
-            <div class="px-6 py-5 border-b border-gray-100 dark:border-white/10">
-              <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <svg class="w-5 h-5 text-action" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-                <%= t('profile.pdf_history') %>
-              </h2>
-            </div>
-            <div class="divide-y divide-gray-100 dark:divide-white/10">
-              <% @cv_generations.limit(5).each do |gen| %>
-                <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                  <div>
-                    <p class="text-sm text-gray-700 dark:text-gray-300"><%= gen.created_at.strftime("%Y-%m-%d") %></p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500"><%= gen.created_at.strftime("%H:%M") %></p>
+            <div class="flex flex-col gap-2.5">
+              <% rows.each_with_index do |(label, left, max, bar), i| %>
+                <% width = @stats[:unlimited] ? 100 : pct.call(left, max) %>
+                <div class="glass-soft rounded-[18px] p-4 flex flex-col gap-2.5">
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium"><%= label %></span>
+                    <span class="sr-mono text-sm font-semibold" style="color: <%= bar %>" dir="ltr">
+                      <% if @stats[:unlimited] %><%= t('profile.unlimited') %><% else %><%= left %>/<%= max %><% end %>
+                    </span>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <% if gen.status == "completed" %>
-                      <span class="px-2.5 py-1 bg-action/10 text-action text-xs font-medium rounded-full"><%= t('profile.status_completed') %></span>
-                    <% elsif gen.status == "failed" %>
-                      <span class="px-2.5 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-medium rounded-full"><%= t('profile.status_failed') %></span>
-                    <% else %>
-                      <span class="px-2.5 py-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full"><%= gen.status %></span>
-                    <% end %>
-                    <% if gen.status == "completed" && gen.resume_id %>
-                      <%= link_to "/api/export_pdf?resume_id=#{gen.resume_id}", class: "p-1.5 text-primary hover:text-primaryHover hover:bg-primary/10 rounded-lg transition-colors" do %>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                      <% end %>
-                    <% end %>
+                  <div class="w-full h-2 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08)" role="presentation">
+                    <span class="sr-grow h-2 rounded-full" style="width: <%= width %>%; background: <%= bar %>; animation-delay: <%= (0.7 + i * 0.12).round(2) %>s"></span>
                   </div>
                 </div>
               <% end %>
             </div>
-          </div>
+          </section>
+        <% end %>
+        <% if @stats[:credits_enabled] && !@stats[:unlimited] %>
+          <p class="text-xs px-1" style="color: rgba(238,243,238,0.7)"><%= t("ux_overage.profile.then_credit_each", count: @stats[:credit_balance]) %></p>
         <% end %>
 
-        <!-- Danger Zone Card -->
-        <div class="bg-white dark:bg-white/5 rounded-2xl shadow-lg border-2 border-red-200 dark:border-red-500/30 overflow-hidden backdrop-blur-sm">
-          <div class="px-6 py-5 border-b border-red-200 dark:border-red-500/30 bg-gradient-to-l from-red-50 to-rose-50 dark:from-red-500/10 dark:to-transparent">
-            <h2 class="text-lg font-bold text-red-700 dark:text-red-400 flex items-center gap-3">
-              <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/20">
-                <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-              </span>
-              <%= t('profile.danger_zone') %>
+        <!-- PDF history -->
+        <% if @cv_generations.any? %>
+          <section class="<%= card_class %>">
+            <h2 class="<%= card_title %>">
+              <span class="<%= title_icon %>" style="color: #d6b877"><%= svg.call(:download, 20) %></span>
+              <%= t('profile.pdf_history') %>
             </h2>
-          </div>
-          <div class="p-6">
-            <p class="text-gray-600 dark:text-gray-300 text-base mb-3 leading-relaxed">
-              <%= t('pdpl_profile.export_hint') %>
-            </p>
-            <%= link_to export_profile_path,
-                data: { turbo: false },
-                class: "w-full inline-flex items-center justify-center gap-3 px-6 py-4 mb-6 bg-white dark:bg-white/5 border-2 border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98] backdrop-blur-sm" do %>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-              </svg>
-              <%= t('pdpl_profile.export_button') %>
-            <% end %>
-            <p class="text-gray-600 dark:text-gray-300 text-base mb-5 leading-relaxed">
-              <%= t('profile.danger_warning') %>
-            </p>
-            <%= button_to profile_path, 
-                method: :delete, 
-                class: "w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-red-600 hover:bg-red-700 text-white text-base font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98]",
-                form: { 
-                  data: { 
-                    turbo_confirm: t('profile.delete_account_warning'),
-                    controller: "confirm-delete"
-                  }
-                } do %>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-              <%= t('profile.delete_my_account') %>
-            <% end %>
-          </div>
-        </div>
+            <ul class="list-none m-0 p-0 flex flex-col gap-2">
+              <% @cv_generations.limit(5).each do |gen| %>
+                <li class="glass-soft rounded-2xl ps-4 pe-2 py-2 flex items-center justify-between gap-3 min-h-[60px]">
+                  <div class="sr-mono flex flex-col" dir="ltr">
+                    <span class="text-sm"><%= gen.created_at.strftime("%Y-%m-%d") %></span>
+                    <span class="text-xs" style="color: rgba(238,243,238,0.5)"><%= gen.created_at.strftime("%H:%M") %></span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <% if gen.status == "completed" %>
+                      <span class="glass-soft px-2.5 py-1 rounded-full text-xs font-medium" style="background: rgba(47,163,107,0.12); border-color: rgba(47,163,107,0.35); color: #2fa36b"><%= t('profile.status_completed') %></span>
+                    <% elsif gen.status == "failed" %>
+                      <span class="glass-soft px-2.5 py-1 rounded-full text-xs font-medium" style="background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.35); color: #fca5a5"><%= t('profile.status_failed') %></span>
+                    <% else %>
+                      <span class="glass-soft px-2.5 py-1 rounded-full text-xs font-medium" style="<%= soft %>"><%= gen.status %></span>
+                    <% end %>
+                    <% if gen.status == "completed" && gen.resume_id %>
+                      <%= link_to "/api/export_pdf?resume_id=#{gen.resume_id}", class: "#{icon_btn} hover:text-[#d6b877]", style: "color: #2fa36b", title: t('profile.download_pdf'), aria: { label: t('profile.download_pdf') } do %>
+                        <%= svg.call(:download) %>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          </section>
+        <% end %>
+
+        <!-- Danger zone -->
+        <section class="<%= card_class %>" style="border-color: rgba(248,113,113,0.32)">
+          <h2 class="<%= card_title %>" style="color: #fca5a5">
+            <span class="<%= title_icon %>" style="color: #fca5a5; background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3)"><%= svg.call(:warning, 20) %></span>
+            <%= t('profile.danger_zone') %>
+          </h2>
+          <p class="m-0 text-[15px] leading-relaxed" style="<%= soft %>"><%= t('pdpl_profile.export_hint') %></p>
+          <%= link_to export_profile_path, data: { turbo: false }, class: "#{secondary_class} w-full font-medium" do %>
+            <%= svg.call(:download) %>
+            <%= t('pdpl_profile.export_button') %>
+          <% end %>
+          <p class="m-0 text-[15px] leading-relaxed" style="<%= soft %>"><%= t('profile.danger_warning') %></p>
+          <%= button_to profile_path,
+              method: :delete,
+              class: "sr-btn w-full inline-flex items-center justify-center gap-2.5 min-h-[52px] px-5 rounded-2xl font-semibold text-[15px] text-white bg-red-600 hover:bg-red-500 border-0 cursor-pointer",
+              style: "box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 18px 40px -18px rgba(220,38,38,0.6)",
+              form: {
+                data: {
+                  action: "submit->confirm-delete#intercept",
+                  confirm_delete_title_param: t('ux_confirm.account_title'),
+                  confirm_delete_body_param: t('ux_confirm.account_body'),
+                  confirm_delete_confirm_label_param: t('ux_confirm.account_confirm'),
+                  confirm_delete_phrase_param: t('ux_confirm.account_phrase')
+                }
+              } do %>
+            <%= svg.call(:trash) %>
+            <%= t('profile.delete_my_account') %>
+          <% end %>
+        </section>
       </div>
     </div>
   </div>
+  <%= render "shared/confirm_dialog" %>
 </div>

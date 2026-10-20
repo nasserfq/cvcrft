@@ -1,586 +1,224 @@
-<!-- Include React and Babel -->
-<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<div id="cv-generation-show-root">
-  <!-- Fallback HTML content while React loads -->
-  <div class="container mx-auto px-4 py-8">
-    <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">CV Generation #<%= @cv_generation.id %></h1>
-        <div class="flex space-x-2">
-          <%= link_to "Back to List", cv_generations_path, 
-              class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
-        </div>
+<% tk = "ux_i18n2.cv_generations.show" %>
+<% content_for :title, t("#{tk}.title", id: @cv_generation.id) %>
+<% content_for :body_class, "sr-app-long" %>
+<%# Long page: the layout lets the ambient scroll with it, so its orbs run the full page height. %>
+<% content_for :ambient_scrolls, true %>
+<% icons = {
+     back: '<path d="M5 12h14M13 6l6 6-6 6"></path>',
+     eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle>',
+     download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path>',
+     retry: '<path d="M4 12a8 8 0 0114-5.3L20 9"></path><path d="M20 4v5h-5"></path><path d="M20 12a8 8 0 01-14 5.3L4 15"></path><path d="M4 20v-5h5"></path>',
+     stop: '<circle cx="12" cy="12" r="9"></circle><path d="M9 9l6 6M15 9l-6 6"></path>',
+     doc: '<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"></path><path d="M14 3v5h5M9 13h6M9 17h4"></path>',
+     check: '<circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path>',
+     alert: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.01"></path>',
+     spark: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path>'
+   } %>
+<% svg = ->(name, size = 16) { "<svg class=\"shrink-0\" width=\"#{size}\" height=\"#{size}\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">#{icons[name]}</svg>".html_safe } %>
+<% muted = "color: rgba(238,243,238,0.6)" %>
+<% primary_class = "sr-btn sr-primary inline-flex items-center justify-center gap-2.5 min-h-[48px] px-5 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+<% primary_style = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+<% secondary_class = "sr-btn glass-soft inline-flex items-center justify-center gap-2.5 min-h-[48px] px-[18px] rounded-2xl text-[15px] cursor-pointer" %>
+<% stamp = ->(time) { time.strftime("%Y-%m-%d %H:%M") } %>
+<% metadata = @cv_generation.metadata || {} %>
+<% pdf_ready = metadata["pdf_generated"].present? && metadata["pdf_generated"].to_s != "false" %>
+<% draft = @cv_generation.draft? && @cv_generation.draft_data.present? %>
+
+<div dir="<%= text_direction %>" data-controller="confirm-delete" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee; animation-name: sr-riseUp">
+  <div class="relative mx-auto max-w-[1240px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-8">
+    <%= render 'shared/flash_alert' %>
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+      <div class="flex flex-col items-start gap-5 min-w-0">
+        <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+          <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+          <%= t("ux_i18n2.cv_generations.index.ai_generated") %>
+        </span>
+        <h1 class="m-0 font-semibold" style="font-size: clamp(30px, 4.2vw, 50px); line-height: 1.15; letter-spacing: -0.02em">
+          <% words = t("#{tk}.title", id: @cv_generation.id).split %>
+          <% delay = 0.1 %>
+          <% words.each_with_index do |word, i| %><span class="sr-w" style="<%= 'color: #d6b877; ' if i == words.size - 1 && words.size > 1 %>animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+        </h1>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Status and Info Panel -->
-        <div class="lg:col-span-1">
-          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Status & Information</h2>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Status</label>
-                <span class="px-3 py-1 rounded-full text-sm font-medium mt-1 inline-block
-                  <%= case @cv_generation.status
-                      when 'completed' then 'bg-green-100 text-green-800'
-                      when 'processing' then 'bg-yellow-100 text-yellow-800'
-                      when 'failed' then 'bg-red-100 text-red-800'
-                      when 'cancelled' then 'bg-gray-100 text-gray-800'
-                      when 'draft' then 'bg-emerald-100 text-emerald-800'
-                      else 'bg-gray-100 text-gray-800'
-                      end %>">
-                  <%= @cv_generation.draft? ? 'مسودة' : @cv_generation.status.humanize %>
-                </span>
-                <% if @cv_generation.draft? %>
-                  <span class="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    💾 محفوظة
-                  </span>
+      <div class="sr-up flex items-center gap-2.5 flex-wrap" style="animation-delay: .45s">
+        <%= link_to cv_generations_path, class: secondary_class do %>
+          <span class="sr-ico flex"><span class="flex" style="<%= 'transform: scaleX(-1)' if text_direction == 'ltr' %>"><%= svg.call(:back) %></span></span>
+          <%= t("#{tk}.back") %>
+        <% end %>
+        <% if @cv_generation.status == "failed" %>
+          <%= button_to retry_cv_generation_path(@cv_generation), method: :post, class: primary_class, style: primary_style do %>
+            <%= svg.call(:retry) %><%= t("#{tk}.retry") %>
+          <% end %>
+        <% end %>
+        <% if @cv_generation.status == "processing" %>
+          <%= button_to cancel_cv_generation_path(@cv_generation), method: :post, class: "#{secondary_class} hover:text-red-300" do %>
+            <%= svg.call(:stop) %><%= t("#{tk}.cancel") %>
+          <% end %>
+        <% end %>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <!-- Status and details -->
+      <aside class="glass sr-up rounded-[28px] p-6 flex flex-col gap-5 lg:sticky lg:top-28" style="animation-delay: .55s">
+        <h2 class="m-0 text-[18px] font-semibold"><%= t("#{tk}.info_title") %></h2>
+        <dl class="m-0 flex flex-col gap-4 text-[14px]">
+          <div class="flex items-center justify-between gap-3">
+            <dt style="<%= muted %>"><%= t("#{tk}.status") %></dt>
+            <dd class="m-0"><%= render "cv_generations/status_chip", generation: @cv_generation %></dd>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <dt style="<%= muted %>"><%= t("#{tk}.created") %></dt>
+            <dd class="m-0 sr-mono text-xs" dir="ltr"><%= stamp.call(@cv_generation.created_at) %></dd>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <dt style="<%= muted %>"><%= t("#{tk}.updated") %></dt>
+            <dd class="m-0 sr-mono text-xs" dir="ltr"><%= stamp.call(@cv_generation.updated_at) %></dd>
+          </div>
+          <% if @cv_generation.tokens_used %>
+            <div class="flex items-center justify-between gap-3">
+              <dt style="<%= muted %>"><%= t("#{tk}.tokens_used") %></dt>
+              <dd class="m-0 sr-mono text-xs" dir="ltr"><%= number_with_delimiter(@cv_generation.tokens_used) %></dd>
+            </div>
+          <% end %>
+          <% if @cv_generation.ai_model.present? %>
+            <div class="flex items-center justify-between gap-3">
+              <dt style="<%= muted %>"><%= t("#{tk}.ai_model") %></dt>
+              <dd class="m-0 sr-mono text-xs truncate" dir="ltr"><%= @cv_generation.ai_model %></dd>
+            </div>
+          <% end %>
+          <% if @cv_generation.resume_id %>
+            <div class="flex items-center justify-between gap-3">
+              <dt style="<%= muted %>"><%= t("#{tk}.resume") %></dt>
+              <dd class="m-0"><%= link_to t("#{tk}.view_resume"), resume_path(@cv_generation.resume_id), class: "underline underline-offset-4", style: "color: #2fa36b" %></dd>
+            </div>
+          <% end %>
+        </dl>
+      </aside>
+
+      <!-- Main content -->
+      <div class="lg:col-span-2 flex flex-col gap-6">
+        <% if @cv_generation.status == "processing" %>
+          <section id="cvgen-show-processing" class="glass sr-up rounded-[28px] p-6 flex items-center gap-4" style="animation-delay: .6s; border-color: rgba(214,184,119,0.35)" role="status">
+            <span class="glass-soft flex-none w-12 h-12 rounded-2xl flex items-center justify-center" style="color: #d6b877">
+              <span class="sr-spin inline-flex"><%= svg.call(:spark, 22) %></span>
+            </span>
+            <div class="flex flex-col gap-1">
+              <h2 class="m-0 text-[17px] font-semibold" style="color: #d6b877"><%= t("#{tk}.processing_title") %></h2>
+              <p class="m-0 text-[14px]" style="color: rgba(238,243,238,0.7)"><%= t("#{tk}.processing_text") %></p>
+            </div>
+          </section>
+          <script>
+            (function () {
+              var url = <%= raw json_escape(cv_generation_path(@cv_generation, format: :json).to_json) %>;
+              var timer = setInterval(function () {
+                if (!document.getElementById('cvgen-show-processing')) { clearInterval(timer); return; }
+                fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+                  .then(function (r) { return r.ok ? r.json() : null; })
+                  .then(function (data) {
+                    if (!data || data.status === 'processing') return;
+                    clearInterval(timer);
+                    if (window.Turbo && window.Turbo.visit) { window.Turbo.visit(window.location.href, { action: 'replace' }); }
+                    else { window.location.reload(); }
+                  })
+                  .catch(function () {});
+              }, 4000);
+            })();
+          </script>
+        <% end %>
+
+        <% if @cv_generation.status == "failed" %>
+          <section class="glass sr-up rounded-[28px] p-6 flex items-start gap-4" style="animation-delay: .6s; border-color: rgba(248,113,113,0.35)" role="alert">
+            <span class="glass-soft flex-none w-12 h-12 rounded-2xl flex items-center justify-center" style="color: #fca5a5"><%= svg.call(:alert, 22) %></span>
+            <div class="flex flex-col gap-1">
+              <h2 class="m-0 text-[17px] font-semibold" style="color: #fca5a5"><%= t("#{tk}.failed_title") %></h2>
+              <p class="m-0 text-[14px]" style="color: rgba(238,243,238,0.7)"><%= t("#{tk}.failed_text") %></p>
+            </div>
+          </section>
+        <% end %>
+
+        <!-- Job description -->
+        <% if @cv_generation.job_description.present? %>
+          <section class="glass sr-up rounded-[28px] p-6 flex flex-col gap-3" style="animation-delay: .65s">
+            <h2 class="m-0 text-[18px] font-semibold"><%= t("#{tk}.job_description") %></h2>
+            <div class="glass-soft rounded-[18px] p-4 max-h-[320px] overflow-y-auto">
+              <p class="m-0 text-[14px] whitespace-pre-wrap leading-relaxed" style="color: rgba(238,243,238,0.8)"><%= @cv_generation.job_description %></p>
+            </div>
+          </section>
+        <% end %>
+
+        <% if draft %>
+          <!-- Saved draft -->
+          <section class="glass sr-reveal rounded-[28px] p-6 flex flex-col gap-4" style="border-color: rgba(214,184,119,0.3)">
+            <h2 class="m-0 text-[18px] font-semibold" style="color: #d6b877"><%= t("#{tk}.saved_draft") %></h2>
+            <p class="m-0 text-[14px]" style="color: rgba(238,243,238,0.75)"><%= t("#{tk}.saved_at") %>:
+              <span class="sr-mono text-xs" dir="ltr"><%= (stamp.call(Time.zone.parse(@cv_generation.draft_data["saved_at"].to_s)) rescue nil) || t("#{tk}.not_specified") %></span>
+            </p>
+            <% if @cv_generation.draft_data["job_description"].present? %>
+              <div class="glass-soft rounded-[18px] p-4">
+                <p class="m-0 text-[14px] whitespace-pre-wrap leading-relaxed" style="color: rgba(238,243,238,0.8)"><%= @cv_generation.draft_data["job_description"] %></p>
+              </div>
+            <% end %>
+            <% if @cv_generation.draft_data["resume_id"] %>
+              <p class="m-0 text-[14px]" style="color: rgba(238,243,238,0.75)"><%= t("#{tk}.selected_resume") %>:
+                <%= link_to t("#{tk}.view_resume"), resume_path(@cv_generation.draft_data["resume_id"]), class: "underline underline-offset-4", style: "color: #2fa36b" %>
+              </p>
+            <% end %>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <%= button_to resume_draft_cv_generation_path(@cv_generation), method: :post, form: { data: { action: "submit->confirm-delete#intercept", confirm_delete_title_param: t("#{tk}.resume_draft"), confirm_delete_body_param: t("#{tk}.resume_draft_confirm"), confirm_delete_confirm_label_param: t("#{tk}.resume_draft") } }, class: primary_class, style: primary_style do %>
+                <%= svg.call(:retry) %><%= t("#{tk}.resume_draft") %>
+              <% end %>
+              <%= link_to t("#{tk}.back"), cv_generations_path, class: secondary_class %>
+            </div>
+          </section>
+        <% elsif @cv_generation.generated_content.present? %>
+          <!-- Generated summary -->
+          <section class="glass sr-reveal rounded-[28px] p-6 flex flex-col gap-4">
+            <h2 class="m-0 text-[18px] font-semibold"><%= t("#{tk}.generated_summary") %></h2>
+            <div class="glass-soft rounded-[18px] p-4">
+              <p class="m-0 text-[15px] whitespace-pre-wrap leading-relaxed" style="color: rgba(238,243,238,0.85)"><%= @cv_generation.generated_content %></p>
+            </div>
+            <% if pdf_ready %>
+              <div class="glass-soft rounded-[18px] px-4 py-3 flex items-center gap-2 flex-wrap text-[13px]" style="background: rgba(47,163,107,0.08); border-color: rgba(47,163,107,0.3)">
+                <span style="color: #2fa36b"><%= svg.call(:check) %></span>
+                <span class="font-medium" style="color: #2fa36b"><%= t("#{tk}.pdf_ready") %></span>
+                <span class="sr-mono text-xs truncate" style="<%= muted %>" dir="ltr"><%= number_to_human_size(metadata["pdf_size"]) %> · <%= metadata["pdf_filename"] %></span>
+              </div>
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <%= link_to download_pdf_cv_generation_path(@cv_generation), class: primary_class, style: primary_style, data: { turbo: false } do %>
+                  <%= svg.call(:download) %><%= t("#{tk}.download_pdf") %>
+                <% end %>
+                <%= link_to view_pdf_cv_generation_path(@cv_generation), target: "_blank", rel: "noopener", class: secondary_class do %>
+                  <%= svg.call(:eye) %><%= t("#{tk}.view_pdf") %>
+                <% end %>
+                <%= link_to download_pdf_cv_generation_path(@cv_generation, regenerate: true), class: secondary_class, title: t("#{tk}.regenerate_note"), data: { turbo: false } do %>
+                  <%= svg.call(:retry) %><%= t("#{tk}.regenerate_pdf") %>
                 <% end %>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Created</label>
-                <p class="text-sm text-gray-600"><%= @cv_generation.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Last Updated</label>
-                <p class="text-sm text-gray-600"><%= @cv_generation.updated_at.strftime("%B %d, %Y at %I:%M %p") %></p>
-              </div>
-              <% if @cv_generation.tokens_used %>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Tokens Used</label>
-                  <p class="text-sm text-gray-600"><%= number_with_delimiter(@cv_generation.tokens_used) %></p>
-                </div>
-              <% end %>
-              <% if @cv_generation.resume_id %>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Resume ID</label>
-                  <p class="text-sm text-gray-600">
-          <%= @cv_generation.resume_id %>
-          <%= link_to "View Resume", resume_path(@cv_generation.resume_id), 
-            class: "text-emerald-600 hover:text-emerald-800 ml-2 js-hover-target", data: { hoverable: true } %>
-                  </p>
-                </div>
-              <% end %>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">AI Model</label>
-                <p class="text-sm text-gray-600"><%= @cv_generation.ai_model %></p>
-              </div>
+              <p class="m-0 text-xs" style="<%= muted %>"><%= t("#{tk}.regenerate_note") %></p>
+            <% elsif metadata["pdf_error"].present? %>
+              <p class="glass-soft m-0 rounded-[18px] px-4 py-3 text-[13px]" style="color: #fca5a5; border-color: rgba(248,113,113,0.35)"><%= t("#{tk}.pdf_error", error: metadata["pdf_error"]) %></p>
+            <% end %>
+          </section>
+        <% end %>
+
+        <% if pdf_ready && metadata["pdf_data"].present? %>
+          <!-- PDF preview -->
+          <section class="glass sr-reveal rounded-[28px] p-4 sm:p-5 flex flex-col gap-4">
+            <div class="flex items-center justify-between gap-3 px-1">
+              <h2 class="m-0 text-[18px] font-semibold inline-flex items-center gap-2"><span style="color: #2fa36b"><%= svg.call(:doc, 18) %></span><%= t("#{tk}.pdf_title") %></h2>
+              <span class="sr-mono text-xs truncate" style="<%= muted %>" dir="ltr"><%= metadata["pdf_filename"] %></span>
             </div>
-          </div>
-        </div>
-        <!-- Main Content -->
-        <div class="lg:col-span-2">
-          <!-- Job Description -->
-          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
-            <div class="bg-gray-50 p-4 rounded border">
-              <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= @cv_generation.job_description %></p>
+            <div class="rounded-[20px] overflow-hidden border border-white/10 bg-white keep-light">
+              <iframe src="<%= view_pdf_cv_generation_path(@cv_generation) %>" class="block w-full border-0" style="height: min(80vh, 900px)" title="<%= t("#{tk}.pdf_title") %>">
+                <p><%= t("#{tk}.pdf_fallback") %> <%= link_to t("#{tk}.pdf_fallback_link"), download_pdf_cv_generation_path(@cv_generation) %></p>
+              </iframe>
             </div>
-          </div>
-          <!-- Generated Content -->
-          <% if @cv_generation.draft? && @cv_generation.draft_data.present? %>
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 class="text-xl font-semibold text-gray-900 mb-4">مسودة محفوظة</h2>
-              <div class="bg-emerald-50 p-4 rounded border border-emerald-200">
-                <div class="mb-4">
-                  <h3 class="text-lg font-medium text-emerald-800 mb-2">معلومات المسودة</h3>
-                  <p class="text-sm text-emerald-700 mb-2">
-                    <strong>تاريخ الحفظ:</strong>
-                    <%= Time.parse(@cv_generation.draft_data['saved_at']).strftime("%B %d, %Y at %I:%M %p") rescue 'غير محدد' %>
-                  </p>
-                  <p class="text-sm text-emerald-700 mb-2">
-                    <strong>وصف الوظيفة:</strong>
-                  </p>
-                  <div class="bg-white p-3 rounded border">
-                    <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= @cv_generation.draft_data['job_description'] %></p>
-                  </div>
-                  <% if @cv_generation.draft_data['resume_id'] %>
-                    <p class="text-sm text-emerald-700 mt-2">
-                      <strong>السيرة الذاتية المختارة:</strong> ID <%= @cv_generation.draft_data['resume_id'] %>
-                      <%= link_to "عرض السيرة الذاتية", resume_path(@cv_generation.draft_data['resume_id']), 
-                          class: "text-emerald-600 hover:text-emerald-800 ml-2 js-hover-target", data: { hoverable: true } %>
-                    </p>
-                  <% end %>
-                </div>
-          <div class="flex space-x-3">
-          <%= link_to "استئناف المسودة", resume_draft_cv_generation_path(@cv_generation), 
-            method: :post,
-            class: "bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target",
-            data: { confirm: "هل تريد استئناف هذه المسودة؟", hoverable: true } %>
-          <%= link_to "العودة للقائمة", cv_generations_path, 
-            class: "bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
-        </div>
-              </div>
-            </div>
-          <% elsif @cv_generation.generated_content.present? %>
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated Professional Summary</h2>
-              <div class="bg-gray-50 p-4 rounded border">
-                <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= @cv_generation.generated_content %></p>
-              </div>
-              <% if @cv_generation.metadata&.dig("pdf_generated") %>
-                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded">
-                  <p class="text-sm text-green-700">
-                    <strong>✓ PDF Generated Successfully</strong> - 
-                    Size: <%= number_to_human_size(@cv_generation.metadata["pdf_size"]) %> | 
-                    Filename: <%= @cv_generation.metadata["pdf_filename"] %>
-                  </p>
-                  <div class="mt-2">
-          <%= link_to "Download PDF", download_pdf_cv_generation_path(@cv_generation), 
-            class: "bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 mr-2 js-hover-target", data: { hoverable: true } %>
-          <%= link_to "View PDF", view_pdf_cv_generation_path(@cv_generation), 
-            target: "_blank",
-            class: "bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
-          <%= link_to "Regenerate PDF", download_pdf_cv_generation_path(@cv_generation, regenerate: true), 
-            class: "mt-2 bg-primary hover:bg-primary text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
-                    <div class="text-xs text-gray-500 mt-1">PDF Version: <%= @cv_generation.metadata["pdf_version"] || "Unknown" %></div>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-          <!-- PDF Display (Fallback) -->
-          <% if @cv_generation.metadata&.dig("pdf_generated") && @cv_generation.metadata&.dig("pdf_data") %>
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 class="text-xl font-semibold text-gray-900 mb-4">Generated CV PDF</h2>
-              <div class="border border-gray-300 rounded-lg overflow-hidden">
-                <iframe 
-                  src="<%= view_pdf_cv_generation_path(@cv_generation) %>" 
-                  width="100%" 
-                  height="800px" 
-                  style="border: none;"
-                  title="Generated CV PDF">
-                    <p>Your browser does not support PDFs. 
-                    <%= link_to "Download the PDF instead", download_pdf_cv_generation_path(@cv_generation), class: "js-hover-target", data: { hoverable: true } %>.
-                  </p>
-                </iframe>
-              </div>
-            </div>
-          <% end %>
-          <!-- Processing Status -->
-          <% if @cv_generation.status == 'processing' %>
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <div class="flex items-center">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-3"></div>
-                <div>
-                  <h3 class="text-lg font-medium text-yellow-800">Processing CV Generation</h3>
-                  <p class="text-sm text-yellow-700">Your CV is being generated. This may take a few minutes. The page will refresh automatically when complete.</p>
-                </div>
-              </div>
-            </div>
-          <% end %>
-          <!-- Error Status -->
-          <% if @cv_generation.status == 'failed' %>
-            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h3 class="text-lg font-medium text-red-800">Generation Failed</h3>
-              <p class="text-sm text-red-700">There was an error generating your CV. You can try again using the retry button above.</p>
-            </div>
-          <% end %>
-        </div>
+          </section>
+        <% end %>
       </div>
     </div>
   </div>
+  <%= render "shared/confirm_dialog" %>
 </div>
-<script type="text/babel">
-  const { createRoot } = ReactDOM;
-  const { useState, useEffect } = React;
-
-  // PdfViewer Component
-  const PdfViewer = ({ cvGenerationId, pdfData, filename, fileSize }) => {
-    const [pdfUrl, setPdfUrl] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-      if (pdfData) {
-        try {
-          // Create a blob from the base64 PDF data
-          const byteCharacters = atob(pdfData);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'application/pdf' });
-
-          // Create object URL for the PDF
-          const url = URL.createObjectURL(blob);
-          setPdfUrl(url);
-          setLoading(false);
-        } catch (err) {
-          console.error('Error creating PDF URL:', err);
-          setError('Failed to load PDF');
-          setLoading(false);
-        }
-      } else {
-        setError('No PDF data available');
-        setLoading(false);
-      }
-
-      // Cleanup function to revoke object URL
-      return () => {
-        if (pdfUrl) {
-          URL.revokeObjectURL(pdfUrl);
-        }
-      };
-    }, [pdfData]);
-
-    const handleDownload = () => {
-      if (pdfUrl) {
-        const link = document.createElement('a');
-        link.href = pdfUrl;
-        link.download = filename || 'generated_cv.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    };
-
-    const handleOpenInNewTab = () => {
-      if (pdfUrl) {
-        window.open(pdfUrl, '_blank');
-      }
-    };
-
-    if (loading) {
-      return (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-            <span className="ml-3 text-gray-600">Loading PDF...</span>
-          </div>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="text-center py-8">
-            <div className="text-red-500 text-lg mb-2">❌ {error}</div>
-            <p className="text-gray-600">Unable to display PDF preview</p>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Generated CV PDF</h2>
-          <div className="flex space-x-2">
-            <button
-              onClick={handleDownload}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-            >
-              ⬇️ Download PDF
-            </button>
-            <button
-              onClick={handleOpenInNewTab}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-            >
-              🔗 Open in New Tab
-            </button>
-          </div>
-        </div>
-
-        {/* PDF Display */}
-        <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">
-                📄 {filename || 'generated_cv.pdf'}
-              </span>
-              <span className="text-sm text-gray-500">
-                {fileSize ? `${(fileSize / 1024).toFixed(1)} KB` : ''}
-              </span>
-            </div>
-          </div>
-
-          <div className="relative" style={{ height: '800px' }}>
-            <iframe
-              src={pdfUrl}
-              width="100%"
-              height="100%"
-              style={{ border: 'none' }}
-              title="Generated CV PDF"
-              onLoad={() => setLoading(false)}
-            >
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <p className="text-gray-600 mb-4">Your browser doesn't support PDF preview</p>
-                  <button
-                    onClick={handleDownload}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded"
-                  >
-                    Download PDF Instead
-                  </button>
-                </div>
-              </div>
-            </iframe>
-          </div>
-        </div>
-
-        <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded">
-          <p className="text-sm text-emerald-700">
-            <strong>📄 PDF Preview</strong> - The PDF is displayed above. You can scroll within the frame or download it using the button above.
-          </p>
-        </div>
-      </div>
-    );
-  };
-
-  // CvGenerationShow Component
-  const CvGenerationShow = () => {
-    const [cvGeneration, setCvGeneration] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [refreshing, setRefreshing] = useState(false);
-
-    useEffect(() => {
-      fetchCvGeneration();
-
-      // Set up auto-refresh for processing jobs
-      const interval = setInterval(() => {
-        if (cvGeneration && cvGeneration.status === 'processing') {
-          setRefreshing(true);
-          fetchCvGeneration();
-        }
-      }, 3000); // Check every 3 seconds
-
-      return () => clearInterval(interval);
-    }, [cvGeneration?.status]);
-
-    const fetchCvGeneration = async () => {
-      try {
-        const response = await fetch(`/cv_generations/<%= @cv_generation.id %>.json`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch CV generation');
-        }
-        const data = await response.json();
-        setCvGeneration(data);
-
-        // If job completed, stop refreshing
-        if (data.status === 'completed' || data.status === 'failed') {
-          setRefreshing(false);
-        }
-      } catch (err) {
-        setError(err.message);
-        setRefreshing(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    };
-
-    const getStatusColor = (status) => {
-      switch (status) {
-        case 'completed': return 'bg-green-100 text-green-800';
-        case 'processing': return 'bg-yellow-100 text-yellow-800';
-        case 'failed': return 'bg-red-100 text-red-800';
-        case 'cancelled': return 'bg-gray-100 text-gray-800';
-        default: return 'bg-gray-100 text-gray-800';
-      }
-    };
-
-    if (loading) {
-      return (
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-            <span className="ml-3 text-gray-600">Loading CV generation...</span>
-          </div>
-        </div>
-      );
-    }
-
-    if (error || !cvGeneration) {
-      return (
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center py-12">
-            <div className="text-red-500 text-lg mb-4">❌ {error || 'CV generation not found'}</div>
-            <button
-              onClick={() => window.location.href = '/cv_generations'}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded"
-            >
-              Back to CV Generations
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">CV Generation #{cvGeneration.id}</h1>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => window.location.href = '/cv_generations'}
-                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-              >
-                Back to List
-              </button>
-              {cvGeneration.status === 'failed' && (
-                <button
-                  onClick={() => window.location.href = `/cv_generations/${cvGeneration.id}/retry`}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-                >
-                  Retry
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Status and Info Panel */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Status & Information</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium mt-1 inline-block ${getStatusColor(cvGeneration.status)}`}>
-                      {cvGeneration.status?.charAt(0).toUpperCase() + cvGeneration.status?.slice(1)}
-                    </span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Created</label>
-                    <p className="text-sm text-gray-600">{formatDate(cvGeneration.created_at)}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Last Updated</label>
-                    <p className="text-sm text-gray-600">{formatDate(cvGeneration.updated_at)}</p>
-                  </div>
-                  {cvGeneration.tokens_used && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Tokens Used</label>
-                      <p className="text-sm text-gray-600">{cvGeneration.tokens_used.toLocaleString()}</p>
-                    </div>
-                  )}
-                  {cvGeneration.resume_id && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Resume ID</label>
-                      <p className="text-sm text-gray-600">
-                        {cvGeneration.resume_id}
-                        <a
-                          href={`/resumes/${cvGeneration.resume_id}`}
-                          className="text-emerald-600 hover:text-emerald-800 ml-2 js-hover-target"
-                          data-hoverable={true}
-                        >
-                          View Resume
-                        </a>
-                      </p>
-                    </div>
-                  )}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">AI Model</label>
-                    <p className="text-sm text-gray-600">{cvGeneration.ai_model}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              {/* Job Description */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
-                <div className="bg-gray-50 p-4 rounded border">
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{cvGeneration.job_description}</p>
-                </div>
-              </div>
-
-              {/* Generated Professional Summary */}
-              {cvGeneration.generated_content && (
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Generated Professional Summary</h2>
-                  <div className="bg-gray-50 p-4 rounded border">
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{cvGeneration.generated_content}</p>
-                  </div>
-                  {cvGeneration.metadata?.pdf_generated && (
-                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
-                      <p className="text-sm text-green-700">
-                        <strong>✓ PDF Generated Successfully</strong> -
-                        Size: {cvGeneration.metadata.pdf_size ? `${(cvGeneration.metadata.pdf_size / 1024).toFixed(1)} KB` : 'Unknown'} |
-                        Filename: {cvGeneration.metadata.pdf_filename || 'generated_cv.pdf'}
-                      </p>
-                    </div>
-                  )}
-                  {cvGeneration.metadata?.pdf_error && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
-                      <p className="text-sm text-red-700">
-                        <strong>✗ PDF Generation Failed:</strong> {cvGeneration.metadata.pdf_error}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* PDF Viewer */}
-              {cvGeneration.metadata?.pdf_generated && cvGeneration.metadata?.pdf_data && (
-                <PdfViewer
-                  cvGenerationId={cvGeneration.id}
-                  pdfData={cvGeneration.metadata.pdf_data}
-                  filename={cvGeneration.metadata.pdf_filename}
-                  fileSize={cvGeneration.metadata.pdf_size}
-                />
-              )}
-
-              {/* Processing Status */}
-              {cvGeneration.status === 'processing' && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-3"></div>
-                    <div>
-                      <h3 className="text-lg font-medium text-yellow-800">Processing CV Generation</h3>
-                      <p className="text-sm text-yellow-700">
-                        Your CV is being generated. This may take a few minutes.
-                        {refreshing && <span className="ml-2 text-emerald-600">🔄 Checking for updates...</span>}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Error Status */}
-              {cvGeneration.status === 'failed' && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-red-800">Generation Failed</h3>
-                  <p className="text-sm text-red-700">There was an error generating your CV. You can try again using the retry button above.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Debug: Check if React is loaded
-  console.log('React loaded:', typeof React !== 'undefined');
-  console.log('ReactDOM loaded:', typeof ReactDOM !== 'undefined');
-  console.log('Root element:', document.getElementById('cv-generation-show-root'));
-
-  // Render the component
-  if (typeof React !== 'undefined' && typeof ReactDOM !== 'undefined') {
-    const root = createRoot(document.getElementById('cv-generation-show-root'));
-    root.render(<CvGenerationShow />);
-    console.log('React component rendered successfully');
-  } else {
-    console.error('React or ReactDOM not loaded');
-    document.getElementById('cv-generation-show-root').innerHTML = '<div class="text-red-500">Error: React not loaded. Please refresh the page.</div>';
-  }
-</script>

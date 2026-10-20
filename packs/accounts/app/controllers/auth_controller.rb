@@ -7,17 +7,20 @@ class AuthController < ApplicationController
   # Throttle code requests and guesses. Per IP for both, and per address for
   # sending so nobody can flood one inbox or burn a victim's pending code.
   rate_limit to: 5, within: 10.minutes, only: :send_otp, name: "otp-send-ip",
-             with: -> { redirect_to login_path, alert: "محاولات كثيرة. يرجى المحاولة بعد قليل." }
+             with: -> { redirect_to login_path, alert: t("ux_i18n.auth.too_many_attempts") }
   rate_limit to: 3, within: 10.minutes, only: :send_otp, name: "otp-send-email",
              by: -> { params[:email].to_s.strip.downcase },
-             with: -> { redirect_to login_path(otp_sent: "true", email: params[:email]), alert: "تم إرسال رمز مؤخراً. يرجى التحقق من بريدك أو المحاولة بعد قليل." }
+             with: -> { redirect_to login_path(otp_sent: "true", email: params[:email]), alert: t("ux_i18n.auth.code_recently_sent") }
   rate_limit to: 20, within: 10.minutes, only: :verify_otp, name: "otp-verify-ip",
-             with: -> { redirect_to login_path, alert: "محاولات كثيرة. يرجى المحاولة بعد قليل." }
+             with: -> { redirect_to login_path, alert: t("ux_i18n.auth.too_many_attempts") }
 
   # An expired or missing form token (e.g. a login page left open) sends the
   # user back to a fresh login page instead of a 422.
+  # The forgery check runs before switch_locale, so pick the locale here.
   rescue_from ActionController::InvalidAuthenticityToken do
-    redirect_to login_path, alert: "انتهت صلاحية الصفحة. يرجى المحاولة مرة أخرى."
+    I18n.with_locale(extract_locale) do
+      redirect_to login_path, alert: t("ux_i18n.auth.page_expired")
+    end
   end
 
   def login
@@ -29,7 +32,7 @@ class AuthController < ApplicationController
     return_to = params[:return_to]
 
     unless email.present? && email.match?(URI::MailTo::EMAIL_REGEXP)
-      flash[:alert] = "يرجى إدخال بريد إلكتروني صحيح"
+      flash[:alert] = t("ux_i18n.auth.invalid_email")
       redirect_to login_path(return_to: return_to) and return
     end
 
@@ -46,11 +49,11 @@ class AuthController < ApplicationController
       # Send email via Sidekiq background job
       SendOtpEmailJob.perform_later(otp_verification.id)
 
-      flash[:notice] = "تم إرسال رمز التحقق إلى بريدك الإلكتروني"
+      flash[:notice] = t("ux_i18n.auth.code_sent")
       redirect_to login_path(otp_sent: "true", email: email, return_to: return_to)
     rescue => e
       Rails.logger.error "OTP Send Error: #{e.message}"
-      flash[:alert] = "فشل في إرسال رمز التحقق. يرجى المحاولة مرة أخرى."
+      flash[:alert] = t("ux_i18n.auth.code_send_failed")
       redirect_to login_path(return_to: return_to)
     end
   end
@@ -61,7 +64,7 @@ class AuthController < ApplicationController
     return_to = params[:return_to].presence || session.delete(:user_return_to)
 
     unless email.present? && otp_code.present?
-      flash[:alert] = "البريد الإلكتروني ورمز التحقق مطلوبان"
+      flash[:alert] = t("ux_i18n.auth.email_and_code_required")
       redirect_to login_path(return_to: return_to) and return
     end
 
@@ -70,7 +73,7 @@ class AuthController < ApplicationController
     otp_verification = OtpVerification.valid.where(email: email).order(created_at: :desc).first
 
     unless otp_verification&.verify!(otp_code)
-      flash[:alert] = "رمز التحقق غير صحيح أو منتهي الصلاحية"
+      flash[:alert] = t("ux_i18n.auth.invalid_code")
       redirect_to login_path(otp_sent: "true", email: email, return_to: return_to) and return
     end
 
@@ -93,13 +96,13 @@ class AuthController < ApplicationController
       identify_user(user)
       track_event("user_logged_in", { login_method: "otp" })
 
-      flash[:notice] = "تم تسجيل الدخول بنجاح!"
+      flash[:notice] = t("ux_i18n.auth.signed_in")
 
       # Redirect to the intended destination or CV builder page
       redirect_to safe_return_to(return_to) || new_resume_path
     rescue => e
       Rails.logger.error "OTP Verification Error: #{e.message}"
-      flash[:alert] = "فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى."
+      flash[:alert] = t("ux_i18n.auth.sign_in_failed")
       redirect_to login_path(return_to: return_to)
     end
   end

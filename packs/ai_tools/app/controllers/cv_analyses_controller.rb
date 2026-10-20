@@ -16,20 +16,20 @@ class CvAnalysesController < ApplicationController
       track_event("cv_analysis_upload_failed", { error: "no_file" })
       respond_to do |format|
         format.html do
-          flash[:alert] = "الرجاء رفع ملف PDF"
+          flash[:alert] = t("ux_i18n.cv_analyses.pdf_required")
           redirect_to cv_analysis_path
         end
-        format.json { render json: { success: false, error: "الرجاء رفع ملف PDF" }, status: :unprocessable_entity }
+        format.json { render json: { success: false, error: t("ux_i18n.cv_analyses.pdf_required") }, status: :unprocessable_entity }
       end
       return
     end
 
     if params[:pdf_file].size > 10.megabytes
-      return reject_upload("حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت", :unprocessable_entity)
+      return reject_upload(t("ux_i18n.cv_analyses.file_too_large"), :unprocessable_entity)
     end
 
     unless current_user.usage_limits.consume!(:document_ai)
-      return reject_upload("لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", :too_many_requests)
+      return reject_upload(t("ux_i18n.cv_analyses.limit_reached"), :too_many_requests)
     end
 
     begin
@@ -41,10 +41,10 @@ class CvAnalysesController < ApplicationController
       if extracted_text.blank?
         respond_to do |format|
           format.html do
-            flash[:alert] = "لم نتمكن من استخراج نص من الملف"
+            flash[:alert] = t("ux_i18n.cv_analyses.text_extraction_failed")
             redirect_to cv_analysis_path
           end
-          format.json { render json: { success: false, error: "لم نتمكن من استخراج نص من الملف" }, status: :unprocessable_entity }
+          format.json { render json: { success: false, error: t("ux_i18n.cv_analyses.text_extraction_failed") }, status: :unprocessable_entity }
         end
         return
       end
@@ -83,20 +83,20 @@ class CvAnalysesController < ApplicationController
       Rails.logger.error "PDF parsing error: #{e.message}"
       respond_to do |format|
         format.html do
-          flash[:alert] = "الملف تالف أو غير صالح"
+          flash[:alert] = t("ux_i18n.cv_analyses.malformed_file")
           redirect_to cv_analysis_path
         end
-        format.json { render json: { success: false, error: "الملف تالف أو غير صالح" }, status: :unprocessable_entity }
+        format.json { render json: { success: false, error: t("ux_i18n.cv_analyses.malformed_file") }, status: :unprocessable_entity }
       end
     rescue => e
       Rails.logger.error "CV Analysis creation error: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
       respond_to do |format|
         format.html do
-          flash[:alert] = "حدث خطأ أثناء معالجة الملف"
+          flash[:alert] = t("ux_i18n.cv_analyses.processing_error")
           redirect_to cv_analysis_path
         end
-        format.json { render json: { success: false, error: "حدث خطأ أثناء معالجة الملف" }, status: :unprocessable_entity }
+        format.json { render json: { success: false, error: t("ux_i18n.cv_analyses.processing_error") }, status: :unprocessable_entity }
       end
     end
   end
@@ -149,6 +149,6 @@ class CvAnalysesController < ApplicationController
   def set_cv_analysis
     @cv_analysis = current_user.cv_analyses.find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    redirect_to cv_analysis_path, alert: "التحليل غير موجود"
+    redirect_to cv_analysis_path, alert: t("ux_i18n.cv_analyses.not_found")
   end
 end

@@ -1,13 +1,28 @@
 // Shared form utilities and constants
-export const inputClassName = "w-full rounded-xl border border-borderLight dark:border-white/10 bg-white/70 dark:bg-darkCard/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ring-1 ring-black/5 dark:ring-white/5 transition-all";
+// Seera glass: dark-only fields, buttons and tiles shared by the builder steps.
+// Fields stay at 16px so iOS does not zoom on focus, and every control is at
+// least 44px tall. The site-wide gold :focus-visible outline is the focus ring.
+export const fieldClassName = "min-h-[48px] rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 transition-colors duration-300 hover:bg-white/[0.08]";
 
-export const buttonPrimaryClassName = "inline-flex items-center gap-2 rounded-xl bg-primary text-white px-6 py-3 text-sm font-medium hover:bg-primaryHover hover:scale-105 active:scale-110 transition-all duration-150 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)]";
+export const inputClassName = `w-full ${fieldClassName}`;
 
-export const buttonSecondaryClassName = "inline-flex items-center gap-2 rounded-xl border border-borderLight dark:border-white/10 text-gray-700 dark:text-gray-300 px-6 py-3 text-sm font-medium hover:bg-canvas dark:hover:bg-white/5 hover:scale-105 active:scale-110 transition-all duration-150 touch-manipulation";
+// Appended to a field with a validation error. The global field rules pin the
+// border colour, so the error shows as a red ring.
+export const fieldErrorClassName = "ring-2 ring-red-400/60";
 
-export const buttonDangerClassName = "inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-3 py-2 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-500/20 hover:scale-105 active:scale-110 transition-all duration-150 touch-manipulation";
+export const buttonPrimaryClassName = "sr-btn sr-primary inline-flex items-center justify-center gap-2 min-h-[48px] rounded-2xl px-6 text-[15px] font-semibold shadow-glow touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed";
 
-export const sectionHeaderClassName = "inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4";
+export const buttonSecondaryClassName = "sr-btn glass-soft inline-flex items-center justify-center gap-2 min-h-[48px] rounded-2xl px-6 text-[15px] font-medium text-mist touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed";
+
+export const buttonDangerClassName = "sr-btn inline-flex items-center justify-center gap-2 min-h-[44px] rounded-2xl border border-red-400/30 bg-red-500/10 px-4 text-sm font-medium text-red-300 hover:bg-red-500/20 touch-manipulation";
+
+export const sectionHeaderClassName = "glass-soft inline-flex items-center justify-center w-16 h-16 rounded-[22px] text-gold mb-4";
+
+// A section panel inside the form card.
+export const panelClassName = "glass-soft rounded-[24px] p-4 sm:p-6";
+
+// Muted body copy, as on the landing.
+export const mutedTextStyle = { color: "rgba(238,243,238,0.7)" };
 
 // Form validation helpers
 export const isFieldEmpty = (value) => !value || value.trim() === '';

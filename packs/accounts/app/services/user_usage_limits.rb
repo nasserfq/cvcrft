@@ -139,6 +139,18 @@ class UserUsageLimits
     allowed
   end
 
+  # Whether the free allowance (base plus coupons) still covers one use of
+  # kind. Past it, Billing::UsageGate may charge a credit instead.
+  def free_available?(kind)
+    case kind
+    when :summary_translation then can_translate_summary?
+    when :jobs_translation then can_translate_jobs?
+    when :job_based_generation then can_generate_job_based?
+    when :document_ai then can_use_document_ai?
+    else raise KeyError, "unknown usage kind: #{kind.inspect}"
+    end
+  end
+
   def can_translate_summary?
     unlimited? || remaining_summary_translations.positive?
   end

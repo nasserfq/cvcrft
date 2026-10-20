@@ -49,14 +49,30 @@
           <h2 class="m-0 font-semibold" style="font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.02em; line-height: 1.2"><%= en ? "Ready for the next step?" : "جاهز للخطوة التالية؟" %></h2>
           <p class="m-0 text-[16px] font-light" style="color: rgba(238,243,238,0.7)"><%= en ? "Apply the suggestions, then analyze your updated CV to see your new score." : "طبّق الاقتراحات ثم حلّل سيرتك المحدّثة لترى تقييمك الجديد." %></p>
         </div>
-        <div class="relative flex flex-wrap justify-center md:justify-end gap-2.5">
-          <a href="<%= cv_analysis_path %>" class="sr-btn sr-primary inline-flex flex-none w-auto items-center gap-3 min-h-[52px] px-5 whitespace-nowrap rounded-2xl font-semibold text-[15px]" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)">
-            <%= en ? "Analyze another CV" : "تحليل سيرة أخرى" %>
-            <span class="sr-ico flex"><%= arrow %></span>
-          </a>
-          <a href="<%= root_path %>" class="sr-btn glass-soft inline-flex flex-none w-auto items-center gap-2.5 min-h-[52px] px-[18px] rounded-2xl text-[15px] whitespace-nowrap">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>
-            <%= en ? "Home" : "الصفحة الرئيسية" %>
+        <%# Peak-End: the page ends on the next step to improve the CV, not on "start over". %>
+        <% loc = en ? :en : :ar %>
+        <% primary_class = "sr-btn sr-primary inline-flex flex-none w-auto items-center gap-3 min-h-[52px] px-5 whitespace-nowrap rounded-2xl font-semibold text-[15px]" %>
+        <% primary_style = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+        <% secondary_class = "sr-btn glass-soft inline-flex flex-none w-auto items-center gap-2.5 min-h-[52px] px-[18px] rounded-2xl text-[15px] whitespace-nowrap" %>
+        <% edit_icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>'.html_safe %>
+        <div class="relative flex flex-wrap items-center justify-center md:justify-end gap-2.5">
+          <% if Coach.enabled_for?(current_user) %>
+            <a href="<%= coach_root_path %>" class="<%= primary_class %>" style="<%= primary_style %>" data-cta="improve-with-coach">
+              <%= t("ux_next.cv_analysis.improve_with_coach", locale: loc) %>
+              <span class="sr-ico flex"><%= arrow %></span>
+            </a>
+            <a href="<%= resumes_path %>" class="<%= secondary_class %>" data-cta="edit-in-builder">
+              <%= edit_icon %>
+              <%= t("ux_next.cv_analysis.edit_in_builder", locale: loc) %>
+            </a>
+          <% else %>
+            <a href="<%= resumes_path %>" class="<%= primary_class %>" style="<%= primary_style %>" data-cta="edit-in-builder">
+              <%= t("ux_next.cv_analysis.edit_in_builder", locale: loc) %>
+              <span class="sr-ico flex"><%= arrow %></span>
+            </a>
+          <% end %>
+          <a href="<%= cv_analysis_path %>" class="sr-btn inline-flex flex-none w-auto items-center min-h-[52px] px-3 rounded-2xl text-[15px] whitespace-nowrap underline underline-offset-4" style="color: rgba(238,243,238,0.7)" data-cta="analyze-another">
+            <%= t("ux_next.cv_analysis.analyze_another", locale: loc) %>
           </a>
         </div>
       </section>

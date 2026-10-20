@@ -12,16 +12,16 @@ const PersonalInfoStep = ({ formData, handleInputChange, renderSaveDraftButton }
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+        <div className="glass-soft inline-flex items-center justify-center w-16 h-16 rounded-[22px] text-gold mb-4">
           <UserIcon />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">المعلومات الشخصية</h2>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">ابدأ بإدخال معلوماتك الشخصية الأساسية</p>
+        <h2 className="text-[22px] sm:text-2xl font-semibold text-mist">المعلومات الشخصية</h2>
+        <p className="text-mist/70 mt-2 text-[15px] sm:text-base font-light">ابدأ بإدخال معلوماتك الشخصية الأساسية</p>
       </div>
 
       <div className="grid gap-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-mist/90 mb-2">
             الاسم الكامل
           </label>
           <input
@@ -31,11 +31,11 @@ const PersonalInfoStep = ({ formData, handleInputChange, renderSaveDraftButton }
             className={inputClassName}
             placeholder="مثال: Ahmed Ali"
           />
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">أدخل اسمك الكامل</p>
+          <p className="mt-2 text-xs text-mist/55">أدخل اسمك الكامل</p>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-mist/90 mb-2">
             البريد الإلكتروني
           </label>
           <input
@@ -45,13 +45,13 @@ const PersonalInfoStep = ({ formData, handleInputChange, renderSaveDraftButton }
             className={inputClassName}
             placeholder="مثال: ahmed@example.com"
           />
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-xs text-mist/55">
             البريد الإلكتروني المستخدم للتواصل المهني
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-mist/90 mb-2">
             رقم الهاتف
           </label>
           <input
@@ -61,12 +61,12 @@ const PersonalInfoStep = ({ formData, handleInputChange, renderSaveDraftButton }
             className={inputClassName}
             placeholder="مثال: +966501234567"
           />
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">رقم الهاتف مع رمز الدولة</p>
+          <p className="mt-2 text-xs text-mist/55">رقم الهاتف مع رمز الدولة</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-mist/90 mb-2">
               المدينة
             </label>
             <input
@@ -79,7 +79,7 @@ const PersonalInfoStep = ({ formData, handleInputChange, renderSaveDraftButton }
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-mist/90 mb-2">
               الدولة
             </label>
             <input

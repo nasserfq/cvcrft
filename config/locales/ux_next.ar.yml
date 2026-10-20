@@ -1,0 +1,10 @@
+ar:
+  ux_next:
+    cv_analysis:
+      improve_with_coach: "حسّنها مع المدرّب"
+      edit_in_builder: "عدّلها في المحرّر"
+      analyze_another: "تحليل سيرة أخرى"
+    login:
+      resend_code: "إعادة إرسال الرمز"
+      resend_in: "إعادة الإرسال بعد %{seconds} ث"
+      change_email: "تغيير البريد الإلكتروني"

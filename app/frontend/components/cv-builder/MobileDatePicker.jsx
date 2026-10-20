@@ -59,7 +59,7 @@ const MobileDatePicker = ({
         type="button"
         onClick={() => !disabled && setIsOpen(true)}
         disabled={disabled}
-        className="w-full rounded-xl border border-borderLight dark:border-white/10 bg-white dark:bg-darkCard px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-right disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-mist transition-colors duration-300 hover:bg-white/[0.08] text-start disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           fontSize: "16px",
           minHeight: "48px",
@@ -67,7 +67,7 @@ const MobileDatePicker = ({
       >
         <div className="flex items-center justify-between gap-1">
           <svg
-            className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0"
+            className="w-4 h-4 text-mist/55 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -80,7 +80,7 @@ const MobileDatePicker = ({
             />
           </svg>
           <span
-            className={`flex-1 text-sm truncate ${value ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}
+            className={`flex-1 text-base truncate ${value ? "text-mist" : "text-mist/40"}`}
           >
             {formatDisplayValue(value)}
           </span>
@@ -90,7 +90,7 @@ const MobileDatePicker = ({
       {isOpen &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/25"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
             style={{
               padding:
                 "max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))",
@@ -99,13 +99,13 @@ const MobileDatePicker = ({
               if (e.target === e.currentTarget) setIsOpen(false);
             }}
           >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm max-h-[85vh] overflow-hidden shadow-2xl">
-              <div className="bg-primary text-white px-6 py-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold">{t("dates.select_title")}</h3>
+            <div role="dialog" aria-modal="true" className="glass sr-up rounded-[28px] w-full max-w-sm max-h-[85vh] overflow-hidden text-mist" style={{ animationDuration: ".5s" }}>
+              <div className="px-5 sm:px-6 py-4 flex items-center justify-between gap-3 border-b border-white/10">
+                <h3 className="m-0 flex items-center gap-2.5 text-lg font-semibold"><span className="sr-dot w-2 h-2 rounded-full bg-primary"></span>{t("dates.select_title")}</h3>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="text-white hover:text-white/70 transition-colors"
+                  className="glass-soft shrink-0 w-11 h-11 inline-flex items-center justify-center rounded-xl text-mist/80 hover:text-mist transition-colors"
                   aria-label={t("actions.close")}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,11 +119,11 @@ const MobileDatePicker = ({
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
                 <div className="mb-4 sm:mb-6">
-                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3">
+                  <label className="block text-sm font-medium text-mist/90 mb-2 sm:mb-3">
                     {t("dates.year_label")}
                   </label>
                   <div
-                    className="max-h-48 sm:max-h-72 overflow-y-auto border border-borderLight dark:border-gray-600 rounded-xl p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                    className="max-h-48 sm:max-h-72 overflow-y-auto border border-white/10 bg-white/[0.03] rounded-2xl p-2"
                     style={{ WebkitOverflowScrolling: "touch" }}
                   >
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -134,8 +134,8 @@ const MobileDatePicker = ({
                           onClick={() => setSelectedYear(year)}
                           className={`py-3 sm:py-3 px-2 rounded-xl text-base sm:text-sm font-medium transition-all active:scale-95 ${
                             selectedYear === year
-                              ? "bg-primary text-white shadow-md"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300"
+                              ? "sr-primary shadow-glow"
+                              : "bg-white/[0.06] text-mist/80 hover:bg-white/10 hover:text-mist"
                           }`}
                           style={{ minHeight: "44px" }}
                         >
@@ -147,7 +147,7 @@ const MobileDatePicker = ({
                 </div>
 
                 <div className="mb-2 sm:mb-6">
-                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3">
+                  <label className="block text-sm font-medium text-mist/90 mb-2 sm:mb-3">
                     {t("dates.month_label")}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -158,8 +158,8 @@ const MobileDatePicker = ({
                         onClick={() => setSelectedMonth(month.value)}
                         className={`py-3 px-2 rounded-xl text-base sm:text-sm font-medium transition-all active:scale-95 ${
                           selectedMonth === month.value
-                            ? "bg-primary text-white shadow-md"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300"
+                            ? "sr-primary shadow-glow"
+                            : "bg-white/[0.06] text-mist/80 hover:bg-white/10 hover:text-mist"
                         }`}
                         style={{ minHeight: "44px" }}
                       >
@@ -170,18 +170,18 @@ const MobileDatePicker = ({
                 </div>
               </div>
 
-              <div className="flex gap-3 p-6 bg-white dark:bg-gray-800 border-t border-borderLight dark:border-gray-600">
+              <div className="flex gap-3 p-4 sm:p-6 border-t border-white/10" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 active:scale-[0.98] transition-all touch-manipulation"
+                  className="sr-btn glass-soft flex-1 min-h-[48px] py-3 px-4 text-mist rounded-2xl font-medium touch-manipulation"
                 >
                   {t("actions.cancel")}
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirm}
-                  className="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-medium hover:bg-primaryHover active:scale-[0.98] transition-all touch-manipulation shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)]"
+                  className="sr-btn sr-primary flex-1 min-h-[48px] py-3 px-4 rounded-2xl font-semibold touch-manipulation shadow-glow"
                 >
                   {t("actions.confirm")}
                 </button>

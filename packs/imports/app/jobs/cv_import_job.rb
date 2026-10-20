@@ -3,7 +3,21 @@ class CvImportJob
 
   sidekiq_options retry: 3, backtrace: true
 
-  def perform(cv_import_id)
+  # An import that ran past the free allowance was paid with a credit
+  # (Billing::UsageGate). overage_key, a random id, is passed only then; a
+  # final failure gives the credit back. Safe to call twice.
+  sidekiq_retries_exhausted do |job, _error|
+    refund_overage(job["args"][0], job["args"][1])
+  end
+
+  def self.refund_overage(import_id, overage_key)
+    return if overage_key.blank?
+
+    import = CvImport.find_by(id: import_id)
+    Billing::UsageGate.refund!(import.user, :document_ai, key: overage_key) if import
+  end
+
+  def perform(cv_import_id, _overage_key = nil)
     @import = CvImport.find(cv_import_id)
     @import.mark_processing!
 

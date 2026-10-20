@@ -82,10 +82,10 @@ const AtsTemplateLightbox = ({ template, onClose, onUse, t }) => {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="glass rounded-2xl p-3 sm:p-4 w-full max-w-xl max-h-full flex flex-col text-white"
+        className="glass rounded-[28px] p-3 sm:p-5 w-full max-w-xl max-h-full flex flex-col text-mist"
       >
         <div className="mb-3 min-w-0">
-          <h2 id={titleId} className="text-base sm:text-lg font-semibold leading-snug">
+          <h2 id={titleId} className="text-base sm:text-lg font-semibold leading-snug text-mist">
             {template.name}
           </h2>
           {template.description && (
@@ -100,7 +100,7 @@ const AtsTemplateLightbox = ({ template, onClose, onUse, t }) => {
               src={atsFullSrc(template)}
               alt={template.name}
               decoding="async"
-              className="block max-h-[calc(100dvh-11rem)] sm:max-h-[85vh] w-auto max-w-full bg-white"
+              className="block max-h-[calc(100dvh-11rem)] sm:max-h-[85vh] w-auto max-w-full bg-white keep-light"
               onError={() => setImageFailed(true)}
             />
           )}
@@ -152,16 +152,16 @@ const ReviewStep = ({
   return (
     <div className="space-y-4 sm:space-y-6 -mx-1 sm:mx-0">
       <div className="text-center mb-4 sm:mb-6 px-1">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-[22px] sm:text-2xl font-semibold text-mist">
           {t("review.title")}
         </h2>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
+        <p className="text-[15px] sm:text-base font-light text-mist/70 mt-2">
           {t("review.subtitle")}
         </p>
       </div>
 
-      <div className="w-full max-w-4xl mx-auto p-3 sm:p-4 bg-white/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+      <div className="glass-soft w-full max-w-4xl mx-auto p-3 sm:p-5 rounded-[24px]">
+        <label className="block text-sm font-medium text-mist/80 mb-3">
           {t("templates.ats_picker_label")}
         </label>
         <div
@@ -180,12 +180,12 @@ const ReviewStep = ({
                   onClick={() => onTemplateChange(template.key)}
                   className={`flex flex-col w-full h-full text-start p-2 sm:p-2.5 rounded-xl border transition-all touch-manipulation min-h-[44px] ${
                     isSelected
-                      ? "border-primary bg-primary/10 dark:bg-primary/20 ring-2 ring-primary/25"
-                      : "border-gray-200 dark:border-white/10 bg-white dark:bg-darkBase hover:border-primary/40 active:scale-[0.99]"
+                      ? "border-primary bg-primary/20 ring-2 ring-primary/25"
+                      : "border-white/10 bg-white/[0.04] hover:bg-white/[0.07] hover:border-primary/40 active:scale-[0.99]"
                   }`}
                 >
                   {hasImage && (
-                    <span className="block w-full aspect-[1/1.294] rounded-lg overflow-hidden border border-white/10 bg-white mb-2 shadow-sm">
+                    <span className="block w-full aspect-[1/1.294] rounded-lg overflow-hidden border border-white/10 bg-white keep-light mb-2">
                       <img
                         src={atsThumbSrc(template)}
                         srcSet={`${atsThumbSrc(template)} 1x, ${atsThumb2xSrc(template)} 2x`}
@@ -199,10 +199,10 @@ const ReviewStep = ({
                       />
                     </span>
                   )}
-                  <span className="block text-sm font-medium text-gray-900 dark:text-white leading-snug px-0.5">
+                  <span className="block text-sm font-medium text-white leading-snug px-0.5">
                     {template.name}
                   </span>
-                  <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed px-0.5">
+                  <span className="block text-xs text-mist/55 mt-1 line-clamp-2 leading-relaxed px-0.5">
                     {template.description}
                   </span>
                 </button>
@@ -214,7 +214,7 @@ const ReviewStep = ({
                     title={t("templates.preview_template")}
                     className="absolute top-2 end-2 h-11 w-11 inline-flex items-center justify-center rounded-full touch-manipulation group focus-visible:outline-none"
                   >
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-[#07120D]/70 backdrop-blur-md text-white shadow-md transition-transform group-hover:scale-110 group-focus-visible:ring-2 group-focus-visible:ring-primary">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-[#07120D]/70 backdrop-blur-md text-white transition-transform group-hover:scale-110 group-focus-visible:ring-2 group-focus-visible:ring-primary">
                       <MagnifierIcon className="h-4 w-4" />
                     </span>
                   </button>
@@ -225,17 +225,17 @@ const ReviewStep = ({
         </div>
       </div>
 
-      <div className="w-full max-w-4xl mx-auto bg-white dark:bg-darkBase border border-gray-200 dark:border-white/10 rounded-xl shadow-sm overflow-hidden">
+      <div className="glass-soft w-full max-w-4xl mx-auto rounded-[24px] overflow-hidden">
         {resumeId && pdfPreviewUrl && (
-          <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-white/5">
-            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+          <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-white/10 bg-white/5">
+            <span className="text-xs sm:text-sm font-medium text-mist/80 truncate">
               {t("preview.title")}
             </span>
             <a
               href={pdfPreviewUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium text-primary hover:text-primaryHover touch-manipulation"
+              className="shrink-0 inline-flex items-center justify-center min-h-[44px] px-3 py-2 text-xs sm:text-sm font-medium text-primary hover:text-mist touch-manipulation"
             >
               {t("preview.open_full")}
             </a>
@@ -243,22 +243,22 @@ const ReviewStep = ({
         )}
 
         {isPdfPreviewLoading && (
-          <div className="p-4 text-sm text-gray-600 dark:text-gray-400 text-center">{t("preview.loading")}</div>
+          <div className="p-4 text-sm text-mist/55 text-center">{t("preview.loading")}</div>
         )}
         {pdfPreviewError && (
-          <div className="p-4 text-sm text-red-600 text-center break-words px-3">{pdfPreviewError}</div>
+          <div className="p-4 text-sm text-red-300 text-center break-words px-3">{pdfPreviewError}</div>
         )}
         {!resumeId && !pdfPreviewError && (
-          <div className="p-4 text-sm text-gray-600 dark:text-gray-400 text-center px-3">
+          <div className="p-4 text-sm text-mist/55 text-center px-3">
             {t("preview.resume_required_for_live")}
           </div>
         )}
 
         {resumeId && pdfPreviewUrl && (
-          <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-darkBase">
+          <div className="relative w-full overflow-hidden bg-black/20">
             {isPdfPreviewLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-darkBase/80">
-                <span className="text-sm text-gray-600 dark:text-gray-400">{t("preview.loading")}</span>
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-darkBase/70 backdrop-blur-sm">
+                <span className="text-sm text-mist/55">{t("preview.loading")}</span>
               </div>
             )}
             <iframe

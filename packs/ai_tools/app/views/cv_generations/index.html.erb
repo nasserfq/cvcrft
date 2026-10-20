@@ -1,163 +1,182 @@
-<div class="container mx-auto px-4 py-8">
-  <div class="flex justify-between items-center mb-8">
-  <h1 class="text-3xl font-bold text-gray-900">CV Generations</h1>
-  <%= link_to "Generate New CV", new_cv_generation_path, 
-    class: "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
-  </div>
-  <div class="grid gap-6">
-    <% if @cv_generations.any? %>
-      <% @cv_generations.each do |generation| %>
-        <div class="bg-gradient-to-br from-emerald-50 to-emerald-50 rounded-lg shadow-md p-6 border border-emerald-200 relative">
-          <!-- AI Generated Badge -->
-          <div class="absolute top-4 right-4">
-            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
-              <i data-lucide="sparkles" class="w-3 h-3"></i>
-              AI Generated
-            </span>
-          </div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-slate-900 mb-2">
-                <span class="inline-flex items-center gap-2">
-                  <i data-lucide="wand-2" class="w-5 h-5 text-emerald-600"></i>
-                  CV Generated #<%= generation.id %>
-                </span>
-              </h3>
-              <p class="text-sm text-gray-600 mb-2">
-                <strong>Status:</strong>
-                <span class="px-2 py-1 rounded-full text-xs font-medium
-                  <%= case generation.status
-                      when 'completed' then 'bg-green-100 text-green-800'
-                      when 'processing' then 'bg-yellow-100 text-yellow-800'
-                      when 'failed' then 'bg-red-100 text-red-800'
-                      when 'cancelled' then 'bg-gray-100 text-gray-800'
-                      when 'draft' then 'bg-emerald-100 text-emerald-800'
-                      else 'bg-gray-100 text-gray-800'
-                      end %>">
-                  <%= generation.draft? ? 'مسودة' : generation.status.humanize %>
-                </span>
-                <% if generation.draft? %>
-                  <span class="ml-2 px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    💾 محفوظة
-                  </span>
-                <% end %>
-              </p>
-              <p class="text-sm text-gray-600 mb-2">
-                <strong>Created:</strong> <%= generation.created_at.strftime("%B %d, %Y at %I:%M %p") %>
-              </p>
-              <% if generation.tokens_used %>
-                <p class="text-sm text-gray-600 mb-2">
-                  <strong>Tokens Used:</strong> <%= number_with_delimiter(generation.tokens_used) %>
-                </p>
-              <% end %>
-            </div>
-            <div class="flex space-x-2">
-              <% if generation.draft? %>
-        <%= link_to "استئناف المسودة", resume_draft_cv_generation_path(generation), 
-          method: :post,
-          class: "bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target",
-          data: { confirm: "هل تريد استئناف هذه المسودة؟", hoverable: true } %>
-        <%= link_to "عرض المسودة", cv_generation_path(generation), 
-          class: "bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
-              <% else %>
-        <%= link_to "View", cv_generation_path(generation), 
-          class: "bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
-              <% end %>
-              <% if generation.metadata&.dig("pdf_generated") %>
-        <%= link_to "📄 View PDF", view_pdf_cv_generation_path(generation), 
-          target: "_blank",
-          class: "bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
-        <%= link_to "⬇️ Download", download_pdf_cv_generation_path(generation), 
-          class: "bg-primary hover:bg-primary text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
-              <% end %>
-              <% if generation.status == 'failed' %>
-        <%= link_to "Retry", retry_cv_generation_path(generation), 
-          method: :post,
-          class: "bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
-              <% end %>
-              <% if generation.status == 'processing' %>
-        <%= link_to "Cancel", cancel_cv_generation_path(generation), 
-          method: :post,
-          class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target", data: { hoverable: true } %>
-              <% end %>
-        <%= link_to "Delete", cv_generation_path(generation), 
-          method: :delete,
-          data: { confirm: "Are you sure?", hoverable: true },
-          class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition duration-200 js-hover-target" %>
-            </div>
-          </div>
-          <div class="mb-4">
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Job Description:</h4>
-            <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded border">
-              <%= truncate(generation.job_description, length: 200) %>
-            </p>
-          </div>
-          <% if generation.draft? && generation.draft_data.present? %>
-            <div class="mb-4">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">مسودة محفوظة:</h4>
-              <div class="bg-emerald-50 p-3 rounded border border-emerald-200">
-                <p class="text-sm text-emerald-800 mb-2">
-                  <strong>تاريخ الحفظ:</strong>
-                  <%= Time.parse(generation.draft_data['saved_at']).strftime("%B %d, %Y at %I:%M %p") rescue 'غير محدد' %>
-                </p>
-                <p class="text-sm text-emerald-700">
-                  <strong>وصف الوظيفة:</strong> <%= truncate(generation.draft_data['job_description'], length: 150) %>
-                </p>
-                <% if generation.draft_data['resume_id'] %>
-                  <p class="text-sm text-emerald-700">
-                    <strong>السيرة الذاتية المختارة:</strong> ID <%= generation.draft_data['resume_id'] %>
-                  </p>
-                <% end %>
-              </div>
-            </div>
-          <% elsif generation.generated_content.present? %>
-            <div class="mb-4">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">Generated Content:</h4>
-              <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded border">
-                <%= truncate(generation.generated_content, length: 300) %>
-              </p>
-            </div>
-          <% end %>
-          <% if generation.resume_id %>
-            <div class="text-sm text-gray-600 mb-2">
-              <strong>Resume ID:</strong> <%= generation.resume_id %>
-        <%= link_to "View Resume", resume_path(generation.resume_id), 
-          class: "text-emerald-600 hover:text-emerald-800 ml-2 js-hover-target", data: { hoverable: true } %>
-            </div>
-          <% end %>
-          <% if generation.metadata&.dig("pdf_generated") %>
-            <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="text-green-600 mr-2">📄</span>
-                  <span class="text-sm text-green-700">
-                    <strong>PDF Ready</strong> - 
-                    Size: <%= number_to_human_size(generation.metadata["pdf_size"]) %> | 
-                    <%= generation.metadata["pdf_filename"] %>
-                  </span>
-                </div>
-                <div class="flex space-x-2">
-                  <%= link_to "Preview", view_pdf_cv_generation_path(generation), 
-                      target: "_blank",
-                      class: "text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded js-hover-target", data: { hoverable: true } %>
-                    <%= link_to "Download", download_pdf_cv_generation_path(generation), 
-                      class: "text-xs bg-primary hover:bg-primary text-white px-2 py-1 rounded js-hover-target", data: { hoverable: true } %>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
-    <% else %>
-        <div class="text-center py-12">
-        <div class="text-gray-500 text-lg mb-4">No CV generations found</div>
-        <%= link_to "Generate Your First CV", new_cv_generation_path, 
-            class: "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 js-hover-target", data: { hoverable: true } %>
+<% tk = "ux_i18n2.cv_generations.index" %>
+<% content_for :title, t("#{tk}.title") %>
+<% content_for :body_class, "sr-app-long" %>
+<%# Long page: the layout lets the ambient scroll with it, so its orbs run the full page height. %>
+<% content_for :ambient_scrolls, true %>
+<% icons = {
+     add: '<path d="M12 5v14M5 12h14"></path>',
+     spark: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path>',
+     eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle>',
+     download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path>',
+     retry: '<path d="M4 12a8 8 0 0114-5.3L20 9"></path><path d="M20 4v5h-5"></path><path d="M20 12a8 8 0 01-14 5.3L4 15"></path><path d="M4 20v-5h5"></path>',
+     stop: '<circle cx="12" cy="12" r="9"></circle><path d="M9 9l6 6M15 9l-6 6"></path>',
+     trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"></path>',
+     clock: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
+     doc: '<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"></path><path d="M14 3v5h5M9 13h6M9 17h4"></path>',
+     chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path>'
+   } %>
+<% svg = ->(name, size = 16) { "<svg class=\"shrink-0\" width=\"#{size}\" height=\"#{size}\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">#{icons[name]}</svg>".html_safe } %>
+<% arrow = '<svg class="sr-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>'.html_safe %>
+<% muted = "color: rgba(238,243,238,0.6)" %>
+<% primary_class = "sr-btn sr-primary inline-flex items-center justify-center gap-2.5 min-h-[52px] px-5 rounded-2xl font-semibold text-[15px]" %>
+<% primary_style = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+<% action_class = "sr-btn glass-soft inline-flex items-center justify-center gap-2 min-h-[44px] px-3.5 rounded-xl text-sm cursor-pointer" %>
+<% danger_class = "sr-btn glass-soft inline-flex items-center justify-center gap-2 min-h-[44px] px-3.5 rounded-xl text-sm cursor-pointer text-mist/70 hover:text-red-300" %>
+<% stamp = ->(time) { time.strftime("%Y-%m-%d %H:%M") } %>
+
+<%# A list that grows with every generation: the wrapper rises without sr-fadeUp's blur so long lists paint fast on phones. %>
+<div dir="<%= text_direction %>" data-controller="confirm-delete" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee; animation-name: sr-riseUp">
+  <div class="relative mx-auto max-w-[1240px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-10">
+    <%= render 'shared/flash_alert' %>
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+      <div class="flex flex-col items-start gap-5">
+        <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+          <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+          <%= t("#{tk}.badge") %>
+        </span>
+        <h1 class="m-0 font-semibold" style="font-size: clamp(34px, 4.6vw, 56px); line-height: 1.15; letter-spacing: -0.02em">
+          <% words = t("#{tk}.title").split %>
+          <% delay = 0.1 %>
+          <% words.each_with_index do |word, i| %><span class="sr-w" style="<%= 'color: #d6b877; ' if i == words.size - 1 && words.size > 1 %>animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+        </h1>
+        <p class="sr-up m-0 font-light text-[16px] max-w-[52ch]" style="animation-delay: .35s; color: rgba(238,243,238,0.7)"><%= t("#{tk}.subtitle") %></p>
       </div>
+      <div class="sr-up" style="animation-delay: .45s">
+        <%= link_to new_cv_generation_path, class: primary_class, style: primary_style, data: { hoverable: true } do %>
+          <%= svg.call(:add, 18) %>
+          <%= t("#{tk}.generate_new") %>
+          <span class="sr-ico flex"><%= arrow %></span>
+        <% end %>
+      </div>
+    </header>
+
+    <% if @cv_generations.any? %>
+      <div class="grid gap-5 lg:grid-cols-2">
+        <% @cv_generations.each do |generation| %>
+          <% pdf_ready = generation.metadata&.dig("pdf_generated") %>
+          <article id="cv_generation_<%= generation.id %>" class="glass sr-lift sr-reveal relative rounded-[28px] p-5 sm:p-6 flex flex-col gap-5">
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex flex-col gap-2 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <%= render "cv_generations/status_chip", generation: generation %>
+                  <span class="glass-soft inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs" style="color: rgba(238,243,238,0.75)"><%= svg.call(:spark, 12) %><%= t("#{tk}.ai_generated") %></span>
+                  <% if generation.draft? %>
+                    <span class="glass-soft inline-flex items-center px-2.5 py-1 rounded-full text-xs" style="color: rgba(238,243,238,0.75)"><%= t("#{tk}.saved") %></span>
+                  <% end %>
+                </div>
+                <h3 class="m-0 text-[19px] font-semibold truncate"><%= t("#{tk}.generation_number", id: generation.id) %></h3>
+                <div class="flex items-center gap-x-4 gap-y-1 flex-wrap text-sm" style="<%= muted %>">
+                  <span class="inline-flex items-center gap-1.5"><%= svg.call(:clock, 14) %><span class="sr-mono text-xs" dir="ltr"><%= stamp.call(generation.created_at) %></span></span>
+                  <% if generation.tokens_used %>
+                    <span><%= t("#{tk}.tokens_used") %>: <span class="sr-mono text-xs" dir="ltr"><%= number_with_delimiter(generation.tokens_used) %></span></span>
+                  <% end %>
+                </div>
+              </div>
+              <span class="glass-soft sr-ico flex-none w-[48px] h-[48px] rounded-2xl flex items-center justify-center" style="color: #2fa36b"><%= svg.call(:doc, 22) %></span>
+            </div>
+
+            <!-- Job description -->
+            <% if generation.job_description.present? %>
+              <div class="flex flex-col gap-1.5">
+                <span class="text-xs font-medium" style="<%= muted %>"><%= t("#{tk}.job_description") %></span>
+                <div class="glass-soft rounded-[18px] p-3.5">
+                  <p class="m-0 text-[13px] line-clamp-3 leading-relaxed" style="color: rgba(238,243,238,0.75)"><%= truncate(generation.job_description, length: 200) %></p>
+                </div>
+              </div>
+            <% end %>
+
+            <% if generation.draft? && generation.draft_data.present? %>
+              <div class="glass-soft rounded-[18px] p-3.5 flex flex-col gap-1.5 text-[13px]" style="border-color: rgba(214,184,119,0.3)">
+                <span class="font-medium" style="color: #d6b877"><%= t("#{tk}.saved_draft") %></span>
+                <span style="color: rgba(238,243,238,0.75)"><%= t("#{tk}.saved_at") %>:
+                  <span class="sr-mono text-xs" dir="ltr"><%= (stamp.call(Time.zone.parse(generation.draft_data["saved_at"].to_s)) rescue nil) || t("#{tk}.not_specified") %></span>
+                </span>
+                <% if generation.draft_data["job_description"].present? %>
+                  <span class="line-clamp-2" style="color: rgba(238,243,238,0.7)"><%= t("#{tk}.job_description") %>: <%= truncate(generation.draft_data["job_description"], length: 150) %></span>
+                <% end %>
+                <% if generation.draft_data["resume_id"] %>
+                  <span style="color: rgba(238,243,238,0.7)"><%= t("#{tk}.selected_resume") %>: <span class="sr-mono text-xs" dir="ltr">#<%= generation.draft_data["resume_id"] %></span></span>
+                <% end %>
+              </div>
+            <% elsif generation.generated_content.present? %>
+              <div class="flex flex-col gap-1.5">
+                <span class="text-xs font-medium" style="color: #2fa36b"><%= t("#{tk}.generated_content") %></span>
+                <p class="m-0 text-[14px] line-clamp-3 leading-relaxed" style="color: rgba(238,243,238,0.8)"><%= truncate(generation.generated_content, length: 300) %></p>
+              </div>
+            <% end %>
+
+            <% if pdf_ready %>
+              <div class="glass-soft rounded-[18px] px-3.5 py-2.5 flex items-center gap-2 text-[13px] min-w-0" style="background: rgba(47,163,107,0.08); border-color: rgba(47,163,107,0.3)">
+                <span style="color: #2fa36b"><%= svg.call(:doc, 14) %></span>
+                <span class="font-medium" style="color: #2fa36b"><%= t("#{tk}.pdf_ready") %></span>
+                <span class="sr-mono text-xs truncate" style="<%= muted %>" dir="ltr"><%= number_to_human_size(generation.metadata["pdf_size"]) %> · <%= generation.metadata["pdf_filename"] %></span>
+              </div>
+            <% end %>
+
+            <!-- Actions -->
+            <div class="mt-auto flex items-center gap-2 flex-wrap">
+              <% if generation.draft? %>
+                <%= button_to resume_draft_cv_generation_path(generation), method: :post, form: { data: {
+                        action: "submit->confirm-delete#intercept",
+                        confirm_delete_title_param: t("#{tk}.resume_draft"),
+                        confirm_delete_body_param: t("#{tk}.resume_draft_confirm"),
+                        confirm_delete_confirm_label_param: t("#{tk}.resume_draft")
+                      } },
+                      class: "sr-btn sr-primary inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-xl text-sm font-semibold border-0 cursor-pointer", style: primary_style do %>
+                  <%= svg.call(:retry) %><%= t("#{tk}.resume_draft") %>
+                <% end %>
+                <%= link_to cv_generation_path(generation), class: action_class do %><%= svg.call(:eye) %><%= t("#{tk}.view_draft") %><% end %>
+              <% else %>
+                <%= link_to cv_generation_path(generation), class: action_class do %><%= svg.call(:eye) %><%= t("#{tk}.view") %><% end %>
+              <% end %>
+              <% if pdf_ready %>
+                <%= link_to view_pdf_cv_generation_path(generation), target: "_blank", rel: "noopener", class: action_class do %><%= svg.call(:doc) %><%= t("#{tk}.view_pdf") %><% end %>
+                <%= link_to download_pdf_cv_generation_path(generation), class: action_class, data: { turbo: false } do %><%= svg.call(:download) %><%= t("#{tk}.download") %><% end %>
+              <% end %>
+              <% if generation.resume_id %>
+                <%= link_to resume_path(generation.resume_id), class: action_class do %><%= t("#{tk}.view_resume") %><% end %>
+              <% end %>
+              <% if generation.status == "failed" %>
+                <%= button_to retry_cv_generation_path(generation), method: :post, class: action_class do %><%= svg.call(:retry) %><%= t("#{tk}.retry") %><% end %>
+              <% end %>
+              <% if generation.status == "processing" %>
+                <%= button_to cancel_cv_generation_path(generation), method: :post, class: danger_class do %><%= svg.call(:stop) %><%= t("#{tk}.cancel") %><% end %>
+              <% end %>
+              <%= button_to cv_generation_path(generation), method: :delete, form: { data: {
+                      action: "submit->confirm-delete#intercept",
+                      confirm_delete_title_param: t("#{tk}.delete"),
+                      confirm_delete_body_param: t("#{tk}.delete_confirm"),
+                      confirm_delete_confirm_label_param: t("ux_confirm.delete")
+                    } },
+                    class: danger_class, title: t("#{tk}.delete"), "aria-label": t("#{tk}.delete") do %>
+                <%= svg.call(:trash) %>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% else %>
+      <!-- Empty state -->
+      <section class="glass sr-up relative overflow-hidden rounded-[32px] flex flex-col items-center text-center gap-5" style="padding: clamp(32px, 6vw, 64px); animation-delay: .55s">
+        <div aria-hidden="true" class="absolute rounded-full pointer-events-none" style="top: -140px; right: -80px; width: 380px; height: 380px; background: radial-gradient(circle, rgba(0,150,85,0.32), rgba(0,150,85,0) 65%); filter: blur(30px)"></div>
+        <span class="glass-soft sr-float relative w-[72px] h-[72px] rounded-[22px] flex items-center justify-center" style="color: #d6b877"><%= svg.call(:spark, 30) %></span>
+        <h2 class="relative m-0 font-semibold" style="font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.02em"><%= t("#{tk}.empty_title") %></h2>
+        <p class="relative m-0 font-light text-[16px] max-w-[46ch]" style="color: rgba(238,243,238,0.7)"><%= t("#{tk}.empty_text") %></p>
+        <%= link_to new_cv_generation_path, class: "relative #{primary_class}", style: primary_style, data: { hoverable: true } do %>
+          <%= t("#{tk}.generate_first") %>
+          <span class="sr-ico flex"><%= arrow %></span>
+        <% end %>
+      </section>
     <% end %>
+
+    <div class="flex justify-center">
+      <%= link_to stats_cv_generations_path, class: "sr-btn glass-soft inline-flex items-center justify-center gap-2.5 min-h-[48px] px-[18px] rounded-2xl text-[15px]" do %>
+        <%= svg.call(:chart) %><%= t("#{tk}.view_stats") %>
+      <% end %>
+    </div>
   </div>
-  <div class="mt-8 text-center">
-    <%= link_to "View Statistics", stats_cv_generations_path, 
-        class: "text-emerald-600 hover:text-emerald-800 font-medium js-hover-target", data: { hoverable: true } %>
-  </div>
+  <%= render "shared/confirm_dialog" %>
 </div>
