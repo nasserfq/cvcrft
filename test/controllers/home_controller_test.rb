@@ -40,6 +40,11 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_equal 6, faq["mainEntity"].size
   end
 
+  test "structured data makes no rating claims" do
+    get root_url
+    assert_no_match(/aggregateRating/, response.body)
+  end
+
   test "health check returns ok" do
     # Health check doesn't need basic auth
     get "/up"
