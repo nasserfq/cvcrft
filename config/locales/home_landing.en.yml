@@ -1,0 +1,21 @@
+en:
+  home_landing:
+    skip_to_content: "Skip to content"
+    tagline_1: "Write it once in your own words."
+    tagline_2: "Send a resume recruiters actually read."
+    faq_title: "Questions before you start"
+    faq_subtitle: "Short answers to what people ask us most."
+    faq:
+      q1: "Is Seera free to use?"
+      a1: "Building, editing and downloading your resume as a PDF costs nothing. Each AI tool comes with free uses, and after that you can top up credits only if you want more."
+      q2: "Will my resume pass applicant tracking systems?"
+      a2: "All 11 layouts are built to be read by applicant tracking systems, with standard section titles and real, selectable text. You pick the layout when you export."
+      q3: "Can I write in Arabic?"
+      a3: "Yes. Write your professional summary and work duties in Arabic, then translate them to professional English with one click before you download. The final resume is in English."
+      q4: "How does generating by job work?"
+      a4: "Paste the job description and pick one of your saved resumes. The AI rewrites your professional summary to match the role and never touches the sections you typed yourself."
+      q5: "Can I import my LinkedIn profile?"
+      a5: "Download your profile as a PDF from LinkedIn and upload it here. We turn it into an editable resume you can review before saving."
+      q6: "What happens to my data?"
+      a6: "Your data is used only to build your resume. You can export everything as a file or delete your account at any time from your profile."
+      privacy_link: "Read our privacy policy"

@@ -29,6 +29,17 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='/coach']", count: 0
   end
 
+  test "landing page has a skip link, tagline reveal and FAQ with structured data" do
+    get root_url
+    assert_select "a.lp-skip[href='#main']"
+    assert_select "main#main"
+    assert_select "[data-lp-tagline] .lp-tw"
+    assert_select "#faq details", 6
+    faq = css_select("script[type='application/ld+json']").map { |s| JSON.parse(s.text) }
+      .flat_map { |doc| doc["@graph"] }.find { |node| node["@type"] == "FAQPage" }
+    assert_equal 6, faq["mainEntity"].size
+  end
+
   test "health check returns ok" do
     # Health check doesn't need basic auth
     get "/up"
