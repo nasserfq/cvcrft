@@ -1,8 +1,11 @@
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  # :confirmable, :lockable, :timeoutable and :trackable
+  # :omniauthable covers social sign-in for the providers SocialAuth has on.
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         :omniauthable, omniauth_providers: SocialAuth.providers
+  has_many :identities, class_name: "UserIdentity", dependent: :destroy
   has_many :resumes, dependent: :destroy
   has_many :work_experiences, through: :resumes
   has_many :skills, through: :resumes
@@ -58,6 +61,11 @@ class User < ApplicationRecord
 
   def average_ats_score
     resumes.where.not(ats_score: nil).average(:ats_score)&.round(2) || 0
+  end
+
+  # PDPL: the user accepted the current privacy policy and terms.
+  def record_privacy_consent!
+    update_columns(privacy_accepted_at: Time.current, privacy_policy_version: PrivacyPolicy::VERSION)
   end
 
   def usage_limits

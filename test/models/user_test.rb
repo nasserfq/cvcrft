@@ -236,6 +236,15 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 0, CvImport.where(user_id: user.id).count
   end
 
+  test "destroying a user destroys its sign-in identities" do
+    user = User.create!(email: "identity-#{SecureRandom.hex(4)}@example.com", name: "Identity User",
+                        password: "password123", password_confirmation: "password123")
+    user.identities.create!(provider: "google_oauth2", uid: "g-#{SecureRandom.hex(4)}")
+    user.identities.create!(provider: "linkedin", uid: "l-#{SecureRandom.hex(4)}")
+
+    assert_difference("UserIdentity.count", -2) { user.destroy! }
+  end
+
   private
 
   def new_errors_for(record, attribute)

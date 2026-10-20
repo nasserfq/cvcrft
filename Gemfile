@@ -35,6 +35,13 @@ gem "sentry-sidekiq", "~> 7.1"
 # Authentication and OTP
 gem "devise"
 
+# Social sign-in (Google, Apple, LinkedIn) through Devise :omniauthable
+gem "omniauth", "~> 2.1"
+gem "omniauth-rails_csrf_protection"
+gem "omniauth-google-oauth2"
+gem "omniauth-apple"
+gem "omniauth-linkedin-openid"
+
 # Amazon SES for email delivery
 gem "aws-sdk-ses"
 

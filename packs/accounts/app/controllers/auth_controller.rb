@@ -1,4 +1,6 @@
 class AuthController < ApplicationController
+  include LoginRedirect
+
   skip_before_action :verify_authenticity_token, only: [ :logout ]
   before_action :authenticate_user!, only: [ :logout ]
   before_action :redirect_if_authenticated, only: [ :login ]
@@ -87,7 +89,9 @@ class AuthController < ApplicationController
 
       # Ensure user is saved
       user.save! if user.changed?
-      record_privacy_consent(user)
+      # The OTP form carries the email form's consent. Links already sitting in
+      # mailboxes have no flag: they still log in, they just record nothing.
+      user.record_privacy_consent! if privacy_consent_given?
 
       sign_in(:user, user)
       Rails.logger.info "User #{user.id} signed in"
@@ -132,19 +136,6 @@ class AuthController < ApplicationController
 
   def privacy_consent_given?
     params[:privacy_consent] == "1"
-  end
-
-  # The OTP form carries the email form's consent. Links already sitting in
-  # mailboxes have no flag: they still log in, they just record nothing.
-  def record_privacy_consent(user)
-    return unless privacy_consent_given?
-
-    user.update_columns(privacy_accepted_at: Time.current, privacy_policy_version: PrivacyPolicy::VERSION)
-  end
-
-  # Only same-site paths: "/x" is fine, "//host" and "/\\host" are not.
-  def safe_return_to(path)
-    path if path.is_a?(String) && path.match?(%r{\A/(?![/\\])})
   end
 
   def redirect_if_authenticated

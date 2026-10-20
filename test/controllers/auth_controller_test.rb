@@ -54,6 +54,37 @@ class AuthControllerTest < ActionDispatch::IntegrationTest
     assert_select "label[for=privacy_consent] a[href=?]", terms_path
   end
 
+  test "login page shows the three social buttons and one consent checkbox" do
+    get login_url
+
+    assert_select "input[name=privacy_consent][type=checkbox]", count: 1
+    assert_select "input#privacy_consent[form=email-form][required]"
+    %w[google_oauth2 apple linkedin].each do |provider|
+      assert_select "form[data-social-form][action='/users/auth/#{provider}'][method=post]" do
+        assert_select "input[type=hidden][name=privacy_consent][value='0']"
+      end
+    end
+    assert_select "[role=separator]", text: I18n.t("social_auth.or_email", locale: :ar)
+    assert_includes response.body, I18n.t("social_auth.continue_with.google", locale: :ar)
+  end
+
+  test "login page in English labels the social buttons in English" do
+    get login_url(locale: "en")
+
+    assert_includes response.body, "Continue with Apple"
+    assert_includes response.body, "Or continue with email"
+  end
+
+  test "login page without social providers has no social form and no divider" do
+    SocialAuth.stubs(:providers).returns([])
+
+    get login_url
+
+    assert_select "form[data-social-form]", count: 0
+    assert_select "[role=separator]", count: 0
+    assert_select "form#email-form input#privacy_consent[required]"
+  end
+
   test "OTP form carries the consent flag" do
     get login_url(otp_sent: "true", email: @user.email)
 
