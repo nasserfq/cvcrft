@@ -1,0 +1,24 @@
+ar:
+  ux_confirm:
+    cancel: "إلغاء"
+    delete: "حذف"
+    type_to_confirm: "اكتب %{phrase} للتأكيد"
+    resume_title: "حذف هذه السيرة الذاتية؟"
+    resume_body: "سيتم حذف «%{name}» وملف PDF الخاص بها نهائيًا. لا يمكن التراجع عن ذلك."
+    resume_confirm: "حذف السيرة"
+    draft_title: "حذف هذه المسودة؟"
+    draft_body: "سيتم حذف «%{name}» نهائيًا. لا يمكن التراجع عن ذلك."
+    draft_confirm: "حذف المسودة"
+    account_title: "حذف حسابك نهائيًا؟"
+    account_body: "سيتم حذف جميع سيرك الذاتية والمسودات والترجمات والسير المُنشأة بالذكاء الاصطناعي وملفات PDF نهائيًا. لا يمكن استعادة حسابك."
+    account_confirm: "حذف حسابي"
+    account_phrase: "حذف"
+    aria:
+      view_resume: "عرض السيرة الذاتية: %{name}"
+      edit_resume: "تعديل السيرة الذاتية: %{name}"
+      download_pdf: "تنزيل PDF: %{name}"
+      delete_resume: "حذف السيرة الذاتية: %{name}"
+      delete_draft: "حذف المسودة: %{name}"
+  cv_generation_toast:
+    close: "إغلاق"
+    get_more_credits: "احصل على رصيد إضافي"

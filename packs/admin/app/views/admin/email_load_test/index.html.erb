@@ -71,10 +71,14 @@
       </div>
   <div class="form-actions">
     <%= form.submit "Start Load Test", class: "btn btn-primary btn-lg js-hover-target", data: { hoverable: true } %>
-    <%= link_to "Stop Test", stop_test_admin_email_load_test_index_path, 
-    method: :post, 
-    class: "btn btn-danger btn-lg js-hover-target",
-    data: { confirm: "Are you sure you want to stop the current test?", hoverable: true } %>
+    <%# rails-ujs is not loaded, so data-confirm and link method: :post did nothing:
+        a real POST form, confirmed by confirm_delete_controller (native confirm here). %>
+    <%= button_to "Stop Test", stop_test_admin_email_load_test_index_path,
+          method: :post,
+          class: "btn btn-danger btn-lg js-hover-target",
+          data: { hoverable: true },
+          form: { style: "display: inline", data: { controller: "confirm-delete", action: "submit->confirm-delete#intercept",
+                                                     confirm_delete_title_param: "Are you sure you want to stop the current test?" } } %>
   </div>
     <% end %>
   </div>
@@ -117,10 +121,12 @@
   <div class="action-buttons">
     <%= link_to "Monitor Jobs", monitor_admin_email_load_test_index_path, 
       class: "btn btn-info js-hover-target", target: "_blank", data: { hoverable: true } %>
-    <%= link_to "Clean Up Test Data", cleanup_admin_email_load_test_index_path, 
-      method: :post, 
-      class: "btn btn-warning js-hover-target",
-      data: { confirm: "Are you sure you want to delete all test users?", hoverable: true } %>
+    <%= button_to "Clean Up Test Data", cleanup_admin_email_load_test_index_path,
+          method: :post,
+          class: "btn btn-warning js-hover-target",
+          data: { hoverable: true },
+          form: { style: "display: inline", data: { controller: "confirm-delete", action: "submit->confirm-delete#intercept",
+                                                     confirm_delete_title_param: "Are you sure you want to delete all test users?" } } %>
     <%= link_to "Sidekiq Dashboard", "/sidekiq", 
       class: "btn btn-secondary js-hover-target", target: "_blank", data: { hoverable: true } %>
   </div>

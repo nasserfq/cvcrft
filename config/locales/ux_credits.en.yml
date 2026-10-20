@@ -1,0 +1,5 @@
+en:
+  ux_credits:
+    get_credits: "Get more credits"
+    chip_label: "Credits balance: %{count}"
+    credits: "Credits"

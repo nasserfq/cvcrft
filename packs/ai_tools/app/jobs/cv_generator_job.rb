@@ -10,6 +10,19 @@ class CvGeneratorJob
 
   sidekiq_options retry: 3, backtrace: true
 
+  # A generation that ran past the free allowance was paid with a credit
+  # (Billing::UsageGate); options["overage_key"], a random id, is set only
+  # then. A final failure gives the credit back. Safe to call twice.
+  sidekiq_retries_exhausted do |job, _error|
+    refund_overage(job["args"][1], job["args"][3])
+  end
+
+  def self.refund_overage(user_id, options)
+    key = (options || {}).transform_keys(&:to_s)["overage_key"].presence
+    user = key && User.find_by(id: user_id)
+    Billing::UsageGate.refund!(user, :job_based_generation, key: key) if user
+  end
+
   # Version control for PDF generation - increment this when making layout changes
   PDF_VERSION = "2.1"  # Incrementing to force regeneration
 

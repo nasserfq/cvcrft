@@ -1,0 +1,18 @@
+ar:
+  ux_overage:
+    will_use_credit: "سيُخصم رصيد واحد"
+    profile:
+      then_credit_each: "بعد انتهاء الاستخدامات المجانية، تكلّف كل ترجمة وكل سيرة ذاتية حسب الوظيفة وكل استيراد سيرة ذاتية رصيدًا واحدًا. رصيدك: %{count}."
+    translations:
+      summary_translation:
+        limit_reached: "لقد استخدمت جميع ترجمات الملخص المهني المتاحة (%{max})."
+        no_credits: "لقد استخدمت ترجمات الملخص المهني المجانية (%{max}) ولا يوجد لديك رصيد. كل ترجمة إضافية تكلّف رصيدًا واحدًا."
+      jobs_translation:
+        limit_reached: "لقد استخدمت جميع ترجمات الوظائف المتاحة (%{max})."
+        no_credits: "لقد استخدمت ترجمات الوظائف المجانية (%{max}) ولا يوجد لديك رصيد. كل ترجمة إضافية تكلّف رصيدًا واحدًا."
+  billing:
+    reasons:
+      overage_summary_translation: "ترجمة الملخص المهني"
+      overage_jobs_translation: "ترجمة وصف الوظائف"
+      overage_job_based_generation: "إنشاء سيرة ذاتية حسب الوظيفة"
+      overage_document_ai: "استيراد سيرة ذاتية"

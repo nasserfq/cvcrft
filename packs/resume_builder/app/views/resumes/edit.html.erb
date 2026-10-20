@@ -3,30 +3,32 @@
     window.location.href = '/auth/login';
   </script>
 <% else %>
-<div class="bg-gradient-to-b from-white via-emerald-50 to-white min-h-screen">
-  <!-- Background Accents -->
-  <div class="pointer-events-none fixed inset-0 -z-10">
-    <div class="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/20 blur-3xl"></div>
-    <div class="absolute top-1/3 -right-20 w-72 h-72 rounded-full bg-emerald-300/20 blur-3xl"></div>
-    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[38rem] h-[38rem] bg-gradient-to-b from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
-  </div>
-  <!-- Main Content -->
-  <div class="relative">
-    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12">
-      <%= render 'shared/flash_alert' %>
-      <!-- Form Container -->
-      <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 shadow-sm p-8" dir="<%= text_direction %>">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-3">
-            <%= t('resume.edit_title') %>
-          </h1>
-          <p class="text-slate-600 leading-7 max-w-2xl mx-auto">
-            <%= t('resume.edit_description') %>
-          </p>
-        </div>
-        <div id="resume-form-root" dir="<%= text_direction %>">
-          <!-- React component will render here -->
-        </div>
+<% content_for :title, t('resume.edit_title') %>
+<% content_for :body_class, "sr-app-long" %>
+<%# Long page: the layout lets the ambient scroll with it, so its orbs run the full page height. %>
+<% content_for :ambient_scrolls, true %>
+<%# The multi-step form grows long: the wrapper rises without sr-fadeUp's blur so it paints fast on phones. %>
+<div dir="<%= text_direction %>" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee; animation-name: sr-riseUp">
+  <div class="relative mx-auto max-w-[1040px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-10">
+    <!-- Hero Header -->
+    <header class="flex flex-col items-center text-center gap-6">
+      <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+        <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+        <%= t('home.resume_builder') %>
+      </span>
+      <h1 class="m-0 font-semibold" style="font-size: clamp(32px, 4.6vw, 56px); line-height: 1.15; letter-spacing: -0.02em">
+        <% words = t('resume.edit_title').split %>
+        <% delay = 0.1 %>
+        <% words.each_with_index do |word, i| %><span class="sr-w" style="<%= 'color: #d6b877; ' if i == words.size - 1 && words.size > 1 %>animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+      </h1>
+      <p class="sr-up m-0 text-[17px] sm:text-[19px] font-light max-w-[60ch]" style="animation-delay: .5s; color: rgba(238,243,238,0.7)"><%= t('resume.edit_description') %></p>
+      <div class="w-full max-w-2xl text-start"><%= render 'shared/flash_alert' %></div>
+    </header>
+
+    <!-- Form Container: no transform here, so the form's fixed-position modals stay pinned to the viewport. -->
+    <div class="mx-auto w-full max-w-4xl">
+      <div id="resume-form-root" dir="<%= text_direction %>" data-billing-enabled="<%= Billing.enabled_for?(current_user) %>">
+        <!-- React component will render here -->
       </div>
     </div>
   </div>
@@ -37,7 +39,7 @@
   <% if @resume.present? %>
     // For existing resumes (including drafts), pass the resume data
     window.resumeData = <%= raw @resume.to_json(only: [:id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :is_draft, :draft_data]) %>;
-    
+
     // Add association data if it exists
     <% if @resume.work_experiences.any? %>
       window.resumeData.work_experience = <%= raw @resume.work_experiences.to_json %>;
@@ -58,8 +60,5 @@
     // For new resumes, pass null
     window.resumeData = null;
   <% end %>
-  
-  console.log('=== RAILS: Resume data set (edit) ===');
-  console.log('Resume data:', window.resumeData);
 </script>
 <% end %>

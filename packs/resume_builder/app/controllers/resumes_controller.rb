@@ -130,8 +130,8 @@ class ResumesController < ApplicationController
     if current_user.nil?
       Rails.logger.error "No current user found!"
       respond_to do |format|
-        format.html { redirect_to new_user_session_path, alert: "Please sign in to create a resume." }
-        format.json { render json: { error: "Authentication required" }, status: :unauthorized }
+        format.html { redirect_to new_user_session_path, alert: t("ux_i18n.resumes.sign_in_to_create") }
+        format.json { render json: { error: t("ux_i18n.resumes.authentication_required") }, status: :unauthorized }
       end
       return
     end
@@ -150,7 +150,7 @@ class ResumesController < ApplicationController
       view_url = "/api/export_pdf?resume_id=#{@resume.id}&view_in_browser=true"
 
       respond_to do |format|
-        format.html { redirect_to @resume, notice: "Resume created successfully!" }
+        format.html { redirect_to @resume, notice: t("ux_i18n.resumes.created") }
         format.json {
           render json: @resume.as_json.merge({
             download_url: pdf_url,
@@ -176,7 +176,7 @@ class ResumesController < ApplicationController
 
   def update
     if @resume.update(resume_params)
-      redirect_to @resume, notice: "Resume updated successfully!"
+      redirect_to @resume, notice: t("ux_i18n.resumes.updated")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -186,7 +186,7 @@ class ResumesController < ApplicationController
     track_event("resume_deleted", { resume_id: @resume.id })
     @resume.destroy
     respond_to do |format|
-      format.html { redirect_to resumes_path, notice: "تم حذف السيرة الذاتية بنجاح" }
+      format.html { redirect_to resumes_path, notice: t("ux_i18n.resumes.deleted") }
       format.json { head :no_content }
     end
   end
@@ -226,7 +226,7 @@ class ResumesController < ApplicationController
       Rails.logger.error "Failed to generate/send resume PDF: #{e.class} - #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
       respond_to do |format|
-        format.html { render plain: "Failed to load PDF document.", status: :internal_server_error }
+        format.html { render plain: t("ux_i18n.resumes.pdf_load_failed"), status: :internal_server_error }
         format.any  { head :internal_server_error }
       end
     end
@@ -236,9 +236,9 @@ class ResumesController < ApplicationController
     # AI-powered ATS optimization
     result = AtsOptimizationService.new(@resume).optimize
     if result[:success]
-      redirect_to @resume, notice: "ATS optimization completed!"
+      redirect_to @resume, notice: t("ux_i18n.resumes.ats_optimization_completed")
     else
-      redirect_to @resume, alert: "ATS optimization failed: " + result[:error]
+      redirect_to @resume, alert: t("ux_i18n.resumes.ats_optimization_failed", error: result[:error])
     end
   end
 
@@ -254,7 +254,7 @@ class ResumesController < ApplicationController
           respond_to do |format|
             format.json { render json: {
               success: false,
-              error: "فشل في إنشاء السيرة الذاتية: #{@resume.errors.full_messages.join(', ')}"
+              error: t("ux_i18n.resumes.create_failed", errors: @resume.errors.full_messages.join(", "))
             }, status: :unprocessable_entity }
           end
           return
@@ -287,10 +287,10 @@ class ResumesController < ApplicationController
       @resume.save_draft(draft_data)
 
       respond_to do |format|
-        format.html { redirect_to resumes_path, notice: "تم حفظ المسودة بنجاح. يمكنك العودة إليها لاحقاً." }
+        format.html { redirect_to resumes_path, notice: t("ux_i18n.resumes.draft_saved_flash") }
         format.json { render json: {
           success: true,
-          message: "تم حفظ المسودة بنجاح",
+          message: t("ux_i18n.resumes.draft_saved"),
           resume_id: @resume.id,
           draft_data: @resume.draft_data
         } }
@@ -298,10 +298,10 @@ class ResumesController < ApplicationController
     rescue => e
       Rails.logger.error "Error saving resume draft: #{e.message}"
       respond_to do |format|
-        format.html { redirect_to resumes_path, alert: "حدث خطأ أثناء حفظ المسودة." }
+        format.html { redirect_to resumes_path, alert: t("ux_i18n.resumes.draft_save_failed_flash") }
         format.json { render json: {
           success: false,
-          error: "حدث خطأ أثناء حفظ المسودة: #{e.message}"
+          error: t("ux_i18n.resumes.draft_save_failed", error: e.message)
         }, status: :unprocessable_entity }
       end
     end
@@ -319,10 +319,10 @@ class ResumesController < ApplicationController
       step_number = @resume.draft_data&.dig("current_step") || 1
 
       respond_to do |format|
-        format.html { redirect_to edit_resume_path(@resume, step: step_number), notice: "تم استئناف المسودة بنجاح! تم العودة للخطوة #{step_number}." }
+        format.html { redirect_to edit_resume_path(@resume, step: step_number), notice: t("ux_i18n.resumes.draft_resumed_flash", step: step_number) }
         format.json { render json: {
           success: true,
-          message: "تم استئناف المسودة بنجاح",
+          message: t("ux_i18n.resumes.draft_resumed"),
           resume_id: @resume.id,
           step_number: step_number,
           redirect_url: edit_resume_path(@resume, step: step_number)
@@ -330,10 +330,10 @@ class ResumesController < ApplicationController
       end
     else
       respond_to do |format|
-        format.html { redirect_to resumes_path, alert: "لا يمكن استئناف هذه المسودة." }
+        format.html { redirect_to resumes_path, alert: t("ux_i18n.resumes.draft_not_resumable_flash") }
         format.json { render json: {
           success: false,
-          error: "لا يمكن استئناف هذه المسودة"
+          error: t("ux_i18n.resumes.draft_not_resumable")
         }, status: :unprocessable_entity }
       end
     end

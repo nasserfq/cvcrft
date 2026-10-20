@@ -37,6 +37,32 @@ const isEnglishText = (text) => {
 // through the AI translate buttons before the user can move on.
 const hasArabic = (text) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text || "");
 
+// The AI translation, or the summary itself when the user wrote it in English
+// (Arabic still has to go through the AI translation).
+const englishSummary = (data) =>
+ data.professional_summary_english?.trim() ||
+ (hasArabic(data.professional_summary) ? "" : data.professional_summary?.trim() || "");
+
+// A translation-limit message that says how to move on: replace the Arabic
+// with English typed by hand, or (only where billing is on, so /credits
+// exists) get more credits. Rendered wherever the error strings are rendered.
+const TranslationLimitNotice = ({ message, translate, billingEnabled }) => (
+ <span>
+  {message} {translate("translation.limit_replace_hint")}
+  {billingEnabled && (
+   <>
+    {" "}
+    <a
+     href="/credits"
+     className="font-semibold underline underline-offset-2 whitespace-nowrap hover:opacity-80"
+    >
+     {translate("translation.limit_get_credits")}
+    </a>
+   </>
+  )}
+ </span>
+);
+
 // Note: ENGLISH_VALIDATION_MSG is now handled via i18n t('validation.english_only')
 
 // Lazy load step components for better initial load performance
@@ -49,18 +75,18 @@ const ReviewStep = lazy(() => import("./cv-builder/ReviewStep"));
 const StepLoadingSkeleton = memo(() => (
  <div className="animate-pulse space-y-6">
   <div className="text-center mb-6">
-   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4" />
+   <div className="inline-flex items-center justify-center w-16 h-16 rounded-[22px] bg-white/[0.06] mb-4" />
    <div className="h-6 bg-primary/10 rounded-lg w-1/2 mx-auto mb-2" />
-   <div className="h-4 bg-gray-200 dark:bg-white/10 rounded-lg w-2/3 mx-auto" />
+   <div className="h-4 bg-white/10 rounded-lg w-2/3 mx-auto" />
   </div>
-  <div className="p-6 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/50 dark:bg-white/5">
+  <div className="glass-soft p-6 rounded-[24px]">
    <div className="h-5 bg-primary/10 rounded-lg w-1/4 mb-4" />
    <div className="space-y-3">
-    <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
-    <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
+    <div className="h-12 bg-white/[0.06] rounded-xl" />
+    <div className="h-12 bg-white/[0.06] rounded-xl" />
     <div className="grid grid-cols-2 gap-4">
-     <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
-     <div className="h-10 bg-gray-100 dark:bg-white/5 rounded-xl" />
+     <div className="h-12 bg-white/[0.06] rounded-xl" />
+     <div className="h-12 bg-white/[0.06] rounded-xl" />
     </div>
    </div>
   </div>
@@ -81,9 +107,10 @@ const ATS_TEMPLATE_KEYS = [
  "business_admin_modern",
 ];
 
-const MultiStepResumeForm = ({ resume, onSubmit }) => {
+const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
  const { t: translate, i18n: i18nInstance } = useTranslation();
  const ENGLISH_VALIDATION_MSG = translate("validation.english_only");
+ const limitNotice = (message) => <TranslationLimitNotice message={message} translate={translate} billingEnabled={billingEnabled} />;
 
  const templateOptions = useMemo(
   () =>
@@ -629,8 +656,10 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    errors.professional_summary = translate("validation.summary_required");
   } else if (formData.professional_summary.trim().length < 5) {
    errors.professional_summary = translate("validation.summary_min_length");
-  } else if (!formData.professional_summary_english?.trim() || hasArabic(formData.professional_summary_english)) {
-   errors.professional_summary = translate("validation.summary_translate_required");
+  } else if (!englishSummary(formData) || hasArabic(englishSummary(formData))) {
+   errors.professional_summary = !unlimitedUsage && remainingSummaryTranslations <= 0
+    ? limitNotice(translate("translation.summary_limit_reached", { max: maxSummaryTranslations }))
+    : translate("validation.summary_translate_required");
   }
   
   return errors;
@@ -701,7 +730,9 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
      exp => (exp.responsibilities || []).some(resp => hasArabic(resp))
     );
     if (untranslated !== -1) {
-     errors.work_experience = translate("validation.responsibilities_translate_required", { n: untranslated + 1 });
+     errors.work_experience = !unlimitedUsage && remainingJobsTranslations <= 0
+      ? limitNotice(translate("translation.jobs_limit_reached", { max: maxJobsTranslations }))
+      : translate("validation.responsibilities_translate_required", { n: untranslated + 1 });
     }
    }
   }
@@ -1385,7 +1416,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   // Check translation limit for summary
   if (!unlimitedUsage && remainingSummaryTranslations <= 0) {
    setTranslationError(
-    translate("translation.summary_limit_reached", { max: maxSummaryTranslations })
+    limitNotice(translate("translation.summary_limit_reached", { max: maxSummaryTranslations }))
    );
    return;
   }
@@ -1429,7 +1460,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    } else if (response.status === 429) {
     const result = await response.json();
     setTranslationError(
-     result.error || translate("translation.summary_limit_reached", { max: maxSummaryTranslations })
+     limitNotice(result.error || translate("translation.summary_limit_reached", { max: maxSummaryTranslations }))
     );
     setRemainingSummaryTranslations(0);
     setIsTranslating(false);
@@ -1463,7 +1494,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
   // Check translation limit for job descriptions
   if (!unlimitedUsage && remainingJobsTranslations <= 0) {
    setJobTranslationError(
-    translate("translation.jobs_limit_reached", { max: maxJobsTranslations })
+    limitNotice(translate("translation.jobs_limit_reached", { max: maxJobsTranslations }))
    );
    return;
   }
@@ -1508,7 +1539,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
    } else if (response.status === 429) {
     const result = await response.json();
     setJobTranslationError(
-     result.error || translate("translation.jobs_limit_reached", { max: maxJobsTranslations })
+     limitNotice(result.error || translate("translation.jobs_limit_reached", { max: maxJobsTranslations }))
     );
     setRemainingJobsTranslations(0);
     setIsTranslatingJobs(false);
@@ -1665,8 +1696,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     city: formData.city?.trim() || "",
     country: formData.country?.trim() || "",
     professional_summary: formData.professional_summary?.trim() || "",
-    professional_summary_english:
-     formData.professional_summary_english?.trim() || "",
+    professional_summary_english: englishSummary(formData),
     // Always include nested attributes, even if empty
     educations_attributes: formData.education
      .filter(
@@ -1770,7 +1800,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     );
     formDataToSubmit.append(
      "resume[professional_summary_english]",
-     formData.professional_summary_english?.trim() || ""
+     englishSummary(formData)
     );
 
     // Add nested attributes
@@ -2035,7 +2065,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
        city: formData.city,
        country: formData.country,
        professional_summary: formData.professional_summary,
-       professional_summary_english: formData.professional_summary_english,
+       professional_summary_english: englishSummary(formData),
        educations_attributes: formData.education
         .filter(
          (edu) =>
@@ -2213,7 +2243,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     city: formData.city,
     country: formData.country,
     professional_summary: formData.professional_summary,
-    professional_summary_english: formData.professional_summary_english,
+    professional_summary_english: englishSummary(formData),
     education: JSON.stringify(formData.education),
     work_experience: JSON.stringify(formData.work_experience),
     skills: JSON.stringify(formData.skills),
@@ -2275,8 +2305,8 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
  // Helper function to render save draft button (now a subtle manual backup option)
  const renderSaveDraftButton = (stepNumber) => (
-  <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between">
-   <p className="text-xs text-slate-400 flex items-center gap-1">
+  <div className="mt-4 sm:mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+   <p className="text-xs text-mist/55 flex items-center gap-1">
     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
@@ -2286,7 +2316,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     type="button"
     onClick={() => saveDraft(stepNumber)}
     disabled={isSavingDraft}
-    className="text-xs text-slate-500 hover:text-slate-700 active:text-slate-800 underline disabled:opacity-50 py-1 px-2 rounded active:bg-slate-100 transition-all touch-manipulation"
+    className="text-sm text-mist/60 hover:text-mist underline underline-offset-4 disabled:opacity-50 min-h-[44px] px-3 rounded-xl hover:bg-white/5 active:bg-white/10 transition-all touch-manipulation"
    >
     {isSavingDraft ? t('form.saving') : t('form.manual_save')}
    </button>
@@ -2638,8 +2668,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
     "resume[city]": formData.city,
     "resume[country]": formData.country,
     "resume[professional_summary]": formData.professional_summary,
-    "resume[professional_summary_english]":
-     formData.professional_summary_english,
+    "resume[professional_summary_english]": englishSummary(formData),
     "resume[educations_attributes]": formData.education
      .filter(
       (edu) =>
@@ -2808,12 +2837,13 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
  return (
   <div data-turbo="false" className="py-2 sm:py-6 overflow-x-hidden w-full max-w-full">
    <div className="max-w-4xl mx-auto px-2 sm:px-4 w-full">
-    <div data-form-card className="bg-white/80 dark:bg-darkCard/80 backdrop-blur-xl rounded-2xl shadow-lg border border-borderLight dark:border-white/10 overflow-hidden w-full">
+    <div data-form-card className="glass rounded-[32px] overflow-hidden w-full text-mist">
      {/* Header with step indicator */}
-     <div className="bg-gradient-to-r from-primary to-primaryHover px-4 sm:px-8 py-5 sm:py-6">
+     <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-white/10">
       <div className="flex items-center justify-between flex-wrap gap-3">
        <div className="flex items-center gap-3 flex-wrap">
-        <h1 className="text-lg sm:text-2xl font-semibold text-white">
+        <h1 className="m-0 flex items-center gap-2.5 text-lg sm:text-2xl font-semibold text-mist">
+         <span className="sr-dot w-2 h-2 rounded-full bg-primary"></span>
          {t('resume.new_title')}
         </h1>
         {/* Import CV Button - Show on step 1 */}
@@ -2821,7 +2851,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          <button
           type="button"
           onClick={() => setShowImportModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs sm:text-sm font-medium transition-colors border border-white/20"
+          className="sr-btn glass-soft inline-flex items-center gap-2 min-h-[44px] px-4 rounded-2xl text-mist text-sm font-medium touch-manipulation"
          >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -2835,7 +2865,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         {/* Auto-save indicator */}
         {autoSaveStatus !== "idle" && (
          <span className={`text-xs flex items-center gap-1 ${
-          autoSaveStatus === "saving" ? "text-white/70" :
+          autoSaveStatus === "saving" ? "text-mist/70" :
           autoSaveStatus === "saved" ? "text-action" :
           "text-red-300"
          }`}>
@@ -2866,16 +2896,16 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           )}
          </span>
         )}
-        <span className="text-xs sm:text-sm text-white/80 bg-white/10 px-3 py-1 rounded-full">
+        <span className="sr-mono glass-soft text-xs sm:text-sm text-mist/80 px-3 py-1 rounded-full">
          {t('steps.step_of', { current: currentStep, total: totalSteps })}
         </span>
        </div>
       </div>
       {/* Progress Bar */}
       <div className="mt-4" dir="rtl">
-       <div className="w-full bg-white/20 rounded-full h-2">
+       <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
         <div
-         className="bg-action h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(214,184,119,0.5)]"
+         className="h-1.5 rounded-full bg-gradient-to-l from-gold to-primary-soft transition-[width] duration-700 ease-[cubic-bezier(.16,1,.3,1)] shadow-[0_0_12px_rgba(214,184,119,0.45)]"
          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
         ></div>
        </div>
@@ -2887,7 +2917,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
 
      {/* Navigation Buttons - Mobile Optimized with Safe Area */}
      <div 
-      className="px-4 sm:px-8 py-4 border-t border-borderLight dark:border-white/10 bg-canvas/50 dark:bg-darkCard/50" 
+      className="px-4 sm:px-8 py-4 border-t border-white/10 bg-white/[0.03]" 
       dir="rtl"
       style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
      >
@@ -2898,7 +2928,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
          <button
           type="button"
           onClick={nextStep}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-white transition-all hover:bg-primaryHover active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(124,108,242,0.4)] hover:shadow-[0_0_25px_-5px_rgba(124,108,242,0.5)] touch-manipulation"
+          className="sr-btn sr-primary flex-1 inline-flex items-center justify-center gap-2.5 min-h-[52px] rounded-2xl px-5 text-[15px] font-semibold shadow-glow touch-manipulation"
          >
           {t('steps.next')}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2910,7 +2940,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           type="button"
           onClick={exportToPDF}
           disabled={isExporting}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-action px-4 py-3 text-sm font-medium text-darkBase transition-all hover:bg-actionHover active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)] hover:shadow-[0_0_25px_-5px_rgba(214,184,119,0.5)] touch-manipulation"
+          className="sr-btn flex-1 inline-flex items-center justify-center gap-2.5 min-h-[52px] rounded-2xl bg-action px-5 text-[15px] font-semibold text-darkBase hover:bg-actionHover disabled:opacity-50 shadow-glow-gold touch-manipulation"
          >
           {isExporting ? (
            <>
@@ -2925,7 +2955,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
           )}
          </button>
         )}
-        <a href="/resumes" className="px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-borderLight dark:ring-white/10 hover:bg-canvas dark:hover:bg-white/5 active:scale-[0.98] transition-all touch-manipulation">
+        <a href="/resumes" className="sr-btn glass-soft inline-flex items-center justify-center min-h-[52px] px-5 rounded-2xl text-[15px] font-medium text-mist touch-manipulation">
          {t('actions.cancel')}
         </a>
        </div>
@@ -2933,7 +2963,7 @@ const MultiStepResumeForm = ({ resume, onSubmit }) => {
         <button
          type="button"
          onClick={prevStep}
-         className="w-full py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 ring-1 ring-borderLight dark:ring-white/10 hover:bg-canvas dark:hover:bg-white/5 active:scale-[0.98] flex items-center justify-center gap-2 transition-all touch-manipulation"
+         className="sr-btn glass-soft w-full min-h-[48px] rounded-2xl text-[15px] font-medium text-mist flex items-center justify-center gap-2 touch-manipulation"
         >
          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

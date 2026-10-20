@@ -26,7 +26,13 @@ class ProfilesController < ApplicationController
       cv_builder_max: limits.max_cv_builder_generations,
       job_based_used: limits.job_based_generations_used,
       job_based_remaining: limits.remaining_job_based_generations,
-      job_based_max: limits.max_job_based_generations
+      job_based_max: limits.max_job_based_generations,
+      document_ai_remaining: limits.remaining_document_ai,
+      document_ai_max: limits.max_document_ai,
+      # Past the free allowance, translations, job-based CVs and CV imports
+      # cost 1 credit each while billing is on (Billing::UsageGate).
+      credits_enabled: Billing.enabled_for?(current_user),
+      credit_balance: (Billing::Credits.balance(current_user) if Billing.enabled_for?(current_user))
     }
 
     # Track profile view

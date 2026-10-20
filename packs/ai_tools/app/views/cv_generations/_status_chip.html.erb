@@ -1,0 +1,13 @@
+<%# Glass status pill for one CV generation. Locals: generation. %>
+<% status = generation.draft? ? "draft" : generation.status.to_s %>
+<% tones = {
+     "completed" => "background: rgba(47,163,107,0.12); border-color: rgba(47,163,107,0.35); color: #2fa36b",
+     "draft" => "background: rgba(214,184,119,0.12); border-color: rgba(214,184,119,0.4); color: #d6b877",
+     "processing" => "background: rgba(214,184,119,0.12); border-color: rgba(214,184,119,0.4); color: #d6b877",
+     "pending" => "background: rgba(214,184,119,0.12); border-color: rgba(214,184,119,0.4); color: #d6b877",
+     "failed" => "background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.4); color: #fca5a5"
+   } %>
+<span class="glass-soft inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style="<%= tones[status] || 'color: rgba(238,243,238,0.75)' %>" data-status="<%= status %>">
+  <span class="<%= 'sr-dot ' if %w[processing pending].include?(status) %>w-1.5 h-1.5 rounded-full" style="background: currentColor"></span>
+  <%= t("ux_i18n2.cv_generations.statuses.#{status}", default: status.humanize) %>
+</span>

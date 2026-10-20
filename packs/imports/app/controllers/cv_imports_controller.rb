@@ -1,4 +1,6 @@
 class CvImportsController < ApplicationController
+  include CreditsUpsell
+
   before_action :authenticate_user!
   before_action :set_cv_import, only: [ :status, :show ]
 
@@ -9,7 +11,7 @@ class CvImportsController < ApplicationController
     unless params[:pdf_file].present?
       return render json: {
         success: false,
-        error: "يرجى تحميل ملف السيرة الذاتية (PDF)"
+        error: t("ux_i18n2.cv_imports.pdf_required")
       }, status: :unprocessable_entity
     end
 
@@ -19,7 +21,7 @@ class CvImportsController < ApplicationController
     unless pdf_file.content_type == "application/pdf"
       return render json: {
         success: false,
-        error: "يرجى تحميل ملف PDF فقط"
+        error: t("ux_i18n2.cv_imports.pdf_only")
       }, status: :unprocessable_entity
     end
 
@@ -27,7 +29,7 @@ class CvImportsController < ApplicationController
     if pdf_file.size > 10.megabytes
       return render json: {
         success: false,
-        error: "حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت"
+        error: t("ux_i18n2.cv_imports.file_too_large")
       }, status: :unprocessable_entity
     end
 
@@ -40,7 +42,7 @@ class CvImportsController < ApplicationController
       if result[:language] == "ar"
         return render json: {
           success: false,
-          error: "السيرة الذاتية مكتوبة بالعربية. يرجى تحميل سيرة ذاتية باللغة الإنجليزية",
+          error: t("ux_i18n2.cv_imports.arabic_content"),
           error_type: "arabic_content"
         }, status: :unprocessable_entity
       end
@@ -53,21 +55,25 @@ class CvImportsController < ApplicationController
         original_filename: pdf_file.original_filename
       )
 
-      unless current_user.usage_limits.consume!(:document_ai)
-        return render json: { success: false, error: "لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", limit_reached: true }, status: :too_many_requests
+      # Free allowance first, then 1 credit each while billing is on
+      charge_key = SecureRandom.uuid
+      charge = Billing::UsageGate.allow!(current_user, :document_ai, key: charge_key)
+      if charge == :blocked
+        return render json: { success: false, error: t("ux_i18n2.cv_imports.limit_reached"), limit_reached: true, **credits_upsell }, status: :too_many_requests
       end
 
       if @cv_import.save
         # Queue the background job for AI processing
-        CvImportJob.perform_async(@cv_import.id)
+        CvImportJob.perform_async(@cv_import.id, *(charge_key if charge == :credit))
 
         render json: {
           success: true,
           id: @cv_import.id,
           status_url: cv_import_status_path(@cv_import, format: :json),
-          message: "جاري تحليل السيرة الذاتية..."
+          message: t("ux_i18n2.cv_imports.analyzing")
         }
       else
+        refund_import(charge, charge_key)
         render json: {
           success: false,
           error: @cv_import.errors.full_messages.join(", ")
@@ -91,17 +97,18 @@ class CvImportsController < ApplicationController
     rescue CvPdfImportService::CvPdfParseError => e
       render json: {
         success: false,
-        error: "فشل في قراءة الملف: #{e.message}",
+        error: t("ux_i18n2.cv_imports.read_failed", error: e.message),
         error_type: "parse_error"
       }, status: :unprocessable_entity
 
     rescue => e
+      refund_import(charge, charge_key)
       Rails.logger.error "[CvImport] Unexpected error: #{e.message}"
       Rails.logger.error e.backtrace.first(5).join("\n")
 
       render json: {
         success: false,
-        error: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى",
+        error: t("ux_i18n2.cv_imports.unexpected_error"),
         error_type: "unknown"
       }, status: :internal_server_error
     end
@@ -138,6 +145,11 @@ class CvImportsController < ApplicationController
   end
 
   private
+
+  # Gives the credit back when the import it paid for didn't start.
+  def refund_import(charge, key)
+    Billing::UsageGate.refund!(current_user, :document_ai, key: key) if charge == :credit
+  end
 
   def set_cv_import
     @cv_import = current_user.cv_imports.find(params[:id])

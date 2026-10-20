@@ -1,4 +1,5 @@
 class Api::TranslationsController < ApplicationController
+  include CreditsUpsell
   before_action :authenticate_user!
 
   # Skip CSRF protection for API endpoints
@@ -6,16 +7,9 @@ class Api::TranslationsController < ApplicationController
 
   def translate_professional_summary
     begin
-      # Check translation limit for professional summary
+      # Free allowance first, then 1 credit each while billing is on
       remaining = usage_limits.remaining_summary_translations
-      unless usage_limits.can_translate_summary?
-        render json: {
-          error: "لقد استخدمت جميع ترجمات الملخص المهني المتاحة (#{usage_limits.max_summary_translations || '∞'})",
-          limit_reached: true,
-          remaining: 0
-        }, status: :too_many_requests
-        return
-      end
+      return render_translation_limit(:summary_translation) unless Billing::UsageGate.available?(current_user, :summary_translation)
 
       # Always enqueue a new AI translation job for every request
 
@@ -32,10 +26,8 @@ class Api::TranslationsController < ApplicationController
       # Generate a unique job ID first
       job_id = SecureRandom.hex(12)
 
-      unless usage_limits.consume!(:summary_translation)
-        render json: { error: "limit reached", limit_reached: true, remaining: 0 }, status: :too_many_requests
-        return
-      end
+      charge = Billing::UsageGate.allow!(current_user, :summary_translation, key: job_id)
+      return render_translation_limit(:summary_translation) if charge == :blocked
 
       job = AiTranslationJob.perform_async(
         arabic_text,
@@ -45,8 +37,9 @@ class Api::TranslationsController < ApplicationController
           "temperature" => 0.7,
           "max_tokens" => 500,
           "professional_summary" => true,
-          "job_id" => job_id
-        }
+          "job_id" => job_id,
+          "overage_kind" => ("summary_translation" if charge == :credit)
+        }.compact
       )
 
       # Track translation event
@@ -62,9 +55,11 @@ class Api::TranslationsController < ApplicationController
         status: "queued",
         remaining_summary: projected_remaining(remaining),
         unlimited: usage_limits.unlimited?,
+        **charge_json(charge),
         message: "Translation job has been queued. Please poll for status."
       }
     rescue => e
+      Billing::UsageGate.refund!(current_user, :summary_translation, key: job_id) if charge == :credit
       Rails.logger.error "[AI Translate] Error: #{e.message}"
       Rails.logger.error "Backtrace: #{e.backtrace.first(5).join("\n")}"
       render json: { error: "Translation failed", message: e.message }, status: :internal_server_error
@@ -73,17 +68,9 @@ class Api::TranslationsController < ApplicationController
 
   def translate_job_descriptions
     begin
-      # Check translation limit for job descriptions
+      # Free allowance first, then 1 credit each while billing is on
       remaining = usage_limits.remaining_jobs_translations
-      unless usage_limits.can_translate_jobs?
-        render json: {
-          error: "لقد استخدمت جميع ترجمات الوظائف المتاحة (#{usage_limits.max_jobs_translations || '∞'})",
-          limit_reached: true,
-          remaining: 0
-        }, status: :too_many_requests
-        return
-      end
-
+      return render_translation_limit(:jobs_translation) unless Billing::UsageGate.available?(current_user, :jobs_translation)
 
       user_id = current_user.id
       resume_id = owned_resume_id
@@ -113,10 +100,8 @@ class Api::TranslationsController < ApplicationController
         "[#{job['job_title']} - #{job['company']}]\n#{responsibilities}"
       end.join("\n\n---\n\n")
 
-      unless usage_limits.consume!(:jobs_translation)
-        render json: { error: "limit reached", limit_reached: true, remaining: 0 }, status: :too_many_requests
-        return
-      end
+      charge = Billing::UsageGate.allow!(current_user, :jobs_translation, key: job_id)
+      return render_translation_limit(:jobs_translation) if charge == :blocked
 
       job = AiTranslationJob.perform_async(
         combined_text,
@@ -127,8 +112,9 @@ class Api::TranslationsController < ApplicationController
           "max_tokens" => 2000,
           "job_descriptions" => true,
           "job_id" => job_id,
-          "job_indices" => valid_jobs.map { |j| j["index"] }
-        }
+          "job_indices" => valid_jobs.map { |j| j["index"] },
+          "overage_kind" => ("jobs_translation" if charge == :credit)
+        }.compact
       )
 
       # Track translation event
@@ -146,9 +132,11 @@ class Api::TranslationsController < ApplicationController
         job_count: valid_jobs.size,
         remaining_jobs: projected_remaining(remaining),
         unlimited: usage_limits.unlimited?,
+        **charge_json(charge),
         message: "Translation job has been queued for #{valid_jobs.size} job descriptions."
       }
     rescue => e
+      Billing::UsageGate.refund!(current_user, :jobs_translation, key: job_id) if charge == :credit
       Rails.logger.error "[AI Translate Jobs] Error: #{e.message}"
       Rails.logger.error "Backtrace: #{e.backtrace.first(5).join("\n")}"
       render json: { error: "Translation failed", message: e.message }, status: :internal_server_error
@@ -399,9 +387,12 @@ class Api::TranslationsController < ApplicationController
     render json: status_result
   end
 
-  # Endpoint to get translation limit info (must be above private)
+  # Endpoint to get translation limit info (must be above private). `credits`
+  # says, per kind, whether the next use is free, will use a credit, or is
+  # blocked, so the page can warn "this will use 1 credit".
   def translation_limit
-    render json: usage_limits.as_json
+    credits = Billing::UsageGate.quote(current_user, %i[summary_translation jobs_translation])
+    render json: usage_limits.as_json.merge(credits: credits, **credits_upsell)
   end
 
   private
@@ -415,6 +406,29 @@ class Api::TranslationsController < ApplicationController
 
   def usage_limits
     current_user.usage_limits
+  end
+
+  LIMIT_MAX_METHODS = {
+    summary_translation: :max_summary_translations,
+    jobs_translation: :max_jobs_translations
+  }.freeze
+
+  # Free allowance used up and no credit to fall back on.
+  def render_translation_limit(kind)
+    max = usage_limits.public_send(LIMIT_MAX_METHODS.fetch(kind)) || "∞"
+    variant = Billing.enabled_for?(current_user) ? "no_credits" : "limit_reached"
+    render json: {
+      error: t("ux_overage.translations.#{kind}.#{variant}", max: max),
+      limit_reached: true,
+      remaining: 0,
+      **credits_upsell
+    }, status: :too_many_requests
+  end
+
+  def charge_json(charge)
+    return { charged: "free" } unless charge == :credit
+
+    { charged: "credit", credits_spent: Billing::UsageGate::CREDIT_COST, credit_balance: current_user.credit_balance }
   end
 
   def projected_remaining(current_remaining)

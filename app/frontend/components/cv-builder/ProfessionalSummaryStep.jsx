@@ -15,7 +15,7 @@ const DocumentIcon = () => (
 // Spinner component
 const Spinner = () => (
   <svg
-    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+    className="animate-spin -ms-1 me-3 h-5 w-5 text-white"
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -61,28 +61,28 @@ const ProfessionalSummaryStep = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+        <div className="glass-soft inline-flex items-center justify-center w-16 h-16 rounded-[22px] text-gold mb-4">
           <DocumentIcon />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">الملخص المهني</h2>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">
+        <h2 className="text-[22px] sm:text-2xl font-semibold text-mist">الملخص المهني</h2>
+        <p className="text-mist/70 mt-2 text-[15px] sm:text-base font-light">
           اكتب ملخصًا مهنيًا مقنعًا يصف خبراتك وأهدافك
         </p>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          <label className="block text-sm font-medium text-mist/90 mb-2">
             الملخص المهني (بالعربية)
           </label>
           <textarea
             value={formData.professional_summary}
             onChange={(e) => handleInputChange("professional_summary", e.target.value)}
             rows={6}
-            className="w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 transition-colors duration-300 resize-none"
             placeholder="اكتب ملخصًا مهنيًا مقنعًا يصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية. يجب أن يكون 3-5 جمل تعطي صورة واضحة عنك كمحترف..."
           />
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-xs text-mist/55">
             اكتب 3-5 جمل تصف خلفيتك المهنية وخبراتك ومهاراتك وأهدافك الوظيفية
           </p>
           <p className="mt-2 text-xs text-primary bg-primary/10 p-2 rounded-xl border border-primary/20">
@@ -101,7 +101,7 @@ const ProfessionalSummaryStep = ({
               !formData.professional_summary.trim() ||
               translationCount >= maxTranslations
             }
-            className="inline-flex items-center gap-2 rounded-xl bg-action text-darkBase px-6 py-3 text-sm font-medium hover:bg-actionHover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="sr-btn inline-flex items-center gap-2 min-h-[48px] rounded-2xl bg-action text-darkBase px-6 py-3 text-[15px] font-semibold hover:bg-actionHover shadow-glow-gold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isTranslating ? (
               <>
@@ -117,26 +117,26 @@ const ProfessionalSummaryStep = ({
           </button>
 
           {/* Translation limit info */}
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-2 text-xs text-mist/55">
             الترجمات المستخدمة: {translationCount} من {maxTranslations}
           </div>
         </div>
 
         {/* Translation Error */}
         {translationError && (
-          <div className="p-3 border border-red-200 rounded-xl bg-red-50">
-            <p className="text-sm text-red-600 text-center">{translationError}</p>
+          <div role="alert" className="p-3 border border-red-400/30 rounded-xl bg-red-500/10">
+            <p className="text-sm text-red-300 text-center">{translationError}</p>
           </div>
         )}
 
         {/* English Translation Result */}
         {formData.professional_summary_english && (
           <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+            <label className="block text-sm font-medium text-mist/90 mb-2">
               الملخص المهني (بالإنجليزية)
             </label>
-            <div className="p-4 border border-borderLight/60 dark:border-gray-600 rounded-xl bg-canvas/50 dark:bg-gray-700/50">
-              <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-left" dir="ltr">
+            <div className="glass-soft rounded-[20px] p-4">
+              <p className="text-mist/80 leading-relaxed text-left" dir="ltr">
                 {formData.professional_summary_english}
               </p>
             </div>
@@ -144,14 +144,14 @@ const ProfessionalSummaryStep = ({
             {/* Skills Extracted */}
             {formData.skills_extracted && formData.skills_extracted.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                <h4 className="text-sm font-medium text-mist">
                   المهارات المستخرجة:
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {formData.skills_extracted.map((skill, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full border border-primary/20"
+                      className="px-3 py-1 text-xs bg-primary/15 text-primary-soft rounded-full border border-primary/30"
                     >
                       {skill.name} ({skill.level})
                     </span>
@@ -162,26 +162,26 @@ const ProfessionalSummaryStep = ({
 
             {/* Translation Notes */}
             {formData.translation_notes && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                <h4 className="text-sm font-medium text-amber-800 mb-1">
+              <div className="p-3 bg-gold/10 border border-gold/30 rounded-xl">
+                <h4 className="text-sm font-medium text-gold mb-1">
                   ملاحظات الترجمة:
                 </h4>
-                <p className="text-xs text-amber-700">{formData.translation_notes}</p>
+                <p className="text-xs text-gold">{formData.translation_notes}</p>
               </div>
             )}
 
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            <p className="text-xs text-mist/55 text-center">
               تم ترجمة النص العربي وإنشاء هذا الملخص المهني المحسن باستخدام الذكاء
               الاصطناعي
             </p>
           </div>
         )}
 
-        <div className="p-4 border border-borderLight/60 dark:border-gray-600 rounded-xl bg-canvas/50 dark:bg-gray-700/50">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+        <div className="glass-soft rounded-[20px] p-4">
+          <h3 className="text-sm font-medium text-mist mb-2">
             نصائح لكتابة ملخص مهني قوي:
           </h3>
-          <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+          <ul className="text-xs text-mist/80 space-y-1">
             <li>• ابدأ بوصف هويتك المهنية وعدد سنوات الخبرة</li>
             <li>• اذكر مجالات التخصص والمهارات الرئيسية</li>
             <li>• وضح الإنجازات المهمة والمسؤوليات</li>

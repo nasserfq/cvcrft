@@ -255,8 +255,10 @@
   "translation": {
     "summary_required": "Please enter your professional summary first",
     "summary_min_chars": "Professional summary must be at least 5 characters",
-    "summary_limit_reached": "You have reached the maximum professional summary translations ({{max}}). Please try again later.",
-    "jobs_limit_reached": "You have reached the maximum job description translations ({{max}}). Please try again later.",
+    "summary_limit_reached": "You've used all {{max}} professional summary translations.",
+    "jobs_limit_reached": "You've used all {{max}} job description translations.",
+    "limit_replace_hint": "To continue, get more credits, or replace the Arabic text with your own English text.",
+    "limit_get_credits": "Get more credits",
     "generic_error": "Translation failed. Please try again.",
     "unexpected_api": "Unexpected response from translation service",
     "no_responsibilities": "No responsibilities to translate",
@@ -375,6 +377,8 @@
     "send": "Send",
     "error": "Something went wrong. Please try again.",
     "thinking": "Thinking…",
+    "timeout": "The coach stopped responding. Please try again.",
+    "retry": "Retry",
     "preview": {
       "title": "Your CV so far",
       "empty": "Your CV appears here as you and the coach finish each section.",

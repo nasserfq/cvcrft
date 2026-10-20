@@ -162,4 +162,34 @@ class AuthControllerTest < ActionDispatch::IntegrationTest
     get auth_status_url
     assert_response :success
   end
+
+  test "send_otp error flash follows the English locale" do
+    post auth_send_otp_url, params: { email: "invalid-email", privacy_consent: "1", locale: "en" }
+
+    assert_equal "Please enter a valid email address", flash[:alert]
+  end
+
+  test "send_otp error flash stays Arabic by default" do
+    post auth_send_otp_url, params: { email: "invalid-email", privacy_consent: "1" }
+
+    assert_equal "يرجى إدخال بريد إلكتروني صحيح", flash[:alert]
+  end
+
+  test "verify_otp with a wrong code uses the cookie locale" do
+    cookies[:locale] = "en"
+    post auth_verify_otp_url, params: { email: "nobody@example.com", otp_code: "000000" }
+
+    assert_equal "The verification code is incorrect or has expired", flash[:alert]
+  end
+
+  test "expired form token redirects to login in the visitor's locale" do
+    ActionController::Base.allow_forgery_protection = true
+    cookies[:locale] = "en"
+    post auth_send_otp_url, params: { email: @user.email, privacy_consent: "1" }
+
+    assert_redirected_to login_path
+    assert_equal "This page has expired. Please try again.", flash[:alert]
+  ensure
+    ActionController::Base.allow_forgery_protection = false
+  end
 end

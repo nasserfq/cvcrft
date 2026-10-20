@@ -1,0 +1,24 @@
+en:
+  ux_confirm:
+    cancel: "Cancel"
+    delete: "Delete"
+    type_to_confirm: "Type %{phrase} to confirm"
+    resume_title: "Delete this resume?"
+    resume_body: "“%{name}” and its PDF will be permanently removed. This can’t be undone."
+    resume_confirm: "Delete resume"
+    draft_title: "Delete this draft?"
+    draft_body: "“%{name}” will be permanently removed. This can’t be undone."
+    draft_confirm: "Delete draft"
+    account_title: "Permanently delete your account?"
+    account_body: "All your resumes, drafts, translations, AI-generated CVs and PDF files will be deleted for good. Your account can’t be recovered."
+    account_confirm: "Delete my account"
+    account_phrase: "DELETE"
+    aria:
+      view_resume: "View resume: %{name}"
+      edit_resume: "Edit resume: %{name}"
+      download_pdf: "Download PDF: %{name}"
+      delete_resume: "Delete resume: %{name}"
+      delete_draft: "Delete draft: %{name}"
+  cv_generation_toast:
+    close: "Dismiss"
+    get_more_credits: "Get more credits"

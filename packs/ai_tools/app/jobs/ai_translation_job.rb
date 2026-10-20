@@ -24,6 +24,17 @@ class AiTranslationJob
       english_text: "Translation failed: #{error.message}".truncate(5000),
       metadata: translation.metadata.merge("error" => error.message, "error_code" => error_code_for(error))
     )
+    refund_overage(job["args"][1], options)
+  end
+
+  # A translation that ran past the free allowance was paid with a credit
+  # (Billing::UsageGate); a final failure gives it back. Safe to call twice.
+  def self.refund_overage(user_id, options)
+    kind = options["overage_kind"].presence
+    user = kind && User.find_by(id: user_id)
+    return unless user
+
+    Billing::UsageGate.refund!(user, kind.to_sym, key: options["job_id"])
   end
 
   # A short, non-secret reason the page shows next to the failure message, so
@@ -337,6 +348,7 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
         backtrace: Array(error.backtrace).first(5)
       })
     )
+    self.class.refund_overage(@user_id, @options.transform_keys(&:to_s))
 
     # Log the error
     Rails.logger.error "AI Translation failed for user #{@user_id}, jid=#{jid}: #{error.message}"

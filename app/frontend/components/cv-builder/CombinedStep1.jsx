@@ -1,12 +1,12 @@
 import React, { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { inputClassName } from "./FormUtils";
+import { inputClassName, fieldErrorClassName } from "./FormUtils";
 import LocationCombobox from "./LocationCombobox";
 import { getCities, getCountries } from "./locationData";
 
 // Error display component
 const FieldError = ({ error }) => error ? (
-  <p className="mt-1 text-sm text-red-600 flex items-center gap-1" data-error>
+  <p className="mt-1 text-sm text-red-300 flex items-center gap-1" data-error>
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
@@ -17,7 +17,7 @@ const FieldError = ({ error }) => error ? (
 // Input with error styling
 const getInputClassName = (hasError) => 
   hasError 
-    ? inputClassName.replace('border-borderLight', 'border-red-400').replace('focus:ring-primary/40', 'focus:ring-red-500/40').replace('focus:border-primary', 'focus:border-red-400') + ' ring-red-200'
+    ? `${inputClassName.replace('border-white/10', 'border-red-400')} ${fieldErrorClassName}`
     : inputClassName;
 
 // Icons
@@ -60,22 +60,22 @@ const CombinedStep1 = ({
     <div className="space-y-8">
       {/* Section Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+        <div className="glass-soft inline-flex items-center justify-center w-16 h-16 rounded-[22px] text-gold mb-4">
           <UserIcon />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('step1.title')}</h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">{t('step1.subtitle')}</p>
+        <h2 className="text-[22px] sm:text-2xl font-semibold text-mist">{t('step1.title')}</h2>
+        <p className="text-mist/70 mt-2 text-[15px] sm:text-base font-light">{t('step1.subtitle')}</p>
       </div>
 
       {/* Personal Info Section */}
-      <div className="p-4 sm:p-6 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/30 dark:bg-white/5">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">1</span>
+      <div className="glass-soft rounded-[24px] p-4 sm:p-6">
+        <h3 className="text-lg font-semibold text-mist mb-4 flex items-center gap-2.5">
+          <span className="sr-mono w-7 h-7 shrink-0 rounded-full border border-primary/40 bg-primary/15 text-primary-soft flex items-center justify-center text-[13px] font-semibold">1</span>
           {t('step1.personal_section')}
         </h3>
         <div className="grid gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.full_name')} <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-mist/90 mb-2">{t('personal.full_name')} <span className="text-red-300">*</span></label>
             <input
               type="text"
               value={formData.complete_name}
@@ -87,7 +87,7 @@ const CombinedStep1 = ({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.email')} <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-mist/90 mb-2">{t('personal.email')} <span className="text-red-300">*</span></label>
               <input
                 type="email"
                 value={formData.email}
@@ -98,7 +98,7 @@ const CombinedStep1 = ({
               <FieldError error={validationErrors.email} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.phone')} <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-mist/90 mb-2">{t('personal.phone')} <span className="text-red-300">*</span></label>
               <input
                 type="tel"
                 value={formData.phone_number}
@@ -111,7 +111,7 @@ const CombinedStep1 = ({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.city')} <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-mist/90 mb-2">{t('personal.city')} <span className="text-red-300">*</span></label>
               <LocationCombobox
                 value={formData.city}
                 onChange={(v) => handleInputChange("city", v)}
@@ -125,7 +125,7 @@ const CombinedStep1 = ({
               <FieldError error={validationErrors.city} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('personal.country')} <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-mist/90 mb-2">{t('personal.country')} <span className="text-red-300">*</span></label>
               <LocationCombobox
                 value={formData.country}
                 onChange={(v) => handleInputChange("country", v)}
@@ -140,23 +140,23 @@ const CombinedStep1 = ({
       </div>
 
       {/* Professional Summary Section */}
-      <div className="p-4 sm:p-6 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/30 dark:bg-white/5">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">2</span>
+      <div className="glass-soft rounded-[24px] p-4 sm:p-6">
+        <h3 className="text-lg font-semibold text-mist mb-4 flex items-center gap-2.5">
+          <span className="sr-mono w-7 h-7 shrink-0 rounded-full border border-primary/40 bg-primary/15 text-primary-soft flex items-center justify-center text-[13px] font-semibold">2</span>
           {t('step1.summary_section')}
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('step1.summary_arabic')} <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-mist/90 mb-2">{t('step1.summary_arabic')} <span className="text-red-300">*</span></label>
             <textarea
               value={formData.professional_summary}
               onChange={(e) => handleInputChange("professional_summary", e.target.value)}
               rows={4}
-              className={`w-full rounded-xl ${validationErrors.professional_summary ? 'border-red-400 focus:ring-red-500/40 focus:border-red-400' : 'border-borderLight dark:border-white/10 focus:ring-primary/40 focus:border-primary'} bg-white/70 dark:bg-darkCard/70 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 ring-1 ring-black/5 dark:ring-white/5 transition-all resize-none`}
+              className={`w-full rounded-xl border ${validationErrors.professional_summary ? 'border-red-400 ring-2 ring-red-400/60' : 'border-white/10'} bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 transition-colors duration-300 resize-none`}
               placeholder={t('personal.summary_placeholder')}
             />
             <FieldError error={validationErrors.professional_summary} />
-            <p className="mt-2 text-xs text-primary bg-primary/10 p-2 rounded-lg border border-primary/20">
+            <p className="mt-2 text-[13px] leading-relaxed text-primary-soft bg-primary/10 px-3 py-2 rounded-xl border border-primary/25">
               {t('step1.summary_hint')}
             </p>
           </div>
@@ -167,7 +167,7 @@ const CombinedStep1 = ({
               type="button"
               onClick={translateProfessionalSummary}
               disabled={isTranslating || !formData.professional_summary.trim() || (!unlimitedUsage && remainingSummaryTranslations <= 0)}
-              className="inline-flex items-center gap-2 rounded-xl bg-action text-darkBase px-6 py-3 text-sm font-medium hover:bg-actionHover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(214,184,119,0.4)]"
+              className="inline-flex items-center gap-2 sr-btn min-h-[48px] rounded-2xl bg-action text-darkBase px-6 py-3 text-[15px] font-semibold hover:bg-actionHover disabled:opacity-50 disabled:cursor-not-allowed shadow-glow-gold"
             >
               {isTranslating ? (
                 <>
@@ -186,16 +186,16 @@ const CombinedStep1 = ({
           </div>
 
           {translationError && (
-            <div className="p-3 border border-red-200 rounded-lg bg-red-50">
-              <p className="text-sm text-red-600 text-center">{translationError}</p>
+            <div role="alert" className="p-3 border border-red-400/30 rounded-xl bg-red-500/10">
+              <p className="text-sm text-red-300 text-center">{translationError}</p>
             </div>
           )}
 
           {formData.professional_summary_english && (
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">{t('step1.summary_english')}</label>
-              <div className="p-4 border border-borderLight dark:border-white/10 rounded-xl bg-canvas/50 dark:bg-white/5">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-left" dir="ltr">{formData.professional_summary_english}</p>
+              <label className="block text-sm font-medium text-mist/90 mb-2">{t('step1.summary_english')}</label>
+              <div className="glass-soft rounded-[20px] p-4">
+                <p className="text-mist/80 leading-relaxed text-left" dir="ltr">{formData.professional_summary_english}</p>
               </div>
             </div>
           )}

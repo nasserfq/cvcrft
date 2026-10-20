@@ -24,6 +24,8 @@ function renderApp() {
 
  // Get resume data from window object
  const resumeData = window.resumeData || {};
+ // The credits page exists only when billing is on for this user.
+ const billingEnabled = container.dataset.billingEnabled === "true";
 
  const handleSubmit = (formData) => {
   // Create a form element and submit it
@@ -65,15 +67,15 @@ function renderApp() {
   const root = createRoot(container);
   rootMap.set(container, root);
   root.render(
-   <MultiStepResumeForm resume={resumeData} onSubmit={handleSubmit} />
+   <MultiStepResumeForm resume={resumeData} onSubmit={handleSubmit} billingEnabled={billingEnabled} />
   );
   console.log("React form rendered successfully");
  } catch (error) {
   console.error("Error rendering React component:", error);
   container.innerHTML = `
    <div class="text-center py-8">
-    <p class="text-red-500">Error loading form. Please refresh the page.</p>
-    <p class="text-sm text-gray-500">${error.message}</p>
+    <p class="text-red-300">Error loading form. Please refresh the page.</p>
+    <p class="text-sm text-mist/60">${error.message}</p>
    </div>
   `;
  }

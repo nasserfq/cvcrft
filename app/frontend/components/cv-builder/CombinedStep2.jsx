@@ -19,8 +19,8 @@ const getResponsibilitiesArray = (responsibilities) => {
 
 // Error display component
 const SectionError = ({ error }) => error ? (
-  <div className="mb-4 p-3 border border-red-200 rounded-lg bg-red-50" data-error>
-    <p className="text-sm text-red-600 flex items-center gap-2">
+  <div className="mb-4 p-3 border border-red-400/30 rounded-xl bg-red-500/10" role="alert" data-error>
+    <p className="text-sm text-red-300 flex items-center gap-2">
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
@@ -31,13 +31,13 @@ const SectionError = ({ error }) => error ? (
 
 // Field-level error display
 const FieldError = ({ error }) => error ? (
-  <p className="mt-1 text-xs text-red-600">{error}</p>
+  <p className="mt-1 text-xs text-red-300">{error}</p>
 ) : null;
 
 // Input with error styling helper
 const getInputClass = (baseClass, hasError) => 
   hasError 
-    ? baseClass.replace('border-borderLight/70', 'border-red-400') + ' ring-1 ring-red-200'
+    ? baseClass.replace('border-white/10', 'border-red-400') + ' ring-2 ring-red-400/60'
     : baseClass;
 
 // Icon
@@ -87,28 +87,28 @@ const CombinedStep2 = ({
     <div className="space-y-8">
       {/* Section Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+        <div className="glass-soft inline-flex items-center justify-center w-16 h-16 rounded-[22px] text-gold mb-4">
           <BriefcaseIcon />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('step2.title')}</h2>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">{t('step2.subtitle')}</p>
+        <h2 className="text-[22px] sm:text-2xl font-semibold text-mist">{t('step2.title')}</h2>
+        <p className="text-mist/70 mt-2 text-[15px] sm:text-base font-light">{t('step2.subtitle')}</p>
       </div>
 
       {/* Education Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.education ? 'border-red-300' : 'border-borderLight/60 dark:border-gray-700'} rounded-xl bg-canvas/30 dark:bg-gray-800/50`}>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">1</span>
+      <div className={`glass-soft rounded-[24px] p-4 sm:p-6 ${validationErrors.education ? 'ring-2 ring-red-400/50' : ''}`}>
+        <h3 className="text-lg font-semibold text-mist mb-4 flex items-center gap-2.5">
+          <span className="sr-mono w-7 h-7 shrink-0 rounded-full border border-primary/40 bg-primary/15 text-primary-soft flex items-center justify-center text-[13px] font-semibold">1</span>
           {t('education.title')}
-          <span className="text-xs text-red-500 font-normal">*</span>
+          <span className="text-xs text-red-300 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.education} />
         <div className="space-y-4">
           {formData.education.map((edu, index) => (
-            <div key={index} className="p-4 border border-borderLight/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50 overflow-hidden">
+            <div key={index} className="rounded-[20px] border border-white/10 bg-white/[0.04] p-4 overflow-hidden">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('education.education_n', { n: index + 1 })}</span>
+                <span className="text-sm font-medium text-mist/80">{t('education.education_n', { n: index + 1 })}</span>
                 {formData.education.length > 1 && (
-                  <button type="button" onClick={() => removeEducation(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">{t('actions.delete')}</button>
+                  <button type="button" onClick={() => removeEducation(index)} className="text-red-300 hover:text-red-200 text-sm min-h-[44px] px-3 rounded-xl hover:bg-red-500/10 active:bg-red-500/20 transition-all touch-manipulation">{t('actions.delete')}</button>
                 )}
               </div>
               <div className="grid gap-3">
@@ -117,7 +117,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={edu.degree}
                     onChange={(e) => handleEducationChange(index, "degree", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm", validationErrors[`education_degree_${index}`])}
+                    className={getInputClass("w-full min-h-[48px] rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 transition-colors duration-300", validationErrors[`education_degree_${index}`])}
                     placeholder={t('education.degree_placeholder')}
                   />
                   <FieldError error={validationErrors[`education_degree_${index}`]} />
@@ -127,7 +127,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={edu.institution}
                     onChange={(e) => handleEducationChange(index, "institution", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white/70 dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm", validationErrors[`education_institution_${index}`])}
+                    className={getInputClass("w-full min-h-[48px] rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 transition-colors duration-300", validationErrors[`education_institution_${index}`])}
                     placeholder={t('education.institution_placeholder')}
                   />
                   <FieldError error={validationErrors[`education_institution_${index}`]} />
@@ -136,34 +136,34 @@ const CombinedStep2 = ({
                   <MobileDatePicker value={edu.start_date} onChange={(value) => handleEducationChange(index, "start_date", value)} placeholder={t('experience.start_date')} />
                   <MobileDatePicker value={edu.end_date} onChange={(value) => handleEducationChange(index, "end_date", value)} disabled={edu.is_current} placeholder={t('experience.end_date')} />
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={edu.is_current} onChange={(e) => handleEducationChange(index, "is_current", e.target.checked)} className="w-4 h-4 text-primary rounded" />
-                  <span className="text-xs text-gray-700 dark:text-gray-300">{t('education.current_study')}</span>
+                <label className="flex items-center gap-2.5 min-h-[44px] cursor-pointer">
+                  <input type="checkbox" checked={edu.is_current} onChange={(e) => handleEducationChange(index, "is_current", e.target.checked)} className="w-5 h-5 shrink-0 rounded accent-[#0b7f48]" />
+                  <span className="text-sm text-mist/80">{t('education.current_study')}</span>
                 </label>
               </div>
             </div>
           ))}
-          <button type="button" onClick={addEducation} className="w-full py-3 text-primary hover:text-primaryHover active:text-primaryHover text-sm font-medium border border-dashed border-primary/30 rounded-xl hover:bg-primary/10 active:bg-primary/20 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addEducation} className="sr-btn w-full min-h-[48px] py-3 text-primary hover:text-mist text-[15px] font-medium border border-dashed border-primary/40 rounded-2xl hover:bg-primary/10 active:bg-primary/20 touch-manipulation">
             + {t('education.add_another')}
           </button>
         </div>
       </div>
 
       {/* Work Experience Section */}
-      <div className={`p-4 sm:p-6 border ${validationErrors.work_experience ? 'border-red-300' : 'border-borderLight/60 dark:border-gray-700'} rounded-xl bg-canvas/30 dark:bg-gray-800/50`}>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <span className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm">2</span>
+      <div className={`glass-soft rounded-[24px] p-4 sm:p-6 ${validationErrors.work_experience ? 'ring-2 ring-red-400/50' : ''}`}>
+        <h3 className="text-lg font-semibold text-mist mb-4 flex items-center gap-2.5">
+          <span className="sr-mono w-7 h-7 shrink-0 rounded-full border border-primary/40 bg-primary/15 text-primary-soft flex items-center justify-center text-[13px] font-semibold">2</span>
           {t('experience.title')}
-          <span className="text-xs text-red-500 font-normal">*</span>
+          <span className="text-xs text-red-300 font-normal">*</span>
         </h3>
         <SectionError error={validationErrors.work_experience} />
         <div className="space-y-4">
           {formData.work_experience.map((work, index) => (
-            <div key={index} className="p-3 sm:p-4 border border-borderLight/40 dark:border-gray-600 rounded-xl bg-white/50 dark:bg-gray-700/50">
+            <div key={index} className="rounded-[20px] border border-white/10 bg-white/[0.04] p-3 sm:p-4">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('experience.experience_n', { n: index + 1 })}</span>
+                <span className="text-sm font-medium text-mist/80">{t('experience.experience_n', { n: index + 1 })}</span>
                 {formData.work_experience.length > 1 && (
-                  <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-500 hover:text-red-700 active:text-red-800 text-xs px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">{t('actions.delete')}</button>
+                  <button type="button" onClick={() => removeWorkExperience(index)} className="text-red-300 hover:text-red-200 text-sm min-h-[44px] px-3 rounded-xl hover:bg-red-500/10 active:bg-red-500/20 transition-all touch-manipulation">{t('actions.delete')}</button>
                 )}
               </div>
               <div className="space-y-3">
@@ -172,7 +172,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={work.job_title}
                     onChange={(e) => handleWorkExperienceChange(index, "job_title", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-base", validationErrors[`work_job_title_${index}`])}
+                    className={getInputClass("w-full min-h-[48px] rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 transition-colors duration-300", validationErrors[`work_job_title_${index}`])}
                     placeholder={t('experience.position_placeholder')}
                     style={{ fontSize: "16px" }}
                   />
@@ -183,7 +183,7 @@ const CombinedStep2 = ({
                     type="text"
                     value={work.company}
                     onChange={(e) => handleWorkExperienceChange(index, "company", e.target.value)}
-                    className={getInputClass("w-full rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 text-base", validationErrors[`work_company_${index}`])}
+                    className={getInputClass("w-full min-h-[48px] rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 transition-colors duration-300", validationErrors[`work_company_${index}`])}
                     placeholder={t('experience.company_placeholder')}
                     style={{ fontSize: "16px" }}
                   />
@@ -197,12 +197,12 @@ const CombinedStep2 = ({
                     <MobileDatePicker value={work.end_date} onChange={(value) => handleWorkExperienceChange(index, "end_date", value)} disabled={work.is_current} placeholder={t('experience.end_date')} />
                   </div>
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer py-1">
-                  <input type="checkbox" checked={work.is_current} onChange={(e) => handleWorkExperienceChange(index, "is_current", e.target.checked)} className="w-5 h-5 text-primary rounded" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('experience.current_job')}</span>
+                <label className="flex items-center gap-2.5 min-h-[44px] cursor-pointer">
+                  <input type="checkbox" checked={work.is_current} onChange={(e) => handleWorkExperienceChange(index, "is_current", e.target.checked)} className="w-5 h-5 shrink-0 rounded accent-[#0b7f48]" />
+                  <span className="text-sm text-mist/80">{t('experience.current_job')}</span>
                 </label>
                 <div className="pt-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('experience.responsibilities')}</label>
+                  <label className="block text-sm font-medium text-mist/80 mb-2">{t('experience.responsibilities')}</label>
                   <div className="space-y-2">
                     {work.responsibilities.map((resp, respIndex) => (
                       <div key={respIndex} className="flex items-start gap-2">
@@ -211,25 +211,25 @@ const CombinedStep2 = ({
                           value={resp}
                           onChange={(e) => handleResponsibilityChange(index, respIndex, e.target.value)}
                           rows={2}
-                          className="flex-1 min-w-0 rounded-xl border border-borderLight/70 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                          className="flex-1 min-w-0 min-h-[48px] rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base text-mist placeholder:text-mist/40 resize-none transition-colors duration-300"
                           placeholder={t('experience.responsibility_placeholder')}
                           style={{ fontSize: "16px" }}
                         />
                         {work.responsibilities.length > 1 && (
-                          <button type="button" onClick={() => removeResponsibility(index, respIndex)} className="text-red-500 hover:text-red-700 active:text-red-800 text-lg mt-2 px-2 py-1 rounded active:bg-red-50 transition-all touch-manipulation">×</button>
+                          <button type="button" onClick={() => removeResponsibility(index, respIndex)} className="shrink-0 w-11 h-11 mt-0.5 flex items-center justify-center text-red-300 hover:text-red-200 text-lg rounded-xl hover:bg-red-500/10 active:bg-red-500/20 transition-all touch-manipulation">×</button>
                         )}
                       </div>
                     ))}
-                    <button type="button" onClick={() => addResponsibility(index)} className="text-primary hover:text-primaryHover active:text-primaryHover text-sm font-medium py-2 px-3 rounded active:bg-primary/10 transition-all touch-manipulation">+ {t('experience.add_responsibility')}</button>
+                    <button type="button" onClick={() => addResponsibility(index)} className="text-primary hover:text-mist text-sm font-medium min-h-[44px] px-3 rounded-xl hover:bg-primary/10 active:bg-primary/15 transition-all touch-manipulation">+ {t('experience.add_responsibility')}</button>
                   </div>
                   {/* Show original Arabic if translation was done */}
                   {work.responsibilities_arabic?.length > 0 && (
-                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                      <label className="block text-xs font-medium text-amber-700 mb-1">{t('step2.original_arabic')}</label>
+                    <div className="mt-3 p-3 bg-gold/10 border border-gold/30 rounded-xl">
+                      <label className="block text-xs font-medium text-gold mb-1">{t('step2.original_arabic')}</label>
                       <ul className="space-y-0.5">
                         {work.responsibilities_arabic.filter(r => r?.trim()).map((respAr, respIdx) => (
-                          <li key={respIdx} className="text-xs text-amber-800 flex items-start gap-1">
-                            <span className="text-amber-500 mt-0.5">•</span>
+                          <li key={respIdx} className="text-xs text-gold flex items-start gap-1">
+                            <span className="text-gold mt-0.5">•</span>
                             <span>{respAr}</span>
                           </li>
                         ))}
@@ -240,22 +240,22 @@ const CombinedStep2 = ({
               </div>
             </div>
           ))}
-          <button type="button" onClick={addWorkExperience} className="w-full py-3 text-primary hover:text-primaryHover active:text-primaryHover text-sm font-medium border border-dashed border-primary/30 rounded-xl hover:bg-primary/10 active:bg-primary/20 active:scale-[0.99] transition-all touch-manipulation">
+          <button type="button" onClick={addWorkExperience} className="sr-btn w-full min-h-[48px] py-3 text-primary hover:text-mist text-[15px] font-medium border border-dashed border-primary/40 rounded-2xl hover:bg-primary/10 active:bg-primary/20 touch-manipulation">
             + {t('experience.add_another')}
           </button>
 
           {/* AI Translation Button for all job descriptions */}
-          <div className={`mt-4 p-4 border rounded-xl ${jobTranslationSuccess || hasTranslatedResponsibilities ? 'border-green-200 bg-green-50/50' : 'border-primary/20 bg-primary/10'}`}>
+          <div className={`mt-4 p-4 border rounded-[20px] bg-primary/10 ${jobTranslationSuccess || hasTranslatedResponsibilities ? 'border-primary/40' : 'border-primary/25'}`}>
             {/* Always show loading state when translating */}
             {isTranslatingJobs ? (
               <>
-                <p className="text-sm text-primary mb-3 text-center">
+                <p className="text-sm text-primary-soft mb-3 text-center">
                   ⏳ {t('step2.translating_responsibilities')}
                 </p>
                 <button
                   type="button"
                   disabled={true}
-                  className="w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 bg-action/70 text-darkBase cursor-not-allowed"
+                  className="w-full min-h-[48px] py-3 px-4 rounded-2xl font-semibold text-[15px] transition-all flex items-center justify-center gap-2 bg-action/70 text-darkBase cursor-not-allowed"
                 >
                   <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -266,17 +266,17 @@ const CombinedStep2 = ({
               </>
             ) : jobTranslationSuccess || hasTranslatedResponsibilities ? (
               <>
-                <p className="text-sm text-green-700 mb-3 text-center">
+                <p className="text-sm text-primary-soft mb-3 text-center">
                   {t('step2.translation_success')}
                 </p>
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
                   disabled={!hasResponsibilities || jobsLimitReached}
-                  className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                  className={`sr-btn w-full min-h-[48px] py-3 px-4 rounded-2xl font-semibold text-[15px] flex items-center justify-center gap-2 ${
                     !hasResponsibilities || jobsLimitReached
-                      ? "bg-green-300 text-white cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
+                      ? "bg-primary/40 text-white/70 cursor-not-allowed"
+                      : "sr-primary shadow-glow"
                   }`}
                 >
                   🔄 {unlimitedUsage
@@ -284,22 +284,22 @@ const CombinedStep2 = ({
                     : t('step2.retranslate', { remaining: safeRemainingJobsTranslations })}
                 </button>
                 {jobsLimitReached && (
-                  <p className="text-xs text-amber-600 mt-2 text-center">{t('step2.translations_exhausted')}</p>
+                  <p className="text-xs text-gold mt-2 text-center">{t('step2.translations_exhausted')}</p>
                 )}
               </>
             ) : (
               <>
-                <p className="text-sm text-primary mb-3 text-center">
+                <p className="text-sm text-primary-soft mb-3 text-center">
                   💡 {t('step2.translate_hint')}
                 </p>
                 <button
                   type="button"
                   onClick={onTranslateJobDescriptions}
                   disabled={!hasResponsibilities || jobsLimitReached}
-                  className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                  className={`sr-btn w-full min-h-[48px] py-3 px-4 rounded-2xl font-semibold text-[15px] flex items-center justify-center gap-2 ${
                     !hasResponsibilities || jobsLimitReached
                       ? "bg-action/50 text-darkBase cursor-not-allowed"
-                      : "bg-action text-darkBase hover:bg-actionHover active:bg-actionHover"
+                      : "bg-action text-darkBase hover:bg-actionHover shadow-glow-gold"
                   }`}
                 >
                   🌐 {unlimitedUsage
@@ -307,15 +307,15 @@ const CombinedStep2 = ({
                     : t('step2.translate_all', { remaining: safeRemainingJobsTranslations })}
                 </button>
                 {!hasResponsibilities && (
-                  <p className="text-xs text-gray-500 mt-2 text-center">{t('step2.add_responsibilities_first')}</p>
+                  <p className="text-xs text-mist/55 mt-2 text-center">{t('step2.add_responsibilities_first')}</p>
                 )}
                 {safeRemainingJobsTranslations <= 0 && (
-                  <p className="text-xs text-amber-600 mt-2 text-center">{t('step2.translations_exhausted')}</p>
+                  <p className="text-xs text-gold mt-2 text-center">{t('step2.translations_exhausted')}</p>
                 )}
               </>
             )}
             {jobTranslationError && (
-              <p className="text-sm text-red-600 mt-2 text-center">{jobTranslationError}</p>
+              <p className="text-sm text-red-300 mt-2 text-center">{jobTranslationError}</p>
             )}
           </div>
         </div>

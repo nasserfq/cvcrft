@@ -3,23 +3,31 @@
     window.location.href = '/auth/login';
   </script>
 <% else %>
-<!-- Hero Header -->
-<div class="relative pt-6 pb-6 md:pt-8 md:pb-8 px-4 sm:px-6 text-center">
-  <h1 class="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-darkBase dark:text-white mb-3">
-    <%= t('resume.new_title') %>
-  </h1>
-  <p class="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-    <%= t('resume.new_description') %>
-  </p>
-  <div class="max-w-2xl mx-auto mt-6 text-start"><%= render 'shared/flash_alert' %></div>
-</div>
+<% content_for :title, t('resume.new_title') %>
+<% content_for :body_class, "sr-app-long" %>
+<%# Long page: the layout lets the ambient scroll with it, so its orbs run the full page height. %>
+<% content_for :ambient_scrolls, true %>
+<%# The multi-step form grows long: the wrapper rises without sr-fadeUp's blur so it paints fast on phones. %>
+<div dir="<%= text_direction %>" class="sr-page relative overflow-clip leading-relaxed" style="color: #eef3ee; animation-name: sr-riseUp">
+  <div class="relative mx-auto max-w-[1040px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-10">
+    <!-- Hero Header -->
+    <header class="flex flex-col items-center text-center gap-6">
+      <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+        <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+        <%= t('home.resume_builder') %>
+      </span>
+      <h1 class="m-0 font-semibold" style="font-size: clamp(32px, 4.6vw, 56px); line-height: 1.15; letter-spacing: -0.02em">
+        <% words = t('resume.new_title').split %>
+        <% delay = 0.1 %>
+        <% words.each_with_index do |word, i| %><span class="sr-w" style="<%= 'color: #d6b877; ' if i == words.size - 1 && words.size > 1 %>animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+      </h1>
+      <p class="sr-up m-0 text-[17px] sm:text-[19px] font-light max-w-[60ch]" style="animation-delay: .5s; color: rgba(238,243,238,0.7)"><%= t('resume.new_description') %></p>
+      <div class="w-full max-w-2xl text-start"><%= render 'shared/flash_alert' %></div>
+    </header>
 
-<!-- Main Content -->
-<div class="relative pb-16 md:pb-24">
-  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-    <!-- Form Container -->
-    <div dir="<%= text_direction %>">
-      <div id="resume-form-root" dir="<%= text_direction %>">
+    <!-- Form Container: no transform here, so the form's fixed-position modals stay pinned to the viewport. -->
+    <div class="mx-auto w-full max-w-4xl">
+      <div id="resume-form-root" dir="<%= text_direction %>" data-billing-enabled="<%= Billing.enabled_for?(current_user) %>">
         <!-- React component will render here -->
       </div>
     </div>
@@ -31,7 +39,7 @@
   <% if @resume.present? %>
     // For existing resumes (including drafts), pass the resume data
     window.resumeData = <%= raw @resume.to_json(only: [:id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :is_draft, :draft_data]) %>;
-    
+
     // Add association data if it exists
     <% if @resume.work_experiences.any? %>
       window.resumeData.work_experience = <%= raw @resume.work_experiences.to_json %>;
@@ -52,14 +60,5 @@
     // For new resumes, pass null
     window.resumeData = null;
   <% end %>
-  
-  console.log('=== RAILS: Resume data set ===');
-  console.log('Resume data:', window.resumeData);
-  console.log('Resume skills:', window.resumeData?.skills);
-  console.log('Resume skills detailed:', window.resumeData?.skills?.map(s => ({ 
-    category: s.category, 
-    skill_names: s.skill_names,
-    skill_names_types: s.skill_names?.map(name => ({ value: name, type: typeof name }))
-  })));
 </script>
 <% end %>

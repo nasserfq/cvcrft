@@ -9,6 +9,9 @@ import { getCities, getCountries } from "../cv-builder/locationData";
 
 const muted = { color: "rgba(238,243,238,0.7)" };
 
+// With no chunk or `done` for this long the stream is treated as dropped.
+const STREAM_TIMEOUT_MS = 60000;
+
 export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, initialMessages, initialDraft, initialProposals }) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState(initialMessages);
@@ -16,16 +19,38 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
   const [proposals, setProposals] = useState(initialProposals);
   const [pending, setPending] = useState(null); // streamed text of the reply in flight
   const [input, setInput] = useState("");
-  const [error, setError] = useState(null); // message to show, or null
+  // { text, kind: "send" | "timeout" | "other", retry: fn | null }, or null
+  const [error, setError] = useState(null);
   const pendingRef = useRef(null); // `done` needs the text without waiting for a render
   const listRef = useRef(null);
+  const watchdogRef = useRef(null);
   const busy = pending !== null;
 
+  const clearWatchdog = () => {
+    clearTimeout(watchdogRef.current);
+    watchdogRef.current = null;
+  };
+
+  // (Re)armed on send and on every chunk; fires when the stream goes quiet.
+  const armWatchdog = () => {
+    clearWatchdog();
+    watchdogRef.current = setTimeout(() => {
+      watchdogRef.current = null;
+      if (pendingRef.current === null) return;
+      finish(null);
+      // The message reached the server, so reloading picks up the reply if it landed after all.
+      setError({ text: t("coach.timeout"), kind: "timeout", retry: () => window.location.reload() });
+    }, STREAM_TIMEOUT_MS);
+  };
+
   const finish = (text) => {
+    clearWatchdog();
     pendingRef.current = null;
     setPending(null);
     if (text !== null) setMessages((list) => [...list, text]);
   };
+
+  useEffect(() => clearWatchdog, []);
 
   useEffect(() => {
     const consumer = createConsumer();
@@ -39,14 +64,17 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
             if (pendingRef.current === null || data.text.length <= pendingRef.current.length) return;
             pendingRef.current = data.text;
             setPending(data.text);
+            armWatchdog();
           } else if (data.type === "done") {
+            // A reply that lands after the timeout still counts; drop the timeout notice.
+            setError((current) => (current?.kind === "timeout" ? null : current));
             finish({ id: data.message_id, role: "assistant", content: data.text, fields: data.fields || [] });
           } else if (data.type === "draft") {
             setDraft(data.draft);
           } else if (data.type === "proposal") {
             setProposals((list) => [...list, data.proposal]);
           } else if (data.type === "error") {
-            setError(t("coach.error"));
+            setError({ text: t("coach.error"), kind: "other", retry: null });
             finish(null);
           }
         },
@@ -74,9 +102,26 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
   // Shared by the text box and the input boxes under a question.
   const post = async (content) => {
     setError(null);
-    setMessages((list) => [...list, { id: `local-${Date.now()}`, role: "user", content }]);
+    const localId = `local-${Date.now()}`;
+    setMessages((list) => [...list, { id: localId, role: "user", content }]);
     pendingRef.current = "";
     setPending("");
+    armWatchdog();
+
+    // Nothing reached the server: take the bubble back and put the text in the box so it isn't lost.
+    const failed = (text) => {
+      finish(null);
+      setMessages((list) => list.filter((m) => m.id !== localId));
+      setInput((current) => (current.trim() ? current : content));
+      setError({
+        text,
+        kind: "send",
+        retry: () => {
+          setInput("");
+          post(content);
+        },
+      });
+    };
 
     try {
       const response = await fetch(messageUrl, {
@@ -90,30 +135,28 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
       if (!response.ok) {
         // The 429 daily cap carries its own message.
         const body = await response.json().catch(() => ({}));
-        setError(body.error || t("coach.error"));
-        finish(null);
+        failed(body.error || t("coach.error"));
       }
     } catch {
-      setError(t("coach.error"));
-      finish(null);
+      failed(t("coach.error"));
     }
   };
 
   const settled = (id, ok) => {
     if (id) setProposals((list) => list.filter((p) => p.id !== id));
-    setError(ok ? null : t("coach.error"));
+    setError(ok ? null : { text: t("coach.error"), kind: "other", retry: null });
   };
 
   // Stacked on mobile, chat beside the preview on desktop.
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
-      <section className="glass sr-up rounded-[32px] p-4 sm:p-6 flex flex-col gap-4" style={{ minHeight: "70vh" }}>
+      <section className="glass sr-up rounded-[32px] p-4 sm:p-6 flex flex-col gap-4" style={{ minHeight: "70dvh" }}>
         <header className="flex items-center gap-2.5 px-2">
           <span className="sr-dot w-2 h-2 rounded-full bg-primary"></span>
           <h1 className="m-0 text-[20px] font-semibold">{t("coach.title")}</h1>
         </header>
 
-        <ol ref={listRef} className="list-none m-0 p-1 flex-1 flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: "60vh" }}>
+        <ol ref={listRef} className="list-none m-0 p-1 flex-1 flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: "60dvh" }}>
           {messages.map((message, i) => (
             <Bubble key={message.id} role={message.role}>
               {message.content}
@@ -144,9 +187,19 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
         )}
 
         {error && (
-          <p className="glass-soft sr-up m-0 rounded-2xl px-5 py-3 text-[15px]" style={{ color: "#d6b877" }} role="alert">
-            {error}
-          </p>
+          <div className="glass-soft sr-up m-0 rounded-2xl px-5 py-3 text-[15px] flex flex-wrap items-center justify-between gap-3" style={{ color: "#d6b877" }} role="alert">
+            <span className="min-w-0">{error.text}</span>
+            {error.retry && (
+              <button
+                type="button"
+                onClick={error.retry}
+                disabled={busy}
+                className="sr-btn sr-primary flex-none min-h-[44px] px-4 rounded-2xl font-semibold text-[14px] border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t("coach.retry")}
+              </button>
+            )}
+          </div>
         )}
 
         <form onSubmit={send} className="glass-soft rounded-[24px] p-2 flex items-end gap-2">

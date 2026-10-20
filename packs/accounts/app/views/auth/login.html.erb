@@ -8,197 +8,218 @@
     <meta name="theme-color" content="#07120D" />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="/icon.png?v=7" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=7" />
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= render 'shared/posthog' %>
-    
+
+    <%# Same stylesheet, icons and fonts as the landing page (home/index). %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"></noscript>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" /></noscript>
 
     <style>
-        body {
-            font-feature-settings: "ss01", "ss02";
-            -webkit-font-smoothing: antialiased;
-        }
-        .blob {
-            position: absolute;
-            filter: blur(90px);
-            opacity: 0.5;
-            z-index: -1;
-            animation: pulse 10s infinite alternate;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-        }
-        .gradient-text {
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            background-image: linear-gradient(135deg, #0B7F48 0%, #D6B877 100%);
-        }
-        iconify-icon {
-            display: inline-block;
-            vertical-align: middle;
-        }
+        /* The six-digit code: spaced mono digits, centred in either direction. */
+        #otp_code { letter-spacing: 0.5em; text-indent: 0.5em; }
+        #privacy_consent { accent-color: #0b7f48; }
+        .sr-field:focus { outline: none; border-color: rgba(214,184,119,0.6); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 3px rgba(214,184,119,0.18); }
+        .sr-field { transition: border-color .35s cubic-bezier(.16,1,.3,1), box-shadow .35s cubic-bezier(.16,1,.3,1); }
     </style>
 </head>
-<body class="sr-app bg-canvas text-darkBase transition-colors duration-300 selection:bg-action selection:text-darkBase dark:bg-darkBase dark:text-canvas overflow-x-hidden">
-<%= render 'shared/ambient', fixed: true %>
+<body class="bg-darkBase text-mist overflow-x-hidden">
+    <% otp_step = params[:otp_sent] == 'true' %>
+    <% primary_class = "btn-loading sr-btn sr-primary w-full flex items-center justify-center gap-2.5 min-h-[56px] px-6 rounded-2xl font-semibold text-[16px] border-0 cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed" %>
+    <% primary_style = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+    <% spinner = '<svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>'.html_safe %>
+    <% field_class = "sr-field glass-soft w-full min-h-[56px] rounded-2xl px-4 py-3.5 text-base" %>
 
-    <%= render 'layouts/header' %>
+    <div class="sr-page relative overflow-clip min-h-dvh leading-relaxed" style="background: #07120d; color: #eef3ee; line-height: 1.6">
 
-    <!-- Main Content -->
-    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-28">
-      <div class="max-w-md w-full space-y-8">
-        <!-- Header -->
-        <div class="text-center">
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 dark:bg-primary/10 mb-4 backdrop-blur-md">
-            <iconify-icon icon="solar:shield-check-linear" width="16" class="text-action"></iconify-icon>
-            <span class="text-primary dark:text-action text-xs md:text-sm font-normal"><%= t('auth.secure_login') %></span>
-          </div>
-          <h1 class="text-3xl sm:text-4xl font-medium tracking-tight text-darkBase dark:text-white">
-            <%= t('auth.welcome') %> <span class="gradient-text"><%= t('site.name') %></span>
-          </h1>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-7">
-            <%= t('auth.otp_instruction') %>
-          </p>
-        </div>
+      <%= render 'shared/ambient' %>
 
-        <!-- Flash Messages -->
-        <% if flash[:notice] && params[:otp_sent] != 'true' %>
-          <div class="rounded-xl bg-action/10 border border-action/30 p-4 backdrop-blur-xl">
-            <div class="flex items-center gap-3">
-              <iconify-icon icon="solar:check-circle-linear" width="20" class="text-action"></iconify-icon>
-              <p class="text-sm text-darkBase dark:text-white"><%= flash[:notice] %></p>
-            </div>
-          </div>
-        <% end %>
-        <% if flash[:alert] %>
-          <div class="rounded-xl bg-red-500/10 border border-red-500/30 p-4 backdrop-blur-xl">
-            <div class="flex items-center gap-3">
-              <iconify-icon icon="solar:danger-circle-linear" width="20" class="text-red-500"></iconify-icon>
-              <p class="text-sm text-darkBase dark:text-white"><%= flash[:alert] %></p>
-            </div>
-          </div>
-        <% end %>
+      <div class="relative mx-auto max-w-[1240px] px-4 sm:px-6 pt-4 sm:pt-6 pb-10">
 
-        <!-- Email Form -->
-        <% unless params[:otp_sent] == 'true' %>
-          <div class="bg-white/60 dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
-            <form class="space-y-6" action="/auth/send_otp" method="post">
-              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-              <%= hidden_field_tag :return_to, params[:return_to] %>
-              <div>
-                <label for="email" class="block text-sm font-medium text-darkBase dark:text-white mb-2"><%= t('auth.email') %></label>
-                <input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  autocomplete="email" 
-                  required 
-                  class="w-full rounded-xl border border-borderLight dark:border-borderDark bg-white/70 dark:bg-white/5 px-4 py-3.5 text-sm text-darkBase dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" 
-                  placeholder="<%= t('auth.email_placeholder') %>"
-                />
+        <%= render 'shared/site_header' %>
+
+        <main id="main" class="flex justify-center pt-14 pb-20 md:pt-20 md:pb-[100px]">
+          <div class="w-full max-w-[480px] flex flex-col gap-7">
+            <!-- Header -->
+            <header class="flex flex-col items-center text-center gap-5">
+              <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+                <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+                <%= t('auth.secure_login') %>
+              </span>
+              <h1 class="m-0 font-semibold" style="font-size: clamp(34px, 5vw, 52px); line-height: 1.15; letter-spacing: -0.02em">
+                <% delay = 0.1 %>
+                <% t('auth.welcome').split.each do |word| %><span class="sr-w" style="animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
+                <span class="sr-w" style="color: #d6b877; animation-delay: <%= delay.round(2) %>s"><%= t('site.name') %></span>
+              </h1>
+              <p class="sr-up m-0 text-[17px] font-light max-w-[42ch]" style="animation-delay: .45s; color: rgba(238,243,238,0.7)">
+                <%= t('auth.otp_instruction') %>
+              </p>
+            </header>
+
+            <!-- Flash Messages -->
+            <% if flash[:notice] && !otp_step %>
+              <div role="status" class="glass-soft sr-up flex items-center gap-3 rounded-2xl px-4 py-3.5" style="animation-delay: .5s; border-color: rgba(47,163,107,0.4); background: rgba(47,163,107,0.1)">
+                <iconify-icon icon="solar:check-circle-linear" width="20" style="color: #2fa36b"></iconify-icon>
+                <p class="m-0 text-[15px]"><%= flash[:notice] %></p>
               </div>
-              <div class="flex items-start gap-3">
-                <input
-                  id="privacy_consent"
-                  name="privacy_consent"
-                  type="checkbox"
-                  value="1"
-                  required
-                  class="mt-1 h-4 w-4 shrink-0 rounded border-borderLight dark:border-borderDark text-primary focus:ring-2 focus:ring-primary/40"
-                />
-                <label for="privacy_consent" class="text-sm text-gray-600 dark:text-gray-300 leading-6">
-                  <%= t('pdpl_consent.checkbox_html',
-                        privacy_link: link_to(t('pdpl_consent.privacy_link'), privacy_path, target: "_blank", rel: "noopener", class: "text-primary hover:text-primaryHover dark:text-action underline transition-colors"),
-                        terms_link: link_to(t('pdpl_consent.terms_link'), terms_path, target: "_blank", rel: "noopener", class: "text-primary hover:text-primaryHover dark:text-action underline transition-colors")) %>
-                </label>
+            <% end %>
+            <% if flash[:alert] %>
+              <div role="alert" class="glass-soft sr-up flex items-center gap-3 rounded-2xl px-4 py-3.5" style="animation-delay: .5s; border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.1)">
+                <iconify-icon icon="solar:danger-circle-linear" width="20" style="color: #fca5a5"></iconify-icon>
+                <p class="m-0 text-[15px]"><%= flash[:alert] %></p>
               </div>
-              <button 
-                type="submit" 
-                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primaryHover text-white text-sm font-medium px-4 py-3.5 shadow-glow hover:shadow-lg transition-all"
-              >
-                <iconify-icon icon="solar:letter-linear" width="18" class="btn-icon"></iconify-icon>
-                <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span class="btn-text"><%= t('auth.send_code') %></span>
-              </button>
-            </form>
-          </div>
-        <% end %>
+            <% end %>
 
-        <!-- OTP Form -->
-        <% if params[:otp_sent] == 'true' %>
-          <div class="bg-white/60 dark:bg-darkCard/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-xl border border-borderLight dark:border-borderDark">
-            <form class="space-y-6" action="/auth/verify_otp" method="post">
-              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-              <%= hidden_field_tag :email, params[:email] %>
-              <%= hidden_field_tag :return_to, params[:return_to] %>
-              <%= hidden_field_tag :privacy_consent, "1" %>
-              
-              <!-- Success Message -->
-              <div class="rounded-xl bg-action/10 border border-action/30 p-4">
-                <div class="flex items-center gap-3">
-                  <iconify-icon icon="solar:letter-linear" width="20" class="text-action"></iconify-icon>
-                  <div>
-                    <p class="text-sm font-medium text-darkBase dark:text-white"><%= t('auth.code_sent') %></p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400"><%= t('auth.code_sent_to', email: params[:email]) %></p>
-                  </div>
+            <!-- One glass card holds both steps -->
+            <div class="glass sr-up relative overflow-hidden rounded-[32px]" style="animation-delay: .55s">
+              <%= render 'shared/sadu_band' %>
+              <div class="p-6 sm:p-8">
+                <!-- Email step: kept in the page on the OTP step (hidden) so "Change email" needs no reload -->
+                <%# On the OTP step it starts hidden; "Change email" reveals it with the landing's rise. %>
+                <div id="email-step" class="<%= 'hidden sr-up' if otp_step %>" style="animation-duration: .8s">
+                  <form class="flex flex-col gap-6" action="/auth/send_otp" method="post">
+                    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+                    <%= hidden_field_tag :return_to, params[:return_to] %>
+                    <div class="flex flex-col gap-2">
+                      <label for="email" class="text-[15px] font-medium" style="color: rgba(238,243,238,0.85)"><%= t('auth.email') %></label>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        required
+                        value="<%= params[:email] %>"
+                        class="<%= field_class %>"
+                        style="color: #eef3ee"
+                        placeholder="<%= t('auth.email_placeholder') %>"
+                      />
+                    </div>
+                    <div class="flex items-start gap-1">
+                      <%# 44px tap target around the 20px box. %>
+                      <label for="privacy_consent" class="flex-none flex items-center justify-center w-11 h-11 -ms-3 -mt-2.5 cursor-pointer">
+                        <input
+                          id="privacy_consent"
+                          name="privacy_consent"
+                          type="checkbox"
+                          value="1"
+                          required
+                          class="w-5 h-5 rounded cursor-pointer"
+                        />
+                      </label>
+                      <label for="privacy_consent" class="text-sm leading-6 cursor-pointer" style="color: rgba(238,243,238,0.72)">
+                        <%= t('pdpl_consent.checkbox_html',
+                              privacy_link: link_to(t('pdpl_consent.privacy_link'), privacy_path, target: "_blank", rel: "noopener", class: "underline underline-offset-4", style: "color: #d6b877"),
+                              terms_link: link_to(t('pdpl_consent.terms_link'), terms_path, target: "_blank", rel: "noopener", class: "underline underline-offset-4", style: "color: #d6b877")) %>
+                      </label>
+                    </div>
+                    <button type="submit" class="<%= primary_class %>" style="<%= primary_style %>">
+                      <iconify-icon icon="solar:letter-linear" width="20" class="btn-icon"></iconify-icon>
+                      <%= spinner %>
+                      <span class="btn-text"><%= t('auth.send_code') %></span>
+                    </button>
+                  </form>
                 </div>
-              </div>
 
-              <div>
-                <label for="otp_code" class="block text-sm font-medium text-darkBase dark:text-white mb-2"><%= t('auth.verification_code') %></label>
-                <input 
-                  id="otp_code" 
-                  name="otp_code" 
-                  type="text" 
-                  maxlength="6" 
-                  required 
-                  class="w-full rounded-xl border border-borderLight dark:border-borderDark bg-white/70 dark:bg-white/5 px-4 py-3.5 text-center text-2xl tracking-widest text-darkBase dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all" 
-                  placeholder="000000"
-                />
+                <!-- OTP step -->
+                <% if otp_step %>
+                  <div id="otp-step" class="flex flex-col gap-6">
+                    <form class="flex flex-col gap-6" action="/auth/verify_otp" method="post">
+                      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+                      <%= hidden_field_tag :email, params[:email], id: nil %>
+                      <%= hidden_field_tag :return_to, params[:return_to], id: nil %>
+                      <%= hidden_field_tag :privacy_consent, "1", id: nil %>
+
+                      <!-- Code sent -->
+                      <div role="status" class="glass-soft flex items-center gap-3.5 rounded-[20px] p-4" style="border-color: rgba(47,163,107,0.35); background: rgba(47,163,107,0.08)">
+                        <span class="glass sr-float flex-none w-11 h-11 rounded-[14px] flex items-center justify-center" style="color: #2fa36b">
+                          <iconify-icon icon="solar:letter-linear" width="22"></iconify-icon>
+                        </span>
+                        <div class="min-w-0">
+                          <p class="m-0 text-[15px] font-semibold"><%= t('auth.code_sent') %></p>
+                          <p class="m-0 text-sm break-all" style="color: rgba(238,243,238,0.6)"><%= t('auth.code_sent_to', email: params[:email]) %></p>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col gap-2">
+                        <label for="otp_code" class="text-[15px] font-medium" style="color: rgba(238,243,238,0.85)"><%= t('auth.verification_code') %></label>
+                        <input
+                          id="otp_code"
+                          name="otp_code"
+                          type="text"
+                          inputmode="numeric"
+                          autocomplete="one-time-code"
+                          pattern="[0-9]{6}"
+                          maxlength="6"
+                          required
+                          dir="ltr"
+                          class="sr-field sr-mono glass-soft w-full min-h-[64px] rounded-2xl px-4 py-3.5 text-center text-2xl font-semibold"
+                          style="color: #eef3ee"
+                          placeholder="000000"
+                        />
+                      </div>
+
+                      <button type="submit" class="<%= primary_class %>" style="<%= primary_style %>">
+                        <iconify-icon icon="solar:login-2-linear" width="20" class="btn-icon"></iconify-icon>
+                        <%= spinner %>
+                        <span class="btn-text"><%= t('auth.login_title') %></span>
+                      </button>
+                    </form>
+
+                    <!-- Resend / change email. Resend re-POSTs send_otp like the email form; the controller's rate limits still apply. -->
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                      <form id="resend-otp-form" action="/auth/send_otp" method="post">
+                        <%= hidden_field_tag :authenticity_token, form_authenticity_token, id: nil %>
+                        <%= hidden_field_tag :email, params[:email], id: nil %>
+                        <%= hidden_field_tag :return_to, params[:return_to], id: nil %>
+                        <%= hidden_field_tag :privacy_consent, "1", id: nil %>
+                        <button
+                          id="resend-otp"
+                          type="submit"
+                          data-label="<%= t('ux_next.login.resend_code') %>"
+                          data-countdown-label="<%= t('ux_next.login.resend_in', seconds: '%{seconds}') %>"
+                          class="sr-btn glass-soft inline-flex items-center gap-2 min-h-[44px] rounded-xl px-4 text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          style="color: #d6b877"
+                        >
+                          <iconify-icon icon="solar:refresh-linear" width="18"></iconify-icon>
+                          <span class="resend-text" aria-live="polite"><%= t('ux_next.login.resend_code') %></span>
+                        </button>
+                      </form>
+                      <button
+                        id="change-email"
+                        type="button"
+                        class="sr-btn glass-soft inline-flex items-center gap-2 min-h-[44px] rounded-xl px-4 text-sm cursor-pointer"
+                        style="color: rgba(238,243,238,0.75)"
+                      >
+                        <iconify-icon icon="solar:pen-linear" width="18"></iconify-icon>
+                        <span><%= t('ux_next.login.change_email') %></span>
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
               </div>
-              
-              <button 
-                type="submit" 
-                class="btn-loading w-full inline-flex items-center justify-center gap-2 rounded-xl bg-action hover:bg-actionHover text-darkBase text-sm font-medium px-4 py-3.5 shadow-glow-mint hover:shadow-lg transition-all"
-              >
-                <iconify-icon icon="solar:login-2-linear" width="18" class="btn-icon"></iconify-icon>
-                <svg class="btn-spinner hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span class="btn-text"><%= t('auth.login_title') %></span>
-              </button>
-            </form>
+            </div>
+
+            <!-- Terms -->
+            <p class="sr-up m-0 text-center text-[13px] leading-6" style="animation-delay: .7s; color: rgba(238,243,238,0.55)">
+              <%= t('auth.terms_agreement') %>
+              <a href="<%= terms_path %>" class="underline underline-offset-4" style="color: #d6b877"><%= t('auth.terms_of_service') %></a>
+              <%= t('auth.and') %>
+              <a href="<%= privacy_path %>" class="underline underline-offset-4" style="color: #d6b877"><%= t('auth.privacy_policy') %></a>
+            </p>
           </div>
-        <% end %>
+        </main>
 
-        <!-- Footer -->
-        <div class="text-center">
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            <%= t('auth.terms_agreement') %>
-            <a href="<%= terms_path %>" class="text-primary hover:text-primaryHover dark:text-action transition-colors"><%= t('auth.terms_of_service') %></a>
-            <%= t('auth.and') %>
-            <a href="<%= privacy_path %>" class="text-primary hover:text-primaryHover dark:text-action transition-colors"><%= t('auth.privacy_policy') %></a>
-          </p>
-        </div>
+        <%= render 'shared/site_footer' %>
       </div>
     </div>
 
-    <!-- Site Footer -->
-    <%= render 'layouts/footer' %>
-
     <script>
-        // Theme Logic
-        const html = document.documentElement;
-
-        // Initialize Theme
-        html.classList.add('dark'); // the Seera design is dark only
-
         // Button loading animation
         document.addEventListener('DOMContentLoaded', () => {
             // Reset button loading state on page load
@@ -214,16 +235,16 @@
             document.querySelectorAll('.btn-loading').forEach(btn => {
                 const originalText = btn.querySelector('.btn-text')?.textContent;
                 btn.dataset.originalText = originalText;
-                
+
                 const form = btn.closest('form');
                 if (form) {
                     form.addEventListener('submit', function(e) {
                         setTimeout(() => {
                             btn.classList.add('opacity-75');
-                            
+
                             const icon = btn.querySelector('.btn-icon');
                             const spinner = btn.querySelector('.btn-spinner');
-                            
+
                             if (icon) icon.style.display = 'none';
                             if (spinner) spinner.classList.remove('hidden');
                         }, 0);
@@ -231,6 +252,53 @@
                 }
             });
         });
+
+        // OTP step: 30s cooldown on "Resend code", and "Change email" without a reload.
+        (() => {
+            const RESEND_COOLDOWN = 30;
+            const KEY = 'otpSentAt';
+            const store = {
+                get() { try { return Number(sessionStorage.getItem(KEY)) || 0; } catch (e) { return 0; } },
+                set(v) { try { sessionStorage.setItem(KEY, String(v)); } catch (e) {} }
+            };
+
+            // A code goes out on either form's submit; start the clock then.
+            document.querySelectorAll('form[action="/auth/send_otp"]').forEach(form => {
+                form.addEventListener('submit', () => store.set(Date.now()));
+            });
+
+            const resend = document.getElementById('resend-otp');
+            if (resend) {
+                const text = resend.querySelector('.resend-text');
+                // Arriving here straight after a send (e.g. no sessionStorage) still gets the cooldown.
+                if (<%= flash[:notice].present? ? 'true' : 'false' %> && Date.now() - store.get() > RESEND_COOLDOWN * 1000) store.set(Date.now());
+                let timer;
+                const tick = () => {
+                    const left = Math.ceil(RESEND_COOLDOWN - (Date.now() - store.get()) / 1000);
+                    if (left > 0) {
+                        resend.disabled = true;
+                        text.textContent = resend.dataset.countdownLabel.replace('%{seconds}', left);
+                    } else {
+                        resend.disabled = false;
+                        text.textContent = resend.dataset.label;
+                        clearInterval(timer);
+                    }
+                };
+                tick();
+                timer = setInterval(tick, 1000);
+                resend.closest('form').addEventListener('submit', () => { resend.disabled = true; });
+            }
+
+            const change = document.getElementById('change-email');
+            if (change) {
+                change.addEventListener('click', () => {
+                    document.getElementById('otp-step')?.classList.add('hidden');
+                    document.getElementById('email-step')?.classList.remove('hidden');
+                    const email = document.getElementById('email');
+                    if (email) { email.focus(); email.select(); }
+                });
+            }
+        })();
 
         // Reset on pageshow (back/forward navigation)
         window.addEventListener('pageshow', () => {
