@@ -1,4 +1,4 @@
-# Arabic translations for CVCraft
+# Arabic translations for Seera AI
 ar:
   # Site-wide
   site:
@@ -561,7 +561,7 @@ ar:
     hero_badge: "مدعوم بالذكاء الاصطناعي"
     hero_title_1: "سيرتك الذاتية الاحترافية،"
     hero_title_2: "جاهزة في دقائق."
-    hero_description: "\"سيرة\" هو المساعد الذكي لبناء سير ذاتية متوافقة مع أنظمة ATS. صمم سيرتك لتناسب الوصف الوظيفي، ترجم خبراتك، واستورد بياناتك من LinkedIn."
+    hero_description: "اسمنا \"سيرة\" من السيرة الذاتية، وهو المساعد الذكي لبناء سير ذاتية متوافقة مع أنظمة ATS. صمم سيرتك لتناسب الوصف الوظيفي، ترجم خبراتك، واستورد بياناتك من LinkedIn."
     trusted_by: "موثوق من قبل %{count}+ مستخدم"
     
     # Action buttons

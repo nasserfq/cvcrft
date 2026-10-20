@@ -1,12 +1,12 @@
-# English translations for CVCraft
+# English translations for Seera AI
 en:
   hello: "Hello world"
   
   # Site-wide
   site:
-    name: "CVCraft"
+    name: "Seera AI"
     tagline: "Craft Your Professional Future with AI"
-    description: "Create your professional resume easily with CVCraft. Import from LinkedIn or start from scratch."
+    description: "Seera (سيرة) means CV in Arabic. Seera AI builds your professional resume: import from LinkedIn or start from scratch."
   
   # Navigation
   nav:
@@ -563,7 +563,7 @@ en:
     hero_badge: "Powered by AI"
     hero_title_1: "Your professional resume,"
     hero_title_2: "ready in minutes."
-    hero_description: "\"CVCraft\" is the smart assistant for building ATS-compatible resumes. Tailor your resume to job descriptions, translate your experience, and import your data from LinkedIn."
+    hero_description: "Seera (سيرة) means CV in Arabic. Seera AI is the smart assistant for building ATS-compatible resumes: tailor your resume to job descriptions, translate your experience, and import your data from LinkedIn."
     trusted_by: "Trusted by %{count}+ users"
     
     # Action buttons
@@ -613,7 +613,7 @@ en:
     
     # CTA section
     cta_title: "Ready to Get Your Next Job?"
-    cta_description: "Join the many who have advanced their careers using CVCraft. The experience is completely free."
+    cta_description: "Join the many who have advanced their careers using Seera AI. The experience is completely free."
     cta_button: "Start Now"
     cta_no_card: "No credit card required"
     
@@ -629,7 +629,7 @@ en:
   
   # Footer
   footer:
-    about: "About CVCraft"
+    about: "About Seera AI"
     contact: "Contact Us"
     privacy: "Privacy Policy"
     terms: "Terms of Service"
