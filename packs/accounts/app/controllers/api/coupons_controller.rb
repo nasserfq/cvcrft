@@ -1,6 +1,5 @@
 class Api::CouponsController < ApplicationController
   before_action :authenticate_user!
-  skip_before_action :verify_authenticity_token, only: [ :redeem ]
 
   def redeem
     code = params[:code].to_s.strip

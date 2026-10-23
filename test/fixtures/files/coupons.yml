@@ -1,0 +1,7 @@
+# Test coupons. Keys are CouponRegistry.digest of the code in the comment.
+coupons:
+  # TESTUNLIMITED
+  3A477793163C6DE879441903776444A8590E3B97E6F8A4EAF0F5DFA70B74E433:
+    description: Unlimited access (tests)
+    active: true
+    unlimited: true

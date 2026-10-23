@@ -88,6 +88,26 @@ accessories:
     directories:
       - data:/var/lib/postgresql/data
 
+  # Nightly pg_dump of the db into /root/cvcraft-db-backup/backups/ on the server,
+  # keeping 7 daily, 4 weekly and 6 monthly dumps. Start it once with
+  # `bin/kamal accessory boot db-backup`; Deploy doesn't boot accessories.
+  db-backup:
+    image: prodrigestivill/postgres-backup-local:17
+    host: 159.195.9.248
+    env:
+      clear:
+        POSTGRES_HOST: cvcraft-db
+        POSTGRES_DB: cvcraft_production
+        POSTGRES_USER: cvcraft
+        SCHEDULE: "@daily"
+        BACKUP_KEEP_DAYS: "7"
+        BACKUP_KEEP_WEEKS: "4"
+        BACKUP_KEEP_MONTHS: "6"
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - backups:/backups
+
   redis:
     image: redis:7.2
     host: 159.195.9.248
