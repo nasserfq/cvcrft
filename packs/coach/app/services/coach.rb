@@ -19,7 +19,8 @@ module Coach
   DAILY_LIMIT = 60
   # Every user's first FREE_MESSAGES turns are free. After that, while billing
   # is on, each turn costs Billing::UsageGate.cost(:coach_message) credits.
-  FREE_MESSAGES = 60
+  # Set in config/deploy.yml; it is the coach's biggest AI cost.
+  FREE_MESSAGES = ENV.fetch("COACH_FREE_MESSAGES", 60).to_i
 
   def self.daily_count(user)
     user_messages(user).where(created_at: Time.current.all_day).count

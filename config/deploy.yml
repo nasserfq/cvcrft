@@ -55,6 +55,10 @@ env:
     # Payments (packs/billing): only these emails see /credits until
     # BILLING_ENABLED is set to "true".
     BILLING_TESTERS: non1993@protonmail.com
+    # Free tier, change and Deploy: signup credits (launch offer, normally 10)
+    # and lifetime free AI coach messages.
+    SIGNUP_BONUS_CREDITS: "30"
+    COACH_FREE_MESSAGES: "60"
     # AI Coach (packs/coach): only these emails see it until COACH_ENABLED is
     # set to "true".
     COACH_TESTERS: non1993@protonmail.com

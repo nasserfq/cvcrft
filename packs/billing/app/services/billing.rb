@@ -1,7 +1,10 @@
 # Credits and payments. Other packs use Billing::Credits to check and spend a
 # user's credits; only this pack talks to Moyasar.
 module Billing
-  SIGNUP_BONUS = 10
+  # Free credits for every new account. Set in config/deploy.yml so a launch
+  # offer can be raised or lowered with one Deploy; accounts that already got
+  # it keep it.
+  SIGNUP_BONUS = ENV.fetch("SIGNUP_BONUS_CREDITS", 10).to_i
 
   # Prices in halalas (1 SAR = 100 halalas), shown as final prices.
   PACKS = {
