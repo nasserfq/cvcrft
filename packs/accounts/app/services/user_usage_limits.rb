@@ -1,7 +1,7 @@
 class UserUsageLimits
   BASE_SUMMARY_TRANSLATIONS = 5
   BASE_JOBS_TRANSLATIONS = 5
-  BASE_JOB_BASED_GENERATIONS = 5
+  BASE_JOB_BASED_GENERATIONS = 20
   # CV analysis, CV import and LinkedIn import share one allowance.
   BASE_DOCUMENT_AI = 20
 
