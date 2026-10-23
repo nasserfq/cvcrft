@@ -45,3 +45,4 @@ en:
       cost_credits: "%{count} credits"
       cost_credit: "1 credit"
       payment_note: "Pay with mada, Apple Pay, STC Pay or card through Moyasar. Credits never expire."
+      changes_note: "Prices and free allowances may change. Credits you already have keep their value."
