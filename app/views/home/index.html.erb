@@ -323,7 +323,6 @@
 
         <!-- Pricing: billing testers only until payments launch -->
         <% if Billing.enabled_for?(current_user) %>
-          <% free_href = user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>
           <% best = Billing::PACKS.keys.last %>
           <% features = {
                builder: [ t('home_landing.pricing.unlimited'), nil ],
@@ -332,11 +331,8 @@
                import: [ UserUsageLimits::BASE_DOCUMENT_AI, :document_ai ],
                coach: [ Coach::FREE_MESSAGES, :coach_message ]
              } %>
-          <section id="pricing" class="pt-10 pb-24 md:pb-[120px] flex flex-col gap-12 scroll-mt-28" data-testid="landing-pricing">
-            <div class="flex flex-col gap-4 max-w-[640px]">
-              <h2 class="sr-mask lp-balance m-0 font-semibold" style="font-size: clamp(32px, 4vw, 48px); letter-spacing: -0.02em; line-height: 1.2"><%= t('home_landing.pricing.title') %></h2>
-              <p class="lp-pretty m-0 text-lg font-light" style="color: rgba(238,243,238,0.62)"><%= t('home_landing.pricing.subtitle') %></p>
-            </div>
+          <section id="pricing" class="pt-10 pb-24 md:pb-[120px] flex flex-col gap-8 scroll-mt-28" data-testid="landing-pricing">
+            <h2 class="sr-mask lp-balance m-0 font-semibold" style="font-size: clamp(32px, 4vw, 48px); letter-spacing: -0.02em; line-height: 1.2"><%= t('home_landing.pricing.title') %></h2>
             <div class="glass sr-reveal rounded-[32px] p-5 sm:p-8 overflow-x-auto" data-testid="pricing-table">
               <table class="w-full text-[15px]" style="border-collapse: collapse">
                 <thead>
@@ -357,50 +353,20 @@
                   <% end %>
                 </tbody>
               </table>
+              <p class="m-0 pt-4 text-[15px]" style="border-top: 1px solid rgba(255,255,255,0.08); color: #d6b877"><%= t('home_landing.pricing.signup_credits', count: Billing::SIGNUP_BONUS) %></p>
             </div>
-            <div class="grid gap-5" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr))">
-              <article class="glass sr-lift sr-reveal rounded-[32px] p-7 sm:p-8 flex flex-col gap-6">
-                <div class="flex flex-col gap-2">
-                  <span class="text-lg font-semibold"><%= t('home_landing.pricing.free_name') %></span>
-                  <span class="sr-mono font-semibold" style="font-size: clamp(36px, 4vw, 44px); line-height: 1"><%= t('home_landing.pricing.free_price') %></span>
-                </div>
-                <div class="flex flex-col gap-2.5 flex-1 text-[15px]">
-                  <span class="font-light" style="color: rgba(238,243,238,0.78)"><%= t('home_landing.pricing.free_includes') %></span>
-                  <div class="flex items-center justify-between gap-4">
-                    <span class="font-light" style="color: rgba(238,243,238,0.78)"><%= t('home_landing.pricing.free_uses.credits') %></span>
-                    <span class="sr-mono font-semibold flex-none" style="color: #d6b877"><%= Billing::SIGNUP_BONUS %></span>
-                  </div>
-                </div>
-                <a href="<%= free_href %>" class="sr-btn glass-soft flex items-center justify-center min-h-[52px] px-5 rounded-2xl font-semibold text-[15px]"><%= t('home_landing.pricing.free_cta') %></a>
-              </article>
+            <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr))">
               <% Billing::PACKS.each do |id, pack| %>
-                <% price = pack[:amount_halalas] / 100.0 %>
-                <article class="glass sr-lift sr-reveal rounded-[32px] p-7 sm:p-8 flex flex-col gap-6" <% if id == best %>style="box-shadow: 0 0 0 1px rgba(214,184,119,0.45), 0 24px 60px -30px rgba(214,184,119,0.5)"<% end %>>
-                  <div class="flex flex-col gap-2">
-                    <div class="flex items-center justify-between gap-3">
-                      <span class="text-lg font-semibold"><%= t('home_landing.pricing.pack_name', credits: number_with_delimiter(pack[:credits])) %></span>
-                      <% if id == best %><span class="glass-soft px-3 py-1 rounded-full text-xs font-semibold" style="color: #d6b877"><%= t('home_landing.pricing.best_value') %></span><% end %>
-                    </div>
-                    <span class="sr-mono font-semibold" style="font-size: clamp(36px, 4vw, 44px); line-height: 1; color: #d6b877"><%= t('home_landing.pricing.price', price: number_with_precision(price, precision: 0)) %></span>
-                    <span class="text-sm" style="color: rgba(238,243,238,0.6)"><%= t('home_landing.pricing.per_credit', price: number_with_precision(price / pack[:credits], precision: 2)) %></span>
+                <article class="glass sr-lift sr-reveal rounded-[28px] p-6 flex items-center justify-between gap-4" <% if id == best %>style="box-shadow: 0 0 0 1px rgba(214,184,119,0.45), 0 24px 60px -30px rgba(214,184,119,0.5)"<% end %>>
+                  <div class="flex flex-col gap-1">
+                    <span class="text-lg font-semibold"><%= t('home_landing.pricing.pack_name', credits: number_with_delimiter(pack[:credits])) %></span>
+                    <span class="sr-mono font-semibold text-3xl" style="color: #d6b877"><%= t('home_landing.pricing.price', price: number_with_precision(pack[:amount_halalas] / 100.0, precision: 0)) %></span>
                   </div>
-                  <div class="flex flex-col gap-2.5 flex-1">
-                    <span class="text-sm" style="color: rgba(238,243,238,0.6)"><%= t('home_landing.pricing.spend_up_to') %></span>
-                    <dl class="m-0 flex flex-col gap-2.5">
-                      <% features.each do |label, (_, kind)| %>
-                        <% next unless kind %>
-                        <div class="flex items-center justify-between gap-4 text-[15px]">
-                          <dt class="font-light" style="color: rgba(238,243,238,0.78)"><%= t("home_landing.pricing.free_uses.#{label}") %></dt>
-                          <dd class="m-0 sr-mono font-semibold flex-none" style="color: #d6b877"><%= pack[:credits] / Billing::UsageGate.cost(kind) %></dd>
-                        </div>
-                      <% end %>
-                    </dl>
-                  </div>
-                  <a href="<%= user_signed_in? ? credits_path : login_path(return_to: credits_path) %>" class="sr-btn sr-primary flex items-center justify-center min-h-[52px] px-5 rounded-2xl font-semibold text-[15px]" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)"><%= t('home_landing.pricing.buy_cta') %></a>
+                  <a href="<%= user_signed_in? ? credits_path : login_path(return_to: credits_path) %>" class="sr-btn sr-primary flex items-center justify-center min-h-[48px] px-5 rounded-2xl font-semibold text-[15px] whitespace-nowrap" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)"><%= t('home_landing.pricing.buy_cta') %></a>
                 </article>
               <% end %>
             </div>
-            <p class="m-0 -mt-4 text-sm" style="color: rgba(238,243,238,0.6)"><%= t('home_landing.pricing.payment_note') %> <%= t('home_landing.pricing.changes_note') %></p>
+            <p class="m-0 text-sm" style="color: rgba(238,243,238,0.6)"><%= t('home_landing.pricing.payment_note') %></p>
           </section>
         <% end %>
 
