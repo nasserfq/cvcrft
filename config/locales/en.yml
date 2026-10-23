@@ -50,7 +50,7 @@ en:
   # Credits and payments (packs/billing)
   billing:
     title: "Credits"
-    subtitle: "Credits pay for the AI coach. One credit is one coach message."
+    subtitle: "Credits pay for AI uses after your free ones run out: translations, CV imports, job-tailored CVs and AI coach messages."
     balance: "Your balance"
     credits: "credits"
     free_note: "New accounts start with %{count} free credits."
