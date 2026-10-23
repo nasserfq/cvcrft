@@ -1,9 +1,9 @@
 # Credits and payments. Other packs use Billing::Credits to check and spend a
 # user's credits; only this pack talks to Moyasar.
 module Billing
-  SIGNUP_BONUS = 50
+  SIGNUP_BONUS = 10
 
-  # Placeholder prices, in halalas (1 SAR = 100 halalas).
+  # Prices in halalas (1 SAR = 100 halalas), shown as final prices.
   PACKS = {
     "credits_100" => { credits: 100, amount_halalas: 19_00 },
     "credits_300" => { credits: 300, amount_halalas: 49_00 }

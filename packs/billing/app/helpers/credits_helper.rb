@@ -11,4 +11,11 @@ module CreditsHelper
         user.credit_balance.to_i.positive? ? user.credit_balance : Billing::Credits.balance(user)
       end
   end
+
+  # What each AI use costs past its free allowance, for copy that lists them.
+  def credit_costs
+    costs = Billing::UsageGate::COSTS
+    { translation: costs[:summary_translation], import: costs[:document_ai], job: costs[:job_based_generation],
+      coach: costs[:coach_message], coach_free: Coach::FREE_MESSAGES }
+  end
 end

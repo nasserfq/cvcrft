@@ -55,7 +55,7 @@ class CvImportsController < ApplicationController
         original_filename: pdf_file.original_filename
       )
 
-      # Free allowance first, then 1 credit each while billing is on
+      # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
       charge_key = SecureRandom.uuid
       charge = Billing::UsageGate.allow!(current_user, :document_ai, key: charge_key)
       if charge == :blocked

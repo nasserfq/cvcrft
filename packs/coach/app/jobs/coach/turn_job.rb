@@ -34,7 +34,12 @@ module Coach
     # Never re-raise: a Sidekiq retry would send the user a second reply.
     rescue => e
       Sentry.capture_exception(e, tags: { pack: "coach" })
-      Coach.broadcast(chat, type: "error") if chat
+      return unless chat
+
+      # The user paid for a reply they didn't get.
+      turn = chat.messages.where(role: "user").order(:id).last
+      Coach.refund!(chat.user, turn) if turn
+      Coach.broadcast(chat, type: "error")
     end
 
     private

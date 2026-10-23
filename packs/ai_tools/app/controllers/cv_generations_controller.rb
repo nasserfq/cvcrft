@@ -85,7 +85,7 @@ class CvGenerationsController < ApplicationController
     end
 
     # Check job-based generation limit (only count completed)
-    # Free allowance first, then 1 credit each while billing is on
+    # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
     limits = current_user.usage_limits
     unless Billing::UsageGate.available?(current_user, :job_based_generation)
       Rails.logger.warn "User #{current_user.id} has reached job-based generation limit (#{limits.job_based_generations_used}/#{limits.max_job_based_generations || '∞'})"
@@ -485,7 +485,7 @@ class CvGenerationsController < ApplicationController
 
   private
 
-  # One job-based generation: free allowance first, then 1 credit while
+  # One job-based generation: free allowance first, then credits while
   # billing is on (Billing::UsageGate). Returns :free, :credit or :blocked.
   def charge_generation(key)
     Billing::UsageGate.allow!(current_user, :job_based_generation, key: key)

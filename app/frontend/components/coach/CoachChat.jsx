@@ -109,13 +109,14 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
     armWatchdog();
 
     // Nothing reached the server: take the bubble back and put the text in the box so it isn't lost.
-    const failed = (text) => {
+    const failed = (text, upgrade = null) => {
       finish(null);
       setMessages((list) => list.filter((m) => m.id !== localId));
       setInput((current) => (current.trim() ? current : content));
       setError({
         text,
         kind: "send",
+        upgrade,
         retry: () => {
           setInput("");
           post(content);
@@ -133,9 +134,10 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
         body: JSON.stringify({ content }),
       });
       if (!response.ok) {
-        // The 429 daily cap carries its own message.
+        // The 429 daily cap and the 402 out-of-credits carry their own message; 402 also links to /credits.
         const body = await response.json().catch(() => ({}));
-        failed(body.error || t("coach.error"));
+        const upgrade = body.upgrade_url ? { url: body.upgrade_url, label: body.upgrade_label } : null;
+        failed(body.error || t("coach.error"), upgrade);
       }
     } catch {
       failed(t("coach.error"));
@@ -189,7 +191,15 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
         {error && (
           <div className="glass-soft sr-up m-0 rounded-2xl px-5 py-3 text-[15px] flex flex-wrap items-center justify-between gap-3" style={{ color: "#d6b877" }} role="alert">
             <span className="min-w-0">{error.text}</span>
-            {error.retry && (
+            {error.upgrade && (
+              <a
+                href={error.upgrade.url}
+                className="sr-btn sr-primary flex-none min-h-[44px] px-4 rounded-2xl font-semibold text-[14px] inline-flex items-center"
+              >
+                {error.upgrade.label}
+              </a>
+            )}
+            {error.retry && !error.upgrade && (
               <button
                 type="button"
                 onClick={error.retry}

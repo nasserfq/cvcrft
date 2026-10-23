@@ -276,7 +276,7 @@
           </section>
         <% end %>
         <% if @stats[:credits_enabled] && !@stats[:unlimited] %>
-          <p class="text-xs px-1" style="color: rgba(238,243,238,0.7)"><%= t("ux_overage.profile.then_credit_each", count: @stats[:credit_balance]) %></p>
+          <p class="text-xs px-1" style="color: rgba(238,243,238,0.7)"><%= t("ux_overage.profile.then_credit_each", count: @stats[:credit_balance], **credit_costs) %></p>
         <% end %>
 
         <!-- PDF history -->

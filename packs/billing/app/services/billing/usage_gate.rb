@@ -1,14 +1,22 @@
 module Billing
   # The one entry point for AI features that have a free allowance. A use
   # comes out of the free allowance first; once that is gone, and only while
-  # billing is on for the user, it costs CREDIT_COST credits. Otherwise it is
+  # billing is on for the user, it costs COSTS[kind] credits. Otherwise it is
   # blocked, as before credits existed.
   #
   # Callers pass a key unique to the request (a job id, a record id). The same
   # key never charges twice, and refund! gives the credit back when the work
   # fails after it was charged.
   class UsageGate
-    CREDIT_COST = 1
+    # Credits per use past the free allowance, weighted by what the use is
+    # worth. coach_message is charged by the coach pack, not through allow!.
+    COSTS = {
+      summary_translation: 1,
+      jobs_translation: 1,
+      document_ai: 2,
+      job_based_generation: 3,
+      coach_message: 1
+    }.freeze
 
     REASONS = {
       summary_translation: "overage_summary_translation",
@@ -29,7 +37,7 @@ module Billing
         return :free if user.usage_limits.consume!(kind)
         return :blocked unless Billing.enabled_for?(user)
 
-        charged = Credits.spend!(user, CREDIT_COST, reason: reason, key: ledger_key,
+        charged = Credits.spend!(user, cost(kind), reason: reason, key: ledger_key,
                                                     metadata: { "kind" => kind.to_s, "request_key" => key.to_s })
         charged ? :credit : :blocked
       end
@@ -51,21 +59,23 @@ module Billing
         REASONS.fetch(kind)
         return true if user.usage_limits.free_available?(kind)
 
-        Billing.enabled_for?(user) && Credits.can_spend?(user, CREDIT_COST)
+        Billing.enabled_for?(user) && Credits.can_spend?(user, cost(kind))
       end
 
+      def cost(kind) = COSTS.fetch(kind)
+
       # What the next use of each kind would cost, for the frontend to say
-      # "this will use 1 credit" before the user asks.
+      # "this will use N credits" before the user asks.
       def quote(user, kinds)
         enabled = Billing.enabled_for?(user)
         balance = enabled ? Credits.balance(user) : nil
-        affordable = enabled && balance >= CREDIT_COST
 
         kinds.index_with do |kind|
           REASONS.fetch(kind)
           free = user.usage_limits.free_available?(kind)
-          { free_available: free, will_use_credit: !free && affordable, allowed: free || affordable }
-        end.merge(enabled: enabled, balance: balance, cost: CREDIT_COST)
+          affordable = enabled && balance >= cost(kind)
+          { free_available: free, will_use_credit: !free && affordable, allowed: free || affordable, cost: cost(kind) }
+        end.merge(enabled: enabled, balance: balance)
       end
 
       private

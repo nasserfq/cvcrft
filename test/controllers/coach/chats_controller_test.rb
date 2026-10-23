@@ -82,6 +82,43 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "I was a cashier", @chat.messages.last.content
   end
 
+  test "messages past the free allowance cost credits while billing is on" do
+    ENV["BILLING_ENABLED"] = "true"
+    use_free_messages
+
+    post message_coach_chat_url(@chat), params: { content: "One more" }, as: :json
+
+    assert_response :accepted
+    entry = CreditLedgerEntry.find_by!(reason: "coach_message")
+    assert_equal [ -Billing::UsageGate.cost(:coach_message), "coach_message:#{@chat.messages.last.id}" ], [ entry.amount, entry.idempotency_key ]
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "with no credits left the message is refused with a link to buy more" do
+    ENV["BILLING_ENABLED"] = "true"
+    use_free_messages
+    Billing::Credits.ensure_signup_bonus!(@user)
+    @user.update_column(:credit_balance, 0)
+
+    assert_no_difference -> { Coach::Message.count } do
+      assert_no_enqueued_jobs { post message_coach_chat_url(@chat), params: { content: "One more" }, as: :json }
+    end
+    assert_response :payment_required
+    assert_equal credits_path, response.parsed_body["upgrade_url"]
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "messages stay free while billing is off" do
+    use_free_messages
+
+    post message_coach_chat_url(@chat), params: { content: "One more" }, as: :json
+
+    assert_response :accepted
+    assert_not CreditLedgerEntry.exists?(reason: "coach_message")
+  end
+
   test "a blank message is rejected" do
     assert_no_enqueued_jobs do
       post message_coach_chat_url(@chat), params: { content: " " }, as: :json
@@ -262,5 +299,10 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
       proposals: [ { "id" => "abcd1234", "section" => "professional_summary", "index" => nil, "field" => "professional_summary",
                      "before" => "I work hard.", "after" => "Retail cashier who keeps queues short." } ]
     )
+  end
+
+  # Older days, so the daily cap isn't hit.
+  def use_free_messages
+    Coach::FREE_MESSAGES.times { @chat.messages.create!(role: "user", content: "Hi", created_at: 2.days.ago) }
   end
 end

@@ -15,10 +15,38 @@ module Coach
 
   def self.broadcast(chat, payload) = ActionCable.server.broadcast("coach:#{chat.id}", payload)
 
-  # Coach is free, so this caps each user's model spend.
+  # Caps each user's model spend per day, paid or not.
   DAILY_LIMIT = 60
+  # Every user's first FREE_MESSAGES turns are free. After that, while billing
+  # is on, each turn costs Billing::UsageGate.cost(:coach_message) credits.
+  FREE_MESSAGES = 20
 
   def self.daily_count(user)
-    Coach::Message.joins(:chat).where(role: "user", coach_chats: { user_id: user.id }, created_at: Time.current.all_day).count
+    user_messages(user).where(created_at: Time.current.all_day).count
+  end
+
+  # Call after the user's message is saved, so it counts itself.
+  # Returns :free, :credit or :blocked; :blocked records nothing.
+  def self.charge!(user, message)
+    return :free unless Billing.enabled_for?(user)
+    return :free if user_messages(user).count <= FREE_MESSAGES
+
+    spent = Billing::Credits.spend!(user, Billing::UsageGate.cost(:coach_message), reason: "coach_message", key: charge_key(message))
+    spent ? :credit : :blocked
+  end
+
+  # Gives back what charge! took for this message, if anything.
+  def self.refund!(user, message)
+    charge = CreditLedgerEntry.find_by(idempotency_key: charge_key(message), user_id: user.id)
+    return unless charge
+
+    Billing::Credits.grant!(user, -charge.amount, reason: "refund", key: "refund:#{charge.idempotency_key}",
+                                                  metadata: { "refunded_entry_id" => charge.id })
+  end
+
+  def self.charge_key(message) = "coach_message:#{message.id}"
+
+  def self.user_messages(user)
+    Coach::Message.joins(:chat).where(role: "user", coach_chats: { user_id: user.id })
   end
 end
