@@ -32,6 +32,15 @@ env:
     - ADMIN_PASSWORD
     - MOYASAR_SECRET_KEY
     - JEV_API_KEY
+    # Social sign-in (packs/accounts). Optional: a provider's button is hidden while its vars are empty.
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+    - APPLE_CLIENT_ID
+    - APPLE_TEAM_ID
+    - APPLE_KEY_ID
+    - APPLE_PRIVATE_KEY
+    - LINKEDIN_CLIENT_ID
+    - LINKEDIN_CLIENT_SECRET
   clear:
     REDIS_URL: redis://cvcraft-redis:6379/1
     DATABASE_HOST: cvcraft-db

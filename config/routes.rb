@@ -13,7 +13,8 @@ Rails.application.routes.draw do
   patch "/locale/:locale", to: "locales#update", as: :locale
 
   # Devise routes (for authentication helpers)
-  devise_for :users, skip: [ :registrations, :sessions, :passwords, :confirmations, :unlocks ]
+  devise_for :users, skip: [ :registrations, :sessions, :passwords, :confirmations, :unlocks ],
+                     controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
 
   # Root route
   root "home#index"
@@ -177,6 +178,8 @@ Rails.application.routes.draw do
   post "/auth/verify_otp", to: "auth#verify_otp"
   delete "/auth/logout", to: "auth#logout"
   get "/auth/status", to: "auth#status"
+  # Apple Sign in returns here (form_post); bounced to the OmniAuth callback.
+  post "/auth/apple/form_post", to: "social_auth#apple_form_post", as: :apple_form_post
 
   # API routes for AJAX calls
   namespace :api do

@@ -16,6 +16,7 @@ anyone relies on it with SDAIA or in a contract.
 | Data category | Purpose | Legal basis | Processor | Location | Retention |
 |---|---|---|---|---|---|
 | Email, OTP login codes | Sign-in by one-time code | Contract | Own DB; AWS SES sends the email | Germany (DB); USA (SES) | OTP codes: 1 day. Email: until account deletion |
+| Name, email, provider account id from Google / Apple / LinkedIn sign-in | Sign-in | Consent (privacy policy at login) + contract | Google, Apple, LinkedIn (identity providers) | USA | Until the user deletes the account |
 | Account profile (name, phone, city, locale, consent record) | Run the account | Contract | Own DB on netcup | Germany | Until the user deletes the account |
 | CV content (work history, education, skills, certifications, languages) | Build and edit CVs | Contract | Own DB on netcup | Germany | Until the user deletes the account |
 | Uploaded CVs and LinkedIn imports (extracted text) | Import an existing CV | Consent (upload) + contract | Own DB on netcup | Germany | Extracted text cleared after 30 days; failed imports deleted after 30 days |
@@ -47,6 +48,9 @@ the job and the retention section of `/privacy`.
   - `privacy_policy_version` (string): the `PrivacyPolicy::VERSION` they accepted.
 - Both are refreshed at every login where consent was given, so the row always holds the latest
   accepted version.
+- Social sign-in (Google, Apple, LinkedIn) uses the same checkbox. `SocialSignIn` creates no
+  account and signs in no user who has never consented unless the box was ticked, and records the
+  same two columns when it was.
 - Analytics consent is separate: the cookie banner gates PostHog and can be withdrawn at any time.
 - When the policy changes materially: bump `PrivacyPolicy::VERSION` (it is also the "last updated"
   date on `/privacy`). Users with an older version accept again on their next login.
@@ -59,7 +63,7 @@ Rights: access, a copy (export), correction, deletion, withdrawal of consent, an
 |---|---|
 | Access / copy | Self-service: profile page, "Download my data" (`GET /profile/export`), a JSON file `seera-data-<date>.json`. No password hashes, tokens or PDF blobs |
 | Correction | Self-service: users edit their profile and CVs |
-| Deletion | Self-service: profile page, "Delete my account". One transaction removes the user, CVs, imports, AI results, generated PDFs, credit ledger, purchases, coupon redemptions and OTP rows, then clears the coupon store. Nothing identifying is sent to PostHog |
+| Deletion | Self-service: profile page, "Delete my account". One transaction removes the user, CVs, imports, AI results, generated PDFs, credit ledger, purchases, coupon redemptions, linked sign-in accounts (Google, Apple, LinkedIn) and OTP rows, then clears the coupon store. Nothing identifying is sent to PostHog |
 | Withdraw consent | Cookie banner for analytics; account deletion for everything else |
 | Anything else, or a user who cannot sign in | Email `nasser@cvcrft.com` |
 
@@ -101,6 +105,8 @@ draft amendments, so check them again when they are final.
 
 - Register on SDAIA's National Data Governance Platform.
 - Sign the processor DPAs listed in section 1.
+- Accept the Google API Services User Data Policy, the Apple Developer Program License Agreement
+  (Sign in with Apple) and the LinkedIn API Terms of Use / DPA for social sign-in.
 - With a lawyer: a DPIA for the AI features, a transfer risk assessment, and a decision on whether
   the 2026-10-12 `RAILS_MASTER_KEY` leak was notifiable.
 

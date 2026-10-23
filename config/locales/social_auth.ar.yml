@@ -1,0 +1,18 @@
+# Social sign-in on the login page (Users::OmniauthCallbacksController, SocialSignIn).
+ar:
+  social_auth:
+    continue_with:
+      google: "المتابعة باستخدام Google"
+      apple: "المتابعة باستخدام Apple"
+      linkedin: "المتابعة باستخدام LinkedIn"
+    or_email: "أو تابع باستخدام البريد الإلكتروني"
+    default_name: "مستخدم Seera AI"
+    failed: "تعذّر تسجيل دخولك بهذا الحساب. حاول مرة أخرى أو استخدم بريدك الإلكتروني."
+    errors:
+      no_email: "لم يشارك هذا الحساب بريدًا إلكترونيًا. يرجى تسجيل الدخول ببريدك الإلكتروني."
+      email_unverified: "البريد الإلكتروني لهذا الحساب غير مُوثّق. يرجى تسجيل الدخول برمز البريد الإلكتروني."
+      invalid: "تعذّر إنشاء حسابك. يرجى تسجيل الدخول ببريدك الإلكتروني."
+  devise:
+    omniauth_callbacks:
+      failure: "تعذّر التحقق من حسابك في %{kind} بسبب \"%{reason}\"."
+      success: "تم تسجيل الدخول بنجاح باستخدام حساب %{kind}."

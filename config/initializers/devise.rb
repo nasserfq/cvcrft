@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require Rails.root.join("packs/accounts/lib/social_auth").to_s
+
 # Assuming you have not yet modified this file, each configuration option below
 # is set to its default value. Note that some are commented out while others
 # are not: uncommented lines are intended to protect your configuration from
@@ -271,7 +273,11 @@ Devise.setup do |config|
   # ==> OmniAuth
   # Add a new OmniAuth provider. Check the wiki for more information on setting
   # up on your models and hooks.
-  # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
+  # Social sign-in: only providers whose secrets are set (see SocialAuth).
+  SocialAuth.providers.each do |name|
+    id, secret, options = SocialAuth.credentials(name)
+    config.omniauth name, id, secret, **options
+  end
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or

@@ -28,6 +28,7 @@ class UserDataExport
       "coach_chats" => coach_chats,
       "credit_ledger_entries" => rows(user.credit_ledger_entries),
       "credit_purchases" => rows(user.credit_purchases),
+      "identities" => identities,
       "exported_at" => now.iso8601,
       "privacy_policy_version" => PrivacyPolicy::VERSION
     }
@@ -61,6 +62,11 @@ class UserDataExport
     user.cv_generations.order(:id).map do |generation|
       generation.attributes.merge("metadata" => (generation.metadata || {}).except("pdf_data"))
     end
+  end
+
+  # Linked social sign-in accounts (Google, Apple, LinkedIn).
+  def identities
+    user.identities.order(:id).map { |identity| identity.attributes.slice("provider", "uid", "email", "created_at") }
   end
 
   def coach_chats

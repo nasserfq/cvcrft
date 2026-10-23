@@ -1,0 +1,19 @@
+# Social sign-in on the login page (Users::OmniauthCallbacksController, SocialSignIn).
+en:
+  social_auth:
+    continue_with:
+      google: "Continue with Google"
+      apple: "Continue with Apple"
+      linkedin: "Continue with LinkedIn"
+    or_email: "Or continue with email"
+    default_name: "Seera AI user"
+    failed: "We couldn't sign you in with that account. Please try again or use your email."
+    errors:
+      no_email: "That account didn't share an email address. Please sign in with your email."
+      email_unverified: "That account's email isn't verified. Please sign in with your email code."
+      invalid: "We couldn't create your account. Please sign in with your email."
+  # Same text as devise.en.yml; kept here so both languages have the pair.
+  devise:
+    omniauth_callbacks:
+      failure: "Could not authenticate you from %{kind} because \"%{reason}\"."
+      success: "Successfully authenticated from %{kind} account."

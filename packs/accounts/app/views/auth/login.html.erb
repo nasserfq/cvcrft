@@ -82,24 +82,11 @@
               <div class="p-6 sm:p-8">
                 <!-- Email step: kept in the page on the OTP step (hidden) so "Change email" needs no reload -->
                 <%# On the OTP step it starts hidden; "Change email" reveals it with the landing's rise. %>
-                <div id="email-step" class="<%= 'hidden sr-up' if otp_step %>" style="animation-duration: .8s">
-                  <form class="flex flex-col gap-6" action="/auth/send_otp" method="post">
-                    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-                    <%= hidden_field_tag :return_to, params[:return_to] %>
-                    <div class="flex flex-col gap-2">
-                      <label for="email" class="text-[15px] font-medium" style="color: rgba(238,243,238,0.85)"><%= t('auth.email') %></label>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        autocomplete="email"
-                        required
-                        value="<%= params[:email] %>"
-                        class="<%= field_class %>"
-                        style="color: #eef3ee"
-                        placeholder="<%= t('auth.email_placeholder') %>"
-                      />
-                    </div>
+                <%# The PDPL consent box covers both the email code and social sign-in. With social
+                    buttons it sits above them; without, it stays in the email form as before. The
+                    form="email-form" attribute keeps it part of that form wherever it is. %>
+                <% social = SocialAuth.providers.any? %>
+                <% consent_block = capture do %>
                     <div class="flex items-start gap-1">
                       <%# 44px tap target around the 20px box. %>
                       <label for="privacy_consent" class="flex-none flex items-center justify-center w-11 h-11 -ms-3 -mt-2.5 cursor-pointer">
@@ -109,6 +96,7 @@
                           type="checkbox"
                           value="1"
                           required
+                          form="email-form"
                           class="w-5 h-5 rounded cursor-pointer"
                         />
                       </label>
@@ -118,12 +106,59 @@
                               terms_link: link_to(t('pdpl_consent.terms_link'), terms_path, target: "_blank", rel: "noopener", class: "underline underline-offset-4", style: "color: #d6b877")) %>
                       </label>
                     </div>
-                    <button type="submit" class="<%= primary_class %>" style="<%= primary_style %>">
-                      <iconify-icon icon="solar:letter-linear" width="20" class="btn-icon"></iconify-icon>
-                      <%= spinner %>
-                      <span class="btn-text"><%= t('auth.send_code') %></span>
-                    </button>
-                  </form>
+                <% end %>
+                <div id="email-step" class="<%= 'hidden sr-up' if otp_step %>" style="animation-duration: .8s">
+                  <div class="flex flex-col gap-6">
+                    <% if social %>
+                      <%= consent_block %>
+
+                      <!-- Social sign-in: POST forms (OmniAuth); the script below adds the consent -->
+                      <div class="flex flex-col gap-3">
+                        <% SocialAuth::PROVIDERS.each_key do |provider| %>
+                          <% next unless SocialAuth.enabled?(provider) %>
+                          <%= button_to omniauth_authorize_path(:user, provider), method: :post,
+                                form: { class: "w-full", "data-social-form": "", "data-turbo": "false" },
+                                params: { return_to: params[:return_to], privacy_consent: "0" },
+                                class: "sr-btn glass-soft w-full min-h-[48px] rounded-xl px-4 flex items-center justify-center gap-3 text-[15px] font-medium cursor-pointer",
+                                style: "color: #eef3ee" do %>
+                            <%= render "auth/social_logo", provider: provider %>
+                            <span><%= t("social_auth.continue_with.#{SocialAuth.short_name(provider)}") %></span>
+                          <% end %>
+                        <% end %>
+                      </div>
+
+                      <div class="flex items-center gap-3" role="separator">
+                        <span class="flex-1 h-px" style="background: rgba(238,243,238,0.12)"></span>
+                        <span class="text-sm" style="color: rgba(238,243,238,0.55)"><%= t("social_auth.or_email") %></span>
+                        <span class="flex-1 h-px" style="background: rgba(238,243,238,0.12)"></span>
+                      </div>
+                    <% end %>
+
+                    <form id="email-form" class="flex flex-col gap-6" action="/auth/send_otp" method="post">
+                      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+                      <%= hidden_field_tag :return_to, params[:return_to] %>
+                      <div class="flex flex-col gap-2">
+                        <label for="email" class="text-[15px] font-medium" style="color: rgba(238,243,238,0.85)"><%= t('auth.email') %></label>
+                        <input
+                          id="email"
+                          name="email"
+                          type="email"
+                          autocomplete="email"
+                          required
+                          value="<%= params[:email] %>"
+                          class="<%= field_class %>"
+                          style="color: #eef3ee"
+                          placeholder="<%= t('auth.email_placeholder') %>"
+                        />
+                      </div>
+                      <%= consent_block unless social %>
+                      <button type="submit" class="<%= primary_class %>" style="<%= primary_style %>">
+                        <iconify-icon icon="solar:letter-linear" width="20" class="btn-icon"></iconify-icon>
+                        <%= spinner %>
+                        <span class="btn-text"><%= t('auth.send_code') %></span>
+                      </button>
+                    </form>
+                  </div>
                 </div>
 
                 <!-- OTP step -->
@@ -299,6 +334,15 @@
                 });
             }
         })();
+
+        // Social sign-in: the same consent box as the email form. The server checks it too.
+        document.querySelectorAll('form[data-social-form]').forEach(form => {
+            form.addEventListener('submit', e => {
+                const consent = document.getElementById('privacy_consent');
+                if (consent && !consent.checked) { e.preventDefault(); consent.reportValidity(); consent.focus(); return; }
+                form.querySelector('input[name="privacy_consent"]').value = '1';
+            });
+        });
 
         // Reset on pageshow (back/forward navigation)
         window.addEventListener('pageshow', () => {
