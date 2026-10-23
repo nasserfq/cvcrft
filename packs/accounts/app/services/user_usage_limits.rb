@@ -1,7 +1,6 @@
 class UserUsageLimits
   BASE_SUMMARY_TRANSLATIONS = 5
   BASE_JOBS_TRANSLATIONS = 5
-  BASE_CV_BUILDER_GENERATIONS = 5
   BASE_JOB_BASED_GENERATIONS = 5
   # CV analysis, CV import and LinkedIn import share one allowance.
   BASE_DOCUMENT_AI = 20
@@ -33,12 +32,6 @@ class UserUsageLimits
     return nil if unlimited?
 
     BASE_JOBS_TRANSLATIONS + coupon_bonus(:bonus_jobs_translations)
-  end
-
-  def max_cv_builder_generations
-    return nil if unlimited?
-
-    BASE_CV_BUILDER_GENERATIONS + coupon_bonus(:bonus_cv_builder_generations)
   end
 
   def max_job_based_generations
@@ -75,13 +68,6 @@ class UserUsageLimits
     @user.document_ai_count
   end
 
-  def cv_builder_generations_used
-    @user.cv_generations
-      .where("metadata->>'source' = ?", "cv_builder")
-      .where(status: "completed")
-      .count
-  end
-
   def job_based_generations_used
     [ @user.job_based_generations_count,
       @user.cv_generations
@@ -100,12 +86,6 @@ class UserUsageLimits
     return nil if unlimited?
 
     [ max_jobs_translations - jobs_translations_used, 0 ].max
-  end
-
-  def remaining_cv_builder_generations
-    return nil if unlimited?
-
-    [ max_cv_builder_generations - cv_builder_generations_used, 0 ].max
   end
 
   def remaining_job_based_generations
@@ -159,10 +139,6 @@ class UserUsageLimits
     unlimited? || remaining_jobs_translations.positive?
   end
 
-  def can_generate_cv_builder?
-    unlimited? || remaining_cv_builder_generations.positive?
-  end
-
   def can_generate_job_based?
     unlimited? || remaining_job_based_generations.positive?
   end
@@ -176,9 +152,6 @@ class UserUsageLimits
       max_jobs: max_jobs_translations,
       used_jobs: jobs_translations_used,
       remaining_jobs: remaining_jobs_translations,
-      max_cv_builder: max_cv_builder_generations,
-      used_cv_builder: cv_builder_generations_used,
-      remaining_cv_builder: remaining_cv_builder_generations,
       max_job_based: max_job_based_generations,
       used_job_based: job_based_generations_used,
       remaining_job_based: remaining_job_based_generations,

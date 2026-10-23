@@ -245,8 +245,6 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
      setMaxSummaryTranslations(data.unlimited ? null : (data.max_summary ?? 5));
      setMaxJobsTranslations(data.unlimited ? null : (data.max_jobs ?? 5));
      // CV Builder generation limit
-     setRemainingCvBuilderGenerations(data.unlimited ? null : (data.remaining_cv_builder ?? 5));
-     setMaxCvBuilderGenerations(data.unlimited ? null : (data.max_cv_builder ?? 5));
      setTranslationLimitLoaded(true);
     }
    } catch (e) {
@@ -556,8 +554,6 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
  const [unlimitedUsage, setUnlimitedUsage] = useState(false);
  const [translationLimitLoaded, setTranslationLimitLoaded] = useState(false);
  // CV Builder generation limit
- const [remainingCvBuilderGenerations, setRemainingCvBuilderGenerations] = useState(5);
- const [maxCvBuilderGenerations, setMaxCvBuilderGenerations] = useState(5);
  const [autoSaveStatus, setAutoSaveStatus] = useState("idle"); // idle, saving, saved, error
  const [lastSavedAt, setLastSavedAt] = useState(null);
  const [validationErrors, setValidationErrors] = useState({});
@@ -1939,12 +1935,6 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
    return;
   }
 
-  // Check CV Builder limit first
-  if (!unlimitedUsage && remainingCvBuilderGenerations <= 0) {
-   setTranslationError(translate("export.cv_builder_limit"));
-   return;
-  }
-  
   setIsExporting(true);
   setTranslationError("");
 
@@ -2184,8 +2174,6 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
          downloadFrame.src = downloadUrl;
          setExportStatus("completed");
          setIsExporting(false);
-         // Update remaining CV Builder generations
-         setRemainingCvBuilderGenerations(prev => Math.max(prev - 1, 0));
         } else if (statusInfo.status === "failed") {
          // Job failed
          clearInterval(pollingInterval);

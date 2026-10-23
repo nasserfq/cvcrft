@@ -50,7 +50,10 @@ env:
     VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
     AWS_REGION: us-east-1
     AI_PROVIDER: bedrock
-    AI_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
+    # Amazon Nova Lite: the cheapest model AWS credits surely cover.
+    AI_MODEL: us.amazon.nova-lite-v1:0
+    # When Jev judges a reply not good enough, it is redone once on this.
+    AI_STRONG_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
     ADMIN_USERNAME: admin
     # Payments (packs/billing): only these emails see /credits until
     # BILLING_ENABLED is set to "true".
@@ -62,6 +65,10 @@ env:
     # AI Coach (packs/coach): only these emails see it until COACH_ENABLED is
     # set to "true".
     COACH_TESTERS: non1993@protonmail.com
+    # Coach model: Nova Lite to keep cost down. Set it to
+    # us.anthropic.claude-haiku-4-5-20251001-v1:0 if replies are too weak, or
+    # remove it to go back to Sonnet (the code default).
+    COACH_MODEL: us.amazon.nova-lite-v1:0
     # Sentry DSNs are meant to be public (they only allow sending events).
     SENTRY_DSN: https://058e816b8430efc0f1c2913d87129bc8@o4512250318618624.ingest.us.sentry.io/4512250323140608
 

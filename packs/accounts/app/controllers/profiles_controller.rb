@@ -21,9 +21,6 @@ class ProfilesController < ApplicationController
       summary_translations_max: limits.max_summary_translations,
       remaining_jobs_translations: limits.remaining_jobs_translations,
       jobs_translations_max: limits.max_jobs_translations,
-      cv_builder_used: limits.cv_builder_generations_used,
-      cv_builder_remaining: limits.remaining_cv_builder_generations,
-      cv_builder_max: limits.max_cv_builder_generations,
       job_based_used: limits.job_based_generations_used,
       job_based_remaining: limits.remaining_job_based_generations,
       job_based_max: limits.max_job_based_generations,
@@ -40,7 +37,6 @@ class ProfilesController < ApplicationController
       total_resumes: @stats[:total_resumes],
       total_drafts: @stats[:total_drafts],
       total_cv_generations: @stats[:total_cv_generations],
-      cv_builder_remaining: @stats[:cv_builder_remaining],
       job_based_remaining: @stats[:job_based_remaining]
     })
   end

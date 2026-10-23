@@ -223,18 +223,6 @@ class Api::TranslationsController < ApplicationController
         return render json: { error: "Authentication required" }, status: :unauthorized
       end
 
-      # Check CV Builder generation limit (skip for direct downloads - those are re-downloads)
-      unless params[:direct_download] == "true"
-        unless usage_limits.can_generate_cv_builder?
-          Rails.logger.warn "User #{current_user.id} has reached CV Builder limit (#{usage_limits.cv_builder_generations_used}/#{usage_limits.max_cv_builder_generations || '∞'})"
-          return render json: {
-            error: "لقد استخدمت جميع رصيد إنشاء السيرة الذاتية (#{usage_limits.max_cv_builder_generations || '∞'}).",
-            limit_reached: true,
-            remaining: 0
-          }, status: :too_many_requests
-        end
-      end
-
       # Create the directory for storing PDFs if it doesn't exist
       pdf_dir = Rails.root.join("tmp", "pdfs", "generated")
       FileUtils.mkdir_p(pdf_dir) unless File.directory?(pdf_dir)
