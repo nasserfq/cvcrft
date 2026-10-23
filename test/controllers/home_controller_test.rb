@@ -19,7 +19,7 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_select "[data-testid=landing-pricing]"
     assert_select "[data-testid=pricing-table] tbody td:first-of-type", 5 do |cells|
-      assert_equal [ I18n.t("home_landing.pricing.unlimited", locale: :ar), "10", "5", "20", Coach::FREE_MESSAGES.to_s ], cells.map { _1.text.strip }
+      assert_equal [ I18n.t("home_landing.pricing.unlimited", locale: :ar), "10", "20", "20", Coach::FREE_MESSAGES.to_s ], cells.map { _1.text.strip }
     end
   ensure
     ENV.delete("BILLING_TESTERS")
