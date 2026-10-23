@@ -266,7 +266,6 @@
     "timeout": "Translation timed out. Please try again."
   },
   "export": {
-    "cv_builder_limit": "You have used all CV builder credits (5). Please upgrade for more.",
     "name_email_required": "Please fill in full name and email before exporting",
     "pdf_failed": "PDF generation failed. Please try again later.",
     "pdf_timeout": "PDF generation timed out. Please try again later.",

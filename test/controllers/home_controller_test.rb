@@ -19,6 +19,9 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_select "[data-testid=landing-pricing]"
     assert_select "[data-testid=landing-pricing] article", Billing::PACKS.size + 1
+    assert_select "[data-testid=landing-pricing] article:first-child dd" do |values|
+      assert_equal [ I18n.t("home_landing.pricing.unlimited", locale: :ar), "10", "5", "20", Coach::FREE_MESSAGES.to_s, Billing::SIGNUP_BONUS.to_s ], values.map { _1.text.strip }
+    end
   ensure
     ENV.delete("BILLING_TESTERS")
   end
