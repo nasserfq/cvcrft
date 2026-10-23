@@ -51,6 +51,8 @@ env:
     AWS_REGION: us-east-1
     AI_PROVIDER: bedrock
     AI_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
+    # When Jev judges a Haiku reply not good enough, it is redone once on this.
+    AI_STRONG_MODEL: us.anthropic.claude-sonnet-4-6
     ADMIN_USERNAME: admin
     # Payments (packs/billing): only these emails see /credits until
     # BILLING_ENABLED is set to "true".

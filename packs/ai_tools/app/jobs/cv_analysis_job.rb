@@ -72,7 +72,8 @@ class CvAnalysisJob
 
   def request_part(part, user_prompt, tracker)
     response = AiModel.complete(system: build_system_prompt(part), user: user_prompt,
-                                temperature: 0.3, max_tokens: 8000) do |chunk|
+                                temperature: 0.3, max_tokens: 8000,
+                                check: "Is the output a specific, accurate and useful analysis of the CV in the input?") do |chunk|
       tracker.add(part, chunk.content.to_s.length)
     end
     [ part, response ]

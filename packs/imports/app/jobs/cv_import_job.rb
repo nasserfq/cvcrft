@@ -42,7 +42,8 @@ class CvImportJob
     user_prompt = build_user_prompt(extracted_text)
 
     response = AiModel.complete(system: system_prompt, user: user_prompt,
-                                temperature: 0.3, max_tokens: 8000)
+                                temperature: 0.3, max_tokens: 8000,
+                                check: "Does the output capture the CV in the input faithfully, with nothing invented or left out?")
     parse_openai_response(response)
   end
 

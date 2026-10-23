@@ -113,7 +113,8 @@ class AiTranslationJob
 
     # Make the API call
     response = AiModel.complete(system: system_prompt, user: user_prompt,
-                                temperature: (@options[:temperature] || 0.7).to_f, max_tokens: (@options[:max_tokens] || 500).to_i)
+                                temperature: (@options[:temperature] || 0.7).to_f, max_tokens: (@options[:max_tokens] || 500).to_i,
+                                check: "Is the output an accurate, natural, professional English version of the CV text in the input, with nothing invented or left out?")
 
     # Parse and return the result
     parse_openai_response(response)
