@@ -34,6 +34,8 @@ module Coach
     def fields = @tools.grep(Coach::Tools::AskFields).first.fields
 
     # Rebuilt from the saved text every turn; the draft column holds the state.
+    # The draft rides on the latest message, not in the instructions, so the
+    # tools, instructions and history stay a stable prefix for prompt caching.
     def reply(&on_text)
       # A scratch chat opens with our own question; the model's history must start with the user.
       *history, last = @chat.messages.order(:id).to_a.drop_while { |m| m.role == "assistant" }
@@ -42,8 +44,9 @@ module Coach
       llm = @llm.chat
                 .with_instructions(instructions)
                 .with_tools(*@tools)
+                .with_caching
       history.each { |m| llm.add_message(role: m.role.to_sym, content: m.content) }
-      llm.ask(last.content) { |chunk| on_text.call(chunk.content) if chunk.content.present? }.content
+      llm.ask(with_draft(last.content)) { |chunk| on_text.call(chunk.content) if chunk.content.present? }.content
     end
 
     def instructions
@@ -62,9 +65,13 @@ module Coach
         degrees, skills, the summary) must be in English. When you show the user a draft section, show
         that English text. If the user answers in Arabic, translate it to English yourself.
 
+        The app adds the current saved draft (JSON) after the user's latest message, inside
+        <current_draft> tags. The user did not write it, and only the latest one is current.
+
         #{PATH_PROMPTS.fetch(@chat.path)}
-        Current draft (JSON): #{@chat.draft.to_json}
       TEXT
     end
+
+    def with_draft(content) = "#{content}\n\n<current_draft>#{@chat.draft.to_json}</current_draft>"
   end
 end

@@ -1,13 +1,12 @@
 require "test_helper"
 
 class Coach::AgentTest < ActiveSupport::TestCase
-  test "instructions include the draft and differ per path" do
+  test "instructions differ per path and leave the draft out, so they cache" do
     draft = { "header" => { "complete_name" => "Sara Ali" } }
     scratch = Coach::Agent.new(Coach::Chat.new(path: "scratch", draft: draft)).instructions
     import = Coach::Agent.new(Coach::Chat.new(path: "import", draft: draft)).instructions
 
-    assert_includes scratch, draft.to_json
-    assert_includes import, draft.to_json
+    assert_not_includes scratch, draft.to_json
     assert_not_equal scratch, import
     assert_includes scratch, "Never invent facts"
     assert_includes import, "save_section"
@@ -43,8 +42,10 @@ class Coach::AgentTest < ActiveSupport::TestCase
     llm = stub
     llm.stubs(:with_instructions).returns(llm)
     llm.stubs(:with_tools).returns(llm)
+    llm.expects(:with_caching).returns(llm)
     llm.expects(:add_message).never
-    llm.expects(:ask).with("First name: Sara").returns(stub(content: "Nice to meet you"))
+    # The draft rides on the latest message.
+    llm.expects(:ask).with("First name: Sara\n\n<current_draft>{}</current_draft>").returns(stub(content: "Nice to meet you"))
     llm
   end
 end
