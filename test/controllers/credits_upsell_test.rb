@@ -72,7 +72,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
   end
 
   # Past the free allowance, a use costs 1 credit while billing is on.
-  test "job-based generation past the free allowance uses one credit" do
+  test "job-based generation past the free allowance uses credits" do
     ENV["BILLING_ENABLED"] = "true"
     @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
 
@@ -80,7 +80,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
 
     assert_response :created
     assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_job_based_generation").count
-    assert_equal Billing::SIGNUP_BONUS - 1, Billing::Credits.balance(@user)
+    assert_equal Billing::SIGNUP_BONUS - Billing::UsageGate.cost(:job_based_generation), Billing::Credits.balance(@user)
   end
 
   test "job-based generation credit is refunded when the job can't be queued" do
@@ -95,7 +95,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
     assert_equal 1, @user.credit_ledger_entries.where(reason: "refund").count
   end
 
-  test "retry of a failed generation past the free allowance uses one credit" do
+  test "retry of a failed generation past the free allowance uses credits" do
     ENV["BILLING_ENABLED"] = "true"
     @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
     generation = @user.cv_generations.create!(resume: @resume, status: "failed", job_description: "Rails engineer",
@@ -108,7 +108,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
     assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_job_based_generation").count
   end
 
-  test "cv import past the free allowance uses one credit" do
+  test "cv import past the free allowance uses credits" do
     ENV["BILLING_ENABLED"] = "true"
     @user.update_column(:document_ai_count, UserUsageLimits::BASE_DOCUMENT_AI)
     CvPdfImportService.any_instance.stubs(:parse).returns({ text: "John Doe", language: "en" })
@@ -120,7 +120,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert JSON.parse(response.body)["success"]
     assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_document_ai").count
-    assert_equal Billing::SIGNUP_BONUS - 1, Billing::Credits.balance(@user)
+    assert_equal Billing::SIGNUP_BONUS - Billing::UsageGate.cost(:document_ai), Billing::Credits.balance(@user)
   end
 
   test "cv import past the free allowance is blocked while billing is off" do
@@ -165,7 +165,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
     assert_equal Billing::SIGNUP_BONUS, Billing::Credits.balance(@user)
   end
 
-  test "linkedin import past the free allowance uses one credit and can be refunded" do
+  test "linkedin import past the free allowance uses credits and can be refunded" do
     ENV["BILLING_ENABLED"] = "true"
     @user.update_column(:document_ai_count, UserUsageLimits::BASE_DOCUMENT_AI)
     LinkedinPdfParserService.any_instance.stubs(:parse).returns("John Doe, Rails engineer")
@@ -173,7 +173,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
     post linkedin_import_path(format: :json), params: { pdf_file: pdf_upload }
 
     assert_response :success
-    assert_equal Billing::SIGNUP_BONUS - 1, Billing::Credits.balance(@user)
+    assert_equal Billing::SIGNUP_BONUS - Billing::UsageGate.cost(:document_ai), Billing::Credits.balance(@user)
     import_id, key = LinkedinImportJob.jobs.last["args"]
     LinkedinImportJob.refund_overage(import_id, key)
     assert_equal Billing::SIGNUP_BONUS, Billing::Credits.balance(@user)

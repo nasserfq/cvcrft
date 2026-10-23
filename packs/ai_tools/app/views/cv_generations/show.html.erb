@@ -192,11 +192,11 @@
                 <%= link_to view_pdf_cv_generation_path(@cv_generation), target: "_blank", rel: "noopener", class: secondary_class do %>
                   <%= svg.call(:eye) %><%= t("#{tk}.view_pdf") %>
                 <% end %>
-                <%= link_to download_pdf_cv_generation_path(@cv_generation, regenerate: true), class: secondary_class, title: t("#{tk}.regenerate_note"), data: { turbo: false } do %>
+                <%= link_to download_pdf_cv_generation_path(@cv_generation, regenerate: true), class: secondary_class, title: t("#{tk}.regenerate_note", count: Billing::UsageGate.cost(:job_based_generation)), data: { turbo: false } do %>
                   <%= svg.call(:retry) %><%= t("#{tk}.regenerate_pdf") %>
                 <% end %>
               </div>
-              <p class="m-0 text-xs" style="<%= muted %>"><%= t("#{tk}.regenerate_note") %></p>
+              <p class="m-0 text-xs" style="<%= muted %>"><%= t("#{tk}.regenerate_note", count: Billing::UsageGate.cost(:job_based_generation)) %></p>
             <% elsif metadata["pdf_error"].present? %>
               <p class="glass-soft m-0 rounded-[18px] px-4 py-3 text-[13px]" style="color: #fca5a5; border-color: rgba(248,113,113,0.35)"><%= t("#{tk}.pdf_error", error: metadata["pdf_error"]) %></p>
             <% end %>

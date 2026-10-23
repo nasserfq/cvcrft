@@ -26,7 +26,7 @@ class LinkedinImportsController < ApplicationController
       return reject_upload("حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت", :unprocessable_entity)
     end
 
-    # Free allowance first, then 1 credit each while billing is on
+    # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
     charge_key = SecureRandom.uuid
     charge = Billing::UsageGate.allow!(current_user, :document_ai, key: charge_key)
     if charge == :blocked

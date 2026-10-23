@@ -1,5 +1,7 @@
 module Coach
   class ChatsController < ApplicationController
+    include CreditsUpsell
+
     before_action :authenticate_user!, :require_coach!
     before_action :set_chat, only: %i[show message accept reject send_to_seera]
 
@@ -48,7 +50,15 @@ module Coach
       end
 
       message = @chat.messages.new(role: "user", content: params[:content])
-      return head :unprocessable_entity unless message.save
+      charge = nil
+      Coach::Message.transaction do
+        next unless message.save
+
+        charge = Coach.charge!(current_user, message)
+        raise ActiveRecord::Rollback if charge == :blocked
+      end
+      return head :unprocessable_entity unless charge
+      return render json: { error: no_credits_message, **credits_upsell }, status: :payment_required if charge == :blocked
 
       Coach::TurnJob.perform_later(@chat.id)
       head :accepted
@@ -78,8 +88,13 @@ module Coach
       end
 
       chat = Coach::Chat.transaction do
-        Coach::Chat.create!(user: current_user, path: "import", draft:).tap { |c| c.messages.create!(role: "user", content:) }
+        Coach::Chat.create!(user: current_user, path: "import", draft:).tap do |c|
+          message = c.messages.create!(role: "user", content:)
+          raise ActiveRecord::Rollback if Coach.charge!(current_user, message) == :blocked
+        end
       end
+      return import_failed(no_credits_message, status: :payment_required) unless chat&.persisted?
+
       Coach::TurnJob.perform_later(chat.id)
       redirect_to coach_chat_path(chat)
     rescue CvPdfImportService::CorruptedFileError, CvPdfImportService::CvPdfParseError
@@ -114,6 +129,10 @@ module Coach
       # The draft changed since it was proposed (e.g. that job was removed), so drop it.
       @chat.update!(proposals: @chat.proposals.reject { |p| p["id"] == id })
       head :unprocessable_entity
+    end
+
+    def no_credits_message
+      t("coach.no_credits", free: Coach::FREE_MESSAGES, cost: Billing::UsageGate.cost(:coach_message))
     end
 
     def require_coach!

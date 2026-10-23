@@ -2,7 +2,7 @@ en:
   ux_overage:
     will_use_credit: "This will use 1 credit"
     profile:
-      then_credit_each: "When the free uses run out, translations, job-based CVs and CV imports cost 1 credit each. Your balance: %{count} credits."
+      then_credit_each: "When the free uses run out, each translation costs %{translation} credit, each CV import or analysis %{import} credits, each job-based CV %{job} credits, and each AI coach message after the first %{coach_free} costs %{coach} credits. Your balance: %{count} credits."
     translations:
       summary_translation:
         limit_reached: "You've used all %{max} professional summary translations available."

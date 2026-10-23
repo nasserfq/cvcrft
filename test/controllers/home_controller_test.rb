@@ -12,6 +12,25 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_select "body"
   end
 
+  test "billing testers see pricing on the landing page" do
+    sign_in users(:one)
+    ENV["BILLING_TESTERS"] = users(:one).email
+
+    get root_url
+    assert_select "[data-testid=landing-pricing]"
+    assert_select "[data-testid=landing-pricing] article", Billing::PACKS.size + 1
+  ensure
+    ENV.delete("BILLING_TESTERS")
+  end
+
+  test "pricing stays hidden from everyone else" do
+    get root_url
+    assert_select "[data-testid=landing-pricing]", 0
+    sign_in users(:one)
+    get root_url
+    assert_select "[data-testid=landing-pricing]", 0
+  end
+
   test "testers see the AI Coach link in the header and the mobile menu" do
     sign_in users(:one)
     ENV["COACH_TESTERS"] = users(:one).email

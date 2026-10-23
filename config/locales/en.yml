@@ -50,7 +50,7 @@ en:
   # Credits and payments (packs/billing)
   billing:
     title: "Credits"
-    subtitle: "Credits pay for the AI coach. One credit is one coach message."
+    subtitle: "Credits pay for AI uses after your free ones run out: translations, CV imports, job-tailored CVs and AI coach messages."
     balance: "Your balance"
     credits: "credits"
     free_note: "New accounts start with %{count} free credits."
@@ -114,6 +114,7 @@ en:
       not_pdf: "Please upload a PDF file, or pick one of your CVs."
       unreadable: "We couldn't read that PDF. It may be a scanned image or password-protected."
     daily_cap: "You've reached today's limit of %{limit} messages. Come back tomorrow."
+    no_credits: "You've used your %{free} free coach messages and have no credits left. Each extra message costs %{cost} credits."
     send_to_seera:
       button: "Send to Seera"
       empty: "Your CV is still empty. Chat with the coach first, then send it."

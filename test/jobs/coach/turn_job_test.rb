@@ -56,6 +56,19 @@ class Coach::TurnJobTest < ActiveJob::TestCase
     assert_broadcast_on(@stream, type: "error")
   end
 
+  test "a failed turn refunds the credits its message paid" do
+    user = @chat.user
+    turn = @chat.messages.last
+    Billing::Credits.spend!(user, 1, reason: "coach_message", key: Coach.charge_key(turn))
+    Coach::Agent.any_instance.stubs(:reply).raises(RuntimeError)
+    Sentry.stubs(:capture_exception)
+
+    Coach::TurnJob.perform_now(@chat.id)
+
+    assert_equal Billing::SIGNUP_BONUS, Billing::Credits.balance(user)
+    assert CreditLedgerEntry.exists?(reason: "refund", idempotency_key: "refund:#{Coach.charge_key(turn)}")
+  end
+
   test "an import chat with an empty draft is extracted first and the draft broadcast" do
     chat = Coach::Chat.create!(user: users(:one), path: "import")
     chat.messages.create!(role: "user", content: "Sara Ali, cashier at Panda")

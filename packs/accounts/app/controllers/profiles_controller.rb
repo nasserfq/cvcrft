@@ -30,7 +30,7 @@ class ProfilesController < ApplicationController
       document_ai_remaining: limits.remaining_document_ai,
       document_ai_max: limits.max_document_ai,
       # Past the free allowance, translations, job-based CVs and CV imports
-      # cost 1 credit each while billing is on (Billing::UsageGate).
+      # cost credits while billing is on (Billing::UsageGate::COSTS).
       credits_enabled: Billing.enabled_for?(current_user),
       credit_balance: (Billing::Credits.balance(current_user) if Billing.enabled_for?(current_user))
     }

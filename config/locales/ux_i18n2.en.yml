@@ -71,7 +71,7 @@ en:
         download_pdf: "Download PDF"
         view_pdf: "Open PDF"
         regenerate_pdf: "Regenerate PDF"
-        regenerate_note: "Regenerating runs the AI again and uses one credit."
+        regenerate_note: "Regenerating runs the AI again, like a new job-based CV: a free use, or %{count} credits once those run out."
         pdf_title: "Your generated CV"
         pdf_fallback: "Your browser can't show PDFs here."
         pdf_fallback_link: "Download the PDF instead"

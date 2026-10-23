@@ -180,7 +180,7 @@ class Api::TranslationsControllerTest < ActionDispatch::IntegrationTest
     credits = json_response["credits"]
     assert credits["enabled"]
     assert_equal Billing::SIGNUP_BONUS, credits["balance"]
-    assert_equal 1, credits["cost"]
+    assert_equal 1, credits["summary_translation"]["cost"]
     assert credits["summary_translation"]["will_use_credit"]
     assert credits["jobs_translation"]["free_available"]
     assert_equal credits_path, json_response["upgrade_url"]

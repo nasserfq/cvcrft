@@ -3,5 +3,6 @@ enforce_privacy: false
 dependencies:
   - "."
   - packs/accounts
+  - packs/billing
   - packs/imports
   - packs/resume_builder

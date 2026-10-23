@@ -7,7 +7,7 @@ class Api::TranslationsController < ApplicationController
 
   def translate_professional_summary
     begin
-      # Free allowance first, then 1 credit each while billing is on
+      # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
       remaining = usage_limits.remaining_summary_translations
       return render_translation_limit(:summary_translation) unless Billing::UsageGate.available?(current_user, :summary_translation)
 
@@ -55,7 +55,7 @@ class Api::TranslationsController < ApplicationController
         status: "queued",
         remaining_summary: projected_remaining(remaining),
         unlimited: usage_limits.unlimited?,
-        **charge_json(charge),
+        **charge_json(charge, :summary_translation),
         message: "Translation job has been queued. Please poll for status."
       }
     rescue => e
@@ -68,7 +68,7 @@ class Api::TranslationsController < ApplicationController
 
   def translate_job_descriptions
     begin
-      # Free allowance first, then 1 credit each while billing is on
+      # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
       remaining = usage_limits.remaining_jobs_translations
       return render_translation_limit(:jobs_translation) unless Billing::UsageGate.available?(current_user, :jobs_translation)
 
@@ -132,7 +132,7 @@ class Api::TranslationsController < ApplicationController
         job_count: valid_jobs.size,
         remaining_jobs: projected_remaining(remaining),
         unlimited: usage_limits.unlimited?,
-        **charge_json(charge),
+        **charge_json(charge, :jobs_translation),
         message: "Translation job has been queued for #{valid_jobs.size} job descriptions."
       }
     rescue => e
@@ -425,10 +425,10 @@ class Api::TranslationsController < ApplicationController
     }, status: :too_many_requests
   end
 
-  def charge_json(charge)
+  def charge_json(charge, kind)
     return { charged: "free" } unless charge == :credit
 
-    { charged: "credit", credits_spent: Billing::UsageGate::CREDIT_COST, credit_balance: current_user.credit_balance }
+    { charged: "credit", credits_spent: Billing::UsageGate.cost(kind), credit_balance: current_user.credit_balance }
   end
 
   def projected_remaining(current_remaining)

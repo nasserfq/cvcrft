@@ -101,6 +101,16 @@ class Billing::UsageGateTest < ActiveSupport::TestCase
     assert CreditLedgerEntry.exists?(reason: "overage_document_ai")
   end
 
+  test "a job-based CV costs more credits than a translation" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_columns(job_based_generations_count: UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+
+    Billing::UsageGate.allow!(@user, :job_based_generation, key: "gen-cost")
+
+    assert_equal(-Billing::UsageGate.cost(:job_based_generation), CreditLedgerEntry.find_by!(reason: "overage_job_based_generation").amount)
+    assert_operator Billing::UsageGate.cost(:job_based_generation), :>, Billing::UsageGate.cost(:summary_translation)
+  end
+
   test "rejects unknown kinds and blank keys" do
     assert_raises(KeyError) { Billing::UsageGate.allow!(@user, :nope, key: "k") }
     assert_raises(ArgumentError) { Billing::UsageGate.allow!(@user, :summary_translation, key: "") }
