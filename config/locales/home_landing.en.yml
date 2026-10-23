@@ -25,7 +25,7 @@ en:
         builder: "CV builder and PDF downloads"
         translations: "AI translations (professional summary and work experience)"
         job: "CVs tailored to a job"
-        import: "CV uploads, LinkedIn imports and CV analyses (shared)"
+        import: "CV analyses, CV uploads and LinkedIn imports (shared)"
         coach: "AI coach messages"
       free_name: "Free"
       free_price: "0 SAR"
