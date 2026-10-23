@@ -15,6 +15,12 @@ require "sidekiq/testing"
 Sidekiq::Testing.fake!
 require "mocha/minitest"
 
+# Build Vite assets once, before parallelize forks the workers. With
+# autoBuild each worker builds on its first page render, and a worker that
+# reads the manifest while another's build is rewriting public/vite-test
+# sees it empty and fails with "Vite Ruby can't find ... in the manifests".
+ViteRuby.commands.build
+
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
