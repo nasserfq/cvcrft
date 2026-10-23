@@ -2,9 +2,6 @@ class Api::TranslationsController < ApplicationController
   include CreditsUpsell
   before_action :authenticate_user!
 
-  # Skip CSRF protection for API endpoints
-  skip_before_action :verify_authenticity_token
-
   def translate_professional_summary
     begin
       # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
