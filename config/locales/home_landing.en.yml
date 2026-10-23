@@ -30,7 +30,7 @@ en:
       free_name: "Free"
       free_price: "0 SAR"
       free_cta: "Start free"
-      footnote: "Paid credits are added on top of the free uses, and you can mix them across features. New accounts also get %{bonus} free credits."
+      footnote: "Paid credits can be mixed across features. New accounts also get %{bonus} free credits."
       unlimited: "Unlimited"
       pack_name: "%{credits} credits"
       price: "%{price} SAR"

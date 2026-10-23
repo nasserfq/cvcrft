@@ -358,7 +358,7 @@
                       <th scope="row" class="hidden sm:table-cell text-start font-light py-3.5 pe-3" style="color: rgba(238,243,238,0.85)"><%= t("home_landing.pricing.free_uses.#{key}") %></th>
                       <td class="text-end sr-mono font-semibold text-sm sm:text-[15px] pt-1.5 pb-3 sm:py-3.5 ps-3 sm:ps-6 whitespace-nowrap"><%= free %></td>
                       <% Billing::PACKS.each_value do |pack| %>
-                        <td class="text-end sr-mono font-semibold text-sm sm:text-[15px] pt-1.5 pb-3 sm:py-3.5 ps-3 sm:ps-6 whitespace-nowrap" style="color: #d6b877"><%= kind ? "+#{pack[:credits] / Billing::UsageGate.cost(kind)}" : free %></td>
+                        <td class="text-end sr-mono font-semibold text-sm sm:text-[15px] pt-1.5 pb-3 sm:py-3.5 ps-3 sm:ps-6 whitespace-nowrap" style="color: #d6b877"><%= kind ? pack[:credits] / Billing::UsageGate.cost(kind) : free %></td>
                       <% end %>
                     </tr>
                   <% end %>
