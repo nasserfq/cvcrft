@@ -27,3 +27,8 @@ Never pollute the root context window with raw search logs, massive diffs, or ex
 - Postgres: if the `postgres` MCP server is connected, use it only against the local development database (`cvcraft_development`), read-only. Never point it at production.
 - Skills: `unlazy` is in `.claude/skills/unlazy/`. Use it for long or multi-part tasks.
 - Checks CI runs: `bin/rubocop`, `bin/brakeman --no-pager`, `bin/importmap audit`, `bin/rails db:test:prepare test test:system`.
+
+## Product and design rules
+
+- Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout.
+- Make the best decision that will elevate all three: the user experience (UX), developer experience (DX), and agent experience (AX) always, without breaking anything.
