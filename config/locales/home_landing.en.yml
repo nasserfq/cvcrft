@@ -23,7 +23,7 @@ en:
       title: "Pricing"
       free_uses:
         builder: "CV builder and PDF downloads"
-        translations: "AI translations"
+        translations: "AI translations (professional summary and work experience)"
         job: "CVs tailored to a job"
         import: "CV uploads, LinkedIn imports and CV analyses (shared)"
         coach: "AI coach messages"
