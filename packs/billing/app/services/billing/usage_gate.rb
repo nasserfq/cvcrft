@@ -15,7 +15,7 @@ module Billing
       jobs_translation: 1,
       document_ai: 2,
       job_based_generation: 3,
-      coach_message: 2
+      coach_message: 1
     }.freeze
 
     REASONS = {
