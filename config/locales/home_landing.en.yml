@@ -30,7 +30,7 @@ en:
         job: "CVs tailored to a job"
         import: "CV uploads, LinkedIn imports and CV analyses, combined"
         coach: "AI coach messages"
-        credits: "Welcome credits"
+        credits: "Extra credits for any AI tool"
       unlimited: "Unlimited"
       free_cta: "Start free"
       pack_name: "%{credits} credits"
