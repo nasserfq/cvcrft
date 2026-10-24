@@ -55,6 +55,9 @@ env:
     # When Jev judges a reply not good enough, it is redone once on this.
     AI_STRONG_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
     ADMIN_USERNAME: admin
+    # Puma processes, one per core. Raise it when the server has spare cores
+    # and RAM.
+    WEB_CONCURRENCY: "2"
     # Payments (packs/billing): only these emails see /credits until
     # BILLING_ENABLED is set to "true".
     BILLING_TESTERS: non1993@protonmail.com
@@ -117,6 +120,11 @@ accessories:
 
 asset_path: /rails/public/assets
 
+# Build where `kamal deploy` runs (the GitHub Actions runner), never on the
+# live server, so a deploy doesn't eat the CPU real users need. The registry
+# cache keeps builds on fresh runners fast.
 builder:
   arch: amd64
-  remote: ssh://root@159.195.9.248
+  cache:
+    type: registry
+    options: mode=max
