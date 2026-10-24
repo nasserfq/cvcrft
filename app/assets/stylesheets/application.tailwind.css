@@ -8,15 +8,15 @@
 
   Source: the "سيرة — Glass Redesign" canvas (Main + Logo artboards). Deep
   forest ground, Saudi green primary, sadu gold accent, frosted glass
-  panels, Readex Pro for Arabic and Latin alike.
+  panels, Bricolage Grotesque for Latin, Readex Pro for Arabic.
 
   Every pre-existing token name (primary, action, canvas, darkBase, darkCard,
   borderLight, …) is kept, so the ~1,900 utility usages across the views pick
   up the new look without being edited. Only the values changed.
 */
 @theme {
-  --font-sans: "Readex Pro", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Readex Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Bricolage Grotesque", "Readex Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Readex Pro", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   /* Brand — Saudi green. */
