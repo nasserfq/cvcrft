@@ -8,7 +8,7 @@ class HomeController < ApplicationController
     end
 
     # User count for social proof
-    @users_count = User.count
+    @users_count = Rails.cache.fetch("home/users_count", expires_in: 10.minutes) { User.count }
 
     # Load recent CV generations and resumes for logged-in users
     if user_signed_in?
