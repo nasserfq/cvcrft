@@ -14,7 +14,7 @@ class SeeraEmail
   LOGO_URL = "#{SITE_URL}/email-logo.png".freeze
 
   # Inline styles shared by the bodies (email clients drop most <style> rules).
-  FONT = "'Readex Pro', 'Segoe UI', Tahoma, Arial, sans-serif".freeze
+  FONT = "'Bricolage Grotesque', 'Readex Pro', 'Segoe UI', Tahoma, Arial, sans-serif".freeze
   STYLES = {
     h1: "margin:0 0 12px;font-family:#{FONT};font-size:24px;line-height:1.35;font-weight:600;color:#eef3ee;",
     p: "margin:0 0 16px;font-family:#{FONT};font-size:16px;line-height:1.75;color:rgba(238,243,238,0.82);",
