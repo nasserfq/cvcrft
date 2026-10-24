@@ -380,7 +380,6 @@ html.dark body {
   font-feature-settings: "ss01", "ss02";
   -webkit-font-smoothing: antialiased;
 }
-iconify-icon { display: inline-block; vertical-align: middle; }
 #mobile-menu { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
 
 /* Light-only surfaces with no dark variant become glass. */

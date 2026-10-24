@@ -46,7 +46,6 @@
   </script>
   
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -71,7 +70,7 @@
       <!-- Hero -->
       <div class="text-center mb-16">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-          <iconify-icon icon="solar:document-text-bold" width="16"></iconify-icon>
+          <%= seera_icon "solar:document-text-bold", width: 16 %>
           <%= I18n.locale == :ar ? '+20 قالب احترافي' : '+20 Professional Templates' %>
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-4">
@@ -95,7 +94,7 @@
         <section class="mb-12">
           <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
             <span class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-              <iconify-icon icon="solar:briefcase-bold" class="text-primary" width="20"></iconify-icon>
+              <%= seera_icon "solar:case-bold", width: 20, class: "text-primary" %>
             </span>
             <%= I18n.locale == :ar ? category['name_ar'] : category['name_en'] %>
           </h2>
@@ -106,9 +105,9 @@
                  class="group p-5 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 hover:border-primary/50 hover:shadow-lg transition-all">
                 <div class="flex items-start justify-between mb-3">
                   <div class="w-12 h-12 bg-gradient-to-br from-primary/20 to-action/20 rounded-xl flex items-center justify-center">
-                    <iconify-icon icon="solar:user-id-bold" class="text-primary" width="24"></iconify-icon>
+                    <%= seera_icon "solar:user-id-bold", width: 24, class: "text-primary" %>
                   </div>
-                  <iconify-icon icon="solar:arrow-left-bold" class="text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" width="20"></iconify-icon>
+                  <%= seera_icon "solar:arrow-left-bold", width: 20, class: "text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" %>
                 </div>
                 <h3 class="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
                   <%= I18n.locale == :ar ? job['title_ar'] : job['title_en'] %>
@@ -138,7 +137,7 @@
             'Use our AI-powered tool to create a professional CV in minutes.' %>
         </p>
         <a href="<%= new_resume_path %>" class="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25">
-          <iconify-icon icon="solar:magic-stick-3-bold" width="20"></iconify-icon>
+          <%= seera_icon "solar:magic-stick-3-bold", width: 20 %>
           <%= I18n.locale == :ar ? 'ابدأ الآن مجاناً' : 'Start Free Now' %>
         </a>
       </div>

@@ -85,7 +85,6 @@
   </script>
   
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -106,11 +105,11 @@
       <nav class="mb-8" aria-label="Breadcrumb">
         <ol class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
           <li><a href="/" class="hover:text-primary"><%= I18n.locale == :ar ? 'الرئيسية' : 'Home' %></a></li>
-          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li><%= seera_icon "solar:alt-arrow-left-linear", width: 16 %></li>
           <li><a href="/cv-templates" class="hover:text-primary"><%= I18n.locale == :ar ? 'قوالب السيرة الذاتية' : 'CV Templates' %></a></li>
-          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li><%= seera_icon "solar:alt-arrow-left-linear", width: 16 %></li>
           <li><a href="/jobs/<%= @city['slug'] %>" class="hover:text-primary"><%= I18n.locale == :ar ? @city['name_ar'] : @city['name_en'] %></a></li>
-          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li><%= seera_icon "solar:alt-arrow-left-linear", width: 16 %></li>
           <li class="text-gray-900 dark:text-white font-medium"><%= I18n.locale == :ar ? @job['title_ar'] : @job['title_en'] %></li>
         </ol>
       </nav>
@@ -119,14 +118,14 @@
       <header class="mb-12">
         <div class="flex items-center gap-3 mb-4">
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-action/10 text-action rounded-full text-sm font-medium">
-            <iconify-icon icon="solar:map-point-bold" width="16"></iconify-icon>
+            <%= seera_icon "solar:map-point-bold", width: 16 %>
             <%= I18n.locale == :ar ? @city['name_ar'] : @city['name_en'] %>, <%= I18n.locale == :ar ? @city['country_ar'] : @city['country_en'] %>
           </span>
         </div>
         
         <div class="flex items-center gap-4 mb-6">
           <div class="w-16 h-16 bg-gradient-to-br from-primary to-action rounded-2xl flex items-center justify-center shadow-lg shadow-primary/25">
-            <iconify-icon icon="solar:user-id-bold" class="text-white" width="32"></iconify-icon>
+            <%= seera_icon "solar:user-id-bold", width: 32, class: "text-white" %>
           </div>
           <div>
             <% category = @categories.find { |c| c['slug'] == @job['category'] } %>
@@ -151,7 +150,7 @@
       <!-- Location-specific Tips -->
       <section class="mb-12 p-6 bg-gradient-to-br from-action/5 to-primary/5 rounded-2xl border border-action/20">
         <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-          <iconify-icon icon="solar:map-point-wave-bold" class="text-action" width="24"></iconify-icon>
+          <%= seera_icon "solar:map-point-wave-bold", width: 24, class: "text-action" %>
           <%= I18n.locale == :ar ? 
             "نصائح للتوظيف في #{@city['name_ar']}" : 
             "Job Tips for #{@city['name_en']}" %>
@@ -159,28 +158,28 @@
         <ul class="space-y-3 text-gray-600 dark:text-gray-400">
           <% if I18n.locale == :ar %>
             <li class="flex items-start gap-2">
-              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <%= seera_icon "solar:check-circle-bold", width: 18, class: "text-action mt-1" %>
               <span>تأكد من أن سيرتك الذاتية متوافقة مع متطلبات سوق العمل في <%= @city['name_ar'] %></span>
             </li>
             <li class="flex items-start gap-2">
-              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <%= seera_icon "solar:check-circle-bold", width: 18, class: "text-action mt-1" %>
               <span>أضف خبراتك المحلية والشهادات المعترف بها في <%= @city['country_ar'] %></span>
             </li>
             <li class="flex items-start gap-2">
-              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <%= seera_icon "solar:check-circle-bold", width: 18, class: "text-action mt-1" %>
               <span>استخدم الكلمات المفتاحية الشائعة في إعلانات الوظائف المحلية</span>
             </li>
           <% else %>
             <li class="flex items-start gap-2">
-              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <%= seera_icon "solar:check-circle-bold", width: 18, class: "text-action mt-1" %>
               <span>Ensure your CV meets <%= @city['name_en'] %> job market requirements</span>
             </li>
             <li class="flex items-start gap-2">
-              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <%= seera_icon "solar:check-circle-bold", width: 18, class: "text-action mt-1" %>
               <span>Include local experience and certifications recognized in <%= @city['country_en'] %></span>
             </li>
             <li class="flex items-start gap-2">
-              <iconify-icon icon="solar:check-circle-bold" class="text-action mt-1" width="18"></iconify-icon>
+              <%= seera_icon "solar:check-circle-bold", width: 18, class: "text-action mt-1" %>
               <span>Use keywords common in local job postings</span>
             </li>
           <% end %>
@@ -190,7 +189,7 @@
       <!-- Skills -->
       <section class="mb-12 p-6 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10">
         <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-          <iconify-icon icon="solar:star-bold" class="text-primary" width="24"></iconify-icon>
+          <%= seera_icon "solar:star-bold", width: 24, class: "text-primary" %>
           <%= I18n.locale == :ar ? 'المهارات المطلوبة' : 'Required Skills' %>
         </h2>
         <div class="flex flex-wrap gap-2">
@@ -246,7 +245,7 @@
             "Use our AI-powered tool to create a CV optimized for the #{@city['name_en']} market." %>
         </p>
         <a href="<%= new_resume_path %>" class="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25 text-lg">
-          <iconify-icon icon="solar:magic-stick-3-bold" width="24"></iconify-icon>
+          <%= seera_icon "solar:magic-stick-3-bold", width: 24 %>
           <%= I18n.locale == :ar ? 'ابدأ الآن مجاناً' : 'Start Free Now' %>
         </a>
       </div>
@@ -255,7 +254,7 @@
       <% if @other_cities&.any? %>
         <section class="mb-12">
           <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-            <iconify-icon icon="solar:map-bold" class="text-primary" width="24"></iconify-icon>
+            <%= seera_icon "solar:map-bold", width: 24, class: "text-primary" %>
             <%= I18n.locale == :ar ? 
               "#{@job['title_ar']} في مدن أخرى" : 
               "#{@job['title_en']} in Other Cities" %>
@@ -264,7 +263,7 @@
             <% @other_cities.each do |city| %>
               <a href="/cv-templates/<%= city['slug'] %>/<%= @job['slug'] %>" 
                  class="group p-4 bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 hover:border-primary/50 transition-all text-center">
-                <iconify-icon icon="solar:map-point-bold" class="text-action mb-2" width="24"></iconify-icon>
+                <%= seera_icon "solar:map-point-bold", width: 24, class: "text-action mb-2" %>
                 <p class="font-medium group-hover:text-primary transition-colors">
                   <%= I18n.locale == :ar ? city['name_ar'] : city['name_en'] %>
                 </p>
@@ -279,7 +278,7 @@
       <% if @related_jobs&.any? %>
         <section>
           <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-            <iconify-icon icon="solar:link-bold" class="text-primary" width="24"></iconify-icon>
+            <%= seera_icon "solar:link-bold", width: 24, class: "text-primary" %>
             <%= I18n.locale == :ar ? 
               "وظائف أخرى في #{@city['name_ar']}" : 
               "Other Jobs in #{@city['name_en']}" %>
@@ -295,7 +294,7 @@
                     </h3>
                     <p class="text-sm text-gray-500 mt-1"><%= job['skills'].first(3).join(' • ') %></p>
                   </div>
-                  <iconify-icon icon="solar:arrow-left-bold" class="text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" width="18"></iconify-icon>
+                  <%= seera_icon "solar:arrow-left-bold", width: 18, class: "text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" %>
                 </div>
               </a>
             <% end %>
