@@ -123,6 +123,11 @@
     <%= javascript_importmap_tags %>
     <% if Rails.env.production? && ENV["SENTRY_DSN"].present? %>
       <meta name="sentry-dsn" content="<%= ENV["SENTRY_DSN"] %>">
+      <meta name="sentry-route" content="<%= "#{controller.class.name}##{action_name}" %>">
+      <% if (sentry_release = Sentry.configuration&.release).present? %>
+        <meta name="sentry-release" content="<%= sentry_release %>">
+      <% end %>
+      <%= vite_javascript_tag 'entrypoints/monitoring.js' %>
     <% end %>
     <!--
       If using a TypeScript entrypoint file:

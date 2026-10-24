@@ -11,8 +11,12 @@ Sentry.init do |config|
   # PDPL: never attach user IPs, cookies or user details to events.
   config.send_default_pii = false
 
-  # Performance: trace 20% of requests and jobs.
-  config.traces_sample_rate = ENV.fetch("SENTRY_TRACES_SAMPLE_RATE", "0.2").to_f
+  # Tag every event with the deployed git SHA (Kamal sets KAMAL_VERSION) so
+  # Sentry can compare speed before and after each Deploy.
+  config.release = ENV["SENTRY_RELEASE"].presence || ENV["KAMAL_VERSION"].presence
+
+  # Performance: trace every request and job, minus health checks and load tests.
+  config.traces_sampler = ->(context) { SentryTracesSampler.call(context) }
 
   # Logs: send Rails.logger warnings and errors, plus one structured log per
   # request (path, status, duration).
