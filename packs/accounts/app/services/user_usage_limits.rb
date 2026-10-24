@@ -174,7 +174,7 @@ class UserUsageLimits
 
   def redeemed_coupons
     CouponRedemptionStore.redeemed_codes_for(@user.id).filter_map do |code|
-      CouponRegistry.find(code)
+      CouponRegistry.all.find { |coupon| coupon.code == code }
     end
   end
 

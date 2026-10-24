@@ -1,10 +1,10 @@
-# Promo coupons — edit here and redeploy (no database migration required).
+# Promo coupons: edit here and redeploy.
+# The repo is public, so each key is the code's SHA-256, never the code:
+#   bin/rails runner 'puts CouponRegistry.digest("YOUR-CODE")'
+# Use long random codes; a short one can be guessed from its digest.
 coupons:
-  NAIF2026:
+  # Naif's unlimited access (replaces the leaked NAIF2026)
+  07D78B3FF724E36B3DBB807C0823A326BD7C68AD96AEEB6CA5218C181C76B1A6:
     description: Unlimited access promo
     active: true
     unlimited: true
-    bonus_summary_translations: 0
-    bonus_jobs_translations: 0
-    bonus_cv_builder_generations: 0
-    bonus_job_based_generations: 0
