@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Load-test production at the rates 50M requests/month needs:
+# 20 req/s average, 60 req/s daily peak, 200 req/s rare spike.
+# Usage: bin/load-test [url]   (needs oha: brew install oha)
+set -euo pipefail
+
+url="${1:-https://cvcrft.com/}"
+
+if ! command -v oha >/dev/null; then
+  echo "oha is missing. Install it with: brew install oha" >&2
+  exit 1
+fi
+
+for stage in "20 average" "60 daily-peak" "200 spike"; do
+  read -r rate name <<< "$stage"
+  echo "== ${name}: ${rate} req/s for 30s against ${url}"
+  oha -z 30s -q "$rate" --no-tui "$url"
+done
