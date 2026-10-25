@@ -13,6 +13,7 @@ packs/resume_builder:
     files:
     - test/integration/security_fixes_test.rb
     - test/services/ats_template_pdf_service_test.rb
+    - test/services/pdf_text_test.rb
     - test/services/resume_builder/ats_style_presets_test.rb
   "::AtsStylePresets::AtsPreviewSample":
     violations:
@@ -56,6 +57,7 @@ packs/resume_builder:
     - lib/tasks/ats_previews.rake
     - test/jobs/cv_generator_job_test.rb
     - test/services/ats_template_pdf_service_test.rb
+    - test/services/pdf_text_test.rb
     - test/services/resume_builder/ats_preview_sample_test.rb
     - test/services/resume_builder/ats_style_presets_test.rb
     - test/system/ats_template_preview_test.rb
@@ -74,6 +76,11 @@ packs/resume_builder:
     - privacy
     files:
     - test/models/certification_test.rb
+  "::CvBuilderPdfJob":
+    violations:
+    - privacy
+    files:
+    - test/services/pdf_text_test.rb
   "::Education":
     violations:
     - privacy
@@ -84,6 +91,11 @@ packs/resume_builder:
     - privacy
     files:
     - test/models/language_test.rb
+  "::PdfText":
+    violations:
+    - privacy
+    files:
+    - test/services/pdf_text_test.rb
   "::ProfessionalSummaryText":
     violations:
     - privacy
@@ -104,6 +116,7 @@ packs/resume_builder:
     - test/models/skill_test.rb
     - test/models/work_experience_test.rb
     - test/services/ats_template_pdf_service_test.rb
+    - test/services/pdf_text_test.rb
     - test/services/resume_builder/public_api_test.rb
     - test/services/resume_draft_deduplicator_test.rb
     - test/services/resume_draft_sync_test.rb
@@ -126,6 +139,7 @@ packs/resume_builder:
     files:
     - test/controllers/resumes_controller_test.rb
     - test/services/ats_template_pdf_service_test.rb
+    - test/services/pdf_text_test.rb
   "::Skill":
     violations:
     - privacy
