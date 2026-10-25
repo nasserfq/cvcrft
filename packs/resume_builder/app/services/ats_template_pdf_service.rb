@@ -29,6 +29,7 @@ class AtsTemplatePdfService
     pdf_path = AtsPdfGenerator.unique_pdf_path
 
     Prawn::Document.generate(pdf_path, force_encoding: true, margin: config[:margin] || 36) do |pdf|
+      pdf.extend(PdfText::Document)
       pdf.font "Helvetica", enable_smart_quotes: false do
         layout = style.layout
         public_send(layout[:renderer], pdf, resume, data, config, **layout[:options])

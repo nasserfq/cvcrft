@@ -74,12 +74,13 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "message saves the user's text and queues a turn" do
-    assert_enqueued_with(job: Coach::TurnJob, args: [ @chat.id ], queue: "coach") do
-      post message_coach_chat_url(@chat), params: { content: "I was a cashier" }, as: :json
-    end
+  test "message saves the user's text and queues a turn for that message" do
+    post message_coach_chat_url(@chat), params: { content: "I was a cashier" }, as: :json
+
     assert_response :accepted
-    assert_equal "I was a cashier", @chat.messages.last.content
+    message = @chat.messages.last
+    assert_equal "I was a cashier", message.content
+    assert_enqueued_with(job: Coach::TurnJob, args: [ @chat.id, message.id ], queue: "coach")
   end
 
   test "messages past the free allowance cost credits while billing is on" do

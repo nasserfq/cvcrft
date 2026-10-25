@@ -23,7 +23,9 @@
     "cert_entry_english": "Certification {{n}}: {{field}} — {{message}}",
     "language_entry_english": "Language {{n}}: {{field}} — {{message}}",
     "summary_translate_required": "Press \"Translate and create professional summary\" to turn your summary into English before you continue",
-    "responsibilities_translate_required": "Experience {{n}}: press \"Translate all responsibilities to English\" before you continue"
+    "responsibilities_translate_required": "Experience {{n}}: press \"Translate all responsibilities to English\" before you continue",
+    "experience_start_future": "Start date can't be in the future",
+    "experience_end_before_start": "End date must be after the start date"
   },
   "steps": {
     "personal_info": "Personal Information",
@@ -306,13 +308,15 @@
   },
   "form": {
     "saving": "Saving...",
-    "auto_saved": "Auto-saved",
+    "auto_saved": "Saved",
     "save_error": "Save error",
     "exporting": "Exporting...",
     "create_download": "Create & Download",
     "manual_save": "Manual save",
     "start_editing": "Start editing",
-    "save_export_pdf": "Save & Export PDF"
+    "save_export_pdf": "Save & Export PDF",
+    "save_retrying": "Not saved. Retrying…",
+    "step_load_failed": "Couldn't load this step."
   },
   "step1": {
     "title": "Personal Information & Professional Summary",

@@ -5,7 +5,8 @@ module Coach
     # solid_cable stores every broadcast as a row, so stream in batches.
     FLUSH_EVERY = 0.15
 
-    def perform(chat_id)
+    # message_id is the user message this turn answers; jobs queued before it was passed have none.
+    def perform(chat_id, message_id = nil)
       chat = Coach::Chat.find(chat_id)
       # Extracted here, not in the upload request, so the request never waits on the LLM.
       if chat.path == "import" && chat.draft.blank?
@@ -36,8 +37,10 @@ module Coach
       Sentry.capture_exception(e, tags: { pack: "coach" })
       return unless chat
 
-      # The user paid for a reply they didn't get.
-      turn = chat.messages.where(role: "user").order(:id).last
+      # The user paid for a reply they didn't get. Refund the message this job
+      # answers, not the newest one: overlapping turns each refund their own.
+      users = chat.messages.where(role: "user")
+      turn = message_id ? users.find_by(id: message_id) : users.order(:id).last
       Coach.refund!(chat.user, turn) if turn
       Coach.broadcast(chat, type: "error")
     end

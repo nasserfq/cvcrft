@@ -69,6 +69,25 @@ class Coach::TurnJobTest < ActiveJob::TestCase
     assert CreditLedgerEntry.exists?(reason: "refund", idempotency_key: "refund:#{Coach.charge_key(turn)}")
   end
 
+  test "overlapping failed turns each refund their own message, once" do
+    user = @chat.user
+    first = @chat.messages.last
+    second = @chat.messages.create!(role: "user", content: "Are you there?")
+    [ first, second ].each { |m| Billing::Credits.spend!(user, 1, reason: "coach_message", key: Coach.charge_key(m)) }
+    Coach::Agent.any_instance.stubs(:reply).raises(RuntimeError)
+    Sentry.stubs(:capture_exception)
+
+    # Both turns fail after both messages were saved; a retried job must not refund twice.
+    Coach::TurnJob.perform_now(@chat.id, first.id)
+    Coach::TurnJob.perform_now(@chat.id, second.id)
+    Coach::TurnJob.perform_now(@chat.id, second.id)
+
+    assert_equal Billing::SIGNUP_BONUS, Billing::Credits.balance(user)
+    [ first, second ].each do |m|
+      assert_equal 1, CreditLedgerEntry.where(reason: "refund", idempotency_key: "refund:#{Coach.charge_key(m)}").count
+    end
+  end
+
   test "an import chat with an empty draft is extracted first and the draft broadcast" do
     chat = Coach::Chat.create!(user: users(:one), path: "import")
     chat.messages.create!(role: "user", content: "Sara Ali, cashier at Panda")

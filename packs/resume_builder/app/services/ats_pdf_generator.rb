@@ -47,6 +47,7 @@ class AtsPdfGenerator
 
     # Set strict encoding to prevent issues with special characters
     Prawn::Document.generate(pdf_path, force_encoding: true, margin: template[:margin]) do |pdf|
+      pdf.extend(PdfText::Document)
       # Use core PDF font with encoding set
       pdf.font "Helvetica", enable_smart_quotes: false do
         # Header Section

@@ -257,7 +257,7 @@ class Api::TranslationsController < ApplicationController
             disposition: "attachment"
         else
           Rails.logger.error "PDF generation failed: #{result[:message]}"
-          return render json: { error: "PDF generation failed", message: result[:message] }, status: :internal_server_error
+          return render json: { error: "PDF generation failed" }, status: :internal_server_error
         end
       end
 
@@ -325,7 +325,7 @@ class Api::TranslationsController < ApplicationController
               disposition: "attachment"
           else
             Rails.logger.error "PDF generation failed: #{result[:message]}"
-            return render json: { error: "PDF generation failed", message: result[:message] }, status: :internal_server_error
+            return render json: { error: "PDF generation failed" }, status: :internal_server_error
           end
         else
           Rails.logger.error "Resume save failed: #{@resume.errors.full_messages}"
@@ -336,9 +336,11 @@ class Api::TranslationsController < ApplicationController
       # If no valid parameters are provided, return an error
       Rails.logger.error "Invalid parameters for PDF export"
       render json: { error: "Invalid parameters" }, status: :bad_request
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { error: e.record.errors.full_messages.to_sentence, errors: e.record.errors.full_messages }, status: :unprocessable_entity
     rescue => e
-      Rails.logger.error "Error with PDF export: #{e.message}"
-      render json: { error: e.message }, status: :internal_server_error
+      Rails.logger.error "Error with PDF export: #{e.class} - #{e.message}"
+      render json: { error: "PDF generation failed" }, status: :internal_server_error
     end
   end
 

@@ -153,6 +153,35 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "application/pdf", response.media_type
   end
 
+  test "generate_pdf preview answers 422 with the field error for a future work start date" do
+    @resume.update!(
+      draft_data: {
+        "complete_name" => "Preview Name",
+        "email" => @resume.email,
+        "work_experience" => [ { "job_title" => "Engineer", "company" => "Acme", "start_date" => "2099-01" } ].to_json
+      }
+    )
+
+    get generate_pdf_resume_url(@resume), params: { preview: "true" }
+
+    assert_response :unprocessable_entity
+    assert_equal "Start date cannot be in the future", response.body
+  end
+
+  test "generate_pdf preview answers 422 for an end date before the start date" do
+    @resume.update!(
+      draft_data: {
+        "email" => @resume.email,
+        "work_experience" => [ { "job_title" => "Engineer", "company" => "Acme", "start_date" => "2022-01", "end_date" => "2019-03" } ].to_json
+      }
+    )
+
+    get generate_pdf_resume_url(@resume, format: :json), params: { preview: "true" }
+
+    assert_response :unprocessable_entity
+    assert_equal [ "End date must be after start date" ], response.parsed_body["errors"]
+  end
+
   test "generate_pdf falls back to default template for invalid key" do
     # The default is the first entry in AtsStyleCatalog, i.e. original_classic.
     ResumePdfService.expects(:generate_pdf).with(@resume, has_entry(template: "original_classic")).returns("%PDF-1.4")

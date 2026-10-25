@@ -222,6 +222,14 @@ class ResumesController < ApplicationController
                   type: "application/pdf",
                   disposition: disposition
       end
+    rescue ActiveRecord::RecordInvalid => e
+      # Draft entries the models reject (e.g. a start date in the future) are a
+      # user error: say which field, not a 500.
+      message = e.record.errors.full_messages.to_sentence
+      respond_to do |format|
+        format.json { render json: { error: message, errors: e.record.errors.full_messages }, status: :unprocessable_entity }
+        format.any  { render plain: message, status: :unprocessable_entity, content_type: "text/plain" }
+      end
     rescue => e
       Rails.logger.error "Failed to generate/send resume PDF: #{e.class} - #{e.message}"
       Rails.logger.error e.backtrace.join("\n")

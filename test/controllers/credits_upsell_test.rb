@@ -100,12 +100,60 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
     @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
     generation = @user.cv_generations.create!(resume: @resume, status: "failed", job_description: "Rails engineer",
                                               ai_model: "test", metadata: { source: "job_description" })
-    CvGenerationService.any_instance.stubs(:retry_cv_generation).returns({ message: "queued" })
 
-    post retry_cv_generation_url(generation)
+    assert_difference -> { CvGeneratorJob.jobs.size }, 1 do
+      post retry_cv_generation_url(generation)
+    end
 
     assert_redirected_to cv_generation_path(generation)
     assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_job_based_generation").count
+    assert_equal "processing", generation.reload.status
+  end
+
+  test "a second retry of the same failed generation charges nothing and queues nothing" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    generation = @user.cv_generations.create!(resume: @resume, status: "failed", job_description: "Rails engineer",
+                                              ai_model: "test", metadata: { source: "job_description" })
+
+    assert_difference -> { CvGeneratorJob.jobs.size }, 1 do
+      2.times { post retry_cv_generation_url(generation) }
+    end
+
+    assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_job_based_generation").count
+    assert_equal Billing::SIGNUP_BONUS - Billing::UsageGate.cost(:job_based_generation), Billing::Credits.balance(@user)
+  end
+
+  test "a retry that can't be paid for leaves the generation failed" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    drain_credits
+    generation = @user.cv_generations.create!(resume: @resume, status: "failed", job_description: "Rails engineer",
+                                              ai_model: "test", metadata: { source: "job_description" })
+
+    assert_no_difference -> { CvGeneratorJob.jobs.size } do
+      post retry_cv_generation_url(generation)
+    end
+
+    assert_redirected_to cv_generation_path(generation)
+    assert_equal "failed", generation.reload.status
+  end
+
+  { "short" => "Need dev", "padded short" => "   Need dev   ", "long" => "x" * 5001 }.each do |name, job_description|
+    test "a #{name} job description is refused before anything is charged" do
+      ENV["BILLING_ENABLED"] = "true"
+      @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS - 1)
+
+      assert_no_difference [ -> { @user.reload.job_based_generations_count }, -> { CreditLedgerEntry.where(user: @user).count },
+                             "CvGeneration.count", -> { CvGeneratorJob.jobs.size } ] do
+        post cv_generations_url(format: :json, locale: "en"), params: {
+          cv_generation: { job_description: job_description, resume_id: @resume.id }
+        }
+      end
+
+      assert_response :unprocessable_entity
+      assert_match(/Job description is too (short|long)/, response.parsed_body["error"])
+    end
   end
 
   test "cv import past the free allowance uses credits" do

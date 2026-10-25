@@ -23,7 +23,9 @@
     "cert_entry_english": "الشهادة {{n}}: {{field}} — {{message}}",
     "language_entry_english": "اللغة {{n}}: {{field}} — {{message}}",
     "summary_translate_required": "اضغط «ترجم وأنشئ ملخص مهني» لتحويل الملخص إلى الإنجليزية قبل المتابعة",
-    "responsibilities_translate_required": "الخبرة {{n}}: اضغط «ترجم جميع المسؤوليات إلى الإنجليزية» قبل المتابعة"
+    "responsibilities_translate_required": "الخبرة {{n}}: اضغط «ترجم جميع المسؤوليات إلى الإنجليزية» قبل المتابعة",
+    "experience_start_future": "لا يمكن أن يكون تاريخ البدء في المستقبل",
+    "experience_end_before_start": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء"
   },
   "steps": {
     "personal_info": "المعلومات الشخصية",
@@ -306,13 +308,15 @@
   },
   "form": {
     "saving": "جاري الحفظ...",
-    "auto_saved": "يتم الحفظ تلقائياً",
+    "auto_saved": "تم الحفظ",
     "save_error": "خطأ في الحفظ",
     "exporting": "جاري التصدير...",
     "create_download": "إنشاء وتحميل",
     "manual_save": "حفظ يدوي",
     "start_editing": "ابدأ التحرير",
-    "save_export_pdf": "حفظ وتصدير PDF"
+    "save_export_pdf": "حفظ وتصدير PDF",
+    "save_retrying": "لم يُحفظ. نعيد المحاولة…",
+    "step_load_failed": "تعذّر تحميل هذه الخطوة."
   },
   "resume": {
     "new_title": "إنشاء سيرة ذاتية جديدة",
