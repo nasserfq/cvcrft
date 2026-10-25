@@ -94,22 +94,35 @@ class CvGenerationService
     end
   end
 
-  # Retry failed CV generation
+  # Retry failed CV generation. The failed -> processing flip is one
+  # conditional UPDATE, so of two parallel retries only one gets past it.
+  # The block, if given, runs after the flip and before the job is queued
+  # (the controller charges there); when it returns false the generation goes
+  # back to failed and nothing is queued.
   def retry_cv_generation(generation_id)
     generation = CvGeneration.where(user_id: @user_id).find(generation_id)
 
-    return { error: "CV generation is not in failed status" } unless generation.status == "failed"
+    claimed = CvGeneration.where(id: generation.id, status: "failed")
+                          .update_all(status: "processing", updated_at: Time.current) == 1
+    return { error: "CV generation is not in failed status" } unless claimed
 
-    # Reset status and retry
-    generation.update!(status: "processing")
+    begin
+      if block_given? && !yield(generation)
+        reset_to_failed(generation)
+        return { error: "CV generation was not retried", blocked: true }
+      end
 
-    # Re-enqueue the job
-    CvGeneratorJob.perform_async(
-      generation.job_description,
-      generation.user_id,
-      generation.resume_id,
-      generation.metadata
-    )
+      generation.reload
+      CvGeneratorJob.perform_async(
+        generation.job_description,
+        generation.user_id,
+        generation.resume_id,
+        generation.metadata
+      )
+    rescue
+      reset_to_failed(generation)
+      raise
+    end
 
     {
       status: "retrying",
@@ -147,5 +160,11 @@ class CvGenerationService
       cancelled: generations.where(status: "cancelled").count,
       total_tokens_used: generations.sum(:tokens_used) || 0
     }
+  end
+
+  private
+
+  def reset_to_failed(generation)
+    CvGeneration.where(id: generation.id, status: "processing").update_all(status: "failed", updated_at: Time.current)
   end
 end

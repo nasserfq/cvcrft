@@ -31,7 +31,7 @@ const SectionError = ({ error }) => error ? (
 
 // Field-level error display
 const FieldError = ({ error }) => error ? (
-  <p className="mt-1 text-xs text-red-300">{error}</p>
+  <p className="mt-1 text-xs text-red-300" data-error>{error}</p>
 ) : null;
 
 // Input with error styling helper
@@ -192,9 +192,11 @@ const CombinedStep2 = ({
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <MobileDatePicker value={work.start_date} onChange={(value) => handleWorkExperienceChange(index, "start_date", value)} placeholder={t('experience.start_date')} />
+                    <FieldError error={validationErrors[`work_start_date_${index}`]} />
                   </div>
                   <div className="flex-1">
                     <MobileDatePicker value={work.end_date} onChange={(value) => handleWorkExperienceChange(index, "end_date", value)} disabled={work.is_current} placeholder={t('experience.end_date')} />
+                    <FieldError error={validationErrors[`work_end_date_${index}`]} />
                   </div>
                 </div>
                 <label className="flex items-center gap-2.5 min-h-[44px] cursor-pointer">

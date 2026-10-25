@@ -60,7 +60,7 @@ module Coach
       return head :unprocessable_entity unless charge
       return render json: { error: no_credits_message, **credits_upsell }, status: :payment_required if charge == :blocked
 
-      Coach::TurnJob.perform_later(@chat.id)
+      Coach::TurnJob.perform_later(@chat.id, message.id)
       head :accepted
     end
 
@@ -87,6 +87,7 @@ module Coach
         content = CvPdfImportService.new(params[:pdf_file].path).parse[:text].first(20_000)
       end
 
+      message = nil
       chat = Coach::Chat.transaction do
         Coach::Chat.create!(user: current_user, path: "import", draft:).tap do |c|
           message = c.messages.create!(role: "user", content:)
@@ -95,7 +96,7 @@ module Coach
       end
       return import_failed(no_credits_message, status: :payment_required) unless chat&.persisted?
 
-      Coach::TurnJob.perform_later(chat.id)
+      Coach::TurnJob.perform_later(chat.id, message.id)
       redirect_to coach_chat_path(chat)
     rescue CvPdfImportService::CorruptedFileError, CvPdfImportService::CvPdfParseError
       import_failed(t("coach.import.unreadable"))

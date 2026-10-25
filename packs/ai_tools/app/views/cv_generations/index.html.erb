@@ -140,7 +140,7 @@
                 <%= link_to resume_path(generation.resume_id), class: action_class do %><%= t("#{tk}.view_resume") %><% end %>
               <% end %>
               <% if generation.status == "failed" %>
-                <%= button_to retry_cv_generation_path(generation), method: :post, class: action_class do %><%= svg.call(:retry) %><%= t("#{tk}.retry") %><% end %>
+                <%= button_to retry_cv_generation_path(generation), method: :post, form: { data: { controller: "submit-once", action: "submit->submit-once#disable" } }, class: action_class do %><%= svg.call(:retry) %><%= t("#{tk}.retry") %><% end %>
               <% end %>
               <% if generation.status == "processing" %>
                 <%= button_to cancel_cv_generation_path(generation), method: :post, class: danger_class do %><%= svg.call(:stop) %><%= t("#{tk}.cancel") %><% end %>

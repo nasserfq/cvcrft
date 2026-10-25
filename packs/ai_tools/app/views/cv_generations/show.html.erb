@@ -47,7 +47,7 @@
           <%= t("#{tk}.back") %>
         <% end %>
         <% if @cv_generation.status == "failed" %>
-          <%= button_to retry_cv_generation_path(@cv_generation), method: :post, class: primary_class, style: primary_style do %>
+          <%= button_to retry_cv_generation_path(@cv_generation), method: :post, form: { data: { controller: "submit-once", action: "submit->submit-once#disable" } }, class: primary_class, style: primary_style do %>
             <%= svg.call(:retry) %><%= t("#{tk}.retry") %>
           <% end %>
         <% end %>

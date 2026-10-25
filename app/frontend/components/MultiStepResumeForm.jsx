@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy, memo } from "react";
+import React, { useState, useEffect, useMemo, useRef, Suspense, lazy, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import i18n from "../lib/i18n";
@@ -65,11 +65,96 @@ const TranslationLimitNotice = ({ message, translate, billingEnabled }) => (
 
 // Note: ENGLISH_VALIDATION_MSG is now handled via i18n t('validation.english_only')
 
-// Lazy load step components for better initial load performance
-const CombinedStep1 = lazy(() => import("./cv-builder/CombinedStep1"));
-const CombinedStep2 = lazy(() => import("./cv-builder/CombinedStep2"));
-const CombinedStep3 = lazy(() => import("./cv-builder/CombinedStep3"));
-const ReviewStep = lazy(() => import("./cv-builder/ReviewStep"));
+// Step components are lazy loaded, and all of them are prefetched once the
+// form is idle so a later offline blip on Next does not matter. A chunk can
+// still fail to load, so the lazy components are rebuilt from these loaders on
+// Retry. Browsers remember a failed import() of a URL, so a failed chunk is
+// fetched again under a fresh query string; if one of its own imports failed
+// too, only a page reload clears it (see retryStepLoad).
+const importFresh = (load) =>
+ load().catch((error) => {
+  const url = String(error?.message).match(/https?:\/\/\S+?\.js/)?.[0];
+  if (!url) throw error;
+  return import(/* @vite-ignore */ `${url}?retry=${Date.now()}`);
+ });
+const STEP_LOADERS = {
+ 1: () => import("./cv-builder/CombinedStep1"),
+ 2: () => import("./cv-builder/CombinedStep2"),
+ 3: () => import("./cv-builder/CombinedStep3"),
+ 4: () => import("./cv-builder/ReviewStep"),
+};
+const buildLazySteps = () =>
+ Object.fromEntries(Object.entries(STEP_LOADERS).map(([step, load]) => [step, lazy(() => importFresh(load))]));
+
+// Catches a failed step chunk (or a step render error) without unmounting the
+// form, so everything the user typed stays in the parent's state.
+class StepErrorBoundary extends React.Component {
+ constructor(props) {
+  super(props);
+  this.state = { failed: false };
+ }
+
+ static getDerivedStateFromError() {
+  return { failed: true };
+ }
+
+ componentDidCatch(error) {
+  console.error("Step failed to load:", error);
+ }
+
+ render() {
+  if (!this.state.failed) return this.props.children;
+  return (
+   <div role="alert" data-error className="py-10 flex flex-col items-center gap-4 text-center">
+    <p className="text-sm text-red-300">{t("form.step_load_failed")}</p>
+    <button
+     type="button"
+     onClick={this.props.onRetry}
+     className="sr-btn glass-soft min-h-[44px] px-5 rounded-2xl text-sm font-medium text-mist touch-manipulation"
+    >
+     {t("actions.retry")}
+    </button>
+   </div>
+  );
+ }
+}
+
+// Server rule (WorkExperience): start not after the current month, end after
+// start. Dates are "YYYY-MM", so string comparison orders them.
+const currentMonth = () => {
+ const now = new Date();
+ return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+};
+const isYearMonth = (value) => /^\d{4}-\d{2}/.test(value || "");
+const workDateErrors = (exp) => {
+ const errors = {};
+ if (isYearMonth(exp.start_date) && exp.start_date > currentMonth()) {
+  errors.start = t("validation.experience_start_future");
+ }
+ if (!exp.is_current && isYearMonth(exp.start_date) && isYearMonth(exp.end_date) && exp.end_date <= exp.start_date) {
+  errors.end = t("validation.experience_end_before_start");
+ }
+ return errors;
+};
+
+// The draft fields that save_draft stores (current_step and saved_at aside).
+const draftFields = (data) => ({
+ complete_name: data.complete_name,
+ email: data.email,
+ phone_number: data.phone_number,
+ city: data.city,
+ country: data.country,
+ professional_summary: data.professional_summary,
+ professional_summary_english: englishSummary(data),
+ education: JSON.stringify(data.education),
+ work_experience: JSON.stringify(data.work_experience),
+ skills: JSON.stringify(data.skills),
+ certifications: JSON.stringify(data.certifications),
+ languages: JSON.stringify(data.languages),
+});
+
+const AUTOSAVE_DELAY_MS = 1500;
+const RETRY_DELAYS_MS = [3000, 6000, 12000, 30000];
 
 // Memoized skeleton loading for steps - prevents re-renders
 const StepLoadingSkeleton = memo(() => (
@@ -732,6 +817,12 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
     }
    }
   }
+
+  formData.work_experience.forEach((exp, i) => {
+   const dateErrors = workDateErrors(exp);
+   if (dateErrors.start) errors[`work_start_date_${i}`] = dateErrors.start;
+   if (dateErrors.end) errors[`work_end_date_${i}`] = dateErrors.end;
+  });
   
   return errors;
  };
@@ -1121,16 +1212,31 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
  };
 
  const handleWorkExperienceChange = (index, field, value) => {
+  const current = formData.work_experience[index] || {};
+  // A current job has no end date (the picker is disabled), so drop it.
+  const updated = field === "is_current" && value
+   ? { ...current, is_current: true, end_date: "" }
+   : { ...current, [field]: value };
   setFormData((prev) => ({
    ...prev,
    work_experience: prev.work_experience.map((work, i) =>
-    i === index ? { ...work, [field]: value } : work
+    i === index ? { ...work, ...(field === "is_current" && value ? { is_current: true, end_date: "" } : { [field]: value }) } : work
    ),
   }));
   // Live validation for work experience fields (NOT responsibilities)
   const fieldKey = `work_${field}_${index}`;
   markFieldTouched(fieldKey);
-  if (field === 'job_title') {
+  if (["start_date", "end_date", "is_current"].includes(field)) {
+   const dateErrors = workDateErrors(updated);
+   setValidationErrors((prev) => {
+    const next = { ...prev };
+    delete next[`work_start_date_${index}`];
+    delete next[`work_end_date_${index}`];
+    if (dateErrors.start) next[`work_start_date_${index}`] = dateErrors.start;
+    if (dateErrors.end) next[`work_end_date_${index}`] = dateErrors.end;
+    return next;
+   });
+  } else if (field === 'job_title') {
    validateFieldLive('work_job_title', value, { index });
   } else if (field === 'company') {
    validateFieldLive('work_company', value, { index });
@@ -2217,89 +2323,186 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
   }
  };
 
- const saveDraft = async (stepNumber = currentStep, silent = false) => {
-  if (silent) {
-   setAutoSaveStatus("saving");
-  } else {
-   setIsSavingDraft(true);
-  }
-  try {
-   const draftData = {
-    complete_name: formData.complete_name,
-    email: formData.email,
-    phone_number: formData.phone_number,
-    city: formData.city,
-    country: formData.country,
-    professional_summary: formData.professional_summary,
-    professional_summary_english: englishSummary(formData),
-    education: JSON.stringify(formData.education),
-    work_experience: JSON.stringify(formData.work_experience),
-    skills: JSON.stringify(formData.skills),
-    certifications: JSON.stringify(formData.certifications),
-    languages: JSON.stringify(formData.languages),
-    current_step: stepNumber,
-    saved_at: new Date().toISOString(),
-   };
+ // Draft saving. Every save goes through one queue so two never run at once;
+ // an autosave that is already queued is not queued again, and it reads the
+ // latest form data when it starts, so it acts as the trailing save.
+ const formDataRef = useRef(formData);
+ formDataRef.current = formData;
+ const currentStepRef = useRef(currentStep);
+ currentStepRef.current = currentStep;
+ const resumeIdRef = useRef(resumeId);
+ resumeIdRef.current = resumeId;
+ const saveQueueRef = useRef(Promise.resolve());
+ const autoSaveQueuedRef = useRef(false);
+ const savesInFlightRef = useRef(0);
+ const autoSaveTimerRef = useRef(null);
+ const retryTimerRef = useRef(null);
+ const retryCountRef = useRef(0);
+ // Until the user edits something, form changes (draft hydration, sections
+ // loading) only move the baseline and do not count as unsaved.
+ const userEditedRef = useRef(false);
+ const draftKey = useMemo(() => JSON.stringify(draftFields(formData)), [formData]);
+ const savedDraftKeyRef = useRef(draftKey);
+ const [savedDraftKey, setSavedDraftKey] = useState(draftKey);
+ const hasUnsavedChanges = draftKey !== savedDraftKey;
+ const isDirtyNow = () =>
+  userEditedRef.current &&
+  JSON.stringify(draftFields(formDataRef.current)) !== savedDraftKeyRef.current;
+ // A failed save is retried even when the fields match the last saved ones
+ // (it may have carried only the step change).
+ const lastSaveFailedRef = useRef(false);
+ const needsSave = () => isDirtyNow() || lastSaveFailedRef.current;
 
-   const response = await fetch(`/resumes/${resumeId || "new"}/save_draft`, {
+ const markSaved = (key) => {
+  savedDraftKeyRef.current = key;
+  setSavedDraftKey(key);
+ };
+
+ const runSave = async (stepNumber, { keepalive = false } = {}) => {
+  const fields = draftFields(formDataRef.current);
+  const key = JSON.stringify(fields);
+  const body = new URLSearchParams({
+   ...fields,
+   current_step: stepNumber,
+   saved_at: new Date().toISOString(),
+  });
+  savesInFlightRef.current += 1;
+  setAutoSaveStatus("saving");
+  try {
+   const response = await fetch(`/resumes/${resumeIdRef.current || "new"}/save_draft`, {
     method: "POST",
     headers: {
      "Content-Type": "application/x-www-form-urlencoded",
      "X-CSRF-Token": document
       .querySelector('meta[name="csrf-token"]')
-      .getAttribute("content"),
+      ?.getAttribute("content"),
      Accept: "application/json",
     },
-    body: new URLSearchParams(draftData),
+    body,
+    // keepalive lets a save started as the tab is hidden finish (64 KB cap).
+    keepalive: keepalive && body.toString().length < 60000,
    });
-
-   if (response.ok) {
-    const result = await response.json();
-    if (result.resume_id) {
-     setResumeId(result.resume_id);
-    }
-    if (silent) {
-     setAutoSaveStatus("saved");
-     setLastSavedAt(new Date());
-     // Reset status after 3 seconds
-     setTimeout(() => setAutoSaveStatus("idle"), 3000);
-    } else {
-     alert(translate("draft.saved_success", { step: stepNumber }));
-    }
-    return true;
-   } else {
-    console.error("❌ Failed to save draft");
-    if (silent) {
-     setAutoSaveStatus("error");
-     setTimeout(() => setAutoSaveStatus("idle"), 3000);
-    } else {
-     alert(translate("draft.save_error"));
-    }
-    return false;
+   if (!response.ok) throw new Error(`save_draft ${response.status}`);
+   const result = await response.json();
+   if (result.resume_id) {
+    resumeIdRef.current = result.resume_id;
+    setResumeId(result.resume_id);
    }
+   markSaved(key);
+   lastSaveFailedRef.current = false;
+   retryCountRef.current = 0;
+   clearTimeout(retryTimerRef.current);
+   setLastSavedAt(new Date());
+   setAutoSaveStatus("saved");
+   return true;
   } catch (error) {
-   console.error("❌ Error saving draft:", error);
-   if (silent) {
-    setAutoSaveStatus("error");
-    setTimeout(() => setAutoSaveStatus("idle"), 3000);
-   } else {
-    alert(translate("draft.save_error_detail", { message: error.message }));
-   }
+   console.error("Error saving draft:", error);
+   lastSaveFailedRef.current = true;
+   setAutoSaveStatus("error");
+   scheduleRetry();
    return false;
   } finally {
-   setIsSavingDraft(false);
+   savesInFlightRef.current -= 1;
   }
  };
 
- // Helper function to render save draft button (now a subtle manual backup option)
+ const enqueueSave = (task) => {
+  const result = saveQueueRef.current.then(task);
+  saveQueueRef.current = result.catch(() => {});
+  return result;
+ };
+
+ // Save now with the latest data (Next, Previous, preview, Manual save).
+ const saveDraft = async (stepNumber = currentStepRef.current, silent = false) => {
+  clearTimeout(autoSaveTimerRef.current);
+  if (!silent) setIsSavingDraft(true);
+  try {
+   return await enqueueSave(() => runSave(stepNumber));
+  } finally {
+   if (!silent) setIsSavingDraft(false);
+  }
+ };
+
+ const autoSave = (options = {}) => {
+  clearTimeout(autoSaveTimerRef.current);
+  if (autoSaveQueuedRef.current) return;
+  autoSaveQueuedRef.current = true;
+  enqueueSave(() => {
+   autoSaveQueuedRef.current = false;
+   if (!needsSave()) return true;
+   return runSave(currentStepRef.current, options);
+  });
+ };
+ const autoSaveRef = useRef(autoSave);
+ autoSaveRef.current = autoSave;
+
+ function scheduleRetry() {
+  clearTimeout(retryTimerRef.current);
+  const delay = RETRY_DELAYS_MS[Math.min(retryCountRef.current, RETRY_DELAYS_MS.length - 1)];
+  retryCountRef.current += 1;
+  retryTimerRef.current = setTimeout(() => autoSaveRef.current(), delay);
+ }
+
+ // Debounced autosave after the last change.
+ useEffect(() => {
+  if (!userEditedRef.current) {
+   markSaved(draftKey);
+   return;
+  }
+  if (draftKey === savedDraftKeyRef.current) return;
+  clearTimeout(autoSaveTimerRef.current);
+  autoSaveTimerRef.current = setTimeout(() => autoSaveRef.current(), AUTOSAVE_DELAY_MS);
+ }, [draftKey]);
+
+ // Save right away when the tab is hidden or the connection comes back, and
+ // warn before leaving while changes are unsaved or a save is running.
+ useEffect(() => {
+  const flushIfDirty = (options) => {
+   if (needsSave()) autoSaveRef.current(options);
+  };
+  const onVisibilityChange = () => {
+   if (document.visibilityState === "hidden") flushIfDirty({ keepalive: true });
+  };
+  const onOnline = () => flushIfDirty();
+  const onBeforeUnload = (event) => {
+   if (!isDirtyNow() && savesInFlightRef.current === 0) return;
+   flushIfDirty({ keepalive: true });
+   event.preventDefault();
+   event.returnValue = "";
+  };
+  document.addEventListener("visibilitychange", onVisibilityChange);
+  window.addEventListener("online", onOnline);
+  window.addEventListener("beforeunload", onBeforeUnload);
+  return () => {
+   document.removeEventListener("visibilitychange", onVisibilityChange);
+   window.removeEventListener("online", onOnline);
+   window.removeEventListener("beforeunload", onBeforeUnload);
+   clearTimeout(autoSaveTimerRef.current);
+   clearTimeout(retryTimerRef.current);
+  };
+ }, []);
+
+ // Any input, change or click inside the step counts as a user edit; leaving
+ // a field saves at once instead of waiting for the debounce.
+ const stepContentHandlers = {
+  onInputCapture: () => { userEditedRef.current = true; },
+  onChangeCapture: () => { userEditedRef.current = true; },
+  onClickCapture: () => { userEditedRef.current = true; },
+  onBlurCapture: () => {
+   if (isDirtyNow()) autoSaveRef.current();
+  },
+ };
+
+ // What the save indicator shows: only what is true right now.
+ const saveIndicator =
+  autoSaveStatus === "saving" ? "saving" :
+  autoSaveStatus === "error" ? "error" :
+  autoSaveStatus === "saved" && !hasUnsavedChanges ? "saved" :
+  null;
+
+ // Manual save button (the save status itself is shown in the header).
  const renderSaveDraftButton = (stepNumber) => (
-  <div className="mt-4 sm:mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-   <p className="text-xs text-mist/55 flex items-center gap-1">
-    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    {t('form.auto_saved')}
-   </p>
+  <div className="mt-4 sm:mt-6 pt-4 border-t border-white/10 flex items-center justify-end">
    <button
     type="button"
     onClick={() => saveDraft(stepNumber)}
@@ -2523,6 +2726,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
 
   // Track import event
   trackEvent("cv_imported", { source: "pdf_upload" });
+  userEditedRef.current = true;
 
   // Update form data with imported values
   setFormData(prev => ({
@@ -2735,6 +2939,33 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
  };
 
 
+ // Bumped by Retry after a step chunk failed to load: new lazy components
+ // import the chunk again, and the new boundary key clears the error.
+ const [stepLoadAttempt, setStepLoadAttempt] = useState(0);
+ const lazySteps = useMemo(buildLazySteps, [stepLoadAttempt]);
+
+ const retryStepLoad = async () => {
+  try {
+   await importFresh(STEP_LOADERS[currentStepRef.current]);
+  } catch {
+   // Online but still failing: a cached failed import. Save, then reload
+   // (the URL keeps the step and the saved draft refills the form).
+   if (navigator.onLine && (await saveDraft(currentStepRef.current, true))) {
+    window.location.reload();
+    return;
+   }
+  }
+  setStepLoadAttempt((n) => n + 1);
+ };
+
+ useEffect(() => {
+  const prefetch = () => Object.values(STEP_LOADERS).forEach((load) => load().catch(() => {}));
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
+  const cancel = window.cancelIdleCallback || clearTimeout;
+  const handle = idle(prefetch);
+  return () => cancel(handle);
+ }, []);
+
  const renderStepContent = () => {
   if (isLoading) return <StepLoadingSkeleton />;
   const stepProps = {
@@ -2797,13 +3028,13 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
    },
   };
 
+  const StepComponent = lazySteps[currentStep];
   return (
-   <Suspense fallback={<StepLoadingSkeleton />}>
-    {currentStep === 1 && <CombinedStep1 {...stepProps} />}
-    {currentStep === 2 && <CombinedStep2 {...stepProps} />}
-    {currentStep === 3 && <CombinedStep3 {...stepProps} />}
-    {currentStep === 4 && <ReviewStep {...stepProps} />}
-   </Suspense>
+   <StepErrorBoundary key={`${stepLoadAttempt}-${currentStep}`} onRetry={retryStepLoad}>
+    <Suspense fallback={<StepLoadingSkeleton />}>
+     {StepComponent && <StepComponent {...stepProps} />}
+    </Suspense>
+   </StepErrorBoundary>
   );
  };
 
@@ -2851,13 +3082,13 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
        </div>
        <div className="flex items-center gap-3">
         {/* Auto-save indicator */}
-        {autoSaveStatus !== "idle" && (
-         <span className={`text-xs flex items-center gap-1 ${
-          autoSaveStatus === "saving" ? "text-mist/70" :
-          autoSaveStatus === "saved" ? "text-action" :
+        {saveIndicator && (
+         <span role="status" data-save-status={saveIndicator} className={`text-xs flex items-center gap-1 whitespace-nowrap ${
+          saveIndicator === "saving" ? "text-mist/70" :
+          saveIndicator === "saved" ? "text-action" :
           "text-red-300"
          }`}>
-          {autoSaveStatus === "saving" && (
+          {saveIndicator === "saving" && (
            <>
             <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -2866,7 +3097,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
             {t('form.saving')}
            </>
           )}
-          {autoSaveStatus === "saved" && (
+          {saveIndicator === "saved" && (
            <>
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -2874,17 +3105,17 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
             {t('form.auto_saved')}
            </>
           )}
-          {autoSaveStatus === "error" && (
+          {saveIndicator === "error" && (
            <>
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {t('form.save_error')}
+            {t('form.save_retrying')}
            </>
           )}
          </span>
         )}
-        <span className="sr-mono glass-soft text-xs sm:text-sm text-mist/80 px-3 py-1 rounded-full">
+        <span className="sr-mono glass-soft text-xs sm:text-sm text-mist/80 px-3 py-1 rounded-full whitespace-nowrap">
          {t('steps.step_of', { current: currentStep, total: totalSteps })}
         </span>
        </div>
@@ -2901,7 +3132,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
      </div>
 
      {/* Step Content */}
-     <div className="px-4 sm:px-8 py-6 overflow-x-hidden">{renderStepContent()}</div>
+     <div className="px-4 sm:px-8 py-6 overflow-x-hidden" {...stepContentHandlers}>{renderStepContent()}</div>
 
      {/* Navigation Buttons - Mobile Optimized with Safe Area */}
      <div 

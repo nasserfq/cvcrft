@@ -113,6 +113,16 @@ class CvGenerationsController < ApplicationController
     # resume_id comes from the request: only the user's own resumes may be used.
     resume_id = current_user.resumes.find(cv_generation_params[:resume_id]).id
 
+    # Checked with CvGeneration's own rule before anything is charged.
+    job_description = cv_generation_params[:job_description].to_s.delete("\u0000").strip
+    if (error = job_description_error(job_description))
+      respond_to do |format|
+        format.html { redirect_to new_cv_generation_path, alert: error }
+        format.json { render json: { error: error }, status: :unprocessable_entity }
+      end
+      return
+    end
+
     charge_key = SecureRandom.uuid
     charge = Billing::UsageGate.allow!(current_user, :job_based_generation, key: charge_key)
     if charge == :blocked
@@ -129,7 +139,7 @@ class CvGenerationsController < ApplicationController
     ats_template = AtsTemplatePdfService.normalize_template_key(cv_generation_params[:ats_template])
 
     result = service.generate_cv(
-      cv_generation_params[:job_description],
+      job_description,
       {
         complete_name: cv_generation_params[:complete_name],
         email: cv_generation_params[:email],
@@ -173,27 +183,33 @@ class CvGenerationsController < ApplicationController
   end
 
   def retry
-    if @cv_generation.status == "failed"
-      charge_key = "retry:#{@cv_generation.id}:#{SecureRandom.uuid}"
+    service = CvGenerationService.new(@cv_generation.user_id, @cv_generation.resume_id)
+    charge = charge_key = nil
+
+    # The service flips the generation from failed to processing atomically
+    # before yielding, so a parallel retry is refused here and never charged.
+    result = service.retry_cv_generation(@cv_generation.id) do |generation|
+      charge_key = "retry:#{generation.id}:#{SecureRandom.uuid}"
       charge = charge_generation(charge_key)
-      return redirect_to @cv_generation, alert: t("ux_i18n2.cv_generations.job_credits_used") if charge == :blocked
+      next false if charge == :blocked
 
       # The retried job runs with the generation's metadata as its options.
-      metadata = (@cv_generation.metadata || {}).except("overage_key")
-      @cv_generation.update!(metadata: metadata.merge({ "overage_key" => overage_key(charge, charge_key) }.compact))
+      metadata = (generation.metadata || {}).except("overage_key")
+      generation.update_columns(metadata: metadata.merge({ "overage_key" => overage_key(charge, charge_key) }.compact))
+      true
     end
 
-    user_id = @cv_generation.user_id
-    service = CvGenerationService.new(user_id, @cv_generation.resume_id)
-
-    result = service.retry_cv_generation(@cv_generation.id)
+    return redirect_to @cv_generation, alert: t("ux_i18n2.cv_generations.job_credits_used") if charge == :blocked
 
     if result[:error]
-      refund_generation(charge, charge_key)
       redirect_to @cv_generation, alert: result[:error]
     else
       redirect_to @cv_generation, notice: result[:message]
     end
+  rescue
+    # The job was never queued, so give the credit back.
+    refund_generation(charge, charge_key)
+    raise
   end
 
   def cancel
@@ -499,6 +515,12 @@ class CvGenerationsController < ApplicationController
   # Gives the credit back when the generation it paid for didn't start.
   def refund_generation(charge, key)
     Billing::UsageGate.refund!(current_user, :job_based_generation, key: key) if charge == :credit
+  end
+
+  def job_description_error(job_description)
+    generation = CvGeneration.new(job_description: job_description)
+    generation.validate
+    generation.errors.full_messages_for(:job_description).first
   end
 
   def set_cv_generation
