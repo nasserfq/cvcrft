@@ -44,9 +44,7 @@ module AtsStylePresets
         details_indent: 15,
         bullet_indent: 6,
         detail_gap: 2,
-        body_leading: 2,
-        cert_line_up: 11.5,
-        cert_org_indent: 25
+        body_leading: 2
       }
     end
   end

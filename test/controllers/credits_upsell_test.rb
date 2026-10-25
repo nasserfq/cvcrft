@@ -1,4 +1,5 @@
 require "test_helper"
+require "minitest/mock"
 
 # A limit hit in an AI feature points at /credits while billing is on, and
 # the header shows the credit balance chip.
@@ -137,6 +138,96 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to cv_generation_path(generation)
     assert_equal "failed", generation.reload.status
+  end
+
+  test "resuming a saved draft past the free allowance charges once and runs the draft itself" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    generation = saved_draft
+
+    assert_difference -> { CvGeneratorJob.jobs.size }, 1 do
+      assert_no_difference "CvGeneration.count" do
+        post resume_draft_cv_generation_url(generation)
+      end
+    end
+
+    assert_redirected_to cv_generation_path(generation)
+    generation.reload
+    assert_equal "processing", generation.status
+    assert_not generation.is_draft
+    assert_equal "Senior Rails engineer with Postgres", generation.job_description
+    job_args = CvGeneratorJob.jobs.last["args"]
+    assert_equal [ generation.job_description, @user.id, @resume.id ], job_args.first(3)
+    assert_equal generation.metadata["overage_key"], job_args.last["overage_key"]
+    assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_job_based_generation").count
+  end
+
+  test "a second resume of the same draft says it is already running and charges nothing" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    generation = saved_draft
+
+    assert_difference -> { CvGeneratorJob.jobs.size }, 1 do
+      2.times { post resume_draft_cv_generation_url(generation, format: :json, locale: "en") }
+    end
+
+    assert_response :conflict
+    assert response.parsed_body["already_running"]
+    assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_job_based_generation").count
+    assert_equal Billing::SIGNUP_BONUS - Billing::UsageGate.cost(:job_based_generation), Billing::Credits.balance(@user)
+  end
+
+  test "a resume that lands while another one is charging is refused before it charges" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    generation = saved_draft
+    parallel = nil
+
+    # The second call starts after the first passed its draft check and
+    # while it is still charging, as two tabs or a double click would.
+    allow = Billing::UsageGate.method(:allow!)
+    charging = lambda do |*args, **kwargs|
+      parallel ||= CvGenerationService.new(generation.user_id, generation.resume_id)
+                                      .resume_draft(generation.id) { flunk "the parallel call must not charge" }
+      allow.call(*args, **kwargs)
+    end
+
+    Billing::UsageGate.stub(:allow!, charging) do
+      assert_difference -> { CvGeneratorJob.jobs.size }, 1 do
+        post resume_draft_cv_generation_url(generation)
+      end
+    end
+
+    assert parallel[:already_running]
+    assert_equal 1, @user.credit_ledger_entries.where(reason: "overage_job_based_generation").count
+  end
+
+  test "a processing generation can't be resumed again" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    generation = @user.cv_generations.create!(resume: @resume, status: "processing", job_description: "Rails engineer",
+                                              ai_model: "test", metadata: { source: "job_description" })
+
+    assert_no_difference [ -> { CvGeneratorJob.jobs.size }, -> { CreditLedgerEntry.where(user: @user).count } ] do
+      post resume_draft_cv_generation_url(generation)
+    end
+
+    assert_redirected_to cv_generation_path(generation)
+  end
+
+  test "a resumed draft whose job can't be queued is refunded and stays a draft" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    generation = saved_draft
+    CvGeneratorJob.stubs(:perform_async).raises(RuntimeError, "redis down")
+
+    assert_raises(RuntimeError) { post resume_draft_cv_generation_url(generation) }
+
+    assert_equal Billing::SIGNUP_BONUS, Billing::Credits.balance(@user)
+    assert_equal 1, @user.credit_ledger_entries.where(reason: "refund").count
+    generation.reload
+    assert generation.draft?
+    assert_equal "Rails engineer", generation.job_description
   end
 
   { "short" => "Need dev", "padded short" => "   Need dev   ", "long" => "x" * 5001 }.each do |name, job_description|
@@ -282,6 +373,13 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
     post cv_generations_url(format: :json), params: {
       cv_generation: { job_description: "Senior Rails engineer", resume_id: @resume.id }
     }
+  end
+
+  def saved_draft
+    generation = @user.cv_generations.create!(resume: @resume, status: "processing", job_description: "Rails engineer",
+                                              ai_model: "test")
+    generation.save_draft("job_description" => "Senior Rails engineer with Postgres", "temperature" => "0.5")
+    generation
   end
 
   def pdf_upload

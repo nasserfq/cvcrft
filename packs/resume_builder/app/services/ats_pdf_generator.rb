@@ -205,23 +205,8 @@ class AtsPdfGenerator
           date = certification[:date].to_s.strip
 
           unless name.empty?
-            # Date aligned to right
-            if date.present?
-              pdf.float do
-                pdf.text date, size: template[:meta_size], align: :right
-              end
-            end
-
-            # Name in bold, then organization in regular font on same line
-            pdf.font("Helvetica-Bold") { pdf.text "#{name}  ", size: template[:body_size], inline_format: false }
-            if org.present?
-              pdf.move_up(template[:cert_line_up])
-              name_width = pdf.width_of("#{name}", size: template[:body_size]) + template[:cert_org_indent]
-              pdf.indent(name_width) do
-                pdf.font("Helvetica") { pdf.text org, size: template[:body_size] }
-              end
-            end
-
+            AtsTemplatePdfService.render_certification_line(pdf, name: name, org: org, date: date,
+                                                            size: template[:body_size], meta_size: template[:meta_size])
             pdf.move_down template[:item_gap]
           end
         end        # Languages Section

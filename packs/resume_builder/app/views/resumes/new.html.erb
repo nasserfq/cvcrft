@@ -39,6 +39,8 @@
   <% if @resume.present? %>
     // For existing resumes (including drafts), pass the resume data
     window.resumeData = <%= raw @resume.to_json(only: [:id, :complete_name, :email, :phone_number, :city, :country, :professional_summary, :professional_summary_english, :is_draft, :draft_data]) %>;
+    // Sent back as base_updated_at on save_draft so a stale tab gets 409.
+    window.resumeData.updated_at = <%= raw @resume.updated_at&.iso8601(6).to_json || "null" %>;
 
     // Add association data if it exists
     <% if @resume.work_experiences.any? %>

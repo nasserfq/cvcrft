@@ -289,10 +289,25 @@ class ResumesController < ApplicationController
         certifications: params[:certifications],
         languages: params[:languages],
         current_step: params[:current_step],
-        saved_at: Time.current.iso8601
+        # The tab's own stamp, echoed in a 409 so a tab can recognise a write
+        # of its own that timed out on its side but was stored here.
+        saved_at: params[:saved_at].presence || Time.current.iso8601
       }
 
-      @resume.save_draft(draft_data)
+      # A tab that sends the updated_at it last loaded or saved cannot
+      # overwrite a newer save from another tab: it gets 409 and the
+      # current updated_at instead. The lock makes check and write atomic.
+      saved = @resume.with_lock do
+        next false if stale_draft?(@resume)
+
+        @resume.save_draft(draft_data)
+        true
+      end
+      unless saved
+        render json: { error: "stale", updated_at: @resume.updated_at.iso8601(6),
+                       saved_at: @resume.draft_data.to_h.with_indifferent_access[:saved_at] }, status: :conflict
+        return
+      end
 
       respond_to do |format|
         format.html { redirect_to resumes_path, notice: t("ux_i18n.resumes.draft_saved_flash") }
@@ -300,6 +315,7 @@ class ResumesController < ApplicationController
           success: true,
           message: t("ux_i18n.resumes.draft_saved"),
           resume_id: @resume.id,
+          updated_at: @resume.updated_at.iso8601(6),
           draft_data: @resume.draft_data
         } }
       end
@@ -351,6 +367,17 @@ class ResumesController < ApplicationController
 
   def normalize_ats_template(template_key)
     AtsTemplatePdfService.normalize_template_key(template_key.presence || ATS_TEMPLATE_FALLBACK)
+  end
+
+  # True when base_updated_at (ISO 8601, microseconds) is older than the
+  # resume. Missing or unreadable means no check, as before.
+  def stale_draft?(resume)
+    base = params[:base_updated_at].presence
+    return false unless base
+
+    resume.updated_at.floor(6) > Time.iso8601(base.to_s)
+  rescue ArgumentError
+    false
   end
 
   def find_or_create_draft_resume

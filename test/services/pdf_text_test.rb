@@ -34,6 +34,27 @@ class PdfTextTest < ActiveSupport::TestCase
     PdfText.sanitize(WEIRD).encode("Windows-1252")
   end
 
+  test "sanitize folds compatibility forms to plain text" do
+    assert_equal "John Smith", PdfText.sanitize("Ｊｏｈｎ Ｓｍｉｔｈ")
+    assert_equal "Led the office finance team", PdfText.sanitize("Led the oﬃce ﬁnance team")
+    assert_equal "Phase IV 1 team", PdfText.sanitize("Phase Ⅳ ① team")
+    assert_equal "Džuro Ljubo", PdfText.sanitize("ǅuro ǈubo")
+    assert_equal "“quoted” – café • ok … ½ ™ X", PdfText.sanitize("“quoted” – café • ok … ½ ™ Ｘ")
+  end
+
+  test "every template renders a 200-character certification name and issuer" do
+    words = ("Microsoft Certified Azure Solutions Architect Expert " * 5)[0, 200]
+    @resume.certifications.destroy_all
+    @resume.certifications.create!(name: words, organization: words, date: "2023-05")
+    @resume.certifications.create!(name: "X" * 200, organization: "Y" * 200, date: "2023-05")
+    @resume.reload
+
+    AtsTemplatePdfService.template_catalog.each do |template|
+      result = ResumePdfService.generate_pdf(@resume, template: template[:key])
+      assert File.size(result[:path]).positive?, template[:key]
+    end
+  end
+
   test "every ATS template renders weird characters through ResumePdfService" do
     AtsTemplatePdfService.template_catalog.each do |template|
       result = ResumePdfService.generate_pdf(@resume, template: template[:key])

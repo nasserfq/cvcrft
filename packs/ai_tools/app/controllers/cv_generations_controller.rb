@@ -441,12 +441,28 @@ class CvGenerationsController < ApplicationController
   end
 
   def resume_draft
-    Rails.logger.info "=== RESUME DRAFT ==="
-    Rails.logger.info "CV Generation ID: #{@cv_generation.id}"
+    draft = @cv_generation.resume_data
+    if @cv_generation.can_be_resumed? && (error = job_description_error(draft["job_description"].presence || @cv_generation.job_description))
+      respond_to do |format|
+        format.html { redirect_to @cv_generation, alert: error }
+        format.json { render json: { success: false, error: error }, status: :unprocessable_entity }
+      end
+      return
+    end
 
-    if @cv_generation.can_be_resumed?
-      charge_key = "draft:#{@cv_generation.id}:#{SecureRandom.uuid}"
+    service = CvGenerationService.new(@cv_generation.user_id, @cv_generation.resume_id)
+    charge = charge_key = nil
+
+    # The service flips the draft to processing atomically before yielding,
+    # so a second or parallel call is refused here and never charged.
+    result = service.resume_draft(@cv_generation.id) do |generation|
+      charge_key = "draft:#{generation.id}:#{SecureRandom.uuid}"
       charge = charge_generation(charge_key)
+      next false if charge == :blocked
+
+      key = overage_key(charge, charge_key)
+      generation.update_columns(metadata: generation.metadata.merge("overage_key" => key)) if key
+      true
     end
 
     if charge == :blocked
@@ -454,41 +470,19 @@ class CvGenerationsController < ApplicationController
         format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.job_credits_used") }
         format.json { render json: { success: false, error: t("ux_i18n2.cv_generations.job_credits_used"), limit_reached: true, **credits_upsell }, status: :too_many_requests }
       end
-      return
-    end
-
-    if @cv_generation.can_be_resumed?
-      # Complete the draft and start processing
-      @cv_generation.complete_draft
-
-      # Start the CV generation job
-      user_id = @cv_generation.user_id
-      service = CvGenerationService.new(user_id, @cv_generation.resume_id)
-
-      draft_data = @cv_generation.resume_data
-      result = service.generate_cv(
-        draft_data["job_description"],
-        {
-          complete_name: draft_data["complete_name"],
-          email: draft_data["email"],
-          temperature: (draft_data["temperature"].presence || 0.7).to_f.clamp(0.0, 1.0),
-          max_tokens: (draft_data["max_tokens"].presence || 15000).to_i.clamp(1000, 15000),
-          source: "job_description",
-          overage_key: overage_key(charge, charge_key)
-        }.compact
-      )
-      refund_generation(charge, charge_key) unless result[:status] == "queued"
-
+    elsif result[:already_running]
+      # The generation is already running; its page shows the progress.
       respond_to do |format|
-        format.html { redirect_to new_cv_generation_path(cv_generation_id: @cv_generation.id), notice: t("ux_i18n2.cv_generations.draft_resumed_flash") }
+        format.html { redirect_to @cv_generation }
         format.json { render json: {
-          success: true,
-          message: t("ux_i18n2.cv_generations.draft_resumed"),
+          success: false,
+          already_running: true,
+          error: t("ux_i18n2.cv_generations.show.processing_title"),
           cv_generation_id: @cv_generation.id,
-          redirect_url: new_cv_generation_path(cv_generation_id: @cv_generation.id)
-        } }
+          redirect_url: cv_generation_path(@cv_generation)
+        }, status: :conflict }
       end
-    else
+    elsif result[:error]
       respond_to do |format|
         format.html { redirect_to cv_generations_path, alert: t("ux_i18n2.cv_generations.draft_not_resumable_flash") }
         format.json { render json: {
@@ -496,7 +490,21 @@ class CvGenerationsController < ApplicationController
           error: t("ux_i18n2.cv_generations.draft_not_resumable")
         }, status: :unprocessable_entity }
       end
+    else
+      respond_to do |format|
+        format.html { redirect_to @cv_generation, notice: t("ux_i18n2.cv_generations.draft_resumed_flash") }
+        format.json { render json: {
+          success: true,
+          message: t("ux_i18n2.cv_generations.draft_resumed"),
+          cv_generation_id: @cv_generation.id,
+          redirect_url: cv_generation_path(@cv_generation)
+        } }
+      end
     end
+  rescue
+    # The job was never queued, so give the credit back.
+    refund_generation(charge, charge_key)
+    raise
   end
 
   private
