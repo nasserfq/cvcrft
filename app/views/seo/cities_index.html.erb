@@ -46,7 +46,6 @@
   </script>
   
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -66,7 +65,7 @@
       <!-- Hero -->
       <div class="text-center mb-16">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-action/10 text-action text-sm font-medium mb-6">
-          <iconify-icon icon="solar:globe-bold" width="16"></iconify-icon>
+          <%= seera_icon "solar:globe-bold", width: 16 %>
           <%= I18n.locale == :ar ? '10 مدن في الشرق الأوسط' : '10 Cities in the Middle East' %>
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-4">
@@ -92,7 +91,7 @@
             
             <div class="relative">
               <div class="w-14 h-14 bg-gradient-to-br from-primary to-action rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
-                <iconify-icon icon="solar:map-point-wave-bold" class="text-white" width="28"></iconify-icon>
+                <%= seera_icon "solar:map-point-wave-bold", width: 28, class: "text-white" %>
               </div>
               
               <h2 class="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
@@ -107,7 +106,7 @@
                 <span class="text-sm text-gray-400">
                   <%= I18n.locale == :ar ? "#{@job_count} قالب" : "#{@job_count} templates" %>
                 </span>
-                <iconify-icon icon="solar:arrow-left-bold" class="text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" width="20"></iconify-icon>
+                <%= seera_icon "solar:arrow-left-bold", width: 20, class: "text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" %>
               </div>
             </div>
           </a>
@@ -138,7 +137,7 @@
             "Don't see your city? Use our general templates:" %>
         </p>
         <a href="/cv-templates" class="inline-flex items-center gap-2 px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium rounded-full transition-colors">
-          <iconify-icon icon="solar:document-text-bold" width="20"></iconify-icon>
+          <%= seera_icon "solar:document-text-bold", width: 20 %>
           <%= I18n.locale == :ar ? 'عرض جميع القوالب' : 'View All Templates' %>
         </a>
       </div>

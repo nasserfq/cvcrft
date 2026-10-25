@@ -96,7 +96,6 @@
   </script>
   
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -127,9 +126,9 @@
       <nav class="mb-8" aria-label="Breadcrumb">
         <ol class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
           <li><a href="/" class="hover:text-primary"><%= I18n.locale == :ar ? 'الرئيسية' : 'Home' %></a></li>
-          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li><%= seera_icon "solar:alt-arrow-left-linear", width: 16 %></li>
           <li><a href="/cv-templates" class="hover:text-primary"><%= I18n.locale == :ar ? 'قوالب السيرة الذاتية' : 'CV Templates' %></a></li>
-          <li><iconify-icon icon="solar:alt-arrow-left-linear" width="16"></iconify-icon></li>
+          <li><%= seera_icon "solar:alt-arrow-left-linear", width: 16 %></li>
           <li class="text-gray-900 dark:text-white font-medium"><%= I18n.locale == :ar ? @job['title_ar'] : @job['title_en'] %></li>
         </ol>
       </nav>
@@ -138,7 +137,7 @@
       <header class="mb-12">
         <div class="flex items-center gap-4 mb-6">
           <div class="w-16 h-16 bg-gradient-to-br from-primary to-action rounded-2xl flex items-center justify-center shadow-lg shadow-primary/25">
-            <iconify-icon icon="solar:user-id-bold" class="text-white" width="32"></iconify-icon>
+            <%= seera_icon "solar:user-id-bold", width: 32, class: "text-white" %>
           </div>
           <div>
             <p class="text-sm text-primary font-medium mb-1">
@@ -161,7 +160,7 @@
       <!-- Skills -->
       <section class="mb-12 p-6 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10">
         <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-          <iconify-icon icon="solar:star-bold" class="text-primary" width="24"></iconify-icon>
+          <%= seera_icon "solar:star-bold", width: 24, class: "text-primary" %>
           <%= I18n.locale == :ar ? 'المهارات المطلوبة' : 'Required Skills' %>
         </h2>
         <div class="flex flex-wrap gap-2">
@@ -235,7 +234,7 @@
             'Use our AI-powered tool to create a professional CV in minutes.' %>
         </p>
         <a href="<%= new_resume_path %>" class="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25 text-lg">
-          <iconify-icon icon="solar:magic-stick-3-bold" width="24"></iconify-icon>
+          <%= seera_icon "solar:magic-stick-3-bold", width: 24 %>
           <%= I18n.locale == :ar ? 'ابدأ الآن مجاناً' : 'Start Free Now' %>
         </a>
       </div>
@@ -244,7 +243,7 @@
       <% if @related_jobs.any? %>
         <section>
           <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-            <iconify-icon icon="solar:link-bold" class="text-primary" width="24"></iconify-icon>
+            <%= seera_icon "solar:link-bold", width: 24, class: "text-primary" %>
             <%= I18n.locale == :ar ? 'قوالب مشابهة' : 'Related Templates' %>
           </h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -253,9 +252,9 @@
                  class="group p-5 bg-white dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-white/10 hover:border-primary/50 hover:shadow-lg transition-all">
                 <div class="flex items-start justify-between mb-3">
                   <div class="w-10 h-10 bg-gradient-to-br from-primary/20 to-action/20 rounded-xl flex items-center justify-center">
-                    <iconify-icon icon="solar:user-id-bold" class="text-primary" width="20"></iconify-icon>
+                    <%= seera_icon "solar:user-id-bold", width: 20, class: "text-primary" %>
                   </div>
-                  <iconify-icon icon="solar:arrow-left-bold" class="text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" width="18"></iconify-icon>
+                  <%= seera_icon "solar:arrow-left-bold", width: 18, class: "text-gray-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" %>
                 </div>
                 <h3 class="font-semibold group-hover:text-primary transition-colors">
                   <%= I18n.locale == :ar ? job['title_ar'] : job['title_en'] %>
