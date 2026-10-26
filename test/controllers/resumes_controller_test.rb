@@ -244,4 +244,22 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "application/pdf", response.media_type
   end
+
+  test "generate_pdf is rate limited to 10 per minute per user" do
+    # The test env uses :null_store, which never counts; swap in a real store
+    # so the rate_limit filter can actually trip.
+    original = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    ResumePdfService.stubs(:generate_pdf).returns("%PDF-1.4")
+
+    10.times do
+      get generate_pdf_resume_url(@resume)
+      assert_response :success
+    end
+
+    get generate_pdf_resume_url(@resume)
+    assert_response :too_many_requests
+  ensure
+    Rails.cache = original
+  end
 end

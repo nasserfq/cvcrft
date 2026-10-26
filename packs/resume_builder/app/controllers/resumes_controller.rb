@@ -6,6 +6,11 @@ class ResumesController < ApplicationController
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
 
+  # Cap PDF generation at 10 per minute per user: rendering a PDF is expensive,
+  # so a tight loop (or a load test) must not be able to pin the box.
+  rate_limit to: 10, within: 1.minute, only: :generate_pdf, name: "pdf-generate-user",
+             by: -> { current_user&.id }, with: -> { pdf_rate_limited }
+
   def index
     ResumeDraftDeduplicator.call(current_user)
 
@@ -364,6 +369,15 @@ class ResumesController < ApplicationController
   end
 
   private
+
+  # Response when the per-user PDF rate limit (10/min) is hit.
+  def pdf_rate_limited
+    message = t("ux_i18n.resumes.pdf_rate_limited")
+    respond_to do |format|
+      format.json { render json: { error: message }, status: :too_many_requests }
+      format.any  { render plain: message, status: :too_many_requests, content_type: "text/plain" }
+    end
+  end
 
   def normalize_ats_template(template_key)
     AtsTemplatePdfService.normalize_template_key(template_key.presence || ATS_TEMPLATE_FALLBACK)
