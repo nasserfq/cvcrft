@@ -2,6 +2,10 @@ class Api::TranslationsController < ApplicationController
   include CreditsUpsell
   before_action :authenticate_user!
 
+  include UserRateLimit
+  rate_limit_per_user to: 20, within: 1.minute, only: %i[translate_professional_summary translate_job_descriptions], name: "translate"
+  rate_limit_per_user to: 10, within: 1.minute, only: :export_pdf, name: "pdf"
+
   def translate_professional_summary
     begin
       # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on

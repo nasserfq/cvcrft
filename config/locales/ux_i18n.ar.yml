@@ -19,9 +19,11 @@ ar:
       malformed_file: "الملف تالف أو غير صالح"
       processing_error: "حدث خطأ أثناء معالجة الملف"
       not_found: "التحليل غير موجود"
+    rate_limited: "طلبات كثيرة. حاول بعد دقيقة."
     resumes:
       deleted: "تم حذف السيرة الذاتية بنجاح"
       pdf_load_failed: "تعذّر تحميل ملف PDF."
+      pdf_rate_limited: "طلبات PDF كثيرة. حاول بعد دقيقة."
       ats_optimization_completed: "اكتمل تحسين السيرة لأنظمة ATS!"
       ats_optimization_failed: "فشل تحسين السيرة لأنظمة ATS: %{error}"
       create_failed: "فشل في إنشاء السيرة الذاتية: %{errors}"

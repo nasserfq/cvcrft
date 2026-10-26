@@ -19,9 +19,11 @@ en:
       malformed_file: "The file is corrupted or invalid"
       processing_error: "Something went wrong while processing the file"
       not_found: "Analysis not found"
+    rate_limited: "Too many requests. Try again in a minute."
     resumes:
       deleted: "Resume deleted successfully"
       pdf_load_failed: "Failed to load PDF document."
+      pdf_rate_limited: "Too many PDFs. Try again in a minute."
       ats_optimization_completed: "ATS optimization completed!"
       ats_optimization_failed: "ATS optimization failed: %{error}"
       create_failed: "Couldn't create the resume: %{errors}"

@@ -4,6 +4,9 @@ module Coach
 
     before_action :authenticate_user!, :require_coach!
     before_action :set_chat, only: %i[show message accept reject send_to_seera]
+    include UserRateLimit
+    rate_limit_per_user to: 20, within: 1.minute, only: :message, name: "coach-message"
+    rate_limit_per_user to: 10, within: 1.minute, only: :create, name: "coach-chat"
 
     # Same cap as CvImportsController.
     MAX_PDF_SIZE = 10.megabytes

@@ -1,6 +1,9 @@
 class LinkedinImportsController < ApplicationController
   include CreditsUpsell
   before_action :authenticate_user!
+
+  include UserRateLimit
+  rate_limit_per_user to: 5, within: 1.minute, only: :create, name: "linkedin-import"
   before_action :set_linkedin_import, only: [ :status, :show, :update, :destroy, :download_pdf, :save_to_cv ]
 
   # GET /linkedin-import

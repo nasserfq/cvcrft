@@ -1,5 +1,8 @@
 class CvAnalysesController < ApplicationController
   before_action :authenticate_user!
+
+  include UserRateLimit
+  rate_limit_per_user to: 5, within: 1.minute, only: :create, name: "cv-analysis"
   before_action :set_cv_analysis, only: [ :show, :status ]
 
   # GET /cv-analysis
