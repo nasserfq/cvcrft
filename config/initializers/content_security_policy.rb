@@ -29,6 +29,11 @@ posthog = [ posthog_api, posthog_assets ].compact.uniq
 # Browser Sentry sends events to the DSN's ingest host (production only).
 sentry = [ origin_of.call(ENV["SENTRY_DSN"]) ].compact
 
+# Cloudflare Web Analytics, injected into every page by the Cloudflare proxy:
+# the beacon script, and the endpoint it reports to.
+cloudflare_beacon = "https://static.cloudflareinsights.com"
+cloudflare_rum = "https://cloudflareinsights.com"
+
 google_fonts_css = "https://fonts.googleapis.com"
 google_fonts_files = "https://fonts.gstatic.com"
 
@@ -57,11 +62,11 @@ end
 Rails.application.configure do
   config.content_security_policy do |policy|
     policy.default_src     :self
-    policy.script_src      :self, :unsafe_inline, *posthog, *dev_scripts, unpkg_page
+    policy.script_src      :self, :unsafe_inline, *posthog, cloudflare_beacon, *dev_scripts, unpkg_page
     policy.style_src       :self, :unsafe_inline, google_fonts_css
     policy.font_src        :self, :data, google_fonts_files
     policy.img_src         :self, :data, :blob, :https
-    policy.connect_src     :self, *posthog, *sentry, *dev_connects
+    policy.connect_src     :self, *posthog, *sentry, cloudflare_rum, *dev_connects
     policy.worker_src      :self, :blob
     policy.frame_src       :self, :blob
     policy.object_src      :none
