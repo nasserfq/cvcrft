@@ -75,7 +75,7 @@ gem "sidekiq"
 gem "sidekiq-cron", "~> 2.4"
 
 # Redis for caching, Sidekiq, and session storage
-gem "redis", "~> 5.0"
+gem "redis", "~> 6.0"
 
 # Parallel processing for load testing
 gem "parallel"

@@ -448,9 +448,9 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
-    redis (5.4.1)
-      redis-client (>= 0.22.0)
-    redis-client (0.26.3)
+    redis (6.0.0)
+      redis-client (= 0.30.1)
+    redis-client (0.30.1)
       connection_pool
     regexp_parser (2.11.3)
     reline (0.6.3)
@@ -658,7 +658,7 @@ DEPENDENCIES
   propshaft
   puma (>= 5.0)
   rails (~> 8.1.0)
-  redis (~> 5.0)
+  redis (~> 6.0)
   rubocop-rails-omakase
   ruby_llm (~> 2.1)
   selenium-webdriver
