@@ -188,6 +188,16 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "application/pdf", response.media_type
   end
 
+  test "generate_pdf answers 429 after 10 PDFs in a minute" do
+    ActiveSupport::Cache::NullStore.any_instance.stubs(:increment).returns(11)
+    ResumePdfService.expects(:generate_pdf).never
+
+    get generate_pdf_resume_url(@resume)
+
+    assert_response :too_many_requests
+    assert_equal I18n.t("ux_i18n.resumes.pdf_rate_limited", locale: :ar), response.body
+  end
+
   test "generate_pdf preview syncs draft data before rendering" do
     @resume.update!(
       draft_data: {
