@@ -74,6 +74,59 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     assert_equal starter.id, JSON.parse(response.body)["resume_id"]
   end
 
+  test "edit exposes updated_at with microseconds for save_draft" do
+    get edit_resume_url(@resume, step: 1)
+
+    assert_response :success
+    assert_includes response.body, "window.resumeData.updated_at = \"#{@resume.reload.updated_at.iso8601(6)}\""
+  end
+
+  test "save_draft chains on the updated_at each save returns" do
+    base = @resume.updated_at.iso8601(6)
+
+    [ "Tab A first", "Tab A second" ].each_with_index do |name, i|
+      travel (i + 1).seconds do
+        post save_draft_resume_path(@resume), params: { complete_name: name, current_step: 1, base_updated_at: base }, as: :json
+      end
+      assert_response :success
+      body = JSON.parse(response.body)
+      assert_equal @resume.reload.updated_at.iso8601(6), body["updated_at"]
+      assert_operator Time.iso8601(body["updated_at"]), :>, Time.iso8601(base)
+      assert_equal name, @resume.draft_data["complete_name"]
+      base = body["updated_at"]
+    end
+  end
+
+  test "save_draft answers 409 and keeps the draft when base_updated_at is stale" do
+    stale = @resume.updated_at.iso8601(6)
+    travel 1.second do
+      post save_draft_resume_path(@resume), params: { complete_name: "Tab A", city: "Riyadh", base_updated_at: stale, saved_at: "tab-a-1" }, as: :json
+    end
+    assert_response :success
+    current = JSON.parse(response.body)["updated_at"]
+
+    travel 2.seconds do
+      post save_draft_resume_path(@resume), params: { complete_name: "Tab B stale", city: "Dammam", base_updated_at: stale }, as: :json
+    end
+
+    assert_response :conflict
+    # saved_at echoes the stored write's stamp, so tab A could tell it was its own.
+    assert_equal({ "error" => "stale", "updated_at" => current, "saved_at" => "tab-a-1" }, JSON.parse(response.body))
+    @resume.reload
+    assert_equal [ "Tab A", "Riyadh" ], @resume.draft_data.values_at("complete_name", "city")
+    assert_equal current, @resume.updated_at.iso8601(6)
+  end
+
+  test "save_draft without base_updated_at still overwrites" do
+    @resume.save_draft({ complete_name: "Elsewhere" })
+
+    post save_draft_resume_path(@resume), params: { complete_name: "No base" }, as: :json
+
+    assert_response :success
+    assert_equal "No base", @resume.reload.draft_data["complete_name"]
+    assert_equal @resume.updated_at.iso8601(6), JSON.parse(response.body)["updated_at"]
+  end
+
   test "should create resume" do
     assert_difference("Resume.count") do
       post resumes_url, params: {

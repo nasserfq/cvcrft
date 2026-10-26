@@ -131,6 +131,58 @@ class CvGenerationService
     }
   end
 
+  # Start a saved draft. Like retry, the draft -> processing flip is one
+  # conditional UPDATE, so of two parallel calls only one gets past it; the
+  # other gets already_running when the draft is now processing. The draft
+  # record itself becomes the running generation (the job finds it by job
+  # description), so no second record is left stuck in processing.
+  # The block, if given, runs after the flip and before the job is queued
+  # (the controller charges there); when it returns false the record goes
+  # back to being a draft and nothing is queued.
+  def resume_draft(generation_id)
+    generation = CvGeneration.where(user_id: @user_id).find(generation_id)
+
+    claimed = CvGeneration.where(id: generation.id).where.not(status: "processing")
+                          .merge(CvGeneration.where(is_draft: true).or(CvGeneration.where(status: "draft")))
+                          .update_all(status: "processing", is_draft: false, updated_at: Time.current) == 1
+    unless claimed
+      already_running = generation.reload.processing?
+      return { error: already_running ? "CV generation is already running" : "CV generation is not a draft",
+               already_running: already_running }
+    end
+
+    original = generation.slice(:job_description, :metadata)
+    begin
+      draft = generation.resume_data
+      generation.update_columns(
+        job_description: draft["job_description"].presence || generation.job_description,
+        metadata: draft_options(draft)
+      )
+
+      if block_given? && !yield(generation)
+        reset_to_draft(generation, original)
+        return { error: "CV generation was not resumed", blocked: true }
+      end
+
+      generation.reload
+      CvGeneratorJob.perform_async(
+        generation.job_description,
+        generation.user_id,
+        generation.resume_id,
+        generation.metadata.merge("force_pdf_regeneration" => true)
+      )
+    rescue
+      reset_to_draft(generation, original)
+      raise
+    end
+
+    {
+      status: "queued",
+      message: "CV generation job has been queued",
+      generation_id: generation.id
+    }
+  end
+
   # Cancel pending CV generation
   def cancel_cv_generation(generation_id)
     generation = CvGeneration.where(user_id: @user_id).find(generation_id)
@@ -163,6 +215,21 @@ class CvGenerationService
   end
 
   private
+
+  def reset_to_draft(generation, original)
+    CvGeneration.where(id: generation.id, status: "processing")
+                .update_all(original.merge(status: "draft", is_draft: true, updated_at: Time.current))
+  end
+
+  def draft_options(draft)
+    {
+      "complete_name" => draft["complete_name"],
+      "email" => draft["email"],
+      "temperature" => (draft["temperature"].presence || 0.7).to_f.clamp(0.0, 1.0),
+      "max_tokens" => (draft["max_tokens"].presence || 15000).to_i.clamp(1000, 15000),
+      "source" => "job_description"
+    }.compact
+  end
 
   def reset_to_failed(generation)
     CvGeneration.where(id: generation.id, status: "processing").update_all(status: "failed", updated_at: Time.current)

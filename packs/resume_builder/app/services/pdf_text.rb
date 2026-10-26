@@ -1,8 +1,8 @@
 # Prawn's built-in Helvetica can only draw Windows-1252, and Prawn raises on
 # anything else (Ł, ✓, →, emoji, zero-width or bidi control characters). Every
 # builder/ATS PDF keeps Helvetica (ATS-safe), so all text goes through here
-# first: characters 1252 has stay, close look-alikes replace the rest, and
-# whatever still cannot be drawn is dropped.
+# first: characters 1252 has stay, compatibility forms fold (NFKC), close
+# look-alikes replace the rest, and whatever still cannot be drawn is dropped.
 module PdfText
   ENCODING = Encoding::Windows_1252
 
@@ -73,6 +73,11 @@ module PdfText
   def replace(char)
     return char if encodable?(char)
     return REPLACEMENTS[char] if REPLACEMENTS.key?(char)
+
+    # Compatibility forms (full-width Ｊ, ligatures ﬁ, Ⅳ, ①, ǅ) fold to plain
+    # letters and digits; only reached for characters 1252 cannot draw.
+    folded = char.unicode_normalize(:nfkc)
+    return folded.each_char.map { |part| replace(part) }.join if folded != char
 
     transliterated = I18n.transliterate(char, locale: :en, replacement: "")
     return transliterated if transliterated.present? && encodable?(transliterated)

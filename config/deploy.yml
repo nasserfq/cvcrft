@@ -55,9 +55,9 @@ env:
     # When Jev judges a reply not good enough, it is redone once on this.
     AI_STRONG_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
     ADMIN_USERNAME: admin
-    # Puma processes, one per core. Raise it when the server has spare cores
-    # and RAM.
-    WEB_CONCURRENCY: "2"
+    # Puma processes. The server has 4 cores; one is left for Sidekiq,
+    # Postgres and Redis.
+    WEB_CONCURRENCY: "3"
     # Payments (packs/billing): only these emails see /credits until
     # BILLING_ENABLED is set to "true".
     BILLING_TESTERS: non1993@protonmail.com

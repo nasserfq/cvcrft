@@ -43,6 +43,7 @@ const CombinedStep3 = ({
   removeSkillName,
   addingSkillTo,
   handleNewSkillChange,
+  handleNewSkillKeyDown,
   handleNewSkillBlur,
   handleCertificationChange,
   addCertification,
@@ -124,7 +125,7 @@ const CombinedStep3 = ({
                         autoFocus
                         onChange={(e) => handleNewSkillChange(index, e.target.value)}
                         onBlur={(e) => handleNewSkillBlur(index, e.target.value)}
-                        onKeyPress={(e) => { if (e.key === "Enter") handleNewSkillChange(index, e.target.value); }}
+                        onKeyDown={(e) => handleNewSkillKeyDown(index, e)}
                         className={getInputClass("flex-1 min-w-0 min-h-[44px] rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-base text-mist placeholder:text-mist/40 transition-colors duration-300", validationErrors[`skill_name_${index}_new`])}
                         placeholder={t('skills.skill_placeholder')}
                       />

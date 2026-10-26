@@ -375,21 +375,26 @@ class AtsTemplatePdfService
       date = cert[:date].to_s.strip
       next if name.blank?
 
-      # Keep old-style visual hierarchy: date on right, name + organization inline.
-      pdf.float { pdf.text date, size: config[:meta_size] || 10, align: :right } if date.present?
-      pdf.font("Helvetica-Bold") { pdf.text "#{name}  ", size: config[:body_size] || 10, inline_format: false }
-
-      if org.present?
-        pdf.move_up(config[:cert_line_up] || 11.5)
-        name_width = pdf.width_of(name, size: config[:body_size] || 10) + (config[:cert_org_indent] || 25)
-        pdf.indent(name_width) do
-          pdf.font("Helvetica") { pdf.text org, size: config[:body_size] || 10 }
-        end
-      end
-
+      render_certification_line(pdf, name: name, org: org, date: date,
+                                     size: config[:body_size] || 10, meta_size: config[:meta_size] || 10)
       pdf.move_down(config[:item_gap] || 4)
     end
     pdf.move_down(config[:section_gap] || 10)
+  end
+
+  # Bold name, then the organization in regular weight on the same line,
+  # wrapping as one paragraph, with the date on the right. The text stops
+  # short of the date (at most half the width), so any length fits.
+  def self.render_certification_line(pdf, name:, org:, date:, size:, meta_size:)
+    date_room = 0
+    if date.present?
+      pdf.float { pdf.text date, size: meta_size, align: :right }
+      date_room = [ pdf.width_of(date, size: meta_size) + 10, pdf.bounds.width / 2 ].min
+    end
+
+    fragments = [ { text: name, styles: [ :bold ] } ]
+    fragments << { text: "  #{org}" } if org.present?
+    pdf.indent(0, date_room) { pdf.formatted_text fragments, size: size }
   end
 
   def self.render_languages(pdf, data, config)

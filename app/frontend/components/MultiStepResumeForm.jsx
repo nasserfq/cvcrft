@@ -155,6 +155,7 @@ const draftFields = (data) => ({
 
 const AUTOSAVE_DELAY_MS = 1500;
 const RETRY_DELAYS_MS = [3000, 6000, 12000, 30000];
+const SAVE_TIMEOUT_MS = 15000;
 
 // Memoized skeleton loading for steps - prevents re-renders
 const StepLoadingSkeleton = memo(() => (
@@ -1355,44 +1356,42 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
   setAddingSkillTo(skillIndex);
  };
 
+ // The new-skill box only validates while typing; the skill is added on Enter
+ // (the box stays open and focused for the next one) or when the box loses
+ // focus.
  const handleNewSkillChange = (skillIndex, value) => {
-  // Live validation for skill name
-  const fieldKey = `skill_name_${skillIndex}_new`;
-  markFieldTouched(fieldKey);
+  markFieldTouched(`skill_name_${skillIndex}_new`);
   validateFieldLive('skill_name', value, { index: `${skillIndex}_new` });
-  
-  // Only add non-empty values
-  if (value && value.trim() !== "" && isEnglishText(value)) {
-   setFormData((prev) => ({
-    ...prev,
-    skills: prev.skills.map((skill, i) =>
-     i === skillIndex
-      ? { ...skill, skill_names: [...skill.skill_names, value.trim()] }
-      : skill
-    ),
-   }));
-   setAddingSkillTo(null);
-   // Clear the error after successful add
-   setValidationErrors(prev => {
-    const newErrors = { ...prev };
-    delete newErrors[`skill_name_${skillIndex}_new`];
-    return newErrors;
-   });
-  }
+ };
+
+ const commitNewSkill = (skillIndex, value) => {
+  const name = value?.trim();
+  if (!name || !isEnglishText(name)) return false;
+  setFormData((prev) => ({
+   ...prev,
+   skills: prev.skills.map((skill, i) =>
+    i === skillIndex
+     ? { ...skill, skill_names: [...skill.skill_names, name] }
+     : skill
+   ),
+  }));
+  setValidationErrors(prev => {
+   const newErrors = { ...prev };
+   delete newErrors[`skill_name_${skillIndex}_new`];
+   return newErrors;
+  });
+  return true;
+ };
+
+ const handleNewSkillKeyDown = (skillIndex, event) => {
+  if (event.key !== "Enter" || event.nativeEvent?.isComposing) return;
+  event.preventDefault();
+  if (commitNewSkill(skillIndex, event.target.value)) event.target.value = "";
  };
 
  const handleNewSkillBlur = (skillIndex, value) => {
-  // Only add non-empty values that are English
-  if (value && value.trim() !== "" && isEnglishText(value)) {
-   setFormData((prev) => ({
-    ...prev,
-    skills: prev.skills.map((skill, i) =>
-     i === skillIndex
-      ? { ...skill, skill_names: [...skill.skill_names, value.trim()] }
-      : skill
-    ),
-   }));
-  }
+  // Keep the box open while what is typed is not valid, so it is not lost.
+  if (value?.trim() && !commitNewSkill(skillIndex, value)) return;
   setAddingSkillTo(null);
  };
 
@@ -1834,14 +1833,12 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
       skill_names: skill.skill_names.filter((name) => name?.trim()),
      })),
     certifications_attributes: formData.certifications
-     .filter(
-      (cert) =>
-       cert.name?.trim() && cert.organization?.trim() && cert.date?.trim()
-     )
+     // The issue date is optional; a certification without one is kept.
+     .filter((cert) => cert.name?.trim() && cert.organization?.trim())
      .map((cert, index) => ({
       name: cert.name.trim(),
       organization: cert.organization.trim(),
-      date: cert.date.trim(),
+      date: cert.date?.trim() || "",
      })),
     languages_attributes: formData.languages
      .filter((lang) => lang.language?.trim() && lang.proficiency?.trim())
@@ -2338,6 +2335,15 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
  const autoSaveTimerRef = useRef(null);
  const retryTimerRef = useRef(null);
  const retryCountRef = useRef(0);
+ // The last updated_at this tab knows for the draft. The server refuses a
+ // save based on an older one (another tab saved since) with 409 "stale";
+ // then this tab stops saving until it is reloaded.
+ const baseUpdatedAtRef = useRef(resume?.updated_at || null);
+ const staleRef = useRef(false);
+ // saved_at of saves that got no answer: the server may still have stored
+ // them, so a 409 naming one of them is this tab's own write, not another's.
+ const unansweredSavesRef = useRef(new Set());
+ const [isStale, setIsStale] = useState(false);
  // Until the user edits something, form changes (draft hydration, sections
  // loading) only move the baseline and do not count as unsaved.
  const userEditedRef = useRef(false);
@@ -2361,13 +2367,20 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
  const runSave = async (stepNumber, { keepalive = false } = {}) => {
   const fields = draftFields(formDataRef.current);
   const key = JSON.stringify(fields);
+  if (staleRef.current) return false;
+  const savedAt = new Date().toISOString();
   const body = new URLSearchParams({
    ...fields,
    current_step: stepNumber,
-   saved_at: new Date().toISOString(),
+   saved_at: savedAt,
   });
+  if (baseUpdatedAtRef.current) body.set("base_updated_at", baseUpdatedAtRef.current);
   savesInFlightRef.current += 1;
-  setAutoSaveStatus("saving");
+  // After a failed save, keep "Not saved. Retrying…" until one succeeds.
+  setAutoSaveStatus(lastSaveFailedRef.current ? "error" : "saving");
+  // A save that never answers counts as failed, so the queue moves on.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SAVE_TIMEOUT_MS);
   try {
    const response = await fetch(`/resumes/${resumeIdRef.current || "new"}/save_draft`, {
     method: "POST",
@@ -2381,9 +2394,27 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
     body,
     // keepalive lets a save started as the tab is hidden finish (64 KB cap).
     keepalive: keepalive && body.toString().length < 60000,
+    signal: controller.signal,
    });
+   if (response.status === 409) {
+    const conflict = await response.json().catch(() => ({}));
+    if (conflict.error === "stale" && unansweredSavesRef.current.has(conflict.saved_at)) {
+     baseUpdatedAtRef.current = conflict.updated_at;
+     throw new Error("save_draft 409 own write");
+    }
+    if (conflict.error === "stale") {
+     staleRef.current = true;
+     setIsStale(true);
+     clearTimeout(autoSaveTimerRef.current);
+     clearTimeout(retryTimerRef.current);
+     setAutoSaveStatus(null);
+     return false;
+    }
+   }
    if (!response.ok) throw new Error(`save_draft ${response.status}`);
    const result = await response.json();
+   if (result.updated_at) baseUpdatedAtRef.current = result.updated_at;
+   unansweredSavesRef.current.clear();
    if (result.resume_id) {
     resumeIdRef.current = result.resume_id;
     setResumeId(result.resume_id);
@@ -2397,11 +2428,14 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
    return true;
   } catch (error) {
    console.error("Error saving draft:", error);
+   // No response at all (timeout, network): the outcome is unknown.
+   if (error.name === "AbortError" || error.name === "TypeError") unansweredSavesRef.current.add(savedAt);
    lastSaveFailedRef.current = true;
    setAutoSaveStatus("error");
    scheduleRetry();
    return false;
   } finally {
+   clearTimeout(timeout);
    savesInFlightRef.current -= 1;
   }
  };
@@ -2465,6 +2499,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
   };
   const onOnline = () => flushIfDirty();
   const onBeforeUnload = (event) => {
+   if (staleRef.current) return;
    if (!isDirtyNow() && savesInFlightRef.current === 0) return;
    flushIfDirty({ keepalive: true });
    event.preventDefault();
@@ -2669,9 +2704,10 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
    // Clear validation errors on successful validation
    setValidationErrors({});
    
-   // Auto-save current step before moving to next
+   // Save in the background; a slow or hung save never holds the step
+   // change, and later edits queue behind it.
    if (resumeId) {
-    await saveDraft(currentStep, true);
+    saveDraft(currentStep, true);
    }
    
    const newStep = currentStep + 1;
@@ -3007,6 +3043,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
    removeSkillName,
    addingSkillTo,
    handleNewSkillChange,
+   handleNewSkillKeyDown,
    handleNewSkillBlur,
    handleCertificationChange,
    addCertification,
@@ -3130,6 +3167,21 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
        </div>
       </div>
      </div>
+
+     {/* Portaled: the card's backdrop filter would trap a fixed element. */}
+     {isStale && createPortal(
+      <div role="alert" data-save-status="stale" className="fixed inset-x-4 z-50 mx-auto max-w-md flex items-center justify-between gap-3 rounded-2xl border border-red-400/40 px-4 py-2 text-sm text-red-200 shadow-lg" style={{ bottom: "max(1rem, env(safe-area-inset-bottom))", backgroundColor: "var(--color-darkCard)" }}>
+       <span>{t('form.stale_tab')}</span>
+       <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="shrink-0 min-h-[44px] px-4 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 text-mist font-medium touch-manipulation"
+       >
+        {t('form.reload')}
+       </button>
+      </div>,
+      document.body
+     )}
 
      {/* Step Content */}
      <div className="px-4 sm:px-8 py-6 overflow-x-hidden" {...stepContentHandlers}>{renderStepContent()}</div>

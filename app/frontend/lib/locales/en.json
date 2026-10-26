@@ -316,7 +316,9 @@
     "start_editing": "Start editing",
     "save_export_pdf": "Save & Export PDF",
     "save_retrying": "Not saved. Retrying…",
-    "step_load_failed": "Couldn't load this step."
+    "step_load_failed": "Couldn't load this step.",
+    "stale_tab": "This CV changed in another tab.",
+    "reload": "Reload"
   },
   "step1": {
     "title": "Personal Information & Professional Summary",

@@ -38,8 +38,10 @@ class CvGeneration < ApplicationRecord
     is_draft? || status == "draft"
   end
 
+  # A saved draft that hasn't been started yet. Once resumed it is
+  # processing and resuming it again would charge and queue a second run.
   def can_be_resumed?
-    draft? || (processing? && created_at > 1.hour.ago)
+    draft? && !processing?
   end
 
   def resume_data

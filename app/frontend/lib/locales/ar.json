@@ -316,7 +316,9 @@
     "start_editing": "ابدأ التحرير",
     "save_export_pdf": "حفظ وتصدير PDF",
     "save_retrying": "لم يُحفظ. نعيد المحاولة…",
-    "step_load_failed": "تعذّر تحميل هذه الخطوة."
+    "step_load_failed": "تعذّر تحميل هذه الخطوة.",
+    "stale_tab": "تغيّرت هذه السيرة في تبويب آخر.",
+    "reload": "إعادة التحميل"
   },
   "resume": {
     "new_title": "إنشاء سيرة ذاتية جديدة",
