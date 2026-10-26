@@ -78,7 +78,8 @@ class ApplicationController < ActionController::Base
   def persist_locale_preference(locale)
     return unless valid_locale?(locale)
 
-    if cookies[:locale] != locale
+    # The default needs no cookie; only a choice (or a user's saved one) does.
+    if cookies[:locale] != locale && (params[:locale].present? || user_signed_in?)
       cookies[:locale] = {
         value: locale,
         expires: 1.year.from_now,

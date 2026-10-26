@@ -2,6 +2,7 @@
   The Seera glass header and its mobile menu, shared by every page.
   home: true links the section anchors in place; elsewhere they go to the landing.
   position: the header's positioning classes.
+  locale_link: switch language with a plain link, for pages without a session (no CSRF token).
 %>
 <% build_href = user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>
 <% target_locale = current_locale == 'ar' ? 'en' : 'ar' %>
@@ -27,7 +28,12 @@
     <a href="<%= anchor_base %>#templates" class="sr-btn px-4 py-2.5 rounded-xl text-[15px]" style="color: rgba(238,243,238,0.78)"><%= t('nav.templates') %></a>
   </nav>
   <div class="flex items-center gap-2">
-    <%= button_to locale_path(target_locale), method: :patch, form_class: "contents", class: "sr-btn glass-soft h-11 min-w-11 px-3 rounded-xl text-mist sr-mono text-[13px] font-semibold cursor-pointer", title: t('language.switch') do %><%= target_locale == 'ar' ? 'ع' : 'EN' %><% end %>
+    <% locale_classes = "sr-btn glass-soft h-11 min-w-11 px-3 rounded-xl text-mist sr-mono text-[13px] font-semibold cursor-pointer" %>
+    <% if local_assigns[:locale_link] %>
+      <%= link_to (target_locale == 'ar' ? 'ع' : 'EN'), root_path(locale: target_locale), class: "#{locale_classes} flex items-center justify-center", title: t('language.switch') %>
+    <% else %>
+      <%= button_to locale_path(target_locale), method: :patch, form_class: "contents", class: locale_classes, title: t('language.switch') do %><%= target_locale == 'ar' ? 'ع' : 'EN' %><% end %>
+    <% end %>
     <% if credit_balance %>
       <%= link_to credits_path, class: "sr-btn glass-soft hidden sm:flex items-center gap-2 h-11 min-w-11 px-3 rounded-xl text-mist", title: t('ux_credits.credits'), "aria-label": t('ux_credits.chip_label', count: number_with_delimiter(credit_balance)), data: { testid: "header-credit-chip" } do %>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="pointer-events-none shrink-0" style="color: #d6b877"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 010 4H10a2 2 0 000 4H15"/></svg><span class="sr-mono text-[14px] font-semibold" dir="ltr"><%= number_with_delimiter(credit_balance) %></span>

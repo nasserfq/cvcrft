@@ -90,6 +90,7 @@ class HomeControllerCacheTest < ActionDispatch::IntegrationTest
   end
 
   test "a second logged-out visit serves the cached landing" do
+    get "/login" # a session, so the header carries a token
     assert_equal 1, footer_renders { get root_url }
     first = response.body
 
@@ -121,17 +122,40 @@ class HomeControllerCacheTest < ActionDispatch::IntegrationTest
     assert_select "#faq h3", text: I18n.t("home_landing.faq.q1", locale: :ar)
   end
 
-  test "each visitor gets their own CSRF token and consent banner" do
-    visitor = open_session
-    visitor.get root_url
+  test "a first visit is public for a minute and sets no cookie" do
     get root_url
+    assert_equal "max-age=0, public, s-maxage=60", response.headers["Cache-Control"]
+    assert_nil response.headers["Set-Cookie"]
+    assert_select "meta[name=csrf-token]", 0
+    assert_select "#consent-banner[hidden]"
+    assert_select "header a[href='/?locale=en']"
+    assert_select "header form[action='/locale/en']", 0
+  end
+
+  test "the consent cookie alone keeps the page public, banner still in the markup" do
     cookies[:analytics_consent] = "granted"
     get root_url
+    assert_includes response.headers["Cache-Control"], "public"
+    assert_select "#consent-banner[hidden]"
+  end
 
-    tokens = [ visitor, self ].map { _1.css_select("meta[name=csrf-token]").first["content"] }
-    assert_not_equal tokens.first, tokens.last
-    assert_select "#consent-banner", 0
-    assert visitor.css_select("#consent-banner").any?
+  test "a visitor with a session, a language or a query string gets a private page" do
+    get "/login"
+    get root_url
+    assert_includes response.headers["Cache-Control"], "private"
+    assert_select "meta[name=csrf-token]"
+
+    reset!
+    get root_url(locale: "en")
+    assert_includes response.headers["Cache-Control"], "private"
+    assert_match(/locale=en/, response.headers["Set-Cookie"].to_s)
+    get root_url
+    assert_includes response.headers["Cache-Control"], "private"
+
+    reset!
+    sign_in users(:one)
+    get root_url
+    assert_includes response.headers["Cache-Control"], "private"
   end
 
   private

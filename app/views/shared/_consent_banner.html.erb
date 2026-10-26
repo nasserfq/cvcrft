@@ -1,29 +1,28 @@
-<%# The consent banner for shared/posthog. Body markup: render it right after <body>, not in <head>. %>
-<% unless cookies[:analytics_consent].present? %>
-  <div id="consent-banner" hidden role="dialog" aria-live="polite"
-       aria-label="<%= t('consent.title') %>"
-       class="fixed bottom-0 inset-x-0 z-[9999] p-4 sm:p-6">
-    <div class="mx-auto max-w-3xl bg-white/80 dark:bg-darkCard/70 backdrop-blur-xl text-ink dark:text-mist
-                border border-borderLight dark:border-borderDark rounded-[20px]
-                shadow-glass
-                p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-      <div class="flex-1">
-        <p class="font-semibold text-base mb-1"><%= t("consent.title") %></p>
-        <p class="text-sm leading-relaxed">
-          <%= t("consent.body") %>
-          <a href="<%= privacy_path %>" class="underline font-semibold"><%= t("consent.privacy_link") %></a>
-        </p>
-      </div>
-      <div class="flex gap-3 shrink-0">
-        <button type="button" onclick="window.analyticsConsent.decline()"
-                class="min-h-11 px-4 rounded-xl text-sm font-medium border border-borderLight dark:border-borderDark bg-white/60 dark:bg-white/5">
-          <%= t("consent.decline") %>
-        </button>
-        <button type="button" onclick="window.analyticsConsent.accept()"
-                class="min-h-11 px-5 rounded-xl text-sm font-semibold bg-primary text-white">
-          <%= t("consent.accept") %>
-        </button>
-      </div>
+<%# The consent banner for shared/posthog. Body markup: render it right after <body>, not in <head>.
+    Always rendered, hidden: the script shows it only without a consent cookie, so cached pages work. %>
+<div id="consent-banner" hidden role="dialog" aria-live="polite"
+     aria-label="<%= t('consent.title') %>"
+     class="fixed bottom-0 inset-x-0 z-[9999] p-4 sm:p-6">
+  <div class="mx-auto max-w-3xl bg-white/80 dark:bg-darkCard/70 backdrop-blur-xl text-ink dark:text-mist
+              border border-borderLight dark:border-borderDark rounded-[20px]
+              shadow-glass
+              p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex-1">
+      <p class="font-semibold text-base mb-1"><%= t("consent.title") %></p>
+      <p class="text-sm leading-relaxed">
+        <%= t("consent.body") %>
+        <a href="<%= privacy_path %>" class="underline font-semibold"><%= t("consent.privacy_link") %></a>
+      </p>
+    </div>
+    <div class="flex gap-3 shrink-0">
+      <button type="button" onclick="window.analyticsConsent.decline()"
+              class="min-h-11 px-4 rounded-xl text-sm font-medium border border-borderLight dark:border-borderDark bg-white/60 dark:bg-white/5">
+        <%= t("consent.decline") %>
+      </button>
+      <button type="button" onclick="window.analyticsConsent.accept()"
+              class="min-h-11 px-5 rounded-xl text-sm font-semibold bg-primary text-white">
+        <%= t("consent.accept") %>
+      </button>
     </div>
   </div>
-<% end %>
+</div>
