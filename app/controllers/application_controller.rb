@@ -1,6 +1,14 @@
 class ApplicationController < ActionController::Base
-  # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
+  # Link-preview crawlers that don't count as bots. Meta's (WhatsApp, Facebook,
+  # Instagram) sends an old Safari user agent, so allow_browser would answer 406
+  # and shared links would show no preview.
+  LINK_PREVIEW_CRAWLER = /facebookexternalhit|Facebot/i
+
+  # The oldest browsers the styles and scripts work in: Tailwind v4 needs
+  # Safari 16.4 and Chrome 111, import maps need Safari 16.4.
+  SUPPORTED_BROWSERS = { safari: 16.4, chrome: 111, firefox: 121, opera: 97, ie: false }.freeze
+
+  allow_browser versions: SUPPORTED_BROWSERS, unless: -> { request.user_agent.to_s.match?(LINK_PREVIEW_CRAWLER) }
 
   # Basic HTTP Authentication (skip for health check)
   # http_basic_authenticate_with name: ENV["BASIC_AUTH_USERNAME"] || "admin",
