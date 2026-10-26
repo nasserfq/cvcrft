@@ -1,4 +1,4 @@
-<%# The consent banner for shared/posthog. Body markup: render it right after <body>, not in <head>.
+<%# The consent banner for shared/posthog. Body markup: place it right after <body>, not in <head>.
     Always rendered, hidden: the script shows it only without a consent cookie, so cached pages work. %>
 <div id="consent-banner" hidden role="dialog" aria-live="polite"
      aria-label="<%= t('consent.title') %>"
