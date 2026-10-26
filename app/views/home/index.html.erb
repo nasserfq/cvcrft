@@ -3,12 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <% cache_if landing_cached?, landing_cache_key(:head), expires_in: 10.minutes do %>
     <title><%= t('site.name') %> | <%= t('site.tagline') %></title>
     <meta name="description" content="<%= t('site.description') %>" />
     <meta name="theme-color" content="#07120D" />
     
     <!-- Canonical & Language Alternates -->
-    <link rel="canonical" href="https://cvcrft.com<%= request.path == '/' ? '' : request.path %>" />
+    <link rel="canonical" href="https://cvcrft.com" />
     <link rel="alternate" hreflang="ar" href="https://cvcrft.com/?locale=ar" />
     <link rel="alternate" hreflang="en" href="https://cvcrft.com/?locale=en" />
     <link rel="alternate" hreflang="x-default" href="https://cvcrft.com/" />
@@ -33,11 +36,9 @@
     <!-- Favicon -->
     <link rel="icon" href="/icon.png?v=7" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=7" />
-    
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
-    <%= render 'shared/posthog' %>
-    
+
+    <%= render 'shared/posthog', banner: false %>
+
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -112,8 +113,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" /></noscript>
+    <% end %>
   </head>
   <body class="bg-darkBase text-mist overflow-x-hidden">
+    <%= render 'shared/consent_banner' %>
     <a href="#main" class="lp-skip"><%= t('home_landing.skip_to_content') %></a>
     <% build_href = user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>
     <% arrow = '<svg class="sr-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>'.html_safe %>
@@ -126,6 +129,7 @@
 
         <%= render 'shared/site_header', home: true %>
 
+        <% cache_if landing_cached?, landing_cache_key(:main), expires_in: 10.minutes do %>
         <main id="main" tabindex="-1" class="outline-none">
 
         <!-- Hero -->
@@ -164,7 +168,7 @@
                 <span class="glass sr-mono w-[38px] h-[38px] rounded-full flex items-center justify-center text-xs font-semibold -ms-2.5" style="background: rgba(0,108,53,0.5)">AE</span>
                 <span class="glass sr-mono w-[38px] h-[38px] rounded-full flex items-center justify-center text-xs font-semibold -ms-2.5" style="background: rgba(214,184,119,0.35)">KW</span>
               </div>
-              <span class="text-sm" style="color: rgba(238,243,238,0.65)"><%= t('home.trusted_by', count: number_with_delimiter(@users_count)) %></span>
+              <span class="text-sm" style="color: rgba(238,243,238,0.65)"><%= t('home.trusted_by', count: number_with_delimiter(users_count)) %></span>
             </div>
           </div>
 
@@ -427,6 +431,7 @@
         </main>
 
         <%= render 'shared/site_footer' %>
+        <% end %>
       </div>
     </div>
 

@@ -72,3 +72,79 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 end
+
+# Logged-out visitors get the landing's static parts from the cache.
+class HomeControllerCacheTest < ActionDispatch::IntegrationTest
+  setup do
+    @caching, @store = ActionController::Base.perform_caching, ActionController::Base.cache_store
+    @forgery = ActionController::Base.allow_forgery_protection
+    ActionController::Base.perform_caching = true
+    ActionController::Base.allow_forgery_protection = true
+    ActionController::Base.cache_store = ActiveSupport::Cache::MemoryStore.new
+  end
+
+  teardown do
+    ActionController::Base.perform_caching = @caching
+    ActionController::Base.cache_store = @store
+    ActionController::Base.allow_forgery_protection = @forgery
+  end
+
+  test "a second logged-out visit serves the cached landing" do
+    assert_equal 1, footer_renders { get root_url }
+    first = response.body
+
+    User.expects(:count).never
+    assert_equal 0, footer_renders { get root_url }
+    assert_select "#faq details", 6
+    assert_select "header form input[name=authenticity_token]"
+    assert_equal without_tokens(first), without_tokens(response.body)
+  end
+
+  test "a logged-in visit is not served the logged-out copy" do
+    get root_url
+    sign_in users(:one)
+
+    assert_equal 1, footer_renders { get root_url }
+    assert_select "a[href=?]", new_resume_path
+    assert_select "a[href=?]", login_path(return_to: new_resume_path), 0
+  end
+
+  test "Arabic and English get their own cached copies" do
+    assert_equal 1, footer_renders { get root_url(locale: "en") }
+    assert_equal 1, footer_renders { get root_url(locale: "ar") }
+
+    assert_equal 0, footer_renders { get root_url(locale: "en") }
+    assert_select "html[lang=en]"
+    assert_select "#faq h3", text: I18n.t("home_landing.faq.q1", locale: :en)
+    assert_equal 0, footer_renders { get root_url(locale: "ar") }
+    assert_select "html[lang=ar]"
+    assert_select "#faq h3", text: I18n.t("home_landing.faq.q1", locale: :ar)
+  end
+
+  test "each visitor gets their own CSRF token and consent banner" do
+    visitor = open_session
+    visitor.get root_url
+    get root_url
+    cookies[:analytics_consent] = "granted"
+    get root_url
+
+    tokens = [ visitor, self ].map { _1.css_select("meta[name=csrf-token]").first["content"] }
+    assert_not_equal tokens.first, tokens.last
+    assert_select "#consent-banner", 0
+    assert visitor.css_select("#consent-banner").any?
+  end
+
+  private
+
+  # Tokens are masked afresh on every request.
+  def without_tokens(html)
+    html.gsub(/(csrf-token" content|authenticity_token" value)="[^"]+"/, '\\1=""')
+  end
+
+  def footer_renders(&request)
+    count = 0
+    counter = ->(event) { count += 1 if event.payload[:identifier].end_with?("shared/_site_footer.html.erb") }
+    ActiveSupport::Notifications.subscribed(counter, "render_partial.action_view", &request)
+    count
+  end
+end
