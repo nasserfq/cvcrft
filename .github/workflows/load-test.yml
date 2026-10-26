@@ -1,21 +1,23 @@
 # Load test of the live site from many GitHub runners at once, so the load
 # isn't capped by one machine's ports or network. Run it from Actions › Load
-# test › Run workflow. Only https://cvcrft.com public pages, no sign-in.
+# test › Run workflow. Only https://cvcrft.com. The builder targets sign in
+# with the LOAD_TEST_COOKIE secret (a test account's _cvcraft_session cookie)
+# and use the CV in LOAD_TEST_RESUME_ID; they only read, never save or call AI.
 name: Load test
 
 on:
   workflow_dispatch:
     inputs:
-      path:
-        description: Page to hit
+      target:
+        description: What to hit
         type: choice
-        options: [ "/", "/up" ]
-        default: "/"
+        options: [ "homepage", "health", "builder page", "builder PDF" ]
+        default: "homepage"
       connections:
         description: Connections per runner (10 runners)
         type: choice
-        options: [ "100", "500", "1000" ]
-        default: "1000"
+        options: [ "10", "50", "100", "500", "1000" ]
+        default: "100"
       duration:
         description: Seconds
         type: choice
@@ -61,20 +63,44 @@ jobs:
           wait=$(( ${{ needs.plan.outputs.start }} - $(date +%s) ))
           if [ "$wait" -gt 0 ]; then sleep "$wait"; else echo "late by $(( -wait ))s"; fi
 
+      - name: Pick the URL
+        env:
+          KIND: ${{ inputs.target }}
+          COOKIE: ${{ secrets.LOAD_TEST_COOKIE }}
+          RESUME_ID: ${{ secrets.LOAD_TEST_RESUME_ID }}
+        run: |
+          case "$KIND" in
+            homepage) url=https://cvcrft.com/ ;;
+            health) url=https://cvcrft.com/up ;;
+            "builder page") url="https://cvcrft.com/resumes/${RESUME_ID}/edit" ;;
+            "builder PDF") url="https://cvcrft.com/resumes/${RESUME_ID}/generate_pdf" ;;
+          esac
+          echo "TARGET=$url" >> "$GITHUB_ENV"
+          case "$KIND" in builder*)
+            if [ -z "$COOKIE" ] || [ -z "$RESUME_ID" ]; then
+              echo "::error::Add the LOAD_TEST_COOKIE and LOAD_TEST_RESUME_ID repo secrets first"; exit 1
+            fi
+            echo "::add-mask::$COOKIE"
+            echo "COOKIE_HEADER=Cookie: _cvcraft_session=$COOKIE" >> "$GITHUB_ENV"
+            # A signed-out cookie would quietly measure the login redirect instead.
+            code=$(curl -s -o /dev/null -w '%{http_code}' -H "Cookie: _cvcraft_session=$COOKIE" "$url")
+            if [ "$code" != 200 ]; then echo "::error::Builder answered $code; the cookie or CV id is wrong"; exit 1; fi
+          ;; esac
+
       - name: Run
         env:
-          TARGET: https://cvcrft.com${{ inputs.path }}
           CONNECTIONS: ${{ inputs.connections }}
           DURATION: ${{ inputs.duration }}
         run: |
           ulimit -n 65536
-          ./oha -z "${DURATION}s" -c "$CONNECTIONS" --no-tui --json "$TARGET" > result.json
+          ./oha -z "${DURATION}s" -c "$CONNECTIONS" --no-tui --json --redirect 0 \
+            ${COOKIE_HEADER:+-H "$COOKIE_HEADER"} "$TARGET" > result.json
 
       # Whether this runner can still reach the site (Cloudflare may block it).
       - name: Reachable after
         if: always()
         run: |
-          curl -sS -o /dev/null -w 'after: %{http_code}\n' --max-time 10 "https://cvcrft.com${{ inputs.path }}" || true
+          curl -sS -o /dev/null -w 'after: %{http_code}\n' --max-time 10 ${COOKIE_HEADER:+-H "$COOKIE_HEADER"} "$TARGET" || true
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -94,7 +120,7 @@ jobs:
       - name: Summary
         env:
           CONNECTIONS: ${{ inputs.connections }}
-          PATH_HIT: ${{ inputs.path }}
+          PATH_HIT: ${{ inputs.target }}
         run: |
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import glob, json, os
