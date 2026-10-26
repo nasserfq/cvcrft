@@ -1,0 +1,112 @@
+# Load test of the live site from many GitHub runners at once, so the load
+# isn't capped by one machine's ports or network. Run it from Actions › Load
+# test › Run workflow. Only https://cvcrft.com public pages, no sign-in.
+name: Load test
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: Page to hit
+        type: choice
+        options: [ "/", "/up" ]
+        default: "/"
+      connections:
+        description: Connections per runner (10 runners)
+        type: choice
+        options: [ "100", "500", "1000" ]
+        default: "1000"
+      duration:
+        description: Seconds
+        type: choice
+        options: [ "30", "60" ]
+        default: "30"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: load-test
+  cancel-in-progress: false
+
+env:
+  OHA_VERSION: v1.4.5
+
+jobs:
+  # Every runner waits for the same start time, so the load lands together.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      start: ${{ steps.start.outputs.at }}
+    steps:
+      - id: start
+        run: echo "at=$(( $(date +%s) + 120 ))" >> "$GITHUB_OUTPUT"
+
+  hit:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+    steps:
+      - name: Install oha
+        run: |
+          curl -sSfL -o oha "https://github.com/hatoo/oha/releases/download/${OHA_VERSION}/oha-linux-amd64"
+          chmod +x oha
+
+      - name: Wait for the common start
+        run: |
+          wait=$(( ${{ needs.plan.outputs.start }} - $(date +%s) ))
+          if [ "$wait" -gt 0 ]; then sleep "$wait"; else echo "late by $(( -wait ))s"; fi
+
+      - name: Run
+        env:
+          TARGET: https://cvcrft.com${{ inputs.path }}
+          CONNECTIONS: ${{ inputs.connections }}
+          DURATION: ${{ inputs.duration }}
+        run: |
+          ulimit -n 65536
+          ./oha -z "${DURATION}s" -c "$CONNECTIONS" --no-tui --json "$TARGET" > result.json
+          curl -s -o /dev/null -w 'after: %{http_code}\n' "$TARGET"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ matrix.runner }}
+          path: result.json
+
+  report:
+    needs: hit
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: result-*
+
+      - name: Summary
+        env:
+          CONNECTIONS: ${{ inputs.connections }}
+          PATH_HIT: ${{ inputs.path }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import glob, json, os
+          runs = [json.load(open(f)) for f in sorted(glob.glob("result-*/result.json"))]
+          rps = sum(r["summary"]["requestsPerSec"] for r in runs)
+          codes, errors = {}, {}
+          for r in runs:
+              for k, v in r.get("statusCodeDistribution", {}).items():
+                  codes[k] = codes.get(k, 0) + v
+              for k, v in r.get("errorDistribution", {}).items():
+                  errors[k] = errors.get(k, 0) + v
+          answered = sum(codes.values())
+          total = answered + sum(errors.values())
+          worst = lambda p: max((r["latencyPercentiles"][p] or 0) for r in runs) * 1000
+          print(f"## {len(runs)} runners × {os.environ['CONNECTIONS']} connections on {os.environ['PATH_HIT']}")
+          print(f"- Requests/s (all runners): **{rps:,.0f}**")
+          print(f"- Answered: {answered:,} of {total:,} ({answered / max(total, 1):.1%})")
+          print(f"- Worst runner p50 / p95 / p99: {worst('p50'):,.0f} / {worst('p95'):,.0f} / {worst('p99'):,.0f} ms")
+          print(f"- Status codes: {dict(sorted(codes.items()))}")
+          print(f"- Errors: {errors or 'none'}")
+          PY
