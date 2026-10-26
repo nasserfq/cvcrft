@@ -26,6 +26,8 @@ class ContentSecurityPolicyTest < ActionDispatch::IntegrationTest
       assert_includes d["style-src"], "https://fonts.googleapis.com"
       assert_includes d["font-src"], "https://fonts.gstatic.com"
       assert_includes d["connect-src"], "'self'"
+      assert_includes d["script-src"], "https://static.cloudflareinsights.com"
+      assert_includes d["connect-src"], "https://cloudflareinsights.com"
       assert_equal [ "'none'" ], d["object-src"]
       assert_equal [ "'self'" ], d["base-uri"]
       assert_equal [ "'self'" ], d["frame-ancestors"]
