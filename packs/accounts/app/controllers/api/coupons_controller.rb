@@ -1,6 +1,9 @@
 class Api::CouponsController < ApplicationController
   before_action :authenticate_user!
 
+  include UserRateLimit
+  rate_limit_per_user to: 5, within: 10.minutes, only: :redeem, name: "coupon"
+
   def redeem
     code = params[:code].to_s.strip
     if code.blank?

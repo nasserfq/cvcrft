@@ -1,6 +1,9 @@
 class CreditsController < ApplicationController
   before_action :authenticate_user!, except: :moyasar_callback
   before_action :require_billing!, except: :moyasar_callback
+
+  include UserRateLimit
+  rate_limit_per_user to: 5, within: 1.minute, only: :purchase, name: "purchase"
   # Moyasar's server posts here; it has no session or CSRF token.
   skip_before_action :verify_authenticity_token, only: :moyasar_callback
 

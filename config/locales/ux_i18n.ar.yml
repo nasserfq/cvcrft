@@ -19,6 +19,7 @@ ar:
       malformed_file: "الملف تالف أو غير صالح"
       processing_error: "حدث خطأ أثناء معالجة الملف"
       not_found: "التحليل غير موجود"
+    rate_limited: "طلبات كثيرة. حاول بعد دقيقة."
     resumes:
       deleted: "تم حذف السيرة الذاتية بنجاح"
       pdf_load_failed: "تعذّر تحميل ملف PDF."

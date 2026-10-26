@@ -3,10 +3,10 @@ class ResumesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_resume, only: [ :show, :edit, :update, :destroy, :generate_pdf, :optimize_ats, :resume_draft, :experiences, :skills_section, :educations, :certifications_section, :languages_section ]
 
-  # Each PDF holds a web worker for a moment, so one account can't flood them.
-  rate_limit to: 10, within: 1.minute, only: :generate_pdf, name: "pdf-user",
-             by: -> { current_user.id },
-             with: -> { render plain: t("ux_i18n.resumes.pdf_rate_limited"), status: :too_many_requests }
+  include UserRateLimit
+  # Plain text, because the builder preview shows this answer in its PDF frame.
+  rate_limit_per_user to: 10, within: 1.minute, only: :generate_pdf, name: "pdf",
+                      with: -> { render plain: t("ux_i18n.resumes.pdf_rate_limited"), status: :too_many_requests }
 
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }

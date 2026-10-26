@@ -2,6 +2,9 @@ class CvGenerationsController < ApplicationController
   include CreditsUpsell
 
   before_action :authenticate_user!
+
+  include UserRateLimit
+  rate_limit_per_user to: 5, within: 1.minute, only: %i[create retry], name: "cv-generation"
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
   before_action :set_cv_generation, only: [ :show, :status, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :preview, :save_draft, :resume_draft ]
   before_action :require_saved_resume, only: [ :retry, :resume_draft ]

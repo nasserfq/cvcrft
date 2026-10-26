@@ -1,6 +1,9 @@
 class AiTranslationsController < ApplicationController
   before_action :authenticate_user!
 
+  include UserRateLimit
+  rate_limit_per_user to: 20, within: 1.minute, only: :create, name: "ai-translation"
+
   def create
     @translation = current_user.ai_translations.build(translation_params)
     if @translation.resume_id && !current_user.resumes.exists?(@translation.resume_id)
