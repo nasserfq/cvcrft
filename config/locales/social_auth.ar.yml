@@ -5,7 +5,7 @@ ar:
       google: "المتابعة باستخدام Google"
       apple: "المتابعة باستخدام Apple"
       linkedin: "المتابعة باستخدام LinkedIn"
-    or_email: "أو"
+    or_email: "أو تابع باستخدام البريد الإلكتروني"
     default_name: "مستخدم Seera AI"
     failed: "تعذّر تسجيل دخولك بهذا الحساب. حاول مرة أخرى أو استخدم بريدك الإلكتروني."
     errors:

@@ -5,7 +5,7 @@ en:
       google: "Continue with Google"
       apple: "Continue with Apple"
       linkedin: "Continue with LinkedIn"
-    or_email: "or"
+    or_email: "Or continue with email"
     default_name: "Seera AI user"
     failed: "We couldn't sign you in with that account. Please try again or use your email."
     errors:

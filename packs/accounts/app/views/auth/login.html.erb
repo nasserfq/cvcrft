@@ -47,11 +47,18 @@
           <div class="w-full max-w-[480px] flex flex-col gap-7">
             <!-- Header -->
             <header class="flex flex-col items-center text-center gap-5">
+              <span class="glass-soft sr-up inline-flex items-center gap-2.5 px-4 py-2 rounded-full text-sm" style="animation-delay: 0s; color: rgba(238,243,238,0.9)">
+                <span class="sr-dot w-2 h-2 rounded-full bg-primary"></span>
+                <%= t('auth.secure_login') %>
+              </span>
               <h1 class="m-0 font-semibold" style="font-size: clamp(34px, 5vw, 52px); line-height: 1.15; letter-spacing: -0.02em">
                 <% delay = 0.1 %>
                 <% t('auth.welcome').split.each do |word| %><span class="sr-w" style="animation-delay: <%= delay.round(2) %>s"><%= word %></span> <% delay += 0.08 %><% end %>
                 <span class="sr-w" style="color: #d6b877; animation-delay: <%= delay.round(2) %>s"><%= t('site.name') %></span>
               </h1>
+              <p class="sr-up m-0 text-[17px] font-light max-w-[42ch]" style="animation-delay: .45s; color: rgba(238,243,238,0.7)">
+                <%= t('auth.otp_instruction') %>
+              </p>
             </header>
 
             <!-- Flash Messages -->
@@ -230,6 +237,13 @@
               </div>
             </div>
 
+            <!-- Terms -->
+            <p class="sr-up m-0 text-center text-[13px] leading-6" style="animation-delay: .7s; color: rgba(238,243,238,0.55)">
+              <%= t('auth.terms_agreement') %>
+              <a href="<%= terms_path %>" class="underline underline-offset-4" style="color: #d6b877"><%= t('auth.terms_of_service') %></a>
+              <%= t('auth.and') %>
+              <a href="<%= privacy_path %>" class="underline underline-offset-4" style="color: #d6b877"><%= t('auth.privacy_policy') %></a>
+            </p>
           </div>
         </main>
 
