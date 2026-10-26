@@ -83,7 +83,8 @@ jobs:
             echo "::add-mask::$COOKIE"
             echo "COOKIE_HEADER=Cookie: _cvcraft_session=$COOKIE" >> "$GITHUB_ENV"
             # A signed-out cookie would quietly measure the login redirect instead.
-            code=$(curl -s -o /dev/null -w '%{http_code}' -H "Cookie: _cvcraft_session=$COOKIE" "$url")
+            code=$(curl -s -o /dev/null -D headers.txt -w '%{http_code}' -H "Cookie: _cvcraft_session=$COOKIE" "$url")
+            grep -iE '^(content-type|content-length|cache-control|cf-cache-status):' headers.txt || true
             if [ "$code" != 200 ]; then echo "::error::Builder answered $code; the cookie or CV id is wrong"; exit 1; fi
           ;; esac
 
@@ -122,9 +123,11 @@ jobs:
           CONNECTIONS: ${{ inputs.connections }}
           PATH_HIT: ${{ inputs.target }}
         run: |
-          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          python3 - <<'PY' | tee -a "$GITHUB_STEP_SUMMARY"
           import glob, json, os
           runs = [json.load(open(f)) for f in sorted(glob.glob("result-*/result.json"))]
+          if not runs:
+              raise SystemExit("No runner produced results; see the hit jobs.")
           rps = sum(r["summary"]["requestsPerSec"] for r in runs)
           codes, errors = {}, {}
           for r in runs:
@@ -135,10 +138,12 @@ jobs:
           answered = sum(codes.values())
           total = answered + sum(errors.values())
           worst = lambda p: max((r["latencyPercentiles"][p] or 0) for r in runs) * 1000
+          size = sum(r["summary"].get("sizePerRequest") or 0 for r in runs) / len(runs)
           print(f"## {len(runs)} runners × {os.environ['CONNECTIONS']} connections on {os.environ['PATH_HIT']}")
           print(f"- Requests/s (all runners): **{rps:,.0f}**")
           print(f"- Answered: {answered:,} of {total:,} ({answered / max(total, 1):.1%})")
           print(f"- Worst runner p50 / p95 / p99: {worst('p50'):,.0f} / {worst('p95'):,.0f} / {worst('p99'):,.0f} ms")
           print(f"- Status codes: {dict(sorted(codes.items()))}")
+          print(f"- Average response size: {size:,.0f} bytes")
           print(f"- Errors: {errors or 'none'}")
           PY
