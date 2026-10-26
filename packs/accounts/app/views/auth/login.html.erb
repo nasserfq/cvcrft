@@ -81,9 +81,8 @@
               <div class="p-6 sm:p-8">
                 <!-- Email step: kept in the page on the OTP step (hidden) so "Change email" needs no reload -->
                 <%# On the OTP step it starts hidden; "Change email" reveals it with the landing's rise. %>
-                <%# The PDPL consent box covers both the email code and social sign-in. With social
-                    buttons it sits above them; without, it stays in the email form as before. The
-                    form="email-form" attribute keeps it part of that form wherever it is. %>
+                <%# The PDPL consent box covers both the email code and social sign-in. It sits under
+                    all the buttons, at the end of the email form. %>
                 <% social = SocialAuth.providers.any? %>
                 <% consent_block = capture do %>
                     <div class="flex items-start gap-1">
@@ -109,8 +108,6 @@
                 <div id="email-step" class="<%= 'hidden sr-up' if otp_step %>" style="animation-duration: .8s">
                   <div class="flex flex-col gap-6">
                     <% if social %>
-                      <%= consent_block %>
-
                       <!-- Social sign-in: POST forms (OmniAuth); the script below adds the consent -->
                       <div class="flex flex-col gap-3">
                         <% SocialAuth::PROVIDERS.each_key do |provider| %>
@@ -150,12 +147,12 @@
                           placeholder="<%= t('auth.email_placeholder') %>"
                         />
                       </div>
-                      <%= consent_block unless social %>
                       <button type="submit" class="<%= primary_class %>" style="<%= primary_style %>">
                         <%= seera_icon "solar:letter-linear", width: 20, class: "btn-icon" %>
                         <%= spinner %>
                         <span class="btn-text"><%= t('auth.send_code') %></span>
                       </button>
+                      <%= consent_block %>
                     </form>
                   </div>
                 </div>
