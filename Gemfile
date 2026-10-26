@@ -67,7 +67,7 @@ gem "activestorage"
 gem "actionmailbox"
 gem "actiontext"
 gem "actioncable"
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.2"
 gem "administrate"
 # Background job processing
 gem "sidekiq"
