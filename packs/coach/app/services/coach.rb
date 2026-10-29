@@ -26,9 +26,14 @@ module Coach
     user_messages(user).where(created_at: Time.current.all_day).count
   end
 
+  def self.daily_cap_reached?(user)
+    !user.usage_limits.unlimited_coach? && daily_count(user) >= DAILY_LIMIT
+  end
+
   # Call after the user's message is saved, so it counts itself.
   # Returns :free, :credit or :blocked; :blocked records nothing.
   def self.charge!(user, message)
+    return :free if user.usage_limits.unlimited_coach?
     return :free unless Billing.enabled_for?(user)
     return :free if user_messages(user).count <= FREE_MESSAGES
 

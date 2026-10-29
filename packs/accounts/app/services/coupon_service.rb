@@ -15,6 +15,8 @@ class CouponService
     def redeem(user, code)
       coupon = CouponRegistry.find(code)
       raise InvalidCouponError.new(:invalid_or_expired) unless coupon&.redeemable?
+      # Same error as an unknown code, so it doesn't reveal the code exists.
+      raise InvalidCouponError.new(:invalid_or_expired) unless coupon.allowed_for?(user)
 
       if CouponRedemptionStore.redeemed?(user.id, coupon.code)
         raise AlreadyRedeemedError.new(:already_redeemed)

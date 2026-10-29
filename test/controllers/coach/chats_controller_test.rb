@@ -292,6 +292,40 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
   end
 
+  test "the owner coupon skips the daily cap and coach charges" do
+    CouponRegistry.reload!
+    CouponRedemptionStore.reset!
+    CouponService.redeem(@user, "TESTOWNER")
+    ENV["BILLING_ENABLED"] = "true"
+    Coach::DAILY_LIMIT.times { @chat.messages.create!(role: "user", content: "Hi") }
+    use_free_messages
+
+    assert_not Coach.daily_cap_reached?(@user)
+    assert_equal :free, Coach.charge!(@user, @chat.messages.last)
+    post message_coach_chat_url(@chat), params: { content: "One more" }, as: :json
+    assert_response :accepted
+    assert_not CreditLedgerEntry.exists?(reason: "coach_message")
+  ensure
+    ENV.delete("BILLING_ENABLED")
+    CouponRedemptionStore.reset!
+  end
+
+  test "the plain unlimited coupon still pays for coach messages" do
+    CouponRegistry.reload!
+    CouponRedemptionStore.reset!
+    CouponService.redeem(@user, "TESTUNLIMITED")
+    ENV["BILLING_ENABLED"] = "true"
+    use_free_messages
+
+    post message_coach_chat_url(@chat), params: { content: "One more" }, as: :json
+
+    assert_response :accepted
+    assert CreditLedgerEntry.exists?(reason: "coach_message")
+  ensure
+    ENV.delete("BILLING_ENABLED")
+    CouponRedemptionStore.reset!
+  end
+
   private
 
   def import_chat_with_proposal(user = @user)

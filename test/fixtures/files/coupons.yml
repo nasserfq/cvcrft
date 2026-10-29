@@ -5,3 +5,11 @@ coupons:
     description: Unlimited access (tests)
     active: true
     unlimited: true
+  # TESTOWNER, only for user-one@example.com
+  013471C751CC7E802B8C1D72E594012FB3B433AB144D246C0453E78FED119C56:
+    description: Owner unlimited access (tests)
+    active: true
+    unlimited: true
+    unlimited_coach: true
+    emails:
+      - 04EE270592E3190C5E874AEE96ED9C9EB20331C7EC777431E2373A16E1F7D39C

@@ -2,9 +2,23 @@
 # The repo is public, so each key is the code's SHA-256, never the code:
 #   bin/rails runner 'puts CouponRegistry.digest("YOUR-CODE")'
 # Use long random codes; a short one can be guessed from its digest.
+# emails: lists digests of the account emails allowed to redeem it (same command).
 coupons:
   # Naif's unlimited access (replaces the leaked NAIF2026)
   07D78B3FF724E36B3DBB807C0823A326BD7C68AD96AEEB6CA5218C181C76B1A6:
     description: Unlimited access promo
     active: true
     unlimited: true
+  # Nasser's own unlimited access; only his account can redeem it
+  2769C4A506902D7E335FA656650F7C620955FF4B67CDF1B03A64403F8CC199BF:
+    description: Owner unlimited access
+    active: true
+    unlimited: true
+    unlimited_coach: true
+    emails:
+      - B6BF7649A9F0A111E2F6BFF8C06054E1B31F4173DE7F439D26CF8FD26A5A86D5
+  # Gift code Nasser shares: 100 credits (the 19 SAR pack), once per account
+  09C64EF3BC28912A86D3BDAA2C3706C56C38729A0006EE353845934049D51A08:
+    description: Gift 100 credits
+    active: true
+    bonus_credits: 100
