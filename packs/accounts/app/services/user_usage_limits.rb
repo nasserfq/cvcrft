@@ -22,6 +22,10 @@ class UserUsageLimits
     redeemed_coupons.any?(&:unlimited?)
   end
 
+  def unlimited_coach?
+    redeemed_coupons.any?(&:unlimited_coach?)
+  end
+
   def max_summary_translations
     return nil if unlimited?
 
@@ -172,9 +176,10 @@ class UserUsageLimits
     end
   end
 
+  # A coupon restricted to other accounts never applies, even if redeemed before.
   def redeemed_coupons
     CouponRedemptionStore.redeemed_codes_for(@user.id).filter_map do |code|
-      CouponRegistry.all.find { |coupon| coupon.code == code }
+      CouponRegistry.all.find { |coupon| coupon.code == code && coupon.allowed_for?(@user) }
     end
   end
 

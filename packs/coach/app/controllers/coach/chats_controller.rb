@@ -48,7 +48,7 @@ module Coach
     end
 
     def message
-      if Coach.daily_count(current_user) >= Coach::DAILY_LIMIT
+      if Coach.daily_cap_reached?(current_user)
         return render json: { error: t("coach.daily_cap", limit: Coach::DAILY_LIMIT) }, status: :too_many_requests
       end
 
@@ -72,7 +72,7 @@ module Coach
     # A Seera resume is copied into the draft now; a PDF's text becomes the first message and TurnJob extracts it.
     def start_import
       # An import starts a model turn too, so it counts against the same cap as #message.
-      return import_failed(t("coach.daily_cap", limit: Coach::DAILY_LIMIT), status: :too_many_requests) if Coach.daily_count(current_user) >= Coach::DAILY_LIMIT
+      return import_failed(t("coach.daily_cap", limit: Coach::DAILY_LIMIT), status: :too_many_requests) if Coach.daily_cap_reached?(current_user)
 
       if params[:resume_id].present?
         # list only holds the user's own resumes, so another user's id is a 404.

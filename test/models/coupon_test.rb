@@ -56,4 +56,37 @@ class CouponServiceTest < ActiveSupport::TestCase
 
     assert_equal Billing::SIGNUP_BONUS + 25, Billing::Credits.balance(user)
   end
+
+  test "an email-restricted coupon gives its owner unlimited use, coach included" do
+    user = users(:one)
+
+    coupon = CouponService.redeem(user, "TESTOWNER")
+
+    assert coupon.unlimited_coach?
+    assert user.usage_limits.unlimited?
+    assert user.usage_limits.unlimited_coach?
+  end
+
+  test "an email-restricted coupon looks invalid to any other account" do
+    error = assert_raises(CouponService::InvalidCouponError) do
+      CouponService.redeem(users(:two), "TESTOWNER")
+    end
+
+    assert_equal :invalid_or_expired, error.code
+  end
+
+  test "an email-restricted coupon never applies to another account that holds it" do
+    user = users(:two)
+    CouponRedemptionStore.redeem!(user.id, CouponRegistry.digest("TESTOWNER"))
+
+    refute user.usage_limits.unlimited?
+    refute user.usage_limits.unlimited_coach?
+  end
+
+  test "the plain unlimited coupon keeps the coach's limits" do
+    user = users(:one)
+    CouponService.redeem(user, "TESTUNLIMITED")
+
+    refute user.usage_limits.unlimited_coach?
+  end
 end
