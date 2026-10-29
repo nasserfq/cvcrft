@@ -226,7 +226,7 @@ class CvGenerationService
       "complete_name" => draft["complete_name"],
       "email" => draft["email"],
       "temperature" => (draft["temperature"].presence || 0.7).to_f.clamp(0.0, 1.0),
-      "max_tokens" => (draft["max_tokens"].presence || 15000).to_i.clamp(1000, 15000),
+      "max_tokens" => (draft["max_tokens"].presence || 10000).to_i.clamp(1000, 10000),
       "source" => "job_description"
     }.compact
   end

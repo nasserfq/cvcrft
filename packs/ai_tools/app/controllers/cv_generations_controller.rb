@@ -147,7 +147,7 @@ class CvGenerationsController < ApplicationController
         complete_name: cv_generation_params[:complete_name],
         email: cv_generation_params[:email],
         temperature: (cv_generation_params[:temperature].presence || 0.7).to_f.clamp(0.0, 1.0),
-        max_tokens: (cv_generation_params[:max_tokens].presence || 15000).to_i.clamp(1000, 15000),
+        max_tokens: (cv_generation_params[:max_tokens].presence || 10000).to_i.clamp(1000, 10000),
         ats_template: ats_template,
         force_pdf_regeneration: true,  # Always regenerate PDF when user creates a new CV
         source: "job_description",  # Track the source for limit counting

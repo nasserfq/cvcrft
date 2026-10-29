@@ -217,7 +217,7 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
 
   test "existing resume sends the golden prompts" do
     AiModel.expects(:complete)
-           .with(system: golden("system_prompt.txt"), user: golden("user_prompt_existing.txt"), temperature: 0.7, max_tokens: 15000,
+           .with(system: golden("system_prompt.txt"), user: golden("user_prompt_existing.txt"), temperature: 0.7, max_tokens: 10000,
                  check: anything)
            .returns(ai_message(AI_REPLY))
 
