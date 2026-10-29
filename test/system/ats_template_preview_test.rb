@@ -40,6 +40,8 @@ class AtsTemplatePreviewTest < ApplicationSystemTestCase
         find("[data-testid=ats-preview-button]").click
       end
       within("[role=dialog]") do
+        # The full-size image grows the dialog when it loads and moves the buttons.
+        wait_for_preview_image
         click_on I18n.t("cv_generation.use_template", locale: locale)
       end
       assert_no_selector "[role=dialog]"
@@ -48,6 +50,13 @@ class AtsTemplatePreviewTest < ApplicationSystemTestCase
   end
 
   private
+
+  def wait_for_preview_image
+    page.document.synchronize do
+      loaded = page.evaluate_script("(() => { const img = document.querySelector('[role=dialog] img'); return !img || img.complete; })()")
+      raise Capybara::ExpectationNotMet, "preview image still loading" unless loaded
+    end
+  end
 
   # The consent banner is fixed to the bottom of the viewport and can cover lower cards.
   def decline_analytics_banner(locale)
