@@ -29,6 +29,10 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # Coupon redemptions live in a process-wide store in tests; start each
+    # test with none, so one test's redeemed coupon can't leak into the next.
+    setup { CouponRedemptionStore.reset! }
+
     # The AI jobs all call AiModel.complete, which returns a RubyLLM::Message.
     # Stub that seam rather than Net::HTTP — the transport belongs to the
     # client library, and mocking it breaks whenever the client changes.
