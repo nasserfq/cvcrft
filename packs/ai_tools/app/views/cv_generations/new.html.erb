@@ -687,7 +687,7 @@
                             }
                           });
                         } else if (pollData && pollData.status === 'failed') {
-                          setError('CV generation failed');
+                          setError(t.generation_failed);
                           setIsGenerating(false);
                         } else {
                           pollAttempts++;
@@ -875,7 +875,7 @@
                         });
                       } else if (data && data.status === 'failed') {
                         console.log('❌ CV generation failed');
-                        setError('CV generation failed');
+                        setError(t.generation_failed);
                         setIsGenerating(false);
                       } else {
                         pollAttempts++;
