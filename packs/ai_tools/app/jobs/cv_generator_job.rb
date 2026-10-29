@@ -114,7 +114,7 @@ class CvGeneratorJob
   def call_azure_openai_api
     prompts = CvGenerator::PromptBuilder.new(job_description: @job_description, snapshot: @snapshot)
     response = AiModel.complete(system: prompts.system_prompt, user: prompts.user_prompt,
-                                temperature: (@options[:temperature] || 0.7).to_f, max_tokens: (@options[:max_tokens] || 15000).to_i,
+                                temperature: (@options[:temperature] || 0.7).to_f, max_tokens: (@options[:max_tokens] || 10000).to_i,
                                 check: "Is the professional summary in the output strong, in English, tailored to the job in the input, and free of facts the input does not support?")
     result = CvGenerator::ResponseParser.new(snapshot: @snapshot).call(response)
     result[:professional_summary] = CvGenerator::EnglishSummary.new.call(result[:professional_summary])
