@@ -211,7 +211,7 @@
               <span class="sr-mono text-xs truncate" style="<%= muted %>" dir="ltr"><%= metadata["pdf_filename"] %></span>
             </div>
             <div class="rounded-[20px] overflow-hidden border border-white/10 bg-white keep-light">
-              <iframe src="<%= view_pdf_cv_generation_path(@cv_generation) %>" class="block w-full border-0" style="height: min(80vh, 900px)" title="<%= t("#{tk}.pdf_title") %>">
+              <iframe src="<%= view_pdf_cv_generation_path(@cv_generation) %>" class="block w-full border-0" style="height: min(80dvh, 900px)" title="<%= t("#{tk}.pdf_title") %>">
                 <p><%= t("#{tk}.pdf_fallback") %> <%= link_to t("#{tk}.pdf_fallback_link"), download_pdf_cv_generation_path(@cv_generation) %></p>
               </iframe>
             </div>

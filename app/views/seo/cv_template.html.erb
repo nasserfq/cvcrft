@@ -2,7 +2,7 @@
 <html lang="<%= current_locale %>" dir="<%= text_direction %>" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title><%= @page_title %></title>
   <meta name="description" content="<%= @meta_description %>">
   <meta name="keywords" content="<%= @keywords %>">
@@ -110,7 +110,7 @@
     .prose li { @apply text-gray-600 dark:text-gray-400; }
   </style>
 </head>
-<body class="sr-app antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen">
+<body class="sr-app antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-dvh">
   <!-- Background -->
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
     <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>

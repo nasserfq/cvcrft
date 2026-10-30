@@ -166,7 +166,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
             type="button"
             onClick={handleClose}
             disabled={isUploading || isProcessing}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+            className="sr-hit p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
             aria-label={t("actions.close")}
           >
             <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

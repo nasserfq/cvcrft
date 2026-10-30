@@ -99,7 +99,7 @@ const MobileDatePicker = ({
               if (e.target === e.currentTarget) setIsOpen(false);
             }}
           >
-            <div role="dialog" aria-modal="true" className="glass sr-up rounded-[28px] w-full max-w-sm max-h-[85vh] overflow-hidden text-mist" style={{ animationDuration: ".5s" }}>
+            <div role="dialog" aria-modal="true" className="glass sr-up rounded-[28px] w-full max-w-sm max-h-[85dvh] overflow-hidden text-mist" style={{ animationDuration: ".5s" }}>
               <div className="px-5 sm:px-6 py-4 flex items-center justify-between gap-3 border-b border-white/10">
                 <h3 className="m-0 flex items-center gap-2.5 text-lg font-semibold"><span className="sr-dot w-2 h-2 rounded-full bg-primary"></span>{t("dates.select_title")}</h3>
                 <button
@@ -115,7 +115,7 @@ const MobileDatePicker = ({
               </div>
 
               <div
-                className="p-4 sm:p-6 overflow-y-auto max-h-[65vh]"
+                className="p-4 sm:p-6 overflow-y-auto max-h-[65dvh]"
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
                 <div className="mb-4 sm:mb-6">
