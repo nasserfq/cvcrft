@@ -2,7 +2,7 @@
 <html lang="<%= current_locale %>" dir="<%= text_direction %>" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title><%= I18n.locale == :ar ? 'قوالب السيرة الذاتية حسب المهنة | سيرة' : 'CV Templates by Profession | سيرة' %></title>
   <meta name="description" content="<%= I18n.locale == :ar ? 'اكتشف قوالب السيرة الذاتية المُحسّنة لأنظمة ATS لكل المهن. قوالب احترافية جاهزة للتحميل والتعديل.' : 'Discover ATS-optimized CV templates for all professions. Professional templates ready to download and customize.' %>">
   <meta name="theme-color" content="#07120D">
@@ -55,7 +55,7 @@
     body { font-feature-settings: "ss01", "ss02"; -webkit-font-smoothing: antialiased; }
   </style>
 </head>
-<body class="sr-app antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-screen">
+<body class="sr-app antialiased bg-gray-50 dark:bg-darkBase text-gray-900 dark:text-white font-sans min-h-dvh">
   <!-- Background -->
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
     <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[100px]"></div>

@@ -416,7 +416,7 @@ const StructuredCvEditor = ({ importId, initialData, updateUrl, saveToResumeUrl,
       </div>
 
       {/* CV Preview/Editor - Looks like actual PDF */}
-      <div className="glass rounded-[32px] p-5 sm:p-8 min-h-screen text-mist" dir="ltr">
+      <div className="glass rounded-[32px] p-5 sm:p-8 min-h-dvh text-mist" dir="ltr">
         {/* Header */}
         <div className="text-center mb-6">
           <EditableField

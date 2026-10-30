@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title><%= content_for(:title) || t('site.name') + " | " + t('site.tagline') %></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="description" content="<%= content_for(:description) || t('site.description') %>">
@@ -177,9 +177,13 @@
         function addListeners(el) {
           if (el.__hoverable_bound) return;
           el.__hoverable_bound = true;
-          el.addEventListener('mouseenter', () => activate(el), { passive: true });
-          el.addEventListener('mouseleave', () => deactivate(el), { passive: true });
-          el.addEventListener('focus', () => activate(el), { passive: true });
+          // A tap fires mouseenter and focus too, and neither ends until the next tap,
+          // so the lift stuck on phones. Mouse hover only on a real pointer; focus only from the keyboard.
+          if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            el.addEventListener('mouseenter', () => activate(el), { passive: true });
+            el.addEventListener('mouseleave', () => deactivate(el), { passive: true });
+          }
+          el.addEventListener('focus', () => { if (el.matches(':focus-visible')) activate(el); }, { passive: true });
           el.addEventListener('blur', () => deactivate(el), { passive: true });
 
           // Touch behavior: activate on touchstart and remove shortly after touchend

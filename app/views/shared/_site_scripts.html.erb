@@ -1,6 +1,9 @@
 <%# Mobile menu and scroll-reveal fallback for the Seera glass pages. %>
 <script>
   (function () {
+    // iOS Safari only applies :active while a touch listener is on the page.
+    document.addEventListener('touchstart', function () {}, { passive: true });
+
     var menu = document.getElementById('mobile-menu');
     var openBtn = document.getElementById('mobileMenuBtn');
     var closeBtn = document.getElementById('closeMobileMenu');

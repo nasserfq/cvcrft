@@ -7,7 +7,7 @@
 <% build_href = user_signed_in? ? new_resume_path : login_path(return_to: new_resume_path) %>
 <% target_locale = current_locale == 'ar' ? 'en' : 'ar' %>
 <% anchor_base = local_assigns[:home] ? '' : root_path %>
-<% header_position = local_assigns[:position] || 'sticky top-3 sm:top-4 z-50' %>
+<% header_position = local_assigns[:position] || 'sticky top-[calc(0.75rem+env(safe-area-inset-top))] sm:top-[calc(1rem+env(safe-area-inset-top))] z-50' %>
 <%# nil unless the user is signed in and billing is on for them. %>
 <% credit_balance = header_credit_balance %>
 <header class="glass <%= header_position %> flex items-center justify-between gap-4 rounded-[22px] py-3 ps-4 pe-3 sm:ps-5">
@@ -59,7 +59,7 @@
 </header>
 
 <!-- Mobile menu -->
-<div id="mobile-menu" class="fixed inset-0 z-[60] translate-x-full lg:hidden flex flex-col h-[100dvh]" style="background: rgba(7,18,13,0.92); -webkit-backdrop-filter: blur(28px); backdrop-filter: blur(28px)">
+<div id="mobile-menu" class="fixed inset-0 z-[60] translate-x-full lg:hidden flex flex-col h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]" style="background: rgba(7,18,13,0.92); -webkit-backdrop-filter: blur(28px); backdrop-filter: blur(28px)">
   <div class="flex items-center justify-between px-4 sm:px-6 h-20 shrink-0">
     <span class="flex items-center gap-3">
       <span class="glass flex items-center justify-center w-11 h-11 rounded-[13px] text-mist"><%= render "shared/logo_mark", size: 30 %></span>

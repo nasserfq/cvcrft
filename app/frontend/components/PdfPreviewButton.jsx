@@ -43,7 +43,7 @@ const PdfPreviewButton = ({ cvId }) => {
               body, html { 
                 margin: 0; 
                 padding: 0; 
-                height: 100vh; 
+                height: 100dvh; 
                 display: flex;
                 flex-direction: column;
                 background-color: #525659;
@@ -63,8 +63,10 @@ const PdfPreviewButton = ({ cvId }) => {
                 border-radius: 0.375rem;
                 cursor: pointer;
               }
-              .close-btn:hover {
-                background: #d1d5db;
+              @media (hover: hover) and (pointer: fine) {
+                .close-btn:hover {
+                  background: #d1d5db;
+                }
               }
               .pdf-container { 
                 flex: 1;
@@ -98,8 +100,10 @@ const PdfPreviewButton = ({ cvId }) => {
                 text-decoration: none;
                 margin-right: 0.5rem;
               }
-              .error-message a:hover {
-                text-decoration: underline;
+              @media (hover: hover) and (pointer: fine) {
+                .error-message a:hover {
+                  text-decoration: underline;
+                }
               }
             </style>
           </head>

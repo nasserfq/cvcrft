@@ -2,7 +2,7 @@
 <html lang="<%= current_locale %>" dir="<%= text_direction %>" class="dark scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <%= csrf_meta_tags unless edge_cacheable? %>
     <%= csp_meta_tag %>
     <% cache_if landing_cached?, landing_cache_key(:head), expires_in: 10.minutes do %>
@@ -103,7 +103,7 @@
       .lp-faq summary:focus-visible { outline: 2px solid #d6b877; outline-offset: 4px; border-radius: 16px; }
       .lp-faq .lp-plus { transition: transform .7s cubic-bezier(0.32,0.72,0,1); }
       .lp-faq details[open] .lp-plus { transform: rotate(45deg); }
-      .lp-faq details:hover { background: rgba(255,255,255,0.06); }
+      @media (hover: hover) and (pointer: fine) { .lp-faq details:hover { background: rgba(255,255,255,0.06); } }
       .lp-faq details { transition: background-color .7s cubic-bezier(0.32,0.72,0,1); }
       @media (prefers-reduced-motion: reduce) { .lp-tw { color: #eef3ee; transition: none; } .lp-tw.lp-gold { color: #d6b877; } }
     </style>

@@ -169,8 +169,8 @@ const CvGenerationShow = ({ cvGenerationId }) => {
                  <meta charset="utf-8" />
                  <meta name="viewport" content="width=device-width, initial-scale=1" />
                  <style>
-                   body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; }
-                   .pdf-container { width: 100%; height: 100vh; }
+                   body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden; }
+                   .pdf-container { width: 100%; height: 100dvh; }
                    .pdf-viewer { width: 100%; height: 100%; border: none; }
                    .loading { 
                      position: fixed; 

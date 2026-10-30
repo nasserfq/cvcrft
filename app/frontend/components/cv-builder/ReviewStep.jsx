@@ -100,7 +100,7 @@ const AtsTemplateLightbox = ({ template, onClose, onUse, t }) => {
               src={atsFullSrc(template)}
               alt={template.name}
               decoding="async"
-              className="block max-h-[calc(100dvh-11rem)] sm:max-h-[85vh] w-auto max-w-full bg-white keep-light"
+              className="block max-h-[calc(100dvh-11rem)] sm:max-h-[85dvh] w-auto max-w-full bg-white keep-light"
               onError={() => setImageFailed(true)}
             />
           )}
@@ -165,7 +165,7 @@ const ReviewStep = ({
           {t("templates.ats_picker_label")}
         </label>
         <div
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-h-[70vh] sm:max-h-none overflow-y-auto sm:overflow-visible overscroll-contain p-0.5"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-h-[70dvh] sm:max-h-none overflow-y-auto sm:overflow-visible overscroll-contain p-0.5"
           role="group"
           aria-label={t("templates.ats_picker_label")}
         >
@@ -268,7 +268,7 @@ const ReviewStep = ({
               className="w-full max-w-full block"
               style={{
                 border: 0,
-                height: "clamp(320px, 60vh, 900px)",
+                height: "clamp(320px, 60dvh, 900px)",
                 minHeight: "320px",
               }}
               onLoad={onPdfPreviewLoaded}

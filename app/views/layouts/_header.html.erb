@@ -1,5 +1,5 @@
 <%# Fixed glass header for app pages; the landing renders shared/site_header itself. %>
-<div class="fixed top-3 sm:top-4 inset-x-0 z-50 px-3 sm:px-6 pointer-events-none">
+<div class="fixed top-[calc(0.75rem+env(safe-area-inset-top))] sm:top-[calc(1rem+env(safe-area-inset-top))] inset-x-0 z-50 pl-[calc(0.75rem+env(safe-area-inset-left))] pr-[calc(0.75rem+env(safe-area-inset-right))] sm:pl-[calc(1.5rem+env(safe-area-inset-left))] sm:pr-[calc(1.5rem+env(safe-area-inset-right))] pointer-events-none">
   <div class="mx-auto max-w-[1240px] pointer-events-auto">
     <%= render 'shared/site_header', position: 'relative' %>
   </div>

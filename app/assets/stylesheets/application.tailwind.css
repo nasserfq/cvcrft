@@ -3,6 +3,16 @@
 /* Dark mode is driven by a class on <html>, not the OS preference. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* hover: only on a real mouse or trackpad. On a phone a tap fires :hover and
+   it sticks until the next tap, so buttons kept their hover colour. */
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 /*
   Seera glass design tokens.
 
@@ -146,8 +156,10 @@ button.bg-primary,
 input[type="submit"].bg-primary {
   box-shadow: var(--shadow-glow);
 }
-.bg-primary:is(a, button):hover {
-  background-color: var(--color-primaryHover);
+@media (hover: hover) and (pointer: fine) {
+  .bg-primary:is(a, button):hover {
+    background-color: var(--color-primaryHover);
+  }
 }
 /* Gold fills never carry white text: it drops to ~1.8:1. */
 .bg-action.text-white,
@@ -300,29 +312,31 @@ html:not(.dark) .text-gray-700 {
 
 /* 9. The Seera canvas: glass surfaces and the landing's motion. */
 .sr-page a { color: #eef3ee; text-decoration: none; }
-.sr-page a:hover { color: #ffffff; }
+@media (hover: hover) and (pointer: fine) { .sr-page a:hover { color: #ffffff; } }
 .sr-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
 .glass { background: linear-gradient(155deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03)); -webkit-backdrop-filter: blur(28px) saturate(150%); backdrop-filter: blur(28px) saturate(150%); border: 1px solid rgba(255,255,255,0.13); box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.03), 0 30px 60px -30px rgba(2,12,7,0.7); }
 .glass-soft { background: rgba(255,255,255,0.05); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.09); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
 
 .sr-btn { position: relative; overflow: hidden; transition: transform .35s cubic-bezier(.16,1,.3,1), background .35s cubic-bezier(.16,1,.3,1), border-color .35s; }
-.sr-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.28); }
 .sr-btn:active { transform: scale(.98); }
 .sr-btn:focus-visible { outline: 2px solid #d6b877; outline-offset: 3px; }
 .sr-btn::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%); transform: translateX(110%); transition: transform .9s cubic-bezier(.16,1,.3,1); pointer-events: none; }
-.sr-btn:hover::before { transform: translateX(-110%); }
 .sr-btn .sr-ico { transition: transform .5s cubic-bezier(.16,1,.3,1); }
-.sr-btn:hover .sr-ico { transform: translateX(-4px); }
-[dir="ltr"] .sr-btn:hover .sr-ico { transform: translateX(4px); }
+@media (hover: hover) and (pointer: fine) {
+  .sr-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.28); }
+  .sr-btn:hover::before { transform: translateX(-110%); }
+  .sr-btn:hover .sr-ico { transform: translateX(-4px); }
+  [dir="ltr"] .sr-btn:hover .sr-ico { transform: translateX(4px); }
+  .sr-primary:hover { background: #0d8c50; }
+  .sr-lift:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.22); }
+  .sr-lift:hover .sr-ico { transform: rotate(-8deg) scale(1.08); }
+}
 [dir="ltr"] .sr-arrow { transform: scaleX(-1); }
 .sr-primary { background: #0b7f48; color: #ffffff !important; }
-.sr-primary:hover { background: #0d8c50; }
 
 .sr-lift { transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .5s; }
-.sr-lift:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.22); }
 .sr-lift .sr-ico { transition: transform .6s cubic-bezier(.34,1.56,.64,1); }
-.sr-lift:hover .sr-ico { transform: rotate(-8deg) scale(1.08); }
 
 @keyframes sr-drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-60px,40px) scale(1.08); } }
 @keyframes sr-drift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(50px,-50px) scale(.94); } }
@@ -439,7 +453,7 @@ html.dark body {
 }
 
 /* Full-page wrappers let the orbs show through, as on the landing. */
-.dark [class*="min-h-screen"]:not(body) {
+.dark [class*="min-h-dvh"]:not(body):not(.sr-page) {
   background-color: transparent;
   background-image: none;
 }
@@ -478,18 +492,22 @@ main.sr-app { padding-top: 6rem; }
   transition: transform .9s cubic-bezier(.16,1,.3,1);
   pointer-events: none;
 }
-:is(a, button).bg-primary:hover::before,
-:is(a, button).bg-action:hover::before {
-  transform: translateX(-110%);
+@media (hover: hover) and (pointer: fine) {
+  :is(a, button).bg-primary:hover::before,
+  :is(a, button).bg-action:hover::before {
+    transform: translateX(-110%);
+  }
 }
 /* Card links lift on hover. */
 .sr-app a[class*="rounded-2xl"],
 .sr-app a[class*="rounded-3xl"] {
   transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .5s;
 }
-.sr-app a[class*="rounded-2xl"]:hover,
-.sr-app a[class*="rounded-3xl"]:hover {
-  transform: translateY(-4px);
+@media (hover: hover) and (pointer: fine) {
+  .sr-app a[class*="rounded-2xl"]:hover,
+  .sr-app a[class*="rounded-3xl"]:hover {
+    transform: translateY(-4px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .sr-app > *, .sr-app-long > main > div > :first-child { animation: none !important; }
@@ -508,4 +526,59 @@ main.sr-app { padding-top: 6rem; }
 .sr-step[data-state="done"] .sr-step-check { display: block; }
 @media (prefers-reduced-motion: reduce) {
   .sr-step[data-state="active"] .sr-step-dot { animation: none !important; }
+}
+
+/* 12. Phones: taps, fields and the screen edges. */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+/* No sideways swipe. clip, not hidden, so sticky headers keep working. */
+html, body { overflow-x: clip; }
+/* viewport-fit=cover runs the page under the notch and the home indicator;
+   keep the content clear of them. Fixed bars add the insets themselves. */
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+/* No double-tap-to-zoom wait on anything tappable. */
+a, button, input, select, textarea, label, summary, [role="button"] {
+  touch-action: manipulation;
+}
+/* A long press on a control shouldn't select its label. Body text stays selectable. */
+button, summary, [role="button"], input[type="submit"], input[type="button"], .sr-btn {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* The tap highlight is gone, so every tappable thing answers a press. */
+a:active, summary:active, label[for]:active {
+  opacity: 0.7;
+}
+button:active:not(:disabled), [role="button"]:active, .sr-btn:active, .sr-lift:active {
+  opacity: 0.85;
+}
+.sr-lift:active { transform: scale(.98); }
+/* Grow a small icon button's tap area to 44px without changing how it looks. */
+.sr-hit { position: relative; }
+.sr-hit::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+/* iOS zooms into any field under 16px when it gets focus. Fields without a
+   size class get 16px (base layer, so a larger size class still wins); the
+   small size classes are lifted to 16px. */
+@layer base {
+  @media (pointer: coarse) {
+    input, select, textarea { font-size: 16px; }
+  }
+}
+@media (pointer: coarse) {
+  :is(input, select, textarea):is([class*="text-xxs"], [class*="text-xs"], [class*="text-sm"], [class*="text-[13px]"], [class*="text-[14px]"], [class*="text-[15px]"]) {
+    font-size: 16px;
+  }
 }
