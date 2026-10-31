@@ -6,12 +6,12 @@
   <title><%= @page_title %></title>
   <meta name="description" content="<%= @meta_description %>">
   <meta name="theme-color" content="#07120D">
-  <link rel="canonical" href="https://cvcrft.com/jobs/<%= @city['slug'] %>">
+  <%= render 'shared/seo_links' %>
   <link rel="icon" href="/icon.png?v=7" type="image/png">
   
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://cvcrft.com/jobs/<%= @city['slug'] %>">
+  <meta property="og:url" content="<%= seo_url %>">
   <meta property="og:title" content="<%= @page_title %>">
   <meta property="og:description" content="<%= @meta_description %>">
   <meta property="og:image" content="https://cvcrft.com/og-image.png?v=7">
@@ -141,7 +141,7 @@
             'استخدم أداة سيرة المدعومة بالذكاء الاصطناعي لإنشاء سيرة ذاتية احترافية في دقائق.' :
             'Use our AI-powered tool to create a professional CV in minutes.' %>
         </p>
-        <a href="<%= new_resume_path %>" class="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25">
+        <a href="<%= build_cv_path %>" class="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25">
           <%= seera_icon "solar:magic-stick-3-bold", width: 20 %>
           <%= I18n.locale == :ar ? 'ابدأ الآن مجاناً' : 'Start Free Now' %>
         </a>

@@ -17,6 +17,7 @@ require "rails/test_unit/railtie"
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
+require_relative "../lib/trailing_slash_redirect"
 
 module Cvcraft
   class Application < Rails::Application
@@ -56,5 +57,12 @@ module Cvcraft
     # instead of an error message. Production already set this; test and
     # development did not, which is why the suite showed 48 of these.
     config.i18n.fallbacks = [ :en ]
+
+    # Only the two languages the site is written in. Gems ship other locales
+    # (fr, de...), and without this ?locale=fr rendered a third, half-English
+    # copy of every page.
+    config.i18n.available_locales = [ :ar, :en ]
+
+    config.middleware.insert_before 0, TrailingSlashRedirect
   end
 end
