@@ -2,15 +2,13 @@ class SitemapsController < ApplicationController
   skip_before_action :authenticate_user!, raise: false
 
   def index
-    base_url = "https://cvcrft.com"
-
-    # Core pages
+    # Core pages. Terms is Arabic only, so it has no English alternate.
     @pages = [
-      { url: base_url, changefreq: "weekly", priority: 1.0 },
-      { url: "#{base_url}/cv-templates", changefreq: "weekly", priority: 0.9 },
-      { url: "#{base_url}/jobs", changefreq: "weekly", priority: 0.9 },
-      { url: "#{base_url}/privacy", changefreq: "monthly", priority: 0.3 },
-      { url: "#{base_url}/terms", changefreq: "monthly", priority: 0.3 }
+      { path: "/", changefreq: "weekly", priority: 1.0 },
+      { path: "/cv-templates", changefreq: "weekly", priority: 0.9 },
+      { path: "/jobs", changefreq: "weekly", priority: 0.9 },
+      { path: "/privacy", changefreq: "monthly", priority: 0.3 },
+      { path: "/terms", changefreq: "monthly", priority: 0.3, arabic_only: true }
     ]
 
     # Load SEO data
@@ -21,7 +19,7 @@ class SitemapsController < ApplicationController
     # Job title template pages (50 pages)
     job_titles.each do |job|
       @pages << {
-        url: "#{base_url}/cv-templates/#{job['slug']}",
+        path: "/cv-templates/#{job['slug']}",
         changefreq: "monthly",
         priority: 0.8
       }
@@ -30,7 +28,7 @@ class SitemapsController < ApplicationController
     # City landing pages (10 pages)
     cities.each do |city|
       @pages << {
-        url: "#{base_url}/jobs/#{city['slug']}",
+        path: "/jobs/#{city['slug']}",
         changefreq: "monthly",
         priority: 0.8
       }
@@ -40,7 +38,7 @@ class SitemapsController < ApplicationController
     cities.each do |city|
       job_titles.each do |job|
         @pages << {
-          url: "#{base_url}/cv-templates/#{city['slug']}/#{job['slug']}",
+          path: "/cv-templates/#{city['slug']}/#{job['slug']}",
           changefreq: "monthly",
           priority: 0.7
         }

@@ -2,12 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <% @pages.each do |page| %>
+  <% locales = page[:arabic_only] ? [ :ar ] : [ :ar, :en ] %>
+  <% locales.each do |locale| %>
   <url>
-    <loc><%= page[:url] %></loc>
+    <loc><%= seo_url(page[:path], locale: locale) %></loc>
     <changefreq><%= page[:changefreq] %></changefreq>
     <priority><%= page[:priority] %></priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="<%= page[:url] %>?locale=ar" />
-    <xhtml:link rel="alternate" hreflang="en" href="<%= page[:url] %>?locale=en" />
+    <% if locales.size > 1 %>
+    <xhtml:link rel="alternate" hreflang="ar" href="<%= seo_url(page[:path], locale: :ar) %>" />
+    <xhtml:link rel="alternate" hreflang="en" href="<%= seo_url(page[:path], locale: :en) %>" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="<%= seo_url(page[:path], locale: :ar) %>" />
+    <% end %>
   </url>
+  <% end %>
   <% end %>
 </urlset>

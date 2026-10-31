@@ -25,7 +25,7 @@ class SeoController < ApplicationController
     # Set SEO meta data
     @page_title = I18n.locale == :ar ?
       "قالب سيرة ذاتية #{@job['title_ar']} | سيرة" :
-      "#{@job['title_en']} Resume Template | سيرة"
+      "#{@job['title_en']} Resume Template | Seera AI"
 
     @meta_description = I18n.locale == :ar ?
       @job["description_ar"].strip :
@@ -54,7 +54,7 @@ class SeoController < ApplicationController
 
     @page_title = I18n.locale == :ar ?
       "قالب سيرة ذاتية #{job_title} في #{city_name} | سيرة" :
-      "#{job_title} Resume Template in #{city_name} | سيرة"
+      "#{job_title} Resume Template in #{city_name} | Seera AI"
 
     @meta_description = I18n.locale == :ar ?
       "احصل على قالب سيرة ذاتية احترافي لوظيفة #{job_title} في #{city_name}، #{country}. قوالب مُحسّنة لأنظمة ATS وجاهزة للتحميل." :
@@ -85,7 +85,7 @@ class SeoController < ApplicationController
 
     @page_title = I18n.locale == :ar ?
       "قوالب السيرة الذاتية في #{city_name} | سيرة" :
-      "Resume Templates in #{city_name} | سيرة"
+      "Resume Templates in #{city_name} | Seera AI"
 
     @meta_description = I18n.locale == :ar ?
       "قوالب سيرة ذاتية احترافية لجميع المهن في #{city_name}، #{country}. أكثر من 50 قالب مُحسّن لأنظمة ATS." :
@@ -99,7 +99,7 @@ class SeoController < ApplicationController
 
     @page_title = I18n.locale == :ar ?
       "قوالب السيرة الذاتية حسب المدينة | سيرة" :
-      "Resume Templates by City | سيرة"
+      "Resume Templates by City | Seera AI"
 
     @meta_description = I18n.locale == :ar ?
       "اختر مدينتك واحصل على قوالب سيرة ذاتية مُحسّنة لسوق العمل المحلي." :
