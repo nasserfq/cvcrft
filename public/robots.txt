@@ -2,12 +2,26 @@
 # Robots.txt for cvcrft.com
 
 # Allow all crawlers
+# /login is not listed: it carries noindex, which crawlers only see if they can fetch it.
 User-agent: *
 Allow: /
-Disallow: /login
 Disallow: /auth/
 Disallow: /profile
-Disallow: /resumes/*/edit
+Disallow: /resumes
+Disallow: /cv_generations
+Disallow: /ai_translations
+Disallow: /admin
+Disallow: /coach
+Disallow: /credits
+Disallow: /linkedin-import
+Disallow: /cv-analysis
+Disallow: /cv-import
+Disallow: /api/
+Disallow: /ingest
+Disallow: /decide
+Disallow: /ph-static
+Disallow: /sidekiq
+Disallow: /up
 
 # Sitemap location
 Sitemap: https://cvcrft.com/sitemap.xml

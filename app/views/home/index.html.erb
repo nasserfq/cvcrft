@@ -10,15 +10,11 @@
     <meta name="description" content="<%= t('site.description') %>" />
     <meta name="theme-color" content="#07120D" />
     
-    <!-- Canonical & Language Alternates -->
-    <link rel="canonical" href="https://cvcrft.com" />
-    <link rel="alternate" hreflang="ar" href="https://cvcrft.com/?locale=ar" />
-    <link rel="alternate" hreflang="en" href="https://cvcrft.com/?locale=en" />
-    <link rel="alternate" hreflang="x-default" href="https://cvcrft.com/" />
+    <%= render 'shared/seo_links' %>
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://cvcrft.com/" />
+    <meta property="og:url" content="<%= seo_url %>" />
     <meta property="og:title" content="<%= t('site.name') %> - <%= t('site.tagline') %>" />
     <meta property="og:description" content="<%= t('site.description') %>" />
     <meta property="og:image" content="https://cvcrft.com/og-image.png?v=7" />
@@ -28,7 +24,7 @@
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://cvcrft.com/" />
+    <meta name="twitter:url" content="<%= seo_url %>" />
     <meta name="twitter:title" content="<%= t('site.name') %> - <%= t('site.tagline') %>" />
     <meta name="twitter:description" content="<%= t('site.description') %>" />
     <meta name="twitter:image" content="https://cvcrft.com/og-image.png?v=7" />
@@ -81,10 +77,6 @@
             "price": "0",
             "priceCurrency": "USD"
           }
-        },
-        {
-          "@type": "FAQPage",
-          "mainEntity": <%= raw((1..6).map { |n| { "@type" => "Question", "name" => t("home_landing.faq.q#{n}"), "acceptedAnswer" => { "@type" => "Answer", "text" => t("home_landing.faq.a#{n}") } } }.to_json) %>
         }
       ]
     }

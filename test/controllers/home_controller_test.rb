@@ -50,15 +50,16 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='/coach']", count: 0
   end
 
-  test "landing page has a skip link, tagline reveal and FAQ with structured data" do
+  test "landing page has a skip link, tagline reveal and FAQ without FAQ schema" do
     get root_url
     assert_select "a.lp-skip[href='#main']"
     assert_select "main#main"
     assert_select "[data-lp-tagline] .lp-tw"
     assert_select "#faq details", 6
-    faq = css_select("script[type='application/ld+json']").map { |s| JSON.parse(s.text) }
-      .flat_map { |doc| doc["@graph"] }.find { |node| node["@type"] == "FAQPage" }
-    assert_equal 6, faq["mainEntity"].size
+    # Google stopped showing FAQ rich results, so the markup is dead weight.
+    types = css_select("script[type='application/ld+json']").map { |s| JSON.parse(s.text) }
+      .flat_map { |doc| doc["@graph"] }.map { |node| node["@type"] }
+    assert_not_includes types, "FAQPage"
   end
 
   test "structured data makes no rating claims" do

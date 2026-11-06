@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title><%= I18n.locale == :ar ? 'قوالب السيرة الذاتية حسب المهنة | سيرة' : 'CV Templates by Profession | سيرة' %></title>
+  <title><%= I18n.locale == :ar ? 'قوالب السيرة الذاتية حسب المهنة | سيرة' : 'CV Templates by Profession | Seera AI' %></title>
   <meta name="description" content="<%= I18n.locale == :ar ? 'اكتشف قوالب السيرة الذاتية المُحسّنة لأنظمة ATS لكل المهن. قوالب احترافية جاهزة للتحميل والتعديل.' : 'Discover ATS-optimized CV templates for all professions. Professional templates ready to download and customize.' %>">
   <meta name="theme-color" content="#07120D">
-  <link rel="canonical" href="https://cvcrft.com/cv-templates">
+  <%= render 'shared/seo_links' %>
   <link rel="icon" href="/icon.png?v=7" type="image/png">
   
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://cvcrft.com/cv-templates">
+  <meta property="og:url" content="<%= seo_url %>">
   <meta property="og:title" content="<%= I18n.locale == :ar ? 'قوالب السيرة الذاتية حسب المهنة' : 'CV Templates by Profession' %>">
   <meta property="og:description" content="<%= I18n.locale == :ar ? 'قوالب سيرة ذاتية احترافية لكل المهن' : 'Professional CV templates for all professions' %>">
   <meta property="og:image" content="https://cvcrft.com/og-image.png?v=7">
@@ -136,7 +136,7 @@
             'استخدم أداة سيرة المدعومة بالذكاء الاصطناعي لإنشاء سيرة ذاتية احترافية في دقائق.' :
             'Use our AI-powered tool to create a professional CV in minutes.' %>
         </p>
-        <a href="<%= new_resume_path %>" class="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25">
+        <a href="<%= build_cv_path %>" class="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-full transition-colors shadow-lg shadow-primary/25">
           <%= seera_icon "solar:magic-stick-3-bold", width: 20 %>
           <%= I18n.locale == :ar ? 'ابدأ الآن مجاناً' : 'Start Free Now' %>
         </a>

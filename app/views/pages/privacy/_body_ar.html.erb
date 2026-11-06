@@ -283,7 +283,7 @@
   <ul class="space-y-4 text-gray-600 dark:text-gray-300">
     <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
       <%= seera_icon("solar:user-circle-bold", width: 20, class: "text-action flex-shrink-0 mt-0.5") %>
-      <span>من <%= link_to "صفحة الملف الشخصي", profile_path, class: "text-primary hover:text-primaryHover transition-colors" %>: زر "تنزيل بياناتي" يمنحك نسخة كاملة من بياناتك بصيغة JSON، وزر "حذف حسابي نهائياً" يحذف حسابك وجميع البيانات المرتبطة به نهائيًا.</span>
+      <span>من <%= link_to "صفحة الملف الشخصي", profile_path, rel: "nofollow", class: "text-primary hover:text-primaryHover transition-colors" %>: زر "تنزيل بياناتي" يمنحك نسخة كاملة من بياناتك بصيغة JSON، وزر "حذف حسابي نهائياً" يحذف حسابك وجميع البيانات المرتبطة به نهائيًا.</span>
     </li>
     <li class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
       <%= seera_icon("solar:pen-bold", width: 20, class: "text-action flex-shrink-0 mt-0.5") %>
