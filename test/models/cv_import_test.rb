@@ -227,4 +227,35 @@ class CvImportTest < ActiveSupport::TestCase
     @cv_import.resume = nil
     assert @cv_import.valid?
   end
+
+  # ============================================
+  # STALE IMPORTS
+  # ============================================
+
+  test "fail_stale! fails old pending and processing imports and refunds their credit" do
+    ENV["BILLING_ENABLED"] = "true"
+    CouponRedemptionStore.stubs(:redeemed_codes_for).returns([])
+    Billing::Credits.ensure_signup_bonus!(@user)
+    @user.update_column(:document_ai_count, UserUsageLimits::BASE_DOCUMENT_AI)
+    stuck = CvImport.create!(user: @user, original_filename: "stuck.pdf", status: "processing")
+    assert_equal :credit, Billing::UsageGate.allow!(@user.reload, :document_ai, key: stuck.charge_key)
+    stuck.update_column(:updated_at, 1.hour.ago)
+    queued = CvImport.create!(user: @user, original_filename: "queued.pdf")
+    queued.update_column(:updated_at, 1.hour.ago)
+    fresh = CvImport.create!(user: @user, original_filename: "fresh.pdf", status: "processing")
+    done = CvImport.create!(user: @user, original_filename: "done.pdf", status: "completed")
+    done.update_column(:updated_at, 1.hour.ago)
+    balance = Billing::Credits.balance(@user)
+
+    assert_equal 2, CvImport.fail_stale!(older_than: 30.minutes.ago)
+
+    assert_equal "failed", stuck.reload.status
+    assert_equal "timed out", stuck.error_message
+    assert_equal "failed", queued.reload.status
+    assert_equal "processing", fresh.reload.status
+    assert_equal "completed", done.reload.status
+    assert_equal balance + Billing::UsageGate.cost(:document_ai), Billing::Credits.balance(@user)
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
 end

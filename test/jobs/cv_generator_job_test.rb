@@ -192,7 +192,7 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
     assert_equal english, generation.generated_content
   end
 
-  test "AI failure marks the generation failed and re-raises" do
+  test "AI failure notes the error, keeps the generation processing for the retry and re-raises" do
     user = users(:user_with_resumes)
     resume = resumes(:complete_resume)
     stub_ai_failure
@@ -201,10 +201,165 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
     assert_equal "API Error", error.message
 
     generation = last_generation(user)
-    assert_equal "failed", generation.status
+    assert_equal "processing", generation.status
     assert_equal "API Error", generation.metadata["error"]
     assert generation.metadata["error_backtrace"].present?
     assert_equal resume.id, generation.resume_id
+  end
+
+  test "with an id the job loads that generation and never creates another one" do
+    user = users(:user_with_resumes)
+    resume = resumes(:complete_resume)
+    other = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, resume: resume)
+    target = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, resume: resume)
+    stub_ai_response(AI_REPLY)
+
+    assert_no_difference -> { CvGeneration.count } do
+      run_job(user, resume.id, { "cv_generation_id" => other.id })
+    end
+
+    assert_equal "completed", other.reload.status
+    assert_equal "processing", target.reload.status
+    assert_nil target.generated_content
+  end
+
+  test "a retry after a failed attempt finishes the same generation" do
+    user = users(:user_with_resumes)
+    resume = resumes(:complete_resume)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, resume: resume)
+    options = { "cv_generation_id" => generation.id }
+    AiModel.stubs(:complete).raises(RuntimeError, "API Error").then.returns(ai_message(AI_REPLY))
+
+    assert_raises(RuntimeError) { run_job(user, resume.id, options) }
+    assert_equal "processing", generation.reload.status
+
+    assert_no_difference -> { CvGeneration.count } do
+      run_job(user, resume.id, options)
+    end
+    assert_equal "completed", generation.reload.status
+  end
+
+  test "an id for another user's generation is ignored and nothing is created" do
+    generation = create_test_cv_generation(users(:test_user), job_description: JOB_DESCRIPTION)
+    AiModel.expects(:complete).never
+
+    assert_no_difference -> { CvGeneration.count } do
+      run_job(users(:user_with_resumes), resumes(:complete_resume).id, { "cv_generation_id" => generation.id })
+    end
+    assert_equal "processing", generation.reload.status
+  end
+
+  %w[completed cancelled failed draft].each do |status|
+    test "a #{status} generation is left as it is" do
+      user = users(:user_with_resumes)
+      generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, status: status)
+      AiModel.expects(:complete).never
+
+      run_job(user, resumes(:complete_resume).id, { "cv_generation_id" => generation.id })
+
+      assert_equal status, generation.reload.status
+    end
+  end
+
+  test "a generation cancelled while the AI runs is not written or completed" do
+    user = users(:user_with_resumes)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION)
+    AiModel.stubs(:complete).with do
+      CvGeneration.where(id: generation.id).update_all(status: "cancelled")
+      true
+    end.returns(ai_message(AI_REPLY))
+    AtsTemplatePdfService.expects(:generate_pdf).never
+
+    run_job(user, resumes(:complete_resume).id, { "cv_generation_id" => generation.id })
+
+    generation.reload
+    assert_equal "cancelled", generation.status
+    assert_nil generation.generated_content
+  end
+
+  test "a generation cancelled while the PDF renders stays cancelled" do
+    user = users(:user_with_resumes)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION)
+    stub_ai_response(AI_REPLY)
+    AtsTemplatePdfService.stubs(:generate_pdf).with do
+      CvGeneration.where(id: generation.id).update_all(status: "cancelled")
+      true
+    end.returns({ path: @pdf_file.path, filename: "generated_cv.pdf" })
+
+    run_job(user, resumes(:complete_resume).id, { "cv_generation_id" => generation.id })
+
+    assert_equal "cancelled", generation.reload.status
+  end
+
+  test "regenerate re-runs a completed generation in place with a new PDF" do
+    user = users(:user_with_resumes)
+    resume = resumes(:complete_resume)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, resume: resume, status: "completed",
+                                                 metadata: { "pdf_generated" => true, "pdf_data" => Base64.encode64("old") })
+    stub_ai_response(AI_REPLY)
+
+    job = CvGeneratorJob.new
+    assert_no_difference -> { CvGeneration.count } do
+      job.perform(JOB_DESCRIPTION, user.id, resume.id,
+                  { "cv_generation_id" => generation.id, "regenerate" => true, "force_pdf_regeneration" => true })
+    end
+
+    # The hash the job wrote must have only string keys, or the JSON column
+    # gets "pdf_data" and :pdf_data side by side.
+    written = job.instance_variable_get(:@cv_generation).metadata
+    assert_empty written.keys.grep(Symbol)
+
+    generation.reload
+    assert_equal "completed", generation.status
+    assert_equal Base64.encode64("%PDF-fake"), generation.metadata["pdf_data"]
+    assert_equal AI_REPLY[:professional_summary], generation.generated_content
+  end
+
+  test "a failed regenerate keeps the generation completed" do
+    user = users(:user_with_resumes)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, status: "completed")
+    stub_ai_failure
+
+    assert_raises(RuntimeError) do
+      run_job(user, resumes(:complete_resume).id, { "cv_generation_id" => generation.id, "regenerate" => true })
+    end
+    assert_equal "completed", generation.reload.status
+  end
+
+  test "errors a retry can't fix are not retried; others use the default backoff" do
+    retry_in = CvGeneratorJob.sidekiq_retry_in_block
+
+    assert_equal :kill, retry_in.call(1, ArgumentError.new("resume_id is required"), {})
+    assert_equal :kill, retry_in.call(1, ActiveRecord::RecordNotFound.new, {})
+    assert_nil retry_in.call(1, RuntimeError.new("API Error"), {})
+  end
+
+  test "exhausted retries fail the generation and refund its credit" do
+    user = users(:user_with_resumes)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION,
+                                                 metadata: { "overage_key" => "key-1" })
+    options = { "cv_generation_id" => generation.id, "overage_key" => "key-1" }
+    Billing::UsageGate.expects(:refund!).with(user, :job_based_generation, key: "key-1").at_least_once
+
+    CvGeneratorJob.sidekiq_retries_exhausted_block.call(
+      { "args" => [ JOB_DESCRIPTION, user.id, resumes(:complete_resume).id, options ] }, RuntimeError.new("API Error")
+    )
+
+    generation.reload
+    assert_equal "failed", generation.status
+    assert_equal "API Error", generation.metadata["error"]
+  end
+
+  test "exhausted retries leave a cancelled generation cancelled" do
+    user = users(:user_with_resumes)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, status: "cancelled")
+
+    CvGeneratorJob.sidekiq_retries_exhausted_block.call(
+      { "args" => [ JOB_DESCRIPTION, user.id, resumes(:complete_resume).id, { "cv_generation_id" => generation.id } ] },
+      RuntimeError.new("API Error")
+    )
+
+    assert_equal "cancelled", generation.reload.status
   end
 
   test "another user's resume is refused and the run marked failed" do

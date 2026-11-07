@@ -67,4 +67,31 @@ class CreditsControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert_equal "pending", purchase.reload.status
   end
+
+  test "the Moyasar callback finds the invoice from a webhook event's data" do
+    sign_out @user
+    purchase = CreditPurchase.create!(user: @user, pack: "credits_100", credits: 100, amount_halalas: 19_00, moyasar_invoice_id: "inv_wh")
+    Billing::MoyasarClient.stubs(:new).returns(stub(fetch_invoice: { "id" => "inv_wh", "status" => "paid", "amount" => 19_00, "currency" => "SAR" }))
+
+    post moyasar_callback_credits_url, params: { id: "evt_1", type: "payment_paid", data: { id: "pay_1", invoice_id: "inv_wh" } }, as: :json
+    assert_response :ok
+    assert purchase.reload.paid?
+  end
+
+  test "the Moyasar callback fails an expired invoice's purchase" do
+    sign_out @user
+    purchase = CreditPurchase.create!(user: @user, pack: "credits_100", credits: 100, amount_halalas: 19_00, moyasar_invoice_id: "inv_ex")
+    Billing::MoyasarClient.stubs(:new).returns(stub(fetch_invoice: { "id" => "inv_ex", "status" => "expired", "amount" => 19_00, "currency" => "SAR" }))
+
+    post moyasar_callback_credits_url, params: { id: "inv_ex" }, as: :json
+    assert_response :ok
+    assert_equal "failed", purchase.reload.status
+  end
+
+  test "the Moyasar callback ignores a body with no known invoice" do
+    sign_out @user
+
+    post moyasar_callback_credits_url, params: { data: "x" }, as: :json
+    assert_response :ok
+  end
 end

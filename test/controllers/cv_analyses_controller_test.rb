@@ -51,6 +51,49 @@ class CvAnalysesControllerTest < ActionDispatch::IntegrationTest
     assert json_response["status_url"].present?
   end
 
+  test "a readable PDF uses one analysis" do
+    assert_difference -> { @user.reload.document_ai_count }, 1 do
+      post cv_analysis_path, params: {
+        pdf_file: fixture_file_upload_mock(create_mock_pdf, "application/pdf", "test_cv.pdf")
+      }, headers: { "Accept" => "application/json" }
+    end
+  end
+
+  test "a PDF with no text does not use an analysis" do
+    blank_pdf = Prawn::Document.new.render
+
+    assert_no_difference -> { @user.reload.document_ai_count } do
+      post cv_analysis_path, params: {
+        pdf_file: fixture_file_upload_mock(blank_pdf, "application/pdf", "blank.pdf")
+      }, headers: { "Accept" => "application/json" }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "a malformed PDF does not use an analysis" do
+    assert_no_difference -> { @user.reload.document_ai_count } do
+      post cv_analysis_path, params: {
+        pdf_file: fixture_file_upload_mock("%PDF-1.4 broken", "application/pdf", "broken.pdf")
+      }, headers: { "Accept" => "application/json" }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "an analysis that cannot be queued is marked failed" do
+    CvAnalysisJob.stubs(:perform_async).raises(RuntimeError, "redis down")
+
+    post cv_analysis_path, params: {
+      pdf_file: fixture_file_upload_mock(create_mock_pdf, "application/pdf", "test_cv.pdf")
+    }, headers: { "Accept" => "application/json" }
+
+    assert_response :unprocessable_entity
+    analysis = @user.cv_analyses.order(:created_at).last
+    assert_equal "failed", analysis.status
+    assert_equal "redis down", analysis.error_message
+  end
+
   test "should reject non-PDF files" do
     post cv_analysis_path, params: {
       pdf_file: fixture_file_upload_mock("text content", "text/plain", "test.txt")

@@ -10,8 +10,10 @@ module Billing
       end
 
       # Gives every user their free credits once, the first time billing
-      # looks at them.
+      # looks at them. A zero bonus (SIGNUP_BONUS_CREDITS=0) grants nothing.
       def ensure_signup_bonus!(user)
+        return unless SIGNUP_BONUS.positive?
+
         grant!(user, SIGNUP_BONUS, reason: "signup_bonus", key: "signup_bonus:#{user.id}")
       end
 

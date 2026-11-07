@@ -65,18 +65,68 @@ class CvImportJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "job marks import as failed on API error" do
-    Sidekiq::Testing.inline! do
-      stub_azure_openai_failure
+  test "job keeps import processing on API error so Sidekiq can retry" do
+    stub_azure_openai_failure
 
-      assert_raises(RuntimeError) do
-        CvImportJob.perform_async(@cv_import.id)
-      end
-
-      @cv_import.reload
-      assert_equal "failed", @cv_import.status
-      assert @cv_import.error_message.present?
+    assert_raises(RuntimeError) do
+      CvImportJob.new.perform(@cv_import.id)
     end
+
+    @cv_import.reload
+    assert_equal "processing", @cv_import.status
+    assert_nil @cv_import.error_message
+  end
+
+  test "retries exhausted marks import failed" do
+    @cv_import.mark_processing!
+
+    exhaust_retries([ @cv_import.id ], RuntimeError.new("API Error"))
+
+    @cv_import.reload
+    assert_equal "failed", @cv_import.status
+    assert_equal "API Error", @cv_import.error_message
+  end
+
+  test "retries exhausted refunds the credit charged for the import" do
+    charge_credit_for(@cv_import)
+    balance = Billing::Credits.balance(@user)
+
+    exhaust_retries([ @cv_import.id, @cv_import.charge_key ], RuntimeError.new("API Error"))
+
+    assert_equal balance + Billing::UsageGate.cost(:document_ai), Billing::Credits.balance(@user)
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "retries exhausted does not overwrite a completed import" do
+    @cv_import.mark_completed!({ "complete_name" => "Done" })
+
+    exhaust_retries([ @cv_import.id ], RuntimeError.new("late"))
+
+    assert_equal "completed", @cv_import.reload.status
+  end
+
+  test "job does not parse a completed import again" do
+    @cv_import.mark_completed!({ "complete_name" => "Done" })
+    AiModel.expects(:complete).never
+
+    CvImportJob.new.perform(@cv_import.id)
+
+    assert_equal "Done", @cv_import.reload.parsed_data["complete_name"]
+  end
+
+  test "job does not complete an import that timed out meanwhile" do
+    import_id = @cv_import.id
+    job = CvImportJob.new
+    job.define_singleton_method(:call_azure_openai_api) do |_text|
+      CvImport.fail_active!(import_id, "timed out")
+      { "complete_name" => "Late" }
+    end
+
+    job.perform(import_id)
+
+    assert_equal "failed", @cv_import.reload.status
+    assert_equal "timed out", @cv_import.error_message
   end
 
   test "job parses complete_name from response" do
@@ -156,6 +206,18 @@ class CvImportJobTest < ActiveSupport::TestCase
   end
 
   private
+
+  def exhaust_retries(args, error)
+    CvImportJob.sidekiq_retries_exhausted_block.call({ "args" => args }, error)
+  end
+
+  def charge_credit_for(import)
+    ENV["BILLING_ENABLED"] = "true"
+    CouponRedemptionStore.stubs(:redeemed_codes_for).returns([])
+    Billing::Credits.ensure_signup_bonus!(@user)
+    @user.update_column(:document_ai_count, UserUsageLimits::BASE_DOCUMENT_AI)
+    assert_equal :credit, Billing::UsageGate.allow!(@user.reload, :document_ai, key: import.charge_key)
+  end
 
   def sample_cv_text
     <<~TEXT

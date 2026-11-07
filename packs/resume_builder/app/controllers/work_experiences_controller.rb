@@ -7,11 +7,6 @@ class WorkExperiencesController < ApplicationController
     @work_experience = @resume.work_experiences.build(work_experience_params)
 
     if @work_experience.save
-      # Trigger AI translation if Arabic description is provided
-      if @work_experience.arabic_description.present?
-        AiTranslationJob.perform_async(@work_experience.id)
-      end
-
       redirect_to @resume, notice: "Work experience added successfully!"
     else
       redirect_to @resume, alert: "Failed to add work experience."

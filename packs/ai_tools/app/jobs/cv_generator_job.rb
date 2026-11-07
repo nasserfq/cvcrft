@@ -10,11 +10,21 @@ class CvGeneratorJob
 
   sidekiq_options retry: 3, backtrace: true
 
+  # Errors a retry can't fix go straight to retries_exhausted.
+  NON_RETRYABLE_ERRORS = [ ArgumentError, ActiveRecord::RecordNotFound ].freeze
+  sidekiq_retry_in do |_count, error|
+    :kill if NON_RETRYABLE_ERRORS.any? { |klass| error.is_a?(klass) }
+  end
+
   # A generation that ran past the free allowance was paid with a credit
   # (Billing::UsageGate); options["overage_key"], a random id, is set only
-  # then. A final failure gives the credit back. Safe to call twice.
-  sidekiq_retries_exhausted do |job, _error|
-    refund_overage(job["args"][1], job["args"][3])
+  # then. A final failure marks the generation failed and gives the credit
+  # back. Safe to call twice.
+  sidekiq_retries_exhausted do |job, error|
+    job_description, user_id, _resume_id, options = job["args"]
+    generation = find_generation(user_id, job_description, options)
+    generation&.fail_processing!(error&.message || "failed")
+    refund_overage(user_id, options)
   end
 
   def self.refund_overage(user_id, options)
@@ -23,9 +33,23 @@ class CvGeneratorJob
     Billing::UsageGate.refund!(user, :job_based_generation, key: key) if user
   end
 
+  # options["cv_generation_id"] names the row this run is for. Jobs enqueued
+  # before it was passed fall back to the user's processing row with the same
+  # job description.
+  def self.find_generation(user_id, job_description, options)
+    id = (options || {}).transform_keys(&:to_s)["cv_generation_id"]
+    generations = CvGeneration.where(user_id: user_id)
+    return generations.find_by(id: id) if id.present?
+
+    generations.where(job_description: job_description, status: "processing").order(created_at: :desc).first
+  end
+
   # Version control for PDF generation - increment this when making layout changes
   PDF_VERSION = "2.1"  # Incrementing to force regeneration
 
+  # options["regenerate"] re-runs a completed generation in place (the
+  # controller's regenerate PDF). Any other run needs a processing row and
+  # stops when the row is cancelled meanwhile.
   def perform(job_description, user_id, resume_id = nil, options = {})
     Rails.logger.info "=== CV GENERATOR JOB STARTED ==="
     Rails.logger.info "Job Description: #{job_description.truncate(200)}"
@@ -34,7 +58,13 @@ class CvGeneratorJob
     @job_description = job_description
     @user_id = user_id
     @resume_id = resume_id
-    @options = options.transform_keys(&:to_sym)
+    @options = (options || {}).transform_keys(&:to_sym)
+
+    @cv_generation = find_cv_generation_record
+    if @options[:cv_generation_id].present?
+      return Rails.logger.info("CvGeneration #{@options[:cv_generation_id]} not found; nothing to do") if @cv_generation.nil?
+      return Rails.logger.info("CvGeneration #{@cv_generation.id} is #{@cv_generation.status}; skipping") unless runnable?
+    end
 
     # The AI only rewrites the professional summary of a saved CV; it never
     # builds a new one. Fail before anything is created.
@@ -44,8 +74,7 @@ class CvGeneratorJob
     @options[:force_pdf_regeneration] ||= false
     @options[:pdf_cache_hours] ||= 24
 
-    # Find or create the CvGeneration record for this run
-    @cv_generation = find_cv_generation_record
+    # Jobs enqueued without an id and with no processing row get a new one
     if @cv_generation.nil?
       Rails.logger.info "Creating CvGeneration record for processing state"
       @cv_generation = CvGeneration.create!(
@@ -56,7 +85,7 @@ class CvGeneratorJob
         ai_model: AiModel.default,
         status: "processing",
         tokens_used: nil,
-        metadata: (@options || {})
+        metadata: (@options || {}).deep_stringify_keys
       )
     end
 
@@ -73,7 +102,7 @@ class CvGeneratorJob
       result = call_azure_openai_api
 
   # Update the CV generation record with success (full structure stored in metadata)
-  update_cv_generation_success(result)
+  return log_cancelled unless update_cv_generation_success(result)
 
       # Reload the saved resume (never mutated) before rendering the PDF
       create_or_update_resume(result)
@@ -82,7 +111,7 @@ class CvGeneratorJob
       generate_pdf_for_resume
 
   # Now mark as completed after PDF is generated
-  @cv_generation.update!(status: "completed")
+  return log_cancelled unless mark_completed
       Rails.logger.info "=== CV GENERATION COMPLETED SUCCESSFULLY ==="
 
     rescue => e
@@ -103,12 +132,24 @@ class CvGeneratorJob
   end
 
   def find_cv_generation_record
-    # NOTE: You must implement this based on your database structure
-    user = User.find(@user_id)
-    user.cv_generations
-        .where(job_description: @job_description, status: "processing")
-        .order(created_at: :desc)
-        .first
+    self.class.find_generation(@user_id, @job_description, @options)
+  end
+
+  def runnable?
+    @cv_generation.processing? || (@cv_generation.completed? && @options[:regenerate].present?)
+  end
+
+  # Completes a processing row unless it was cancelled meanwhile; a
+  # regenerated row is already completed.
+  def mark_completed
+    return true if @cv_generation.completed?
+
+    CvGeneration.where(id: @cv_generation.id, status: "processing")
+                .update_all(status: "completed", updated_at: Time.current) == 1
+  end
+
+  def log_cancelled
+    Rails.logger.info "CvGeneration #{@cv_generation.id} was cancelled; stopping"
   end
 
   def call_azure_openai_api
@@ -255,7 +296,7 @@ class CvGeneratorJob
             pdf_version: PDF_VERSION,
             pdf_generated_at: Time.now.to_i,
             pdf_cache_key: generate_pdf_cache_key(resume, generated_data, template_key)
-          })
+          }.stringify_keys)
         )
         Rails.logger.info "PDF data stored in database (Base64 encoded)"
       else
@@ -268,26 +309,32 @@ class CvGeneratorJob
       @cv_generation.update!(metadata: @cv_generation.metadata.merge({
         pdf_generated: false,
         pdf_error: e.message
-      }))
+      }.stringify_keys))
       raise e
     end
   end
 
+  # A processing row stays processing between attempts, with the error
+  # noted; it is failed (and refunded) when retries are exhausted, or now for
+  # an error a retry can't fix. Other rows (a regenerated completed one, a
+  # cancelled one) keep their status.
   def handle_cv_generation_error(e)
-    if @cv_generation.nil?
-      @cv_generation = find_cv_generation_record
-    end
-    if @cv_generation
-      safe_meta = (@cv_generation.metadata || {})
-      @cv_generation.update!(
-        status: "failed",
-        metadata: safe_meta.merge({
-          error: e.message,
-          error_backtrace: e.backtrace
-        })
-      )
-    else
+    @cv_generation ||= find_cv_generation_record
+    unless @cv_generation
       Rails.logger.error "No CvGeneration record available to update error metadata"
+      return
+    end
+
+    @cv_generation = CvGeneration.find_by(id: @cv_generation.id)
+    return unless @cv_generation&.processing?
+
+    if NON_RETRYABLE_ERRORS.any? { |klass| e.is_a?(klass) }
+      @cv_generation.fail_processing!(e.message)
+    else
+      @cv_generation.update_columns(
+        metadata: (@cv_generation.metadata || {}).merge("error" => e.message, "error_backtrace" => e.backtrace),
+        updated_at: Time.current
+      )
     end
   end
 

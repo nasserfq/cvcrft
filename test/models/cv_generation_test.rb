@@ -276,7 +276,7 @@ class CvGenerationTest < ActiveSupport::TestCase
   end
 
   test "save_draft updates generation correctly" do
-    generation = cv_generations(:processing_generation)
+    generation = cv_generations(:failed_generation)
     form_data = { "step" => 2, "skills" => [ "Ruby", "Rails" ] }
 
     generation.save_draft(form_data)
@@ -317,5 +317,63 @@ class CvGenerationTest < ActiveSupport::TestCase
     generation = cv_generations(:failed_generation)
     assert generation.job_description.match?(/[\u0600-\u06FF]/)
     assert generation.valid?
+  end
+
+  # ============================================
+  # STATE TRANSITIONS
+  # ============================================
+
+  %w[processing completed].each do |status|
+    test "save_draft refuses a #{status} generation and leaves it as it is" do
+      generation = create_test_cv_generation(users(:test_user), status: status)
+
+      assert_raises(ActiveRecord::RecordInvalid) { generation.save_draft("job_description" => "x") }
+
+      generation.reload
+      assert_equal status, generation.status
+      assert_not generation.is_draft
+    end
+  end
+
+  test "cancel! cancels a processing generation and refunds its credit" do
+    generation = create_test_cv_generation(users(:test_user), metadata: { "overage_key" => "key-1" })
+    Billing::UsageGate.expects(:refund!).with(users(:test_user), :job_based_generation, key: "key-1").once
+
+    assert generation.cancel!
+    assert_equal "cancelled", generation.reload.status
+  end
+
+  test "cancel! leaves a finished generation alone and refunds nothing" do
+    generation = create_test_cv_generation(users(:test_user), status: "completed", metadata: { "overage_key" => "key-1" })
+    Billing::UsageGate.expects(:refund!).never
+
+    assert_not generation.cancel!
+    assert_equal "completed", generation.reload.status
+  end
+
+  test "fail_stale! fails only processing generations older than the cutoff and refunds them" do
+    user = users(:test_user)
+    stale = create_test_cv_generation(user, metadata: { "overage_key" => "stale-key" })
+    fresh = create_test_cv_generation(user)
+    finished = create_test_cv_generation(user, status: "completed")
+    cancelled = create_test_cv_generation(user, status: "cancelled")
+    CvGeneration.where(id: [ stale.id, finished.id, cancelled.id ]).update_all(updated_at: 2.hours.ago)
+    Billing::UsageGate.expects(:refund!).with(user, :job_based_generation, key: "stale-key").once
+
+    assert_equal 1, CvGeneration.fail_stale!(older_than: 30.minutes.ago)
+
+    assert_equal "failed", stale.reload.status
+    assert_equal "timed out", stale.metadata["error"]
+    assert_equal "processing", fresh.reload.status
+    assert_equal "completed", finished.reload.status
+    assert_equal "cancelled", cancelled.reload.status
+  end
+
+  test "fail_processing! does not overwrite a generation that finished meanwhile" do
+    generation = create_test_cv_generation(users(:test_user))
+    CvGeneration.where(id: generation.id).update_all(status: "completed")
+
+    assert_not generation.fail_processing!("timed out")
+    assert_equal "completed", generation.reload.status
   end
 end

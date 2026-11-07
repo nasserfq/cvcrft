@@ -3,10 +3,15 @@ class CvImportJob
 
   sidekiq_options retry: 3, backtrace: true
 
-  # An import that ran past the free allowance was paid with a credit
-  # (Billing::UsageGate). overage_key, a random id, is passed only then; a
-  # final failure gives the credit back. Safe to call twice.
-  sidekiq_retries_exhausted do |job, _error|
+  # Keep every attempt inside the few minutes the page polls for.
+  sidekiq_retry_in { |count| 10 * (count + 1) }
+
+  # Between attempts the import stays "processing"; only the last failure
+  # marks it failed. An import that ran past the free allowance was paid with
+  # a credit (Billing::UsageGate); overage_key is passed only then, and a final
+  # failure gives the credit back. Safe to call twice.
+  sidekiq_retries_exhausted do |job, error|
+    CvImport.fail_active!(job["args"][0], error.message)
     refund_overage(job["args"][0], job["args"][1])
   end
 
@@ -14,23 +19,26 @@ class CvImportJob
     return if overage_key.blank?
 
     import = CvImport.find_by(id: import_id)
-    Billing::UsageGate.refund!(import.user, :document_ai, key: overage_key) if import
+    Billing::UsageGate.refund!(import.user, :document_ai, key: overage_key) if import && !import.completed?
   end
 
   def perform(cv_import_id, _overage_key = nil)
     @import = CvImport.find(cv_import_id)
+    # A retry or duplicate run never parses a finished import again.
+    return if @import.terminal?
+
     @import.mark_processing!
 
     begin
       # Parse the extracted text using Azure OpenAI
       result = call_azure_openai_api(@import.extracted_text)
 
-      # Update the import with parsed data
-      @import.mark_completed!(result)
+      # Update the import with parsed data, unless it timed out meanwhile
+      @import.with_lock { @import.mark_completed!(result) unless @import.terminal? }
 
       Rails.logger.info "[CvImport] Successfully parsed import #{cv_import_id}"
     rescue => e
-      handle_error(e)
+      log_error(e)
       raise e
     end
   end
@@ -242,8 +250,7 @@ class CvImportJob
     end.compact
   end
 
-  def handle_error(error)
-    @import.mark_failed!(error.message)
+  def log_error(error)
     Rails.logger.error "[CvImport] Failed to parse import #{@import.id}: #{error.message}"
     Rails.logger.error error.backtrace.first(10).join("\n")
   end

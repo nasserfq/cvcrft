@@ -376,7 +376,7 @@ class CreditsUpsellTest < ActionDispatch::IntegrationTest
   end
 
   def saved_draft
-    generation = @user.cv_generations.create!(resume: @resume, status: "processing", job_description: "Rails engineer",
+    generation = @user.cv_generations.create!(resume: @resume, status: "failed", job_description: "Rails engineer",
                                               ai_model: "test")
     generation.save_draft("job_description" => "Senior Rails engineer with Postgres", "temperature" => "0.5")
     generation

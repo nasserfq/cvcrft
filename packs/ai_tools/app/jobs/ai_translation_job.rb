@@ -11,6 +11,10 @@ class AiTranslationJob
     RubyLLM::ServiceUnavailableError, Faraday::TimeoutError, Faraday::ConnectionFailed
   ].freeze
 
+  # A job descriptions reply with no translated duties: nothing to give the
+  # user, so the translation fails and the credit is given back.
+  class EmptyTranslationError < StandardError; end
+
   # Retry soon: the page polls for about 30 seconds.
   sidekiq_retry_in { |count| 5 * (count + 1) }
 
@@ -19,12 +23,11 @@ class AiTranslationJob
     translation = AiTranslation.where(user_id: job["args"][1])
                                .where("metadata->>'job_id' = ?", options["job_id"].to_s)
                                .order(created_at: :desc).first
-    translation&.update!(
-      status: "failed",
-      english_text: "Translation failed: #{error.message}".truncate(5000),
-      metadata: translation.metadata.merge("error" => error.message, "error_code" => error_code_for(error))
-    )
-    refund_overage(job["args"][1], options)
+    if translation
+      translation.fail_unfinished!(error.message, error_code: error_code_for(error))
+    else
+      refund_overage(job["args"][1], options)
+    end
   end
 
   # A translation that ran past the free allowance was paid with a credit
@@ -54,6 +57,8 @@ class AiTranslationJob
       "ai_bad_request"
     when RubyLLM::ConfigurationError, RubyLLM::ModelNotFoundError
       "ai_config"
+    when EmptyTranslationError
+      "ai_empty_reply"
     else
       "internal"
     end
@@ -68,18 +73,20 @@ class AiTranslationJob
 
     # Create AI translation record (or pick up the one a retried attempt made)
     @translation = find_or_create_translation_record
+    # A retry of a translation that already finished must not call the AI again.
+    return if @translation.completed? || @translation.failed?
 
     begin
       result = call_azure_openai_api
+      raise EmptyTranslationError, "No translated job descriptions in the reply" if @options[:job_descriptions] && !translated_jobs?(result)
 
-      # Update the translation record with success
-      update_translation_success(result)
-
-      # Update resume if provided
-      update_resume_with_translation(result) if @resume_id
-
-      # Extract and create skills if requested
-      create_skills_from_translation(result[:skills_extracted]) if result[:skills_extracted]
+      # The resume, its work experience and skills are saved first, so the
+      # translation is only completed once everything it changes is saved.
+      ActiveRecord::Base.transaction do
+        update_resume_with_translation(result) if @resume_id
+        create_skills_from_translation(result[:skills_extracted]) if result[:skills_extracted]
+        update_translation_success(result)
+      end
     rescue *RETRYABLE_ERRORS => e
       mark_translation_retryable(e)
       raise
@@ -251,6 +258,12 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
         tokens_used: AiModel.token_count(response),
         raw_response: content
       }
+    end
+  end
+
+  def translated_jobs?(result)
+    Array(result[:jobs]).any? do |job|
+      job.is_a?(Hash) && Array(job["responsibilities_english"]).any? { |line| line.to_s.strip.present? }
     end
   end
 

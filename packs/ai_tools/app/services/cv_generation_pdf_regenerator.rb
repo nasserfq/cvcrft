@@ -1,5 +1,6 @@
 # Re-runs CvGeneratorJob synchronously for every completed CV generation that
-# has a PDF, forcing the PDF to be rebuilt. Used by the admin area.
+# has a PDF, forcing the PDF to be rebuilt on that same row (no new rows).
+# Used by the admin area.
 class CvGenerationPdfRegenerator
   def self.call
     new.call
@@ -31,13 +32,13 @@ class CvGenerationPdfRegenerator
         user_id = cv_gen.user_id
         resume_id = cv_gen.resume_id
 
-        # Run the job with force regeneration
+        # Re-run the job on this row, in place, with force regeneration
         job = CvGeneratorJob.new
         job.perform(
           job_description,
           user_id,
           resume_id,
-          { force_pdf_regeneration: true }
+          { "cv_generation_id" => cv_gen.id, "regenerate" => true, "force_pdf_regeneration" => true }
         )
 
         success += 1

@@ -55,8 +55,10 @@ packs/resume_builder:
     - privacy
     files:
     - lib/tasks/ats_previews.rake
+    - test/controllers/cv_generations_controller_test.rb
     - test/jobs/cv_generator_job_test.rb
     - test/services/ats_template_pdf_service_test.rb
+    - test/services/cv_generation_pdf_regenerator_test.rb
     - test/services/pdf_text_test.rb
     - test/services/resume_builder/ats_preview_sample_test.rb
     - test/services/resume_builder/ats_style_presets_test.rb
@@ -80,6 +82,7 @@ packs/resume_builder:
     violations:
     - privacy
     files:
+    - test/controllers/api/translations_controller_test.rb
     - test/services/pdf_text_test.rb
   "::Education":
     violations:

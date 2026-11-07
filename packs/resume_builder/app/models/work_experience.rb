@@ -1,6 +1,5 @@
 class WorkExperience < ApplicationRecord
   belongs_to :resume
-  belongs_to :ai_translation, optional: true
 
   # Allow skipping validations for PDF generation
   def skip_validations_for_pdf
@@ -52,10 +51,6 @@ class WorkExperience < ApplicationRecord
 
   def current?
     end_date.blank? || is_current
-  end
-
-  def needs_translation?
-    english_description.blank?
   end
 
   private

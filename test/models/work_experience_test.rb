@@ -114,11 +114,6 @@ class WorkExperienceTest < ActiveSupport::TestCase
     assert_instance_of Resume, we.resume
   end
 
-  test "work experience can belong to ai_translation" do
-    we = work_experiences(:current_job)
-    assert_respond_to we, :ai_translation
-  end
-
   # ============================================
   # SCOPE TESTS
   # ============================================
@@ -181,16 +176,6 @@ class WorkExperienceTest < ActiveSupport::TestCase
     we = work_experiences(:past_job)
     we.is_current = false
     assert_not we.current?
-  end
-
-  test "needs_translation? returns true when english_description is blank" do
-    we = work_experiences(:arabic_experience)
-    assert we.needs_translation?
-  end
-
-  test "needs_translation? returns false when english_description is present" do
-    we = work_experiences(:current_job)
-    assert_not we.needs_translation?
   end
 
   # ============================================

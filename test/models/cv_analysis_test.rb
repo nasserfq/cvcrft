@@ -282,4 +282,34 @@ class CvAnalysisTest < ActiveSupport::TestCase
     assert_respond_to @cv_analysis, :user
     assert_equal @user, @cv_analysis.user
   end
+
+  # ============================================
+  # STALE WORK
+  # ============================================
+
+  test "mark_processing! clears the last attempt's error" do
+    @cv_analysis.save!
+    @cv_analysis.update!(status: "processing", progress: 60, error_message: "Bedrock timeout")
+
+    @cv_analysis.mark_processing!
+
+    assert_nil @cv_analysis.reload.error_message
+    assert_equal 3, @cv_analysis.progress
+  end
+
+  test "fail_stale! fails old unfinished analyses and leaves the rest" do
+    stale = CvAnalysis.create!(user: @user, original_filename: "a.pdf", status: "processing")
+    stale_pending = CvAnalysis.create!(user: @user, original_filename: "b.pdf", status: "pending")
+    recent = CvAnalysis.create!(user: @user, original_filename: "c.pdf", status: "processing")
+    done = CvAnalysis.create!(user: @user, original_filename: "d.pdf", status: "completed")
+    CvAnalysis.where(id: [ stale.id, stale_pending.id, done.id ]).update_all(updated_at: 1.hour.ago)
+
+    assert_equal 2, CvAnalysis.where(user: @user).fail_stale!(older_than: 30.minutes.ago)
+
+    assert_equal "failed", stale.reload.status
+    assert_equal "timed out", stale.error_message
+    assert_equal "failed", stale_pending.reload.status
+    assert_equal "processing", recent.reload.status
+    assert_equal "completed", done.reload.status
+  end
 end

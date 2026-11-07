@@ -689,6 +689,8 @@
                         } else if (pollData && pollData.status === 'failed') {
                           setError(t.generation_failed);
                           setIsGenerating(false);
+                        } else if (pollData && (pollData.status === 'cancelled' || pollData.status === 'draft')) {
+                          window.location.href = `/cv_generations/${cvGenerationId}`;
                         } else {
                           pollAttempts++;
                           if (pollAttempts < maxPollAttempts) {
@@ -706,6 +708,11 @@
                     };
 
                     pollForResults();
+                  } else if (data && data.status === 'failed') {
+                    setError(t.generation_failed);
+                    setIsGenerating(false);
+                  } else if (data && (data.status === 'cancelled' || data.status === 'draft')) {
+                    window.location.href = `/cv_generations/${cvGenerationId}`;
                   }
                 } catch (err) {
                   console.error('❌ Error loading CV data:', err);
@@ -877,6 +884,8 @@
                         console.log('❌ CV generation failed');
                         setError(t.generation_failed);
                         setIsGenerating(false);
+                      } else if (data && (data.status === 'cancelled' || data.status === 'draft')) {
+                        window.location.href = `/cv_generations/${cvGenerationId}`;
                       } else {
                         pollAttempts++;
                         if (pollAttempts < maxPollAttempts) {

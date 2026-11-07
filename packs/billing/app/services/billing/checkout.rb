@@ -6,6 +6,9 @@ module Billing
   class Checkout
     class UnknownPack < StandardError; end
 
+    # Invoice statuses that can no longer become paid.
+    UNPAID_FINAL_STATUSES = %w[expired failed canceled cancelled].freeze
+
     def initialize(client: MoyasarClient.new)
       @client = client
     end
@@ -29,8 +32,9 @@ module Billing
 
       purchase.update!(moyasar_invoice_id: invoice.fetch("id"), checkout_url: invoice.fetch("url"))
       purchase
-    rescue MoyasarClient::Error
-      purchase&.update!(status: "failed")
+    rescue StandardError
+      # The user never got the checkout URL, so this purchase can't be paid.
+      purchase.update_columns(status: "failed", updated_at: Time.current) if purchase&.persisted?
       raise
     end
 
@@ -38,6 +42,7 @@ module Billing
       return purchase if purchase.paid? || purchase.moyasar_invoice_id.blank?
 
       invoice = @client.fetch_invoice(purchase.moyasar_invoice_id)
+      return fail!(purchase, invoice) if UNPAID_FINAL_STATUSES.include?(invoice["status"])
       return purchase unless invoice["status"] == "paid"
 
       # The invoice must be the one we created, for the price we stored.
@@ -55,6 +60,17 @@ module Billing
                          metadata: { pack: purchase.pack, moyasar_invoice_id: purchase.moyasar_invoice_id })
           purchase.update!(status: "paid", paid_at: Time.current)
         end
+      end
+      purchase
+    end
+
+    private
+
+    def fail!(purchase, invoice)
+      return purchase unless invoice["id"] == purchase.moyasar_invoice_id
+
+      purchase.with_lock do
+        purchase.update!(status: "failed") if purchase.status == "pending"
       end
       purchase
     end
