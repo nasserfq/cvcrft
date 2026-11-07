@@ -141,4 +141,115 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     get status_cv_generation_url(@cv_generation), as: :json
     assert_response :success
   end
+
+  # ============================================
+  # STATE TRANSITIONS
+  # ============================================
+
+  JOB = "Looking for a software engineer with experience in web development and Ruby on Rails".freeze
+
+  def with_credit_charges
+    ENV["BILLING_ENABLED"] = "true"
+    CouponRedemptionStore.stubs(:redeemed_codes_for).returns([])
+    @user.update_column(:job_based_generations_count, UserUsageLimits::BASE_JOB_BASED_GENERATIONS)
+    yield
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "create hands the job the id of the generation it created" do
+    post cv_generations_url(format: :json), params: { cv_generation: { job_description: JOB, resume_id: @resume.id } }
+
+    assert_response :created
+    created = CvGeneration.order(:id).last
+    assert_equal created.id, CvGeneratorJob.jobs.last["args"][3]["cv_generation_id"]
+  end
+
+  test "create whose job can't be queued fails the generation and refunds the credit" do
+    with_credit_charges do
+      balance = Billing::Credits.balance(@user)
+      CvGeneratorJob.stubs(:perform_async).raises(RuntimeError, "redis down")
+
+      assert_raises(RuntimeError) do
+        post cv_generations_url(format: :json), params: { cv_generation: { job_description: JOB, resume_id: @resume.id } }
+      end
+
+      assert_equal "failed", CvGeneration.order(:id).last.status
+      assert_equal balance, Billing::Credits.balance(@user)
+      assert_equal 1, @user.credit_ledger_entries.where(reason: "refund").count
+    end
+  end
+
+  test "cancel stops a running generation and refunds its credit" do
+    with_credit_charges do
+      balance = Billing::Credits.balance(@user)
+      Billing::UsageGate.allow!(@user, :job_based_generation, key: "cancel-key")
+      generation = create_test_cv_generation(@user, resume: @resume, metadata: { "overage_key" => "cancel-key" })
+
+      post cancel_cv_generation_url(generation)
+      post cancel_cv_generation_url(generation)
+
+      assert_redirected_to cv_generation_path(generation)
+      assert_equal "cancelled", generation.reload.status
+      assert_equal balance, Billing::Credits.balance(@user)
+      assert_equal 1, @user.credit_ledger_entries.where(reason: "refund").count
+    end
+  end
+
+  test "regenerate PDF updates the generation being viewed" do
+    @cv_generation.update!(resume: @resume, metadata: { "pdf_generated" => true, "pdf_data" => Base64.encode64("old pdf") })
+    stub_ai_response({ professional_summary: "Fresh summary for this role." })
+    pdf = Tempfile.new([ "cv", ".pdf" ])
+    pdf.write("new pdf")
+    pdf.flush
+    AtsTemplatePdfService.stubs(:generate_pdf).returns({ path: pdf.path, filename: "generated_cv.pdf" })
+
+    assert_no_difference -> { CvGeneration.count } do
+      get view_pdf_cv_generation_url(@cv_generation, regenerate: "true")
+    end
+
+    assert_response :success
+    assert_equal "new pdf", response.body
+    assert_equal "completed", @cv_generation.reload.status
+    assert_equal "Fresh summary for this role.", @cv_generation.generated_content
+  ensure
+    pdf&.close!
+  end
+
+  test "regenerate on a generation that isn't completed charges nothing and runs nothing" do
+    generation = create_test_cv_generation(@user, resume: @resume, status: "failed")
+    Billing::UsageGate.expects(:allow!).never
+    CvGeneratorJob.any_instance.expects(:perform).never
+
+    get download_pdf_cv_generation_url(generation, regenerate: "true")
+
+    assert_redirected_to cv_generation_path(generation)
+  end
+
+  %w[processing completed].each do |status|
+    test "save_draft refuses a #{status} generation" do
+      generation = create_test_cv_generation(@user, resume: @resume, status: status)
+
+      post save_draft_cv_generation_url(generation, format: :json), params: { job_description: JOB }
+
+      assert_response :unprocessable_entity
+      assert_equal false, response.parsed_body["success"]
+      assert_equal status, generation.reload.status
+      assert_not generation.is_draft
+    end
+  end
+
+  test "preview_resume shows the resume's own PDF" do
+    get preview_resume_cv_generation_url(@resume)
+
+    assert_redirected_to generate_pdf_resume_path(@resume, preview: "true")
+  end
+
+  test "preview_resume refuses another user's resume" do
+    other = Resume.create!(user: @other_user, complete_name: "Other", email: "other-#{SecureRandom.hex(4)}@example.com")
+
+    get preview_resume_cv_generation_url(other)
+
+    assert_response :not_found
+  end
 end

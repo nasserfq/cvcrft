@@ -9,7 +9,8 @@ module CvGenerator
 
     # Store only the professional summary in the main field, but the FULL
     # structure in metadata. `snapshot` is the source resume's ResumeSnapshot
-    # hash; a saved resume is required.
+    # hash; a saved resume is required. The status is left as it is; a
+    # generation cancelled meanwhile is not written and false is returned.
     def record!(result, snapshot:)
       raise ArgumentError, "snapshot is required" unless snapshot
 
@@ -30,18 +31,21 @@ module CvGenerator
 
       Rails.logger.info "📦 Generated data skills to be stored: #{Array(generated_data[:skills]).size}"
 
-      safe_meta = (@cv_generation.metadata || {})
-      @cv_generation.update!(
-        generated_content: result[:professional_summary],
-        status: "processing",
-        tokens_used: result[:tokens_used],
-        metadata: safe_meta.merge({
-          generated_data: generated_data,
-          ats_optimization_notes: result[:ats_optimization_notes],
-          generation_notes: result[:generation_notes],
-          raw_response: result[:raw_response]
-        })
-      )
+      @cv_generation.with_lock do
+        next false if @cv_generation.cancelled?
+
+        safe_meta = (@cv_generation.metadata || {})
+        @cv_generation.update!(
+          generated_content: result[:professional_summary],
+          tokens_used: result[:tokens_used],
+          metadata: safe_meta.merge({
+            generated_data: generated_data,
+            ats_optimization_notes: result[:ats_optimization_notes],
+            generation_notes: result[:generation_notes],
+            raw_response: result[:raw_response]
+          }.deep_stringify_keys)
+        )
+      end
     end
   end
 end

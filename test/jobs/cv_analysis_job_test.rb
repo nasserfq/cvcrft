@@ -131,26 +131,61 @@ class CvAnalysisJobTest < ActiveSupport::TestCase
     assert_equal 100, @cv_analysis.reload.progress
   end
 
-  test "job marks analysis as failed when one part fails" do
+  test "a failed attempt stays processing so Sidekiq can retry it" do
     stub_parts(scores: SCORES_PART, details: RuntimeError.new("Bedrock timeout"))
 
     error = assert_raises(RuntimeError) { CvAnalysisJob.new.perform(@cv_analysis.id) }
     assert_equal "Bedrock timeout", error.message
 
     @cv_analysis.reload
-    assert_equal "failed", @cv_analysis.status
-    assert_equal "Bedrock timeout", @cv_analysis.error_message
+    assert_equal "processing", @cv_analysis.status
     assert_operator @cv_analysis.progress, :<, 100
   end
 
-  test "job marks analysis as failed when one part is not JSON" do
+  test "a part that is not JSON raises for a retry" do
     stub_parts(scores: SCORES_PART, details: "Sorry, I cannot help with that.")
+
+    error = assert_raises(RuntimeError) { CvAnalysisJob.new.perform(@cv_analysis.id) }
+    assert_match(/Failed to parse AI response as JSON/, error.message)
+    assert_equal "processing", @cv_analysis.reload.status
+  end
+
+  test "the analysis fails once Sidekiq's retries are exhausted" do
+    @cv_analysis.mark_processing!
+
+    CvAnalysisJob.sidekiq_retries_exhausted_block.call({ "args" => [ @cv_analysis.id ] }, RuntimeError.new("Bedrock timeout"))
+
+    @cv_analysis.reload
+    assert_equal "failed", @cv_analysis.status
+    assert_equal "Bedrock timeout", @cv_analysis.error_message
+  end
+
+  test "exhausted retries do not overwrite a completed analysis" do
+    @cv_analysis.mark_completed!(SCORES_PART)
+
+    CvAnalysisJob.sidekiq_retries_exhausted_block.call({ "args" => [ @cv_analysis.id ] }, RuntimeError.new("late"))
+
+    assert_equal "completed", @cv_analysis.reload.status
+  end
+
+  test "a retry clears the last error and restarts progress" do
+    @cv_analysis.update!(status: "processing", progress: 60, error_message: "Bedrock timeout")
+    AiModel.stubs(:complete).raises(RuntimeError.new("again"))
 
     assert_raises(RuntimeError) { CvAnalysisJob.new.perform(@cv_analysis.id) }
 
     @cv_analysis.reload
-    assert_equal "failed", @cv_analysis.status
-    assert_match(/Failed to parse AI response as JSON/, @cv_analysis.error_message)
+    assert_nil @cv_analysis.error_message
+    assert_equal 3, @cv_analysis.progress
+  end
+
+  test "a finished analysis is not analyzed again" do
+    @cv_analysis.mark_completed!(SCORES_PART)
+    AiModel.expects(:complete).never
+
+    CvAnalysisJob.new.perform(@cv_analysis.id)
+
+    assert_equal "completed", @cv_analysis.reload.status
   end
 
   # ============================================
@@ -192,7 +227,7 @@ class CvAnalysisJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "job marks analysis as failed on API error" do
+  test "job raises on API error and leaves the analysis to its retries" do
     Sidekiq::Testing.inline! do
       stub_azure_openai_failure
 
@@ -200,9 +235,7 @@ class CvAnalysisJobTest < ActiveSupport::TestCase
         CvAnalysisJob.new.perform(@cv_analysis.id)
       end
 
-      @cv_analysis.reload
-      assert_equal "failed", @cv_analysis.status
-      assert @cv_analysis.error_message.present?
+      assert_equal "processing", @cv_analysis.reload.status
     end
   end
 

@@ -22,12 +22,14 @@ class CouponService
         raise AlreadyRedeemedError.new(:already_redeemed)
       end
 
-      CouponRedemptionStore.redeem!(user.id, coupon.code)
+      # Credits first: the grant is idempotent by key, so if marking the
+      # redemption fails, a retry finishes it without granting twice.
       if coupon.bonus_credits.positive?
         Billing::Credits.grant!(user, coupon.bonus_credits,
                                 reason: "coupon", key: "coupon:#{coupon.code}:#{user.id}",
                                 metadata: { coupon: coupon.code })
       end
+      CouponRedemptionStore.redeem!(user.id, coupon.code)
       coupon
     end
   end

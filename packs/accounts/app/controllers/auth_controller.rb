@@ -80,15 +80,7 @@ class AuthController < ApplicationController
     end
 
     begin
-      # Find or create user
-      user = User.find_or_create_by(email: email) do |u|
-        u.password = SecureRandom.hex(16) # Random password since we're using OTP
-        u.password_confirmation = u.password
-        u.name = email.split("@").first # Use email prefix as name
-      end
-
-      # Ensure user is saved
-      user.save! if user.changed?
+      user = find_or_create_otp_user(email)
       # The OTP form carries the email form's consent. Links already sitting in
       # mailboxes have no flag: they still log in, they just record nothing.
       user.record_privacy_consent! if privacy_consent_given?
@@ -133,6 +125,25 @@ class AuthController < ApplicationController
   end
 
   private
+
+  # The name always passes validation, so a sign-up can't fail after the
+  # code is used up.
+  def find_or_create_otp_user(email)
+    User.find_or_create_by!(email: email) do |u|
+      u.password = SecureRandom.hex(16) # Random password since we're using OTP
+      u.password_confirmation = u.password
+      u.name = otp_sign_up_name(email)
+    end
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+    # Another sign-in (e.g. Google) created the account at the same moment.
+    User.find_by(email: email) || raise
+  end
+
+  # Same fallback as social sign-in when the email prefix is too short.
+  def otp_sign_up_name(email)
+    prefix = email.split("@").first.to_s.strip
+    prefix.length >= 2 ? prefix.truncate(100, omission: "") : t("social_auth.default_name")
+  end
 
   def privacy_consent_given?
     params[:privacy_consent] == "1"

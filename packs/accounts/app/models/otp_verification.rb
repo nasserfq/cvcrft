@@ -29,17 +29,19 @@ class OtpVerification < ApplicationRecord
   end
 
   def self.generate_for(email)
-    # Clean up old OTPs for this email
-    where(email: email).destroy_all
-
-    # Generate new OTP
     otp_code = SecureRandom.random_number(1000000).to_s.rjust(6, "0")
     expires_at = 10.minutes.from_now
 
-    create!(
-      email: email,
-      otp_code: otp_code,
-      expires_at: expires_at
-    )
+    # Replace old OTPs for this email in one step, so a failed create never
+    # leaves the address with no code at all.
+    transaction do
+      where(email: email).destroy_all
+
+      create!(
+        email: email,
+        otp_code: otp_code,
+        expires_at: expires_at
+      )
+    end
   end
 end

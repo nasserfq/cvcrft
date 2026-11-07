@@ -128,6 +128,39 @@ class AuthControllerTest < ActionDispatch::IntegrationTest
     assert_nil @user.privacy_policy_version
   end
 
+  test "verify_otp signs up an address whose name part is one letter" do
+    email = "a@example.com"
+    OtpVerification.create!(email: email, otp_code: "123456", expires_at: 10.minutes.from_now)
+
+    post auth_verify_otp_url, params: { email: email, otp_code: "123456", privacy_consent: "1" }
+
+    assert_redirected_to new_resume_path
+    assert_equal I18n.t("social_auth.default_name", locale: :ar), User.find_by!(email: email).name
+  end
+
+  test "verify_otp with a wrong code counts the attempt and creates no account" do
+    email = "guess@example.com"
+    otp = OtpVerification.create!(email: email, otp_code: "123456", expires_at: 10.minutes.from_now)
+
+    assert_no_difference -> { User.count } do
+      post auth_verify_otp_url, params: { email: email, otp_code: "000000", privacy_consent: "1" }
+    end
+
+    assert_equal 1, otp.reload.failed_attempts
+    assert_redirected_to login_path(otp_sent: "true", email: email)
+  end
+
+  test "verify_otp signs into the account a parallel sign-in just created" do
+    OtpVerification.create!(email: @user.email, otp_code: "123456", expires_at: 10.minutes.from_now)
+    User.stubs(:find_or_create_by!).raises(ActiveRecord::RecordNotUnique)
+
+    post auth_verify_otp_url, params: { email: @user.email, otp_code: "123456" }
+
+    assert_redirected_to new_resume_path
+    get auth_status_url
+    assert_equal @user.id, response.parsed_body.dig("user", "id")
+  end
+
   test "should verify correct OTP" do
     # Create a valid OTP
     OtpVerification.create!(

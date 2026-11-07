@@ -29,13 +29,8 @@ class LinkedinImportsController < ApplicationController
       return reject_upload("حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت", :unprocessable_entity)
     end
 
-    # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
-    charge_key = SecureRandom.uuid
-    charge = Billing::UsageGate.allow!(current_user, :document_ai, key: charge_key)
-    if charge == :blocked
-      return reject_upload("لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", :too_many_requests,
-                           limit_reached: true, **credits_upsell)
-    end
+    # Don't parse a file the user can't pay for
+    return reject_limit unless Billing::UsageGate.available?(current_user, :document_ai)
 
     begin
       # Parse PDF to extract text
@@ -50,16 +45,7 @@ class LinkedinImportsController < ApplicationController
         original_filename: pdf_file.original_filename
       )
 
-      if @linkedin_import.save
-        # Queue the background job for AI processing
-        LinkedinImportJob.perform_async(@linkedin_import.id, *(charge_key if charge == :credit))
-
-        respond_to do |format|
-          format.html { redirect_to linkedin_import_status_path(@linkedin_import) }
-          format.json { render json: { success: true, id: @linkedin_import.id, status_url: linkedin_import_status_path(@linkedin_import, format: :json) } }
-        end
-      else
-        refund_import(charge, charge_key)
+      unless @linkedin_import.save
         respond_to do |format|
           format.html do
             flash[:alert] = "Failed to create import: #{@linkedin_import.errors.full_messages.join(', ')}"
@@ -67,9 +53,26 @@ class LinkedinImportsController < ApplicationController
           end
           format.json { render json: { success: false, error: @linkedin_import.errors.full_messages.join(", ") }, status: :unprocessable_entity }
         end
+        return
+      end
+
+      # Free allowance first, then credits (Billing::UsageGate::COSTS) while
+      # billing is on. Charged under the import's own key, so any later
+      # failure can refund it from the row.
+      charge = Billing::UsageGate.allow!(current_user, :document_ai, key: @linkedin_import.charge_key)
+      if charge == :blocked
+        @linkedin_import.destroy
+        return reject_limit
+      end
+
+      # Queue the background job for AI processing
+      LinkedinImportJob.perform_async(@linkedin_import.id, *(@linkedin_import.charge_key if charge == :credit))
+
+      respond_to do |format|
+        format.html { redirect_to linkedin_import_status_path(@linkedin_import) }
+        format.json { render json: { success: true, id: @linkedin_import.id, status_url: linkedin_import_status_path(@linkedin_import, format: :json) } }
       end
     rescue LinkedinPdfParserService::LinkedinPdfParseError => e
-      refund_import(charge, charge_key)
       respond_to do |format|
         format.html do
           flash[:alert] = "Failed to parse PDF: #{e.message}"
@@ -77,6 +80,10 @@ class LinkedinImportsController < ApplicationController
         end
         format.json { render json: { success: false, error: "Failed to parse PDF: #{e.message}" }, status: :unprocessable_entity }
       end
+    rescue => e
+      # Anything that broke after the charge gives the credit back.
+      LinkedinImport.fail_active!(@linkedin_import.id, e.message) if @linkedin_import&.persisted?
+      raise
     end
   end
 
@@ -108,6 +115,11 @@ class LinkedinImportsController < ApplicationController
 
   # PATCH /linkedin-import/:id
   def update
+    # Until the job is done it would overwrite the edit.
+    unless @linkedin_import.completed?
+      return render json: { success: false, error: "Import not completed" }, status: :unprocessable_entity
+    end
+
     if @linkedin_import.update(parsed_data: parsed_data_params.to_h)
       render json: { success: true, message: "CV updated successfully" }
     else
@@ -123,8 +135,12 @@ class LinkedinImportsController < ApplicationController
     end
 
     begin
-      resume = create_resume_from_import(@linkedin_import)
-      @linkedin_import.update!(resume: resume)
+      # A second click returns the CV the first one made.
+      resume = @linkedin_import.with_lock do
+        @linkedin_import.resume || create_resume_from_import(@linkedin_import).tap do |created|
+          @linkedin_import.update!(resume: created)
+        end
+      end
 
       render json: {
         success: true,
@@ -154,11 +170,6 @@ class LinkedinImportsController < ApplicationController
 
   private
 
-  # Gives the credit back when the import it paid for didn't start.
-  def refund_import(charge, key)
-    Billing::UsageGate.refund!(current_user, :document_ai, key: key) if charge == :credit
-  end
-
   def reject_upload(message, status, **extra)
     respond_to do |format|
       format.html do
@@ -167,6 +178,11 @@ class LinkedinImportsController < ApplicationController
       end
       format.json { render json: { success: false, error: message, **extra }, status: status }
     end
+  end
+
+  def reject_limit
+    reject_upload("لقد وصلت إلى الحد الأقصى لتحليل واستيراد الملفات.", :too_many_requests,
+                  limit_reached: true, **credits_upsell)
   end
 
   def set_linkedin_import

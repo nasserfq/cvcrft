@@ -8,3 +8,10 @@ data_retention:
   cron: "15 3 * * *"
   class: "DataRetentionJob"
   queue: default
+
+# Fails CV generations, analyses, translations and imports stuck in
+# pending/processing for over 30 minutes, and refunds their credit.
+stale_work_sweeper:
+  cron: "*/10 * * * *"
+  class: "StaleWorkSweeperJob"
+  queue: default

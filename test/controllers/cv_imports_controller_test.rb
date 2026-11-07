@@ -108,6 +108,49 @@ class CvImportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "arabic_content", json_response["error_type"]
   end
 
+  test "create refunds the credit when anything after the charge fails" do
+    use_credit_for_next_import
+    stub_pdf_service_success
+    CvImportJob.stubs(:perform_async).raises(RedisClient::CannotConnectError, "redis down")
+    balance = Billing::Credits.balance(@user)
+
+    post cv_import_path, params: { pdf_file: mock_pdf_upload }
+
+    assert_response :internal_server_error
+    assert_equal balance, Billing::Credits.balance(@user)
+    assert_equal "failed", @user.cv_imports.recent.first.status
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "create charges the import under its own key" do
+    use_credit_for_next_import
+    stub_pdf_service_success
+
+    post cv_import_path, params: { pdf_file: mock_pdf_upload }
+
+    assert_response :success
+    import = CvImport.find(JSON.parse(response.body)["id"])
+    assert_equal [ import.id, import.charge_key ], CvImportJob.jobs.last["args"]
+    assert import.refund_charge!
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "create keeps no import when the user is blocked" do
+    use_credit_for_next_import
+    @user.update_column(:credit_balance, 0)
+    stub_pdf_service_success
+
+    assert_no_difference -> { CvImport.count } do
+      post cv_import_path, params: { pdf_file: mock_pdf_upload }
+    end
+
+    assert_response :too_many_requests
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
   # ============================================
   # STATUS ACTION TESTS
   # ============================================
@@ -233,6 +276,13 @@ class CvImportsControllerTest < ActionDispatch::IntegrationTest
     tempfile.rewind
 
     Rack::Test::UploadedFile.new(tempfile.path, "application/pdf", true, original_filename: "test_cv.pdf")
+  end
+
+  def use_credit_for_next_import
+    ENV["BILLING_ENABLED"] = "true"
+    CouponRedemptionStore.stubs(:redeemed_codes_for).returns([])
+    Billing::Credits.ensure_signup_bonus!(@user)
+    @user.update_column(:document_ai_count, UserUsageLimits::BASE_DOCUMENT_AI)
   end
 
   def stub_pdf_service_success

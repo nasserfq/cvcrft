@@ -49,8 +49,8 @@ class CreditsController < ApplicationController
   # Moyasar's invoice callback. The body is only a hint: we look the invoice
   # up ourselves, so a forged call can't grant anything.
   def moyasar_callback
-    invoice_id = params[:id].presence || params.dig(:data, :invoice_id).presence
-    purchase = CreditPurchase.find_by(moyasar_invoice_id: invoice_id.to_s) if invoice_id
+    invoice_ids = callback_invoice_ids
+    purchase = CreditPurchase.find_by(moyasar_invoice_id: invoice_ids) if invoice_ids.any?
     Billing::Checkout.new.settle!(purchase) if purchase
     head :ok
   rescue Billing::MoyasarClient::Error => e
@@ -59,6 +59,14 @@ class CreditsController < ApplicationController
   end
 
   private
+
+  # Moyasar may send the invoice itself or a webhook event wrapping a payment,
+  # so try every id that could be the invoice's.
+  def callback_invoice_ids
+    data = params[:data].is_a?(ActionController::Parameters) ? params[:data] : {}
+    [ params[:id], data[:invoice_id], data[:id] ]
+      .select { |id| id.is_a?(String) || id.is_a?(Numeric) }.map(&:to_s).compact_blank.uniq
+  end
 
   def require_billing!
     raise ActionController::RoutingError, "Not Found" unless Billing.enabled_for?(current_user)

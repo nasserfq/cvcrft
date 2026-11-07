@@ -6,6 +6,9 @@ class Api::TranslationsController < ApplicationController
   rate_limit_per_user to: 20, within: 1.minute, only: %i[translate_professional_summary translate_job_descriptions], name: "translate"
   rate_limit_per_user to: 10, within: 1.minute, only: :export_pdf, name: "pdf"
 
+  # A builder export has no job description; CvGeneration requires one.
+  CV_BUILDER_JOB_DESCRIPTION = "CV Builder PDF export".freeze
+
   def translate_professional_summary
     begin
       # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
@@ -236,6 +239,7 @@ class Api::TranslationsController < ApplicationController
         unless params[:direct_download] == "true"
           current_user.cv_generations.create!(
             resume_id: params[:resume_id],
+            job_description: CV_BUILDER_JOB_DESCRIPTION,
             status: "completed",
             ai_model: "cv_builder",
             metadata: { source: "cv_builder", pdf_generated: true }
@@ -305,6 +309,7 @@ class Api::TranslationsController < ApplicationController
           # Track CV Builder usage
           current_user.cv_generations.create!(
             resume_id: @resume.id,
+            job_description: CV_BUILDER_JOB_DESCRIPTION,
             status: "completed",
             ai_model: "cv_builder",
             metadata: { source: "cv_builder", pdf_generated: true }

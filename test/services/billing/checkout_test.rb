@@ -32,6 +32,45 @@ class Billing::CheckoutTest < ActiveSupport::TestCase
     assert_equal "failed", CreditPurchase.last.status
   end
 
+  test "start marks the purchase failed when saving the invoice fails" do
+    @client.expects(:create_invoice).returns("id" => "inv_x") # no url: fetch raises
+
+    assert_raises(KeyError) { @checkout.start!(@user, "credits_100", urls: URLS) }
+    assert_equal "failed", CreditPurchase.last.status
+  end
+
+  test "settle fails the purchase when the invoice can no longer be paid" do
+    %w[expired failed canceled cancelled].each do |status|
+      purchase = pending_purchase(invoice_id: "inv_#{status}")
+      @client.expects(:fetch_invoice).returns(paid_invoice.merge("id" => "inv_#{status}", "status" => status))
+
+      @checkout.settle!(purchase)
+
+      assert_equal "failed", purchase.reload.status, status
+      assert_nil CreditLedgerEntry.find_by(idempotency_key: "purchase:#{purchase.id}")
+    end
+  end
+
+  test "settle never changes a paid purchase" do
+    purchase = pending_purchase
+    purchase.update!(status: "paid", paid_at: Time.current)
+    @client.expects(:fetch_invoice).never
+
+    @checkout.settle!(purchase)
+
+    assert purchase.reload.paid?
+  end
+
+  test "settle doesn't fail a purchase that was paid meanwhile" do
+    purchase = pending_purchase
+    CreditPurchase.find(purchase.id).update!(status: "paid", paid_at: Time.current)
+    @client.expects(:fetch_invoice).returns(paid_invoice.merge("status" => "expired"))
+
+    @checkout.settle!(purchase)
+
+    assert purchase.reload.paid?
+  end
+
   test "settle grants credits once when the invoice is paid" do
     purchase = pending_purchase
     @client.expects(:fetch_invoice).with("inv_2").returns(paid_invoice).once
@@ -64,8 +103,8 @@ class Billing::CheckoutTest < ActiveSupport::TestCase
 
   private
 
-  def pending_purchase
-    CreditPurchase.create!(user: @user, pack: "credits_100", credits: 100, amount_halalas: 19_00, moyasar_invoice_id: "inv_2")
+  def pending_purchase(invoice_id: "inv_2")
+    CreditPurchase.create!(user: @user, pack: "credits_100", credits: 100, amount_halalas: 19_00, moyasar_invoice_id: invoice_id)
   end
 
   def paid_invoice

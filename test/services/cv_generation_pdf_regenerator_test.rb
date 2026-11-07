@@ -16,7 +16,8 @@ class CvGenerationPdfRegeneratorTest < ActiveSupport::TestCase
     create_generation(status: "processing")
 
     CvGeneratorJob.any_instance.expects(:perform)
-      .with(target.job_description, @user.id, target.resume_id, { force_pdf_regeneration: true })
+      .with(target.job_description, @user.id, target.resume_id,
+            { "cv_generation_id" => target.id, "regenerate" => true, "force_pdf_regeneration" => true })
       .once
 
     result = CvGenerationPdfRegenerator.call
@@ -49,5 +50,27 @@ class CvGenerationPdfRegeneratorTest < ActiveSupport::TestCase
     CvGeneratorJob.any_instance.expects(:perform).never
 
     assert_equal({ total: 0, success: 0, failed: 0 }, CvGenerationPdfRegenerator.call)
+  end
+
+  test "rebuilds the PDF on the existing row instead of creating a new one" do
+    stub_pdf_generation
+    resume = resumes(:complete_resume)
+    target = create_test_cv_generation(resume.user, resume: resume, status: "completed",
+                                                    metadata: { "pdf_generated" => "true", "pdf_data" => Base64.encode64("old") })
+    stub_ai_response({ professional_summary: "Fresh summary." })
+    pdf = Tempfile.new([ "cv", ".pdf" ])
+    pdf.write("new pdf")
+    pdf.flush
+    AtsTemplatePdfService.stubs(:generate_pdf).returns({ path: pdf.path, filename: "generated_cv.pdf" })
+
+    assert_no_difference -> { CvGeneration.count } do
+      CvGenerationPdfRegenerator.call
+    end
+
+    target.reload
+    assert_equal "completed", target.status
+    assert_equal Base64.encode64("new pdf"), target.metadata["pdf_data"]
+  ensure
+    pdf&.close!
   end
 end

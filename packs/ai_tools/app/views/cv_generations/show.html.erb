@@ -112,8 +112,10 @@
           <script>
             (function () {
               var url = <%= raw json_escape(cv_generation_path(@cv_generation, format: :json).to_json) %>;
+              var attempts = 0;
+              var maxAttempts = 45;
               var timer = setInterval(function () {
-                if (!document.getElementById('cvgen-show-processing')) { clearInterval(timer); return; }
+                if (!document.getElementById('cvgen-show-processing') || ++attempts > maxAttempts) { clearInterval(timer); return; }
                 fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
                   .then(function (r) { return r.ok ? r.json() : null; })
                   .then(function (data) {

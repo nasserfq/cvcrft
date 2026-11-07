@@ -110,10 +110,12 @@ class UserUsageLimits
 
   # Atomically checks and records one use of an AI feature. Returns false,
   # recording nothing, when the user has no allowance left. The row lock
-  # stops parallel requests from all passing the check.
+  # stops parallel requests from all passing the check. Coupons are read
+  # from Redis before the lock, so no Redis call happens while it is held.
   def consume!(kind)
     column = COUNTERS.fetch(kind)
     allowed = false
+    @locked_coupons = redeemed_coupons
 
     @user.with_lock do
       allowed = unlimited? || remaining_for(kind).positive?
@@ -121,6 +123,8 @@ class UserUsageLimits
     end
 
     allowed
+  ensure
+    @locked_coupons = nil
   end
 
   # Whether the free allowance (base plus coupons) still covers one use of
@@ -178,6 +182,8 @@ class UserUsageLimits
 
   # A coupon restricted to other accounts never applies, even if redeemed before.
   def redeemed_coupons
+    return @locked_coupons if @locked_coupons
+
     CouponRedemptionStore.redeemed_codes_for(@user.id).filter_map do |code|
       CouponRegistry.all.find { |coupon| coupon.code == code && coupon.allowed_for?(@user) }
     end

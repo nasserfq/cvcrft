@@ -9,7 +9,6 @@ class WorkExperienceDashboard < Administrate::BaseDashboard
   # on pages throughout the dashboard.
   ATTRIBUTE_TYPES = {
     id: Field::Number,
-    ai_translation: Field::BelongsTo,
     arabic_description: Field::Text,
     ats_keywords: Field::String.with_options(searchable: false),
     company: Field::String,
@@ -32,7 +31,6 @@ class WorkExperienceDashboard < Administrate::BaseDashboard
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = %i[
     id
-    ai_translation
     arabic_description
     ats_keywords
   ].freeze
@@ -41,7 +39,6 @@ class WorkExperienceDashboard < Administrate::BaseDashboard
   # an array of attributes that will be displayed on the model's show page.
   SHOW_PAGE_ATTRIBUTES = %i[
     id
-    ai_translation
     arabic_description
     ats_keywords
     company
@@ -61,7 +58,6 @@ class WorkExperienceDashboard < Administrate::BaseDashboard
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = %i[
-    ai_translation
     arabic_description
     ats_keywords
     company

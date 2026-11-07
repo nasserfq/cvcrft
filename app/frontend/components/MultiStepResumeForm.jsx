@@ -1665,7 +1665,9 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
     if (response.ok) {
      const status = await response.json();
 
-     if (status.status === "completed" && status.jobs) {
+     const hasTranslatedJobs = status.jobs?.some((job) => job.responsibilities_english?.length > 0);
+
+     if (status.status === "completed" && hasTranslatedJobs) {
       // Update work experience with translated responsibilities - REPLACE the Arabic with English
       setFormData((prev) => {
        const updatedExperience = [...prev.work_experience];
@@ -1737,7 +1739,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
       setIsTranslatingJobs(false);
       setJobTranslationSuccess(true);
       return;
-     } else if (status.status === "failed") {
+     } else if (status.status === "failed" || status.status === "completed") {
       setJobTranslationError(
        status.error_code
         ? `${translate("translation.failed")} (${status.error_code})`

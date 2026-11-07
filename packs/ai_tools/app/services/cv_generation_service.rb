@@ -32,12 +32,18 @@ class CvGenerationService
     # Add cache control option if not present
     json_options["force_pdf_regeneration"] = true unless json_options.key?("force_pdf_regeneration")
 
-    CvGeneratorJob.perform_async(
-      job_description,
-      @user_id,
-      @resume_id,
-      json_options
-    )
+    begin
+      CvGeneratorJob.perform_async(
+        job_description,
+        @user_id,
+        @resume_id,
+        json_options.merge("cv_generation_id" => cv_generation.id)
+      )
+    rescue
+      # Never queued: the caller refunds the charge.
+      reset_to_failed(cv_generation)
+      raise
+    end
 
     # Return a response indicating the job was queued with CV generation ID
     {
@@ -117,7 +123,7 @@ class CvGenerationService
         generation.job_description,
         generation.user_id,
         generation.resume_id,
-        generation.metadata
+        generation.metadata.merge("cv_generation_id" => generation.id)
       )
     rescue
       reset_to_failed(generation)
@@ -134,8 +140,8 @@ class CvGenerationService
   # Start a saved draft. Like retry, the draft -> processing flip is one
   # conditional UPDATE, so of two parallel calls only one gets past it; the
   # other gets already_running when the draft is now processing. The draft
-  # record itself becomes the running generation (the job finds it by job
-  # description), so no second record is left stuck in processing.
+  # record itself becomes the running generation (the job is given its id),
+  # so no second record is left stuck in processing.
   # The block, if given, runs after the flip and before the job is queued
   # (the controller charges there); when it returns false the record goes
   # back to being a draft and nothing is queued.
@@ -169,7 +175,7 @@ class CvGenerationService
         generation.job_description,
         generation.user_id,
         generation.resume_id,
-        generation.metadata.merge("force_pdf_regeneration" => true)
+        generation.metadata.merge("force_pdf_regeneration" => true, "cv_generation_id" => generation.id)
       )
     rescue
       reset_to_draft(generation, original)
@@ -183,13 +189,13 @@ class CvGenerationService
     }
   end
 
-  # Cancel pending CV generation
+  # Cancel a running CV generation and refund its credit. The flip is one
+  # conditional UPDATE, so a job finishing at the same moment wins or loses
+  # cleanly; the job stops when it sees cancelled.
   def cancel_cv_generation(generation_id)
     generation = CvGeneration.where(user_id: @user_id).find(generation_id)
 
-    return { error: "CV generation cannot be cancelled" } unless generation.status == "processing"
-
-    generation.update!(status: "cancelled")
+    return { error: "CV generation cannot be cancelled" } unless generation.cancel!
 
     {
       status: "cancelled",

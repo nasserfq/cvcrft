@@ -14,6 +14,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
   const pollingRef = useRef(null);
+  const pollDeadlineRef = useRef(0);
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -63,6 +64,14 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
   );
 
   const pollStatus = async (importId, statusUrl) => {
+    // Stop after about 3 minutes; the job has given up by then.
+    if (Date.now() > pollDeadlineRef.current) {
+      clearInterval(pollingRef.current);
+      setIsProcessing(false);
+      setError(t("import.processing_failed"));
+      return;
+    }
+
     try {
       const response = await fetch(statusUrl);
       const data = await response.json();
@@ -118,6 +127,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
       setIsProcessing(true);
       setUploadProgress(100);
 
+      pollDeadlineRef.current = Date.now() + 3 * 60 * 1000;
       pollingRef.current = setInterval(() => {
         pollStatus(data.id, data.status_url);
       }, 2000);

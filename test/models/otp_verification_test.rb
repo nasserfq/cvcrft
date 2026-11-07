@@ -190,6 +190,16 @@ class OtpVerificationTest < ActiveSupport::TestCase
     assert_not_nil OtpVerification.find_by(id: new_otp.id)
   end
 
+  test "generate_for keeps the old code when the new one can't be saved" do
+    email = "rollback@example.com"
+    old = OtpVerification.create!(email: email, otp_code: "111111", expires_at: 10.minutes.from_now)
+    OtpVerification.stubs(:create!).raises(ActiveRecord::RecordInvalid.new(OtpVerification.new))
+
+    assert_raises(ActiveRecord::RecordInvalid) { OtpVerification.generate_for(email) }
+
+    assert OtpVerification.exists?(old.id)
+  end
+
   test "generate_for creates code with leading zeros if needed" do
     # Run multiple times to increase chance of getting a code with leading zeros
     100.times do

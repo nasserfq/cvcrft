@@ -220,4 +220,50 @@ class Api::TranslationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "processing", json_response["status"]
   end
+
+  # The builder export records a CvGeneration for usage stats; it used to have
+  # no job_description, fail validation and turn every export into a 422.
+  test "export_pdf for a saved resume records the export and sends the PDF" do
+    resume = @user.resumes.first || @user.resumes.create!(complete_name: "Test User", email: "test@example.com", phone_number: "+966500000000")
+    pdf = Tempfile.new([ "resume", ".pdf" ])
+    CvBuilderPdfJob.any_instance.stubs(:perform).returns({ status: "success", file_path: pdf.path, filename: "resume.pdf" })
+
+    assert_difference -> { @user.cv_generations.where(ai_model: "cv_builder").count }, 1 do
+      get api_export_pdf_translations_url, params: { resume_id: resume.id }
+    end
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+  ensure
+    pdf&.close!
+  end
+
+  test "export_pdf from posted resume data records the export and sends the PDF" do
+    pdf = Tempfile.new([ "resume", ".pdf" ])
+    CvBuilderPdfJob.any_instance.stubs(:perform).returns({ status: "success", file_path: pdf.path, filename: "resume.pdf" })
+
+    assert_difference -> { @user.cv_generations.where(ai_model: "cv_builder").count }, 1 do
+      post api_export_pdf_post_translations_url, params: {
+        resume: { complete_name: "Test User", email: "test@example.com", phone_number: "+966500000000", city: "Riyadh", country: "Saudi Arabia" }
+      }
+    end
+
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+  ensure
+    pdf&.close!
+  end
+
+  test "translation_status lists the translated jobs" do
+    jobs = [ { "job_title" => "Manager", "company" => "Acme", "responsibilities_english" => [ "Led the team" ] } ]
+    @user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "completed",
+                                  english_text: { jobs: jobs }.to_json,
+                                  metadata: { job_id: "jobs-done", job_descriptions: true })
+
+    get "/api/translation_status/jobs-done"
+
+    assert_response :success
+    assert_equal "completed", json_response["status"]
+    assert_equal jobs, json_response["jobs"]
+  end
 end

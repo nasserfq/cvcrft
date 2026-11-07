@@ -14,7 +14,7 @@ class AiTranslationDashboard < Administrate::BaseDashboard
     english_text: Field::Text,
     metadata: Field::String.with_options(searchable: false),
     resume: Field::BelongsTo,
-    status: Field::String,
+    status: Field::Select.with_options(collection: AiTranslation::STATUSES),
     tokens_used: Field::Number,
     translation_quality: Field::String,
     user: Field::BelongsTo,

@@ -58,30 +58,31 @@ class CvImportsController < ApplicationController
         original_filename: pdf_file.original_filename
       )
 
-      # Free allowance first, then credits (Billing::UsageGate::COSTS) while billing is on
-      charge_key = SecureRandom.uuid
-      charge = Billing::UsageGate.allow!(current_user, :document_ai, key: charge_key)
-      if charge == :blocked
-        return render json: { success: false, error: t("ux_i18n2.cv_imports.limit_reached"), limit_reached: true, **credits_upsell }, status: :too_many_requests
-      end
-
-      if @cv_import.save
-        # Queue the background job for AI processing
-        CvImportJob.perform_async(@cv_import.id, *(charge_key if charge == :credit))
-
-        render json: {
-          success: true,
-          id: @cv_import.id,
-          status_url: cv_import_status_path(@cv_import, format: :json),
-          message: t("ux_i18n2.cv_imports.analyzing")
-        }
-      else
-        refund_import(charge, charge_key)
-        render json: {
+      unless @cv_import.save
+        return render json: {
           success: false,
           error: @cv_import.errors.full_messages.join(", ")
         }, status: :unprocessable_entity
       end
+
+      # Free allowance first, then credits (Billing::UsageGate::COSTS) while
+      # billing is on. Charged under the import's own key, so any later
+      # failure can refund it from the row.
+      charge = Billing::UsageGate.allow!(current_user, :document_ai, key: @cv_import.charge_key)
+      if charge == :blocked
+        @cv_import.destroy
+        return render json: { success: false, error: t("ux_i18n2.cv_imports.limit_reached"), limit_reached: true, **credits_upsell }, status: :too_many_requests
+      end
+
+      # Queue the background job for AI processing
+      CvImportJob.perform_async(@cv_import.id, *(@cv_import.charge_key if charge == :credit))
+
+      render json: {
+        success: true,
+        id: @cv_import.id,
+        status_url: cv_import_status_path(@cv_import, format: :json),
+        message: t("ux_i18n2.cv_imports.analyzing")
+      }
 
     rescue CvPdfImportService::CorruptedFileError => e
       render json: {
@@ -105,7 +106,8 @@ class CvImportsController < ApplicationController
       }, status: :unprocessable_entity
 
     rescue => e
-      refund_import(charge, charge_key)
+      # Anything that broke after the charge gives the credit back.
+      CvImport.fail_active!(@cv_import.id, e.message) if @cv_import&.persisted?
       Rails.logger.error "[CvImport] Unexpected error: #{e.message}"
       Rails.logger.error e.backtrace.first(5).join("\n")
 
@@ -148,11 +150,6 @@ class CvImportsController < ApplicationController
   end
 
   private
-
-  # Gives the credit back when the import it paid for didn't start.
-  def refund_import(charge, key)
-    Billing::UsageGate.refund!(current_user, :document_ai, key: key) if charge == :credit
-  end
 
   def set_cv_import
     @cv_import = current_user.cv_imports.find(params[:id])

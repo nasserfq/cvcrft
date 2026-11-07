@@ -31,10 +31,6 @@ class CvAnalysesController < ApplicationController
       return reject_upload(t("ux_i18n.cv_analyses.file_too_large"), :unprocessable_entity)
     end
 
-    unless current_user.usage_limits.consume!(:document_ai)
-      return reject_upload(t("ux_i18n.cv_analyses.limit_reached"), :too_many_requests)
-    end
-
     begin
       # Parse PDF to extract text
       pdf_file = params[:pdf_file]
@@ -50,6 +46,11 @@ class CvAnalysesController < ApplicationController
           format.json { render json: { success: false, error: t("ux_i18n.cv_analyses.text_extraction_failed") }, status: :unprocessable_entity }
         end
         return
+      end
+
+      # Only a readable PDF uses up an analysis.
+      unless current_user.usage_limits.consume!(:document_ai)
+        return reject_upload(t("ux_i18n.cv_analyses.limit_reached"), :too_many_requests)
       end
 
       # Create the analysis record
@@ -92,6 +93,7 @@ class CvAnalysesController < ApplicationController
         format.json { render json: { success: false, error: t("ux_i18n.cv_analyses.malformed_file") }, status: :unprocessable_entity }
       end
     rescue => e
+      @cv_analysis.fail_unfinished!(e.message) if @cv_analysis&.persisted?
       Rails.logger.error "CV Analysis creation error: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
       respond_to do |format|

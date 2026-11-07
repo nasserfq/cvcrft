@@ -284,4 +284,50 @@ class AiTranslationTest < ActiveSupport::TestCase
     translation = ai_translations(:completed_translation)
     assert translation.arabic_text.match?(/[\u0600-\u06FF]/)
   end
+
+  # ============================================
+  # STALE WORK
+  # ============================================
+
+  test "fail_stale! fails old unfinished translations and leaves the rest" do
+    user = users(:test_user)
+    stale = user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "processing", metadata: { job_id: "stale" })
+    stale_pending = user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "pending", metadata: { job_id: "stale-pending" })
+    recent = user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "processing", metadata: { job_id: "recent" })
+    done = user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "completed", metadata: { job_id: "done" })
+    AiTranslation.where(id: [ stale.id, stale_pending.id, done.id ]).update_all(updated_at: 1.hour.ago)
+
+    assert_equal 2, AiTranslation.where(user: user).fail_stale!(older_than: 30.minutes.ago)
+
+    assert_equal "failed", stale.reload.status
+    assert_equal "timed out", stale.metadata["error"]
+    assert_equal "stale", stale.metadata["job_id"]
+    assert_equal "failed", stale_pending.reload.status
+    assert_equal "processing", recent.reload.status
+    assert_equal "completed", done.reload.status
+  end
+
+  test "fail_stale! gives back the credit a stale translation used" do
+    ENV["BILLING_ENABLED"] = "true"
+    user = users(:test_user)
+    user.update_column(:summary_translations_count, UserUsageLimits::BASE_SUMMARY_TRANSLATIONS)
+    assert_equal :credit, Billing::UsageGate.allow!(user, :summary_translation, key: "stale-paid")
+    balance = Billing::Credits.balance(user)
+    translation = user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "processing",
+                                               metadata: { job_id: "stale-paid", overage_kind: "summary_translation" })
+    translation.update_column(:updated_at, 1.hour.ago)
+
+    AiTranslation.fail_stale!(older_than: 30.minutes.ago)
+
+    assert_equal balance + Billing::UsageGate.cost(:summary_translation), Billing::Credits.balance(user)
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "fail_unfinished! does not touch a finished translation" do
+    translation = ai_translations(:completed_translation)
+
+    assert_not translation.fail_unfinished!("timed out", error_code: "timeout")
+    assert_equal "completed", translation.reload.status
+  end
 end

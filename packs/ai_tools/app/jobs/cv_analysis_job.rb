@@ -9,6 +9,12 @@ class CvAnalysisJob
 
   sidekiq_options queue: :default, retry: 3
 
+  # Between attempts the analysis stays processing so the page keeps polling;
+  # it only fails once Sidekiq gives up.
+  sidekiq_retries_exhausted do |job, error|
+    CvAnalysis.find_by(id: job["args"].first)&.fail_unfinished!(error.message)
+  end
+
   # The report is written by two calls that run side by side: one long call
   # took ~42 s, and output length is what costs time. Part A keeps the scores
   # and ATS tips together so the tips cannot contradict the ATS feedback.
@@ -23,6 +29,8 @@ class CvAnalysisJob
 
   def perform(cv_analysis_id)
     @analysis = CvAnalysis.find(cv_analysis_id)
+    return if @analysis.completed? || @analysis.failed?
+
     @analysis.mark_processing!
 
     Rails.logger.info "[CvAnalysis] Starting analysis for #{@analysis.id}"
@@ -36,7 +44,7 @@ class CvAnalysisJob
       )
       Rails.logger.info "[CvAnalysis] Successfully analyzed CV #{@analysis.id}"
     rescue => e
-      handle_error(e)
+      log_error(e)
       raise e
     end
   end
@@ -51,7 +59,7 @@ class CvAnalysisJob
       Thread.new do
         Thread.current.report_on_exception = false
         # Rescued inside the wrap so the executor doesn't report it a second
-        # time: the job's own handler marks the analysis failed and re-raises.
+        # time: the job logs it and re-raises for Sidekiq to retry.
         Rails.application.executor.wrap do
           request_part(part, user_prompt, tracker)
         rescue StandardError => e
@@ -80,7 +88,7 @@ class CvAnalysisJob
   end
 
   # Waits for every part before raising, so no thread is left writing to the
-  # analysis after it has been marked failed. Each thread returns its
+  # analysis after the attempt has ended. Each thread returns its
   # exception as its value. The job may hold the load interlock; letting it go
   # while waiting keeps a thread that needs to autoload from deadlocking.
   def wait_for(threads)
@@ -285,8 +293,7 @@ class CvAnalysisJob
     }
   end
 
-  def handle_error(error)
-    @analysis.mark_failed!(error.message)
+  def log_error(error)
     Rails.logger.error "[CvAnalysis] Failed to analyze CV #{@analysis.id}: #{error.message}"
     Rails.logger.error error.backtrace.first(10).join("\n")
   end

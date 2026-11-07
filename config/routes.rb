@@ -83,13 +83,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # AI Translation routes
-  resources :ai_translations, only: [ :create ] do
-    member do
-      get :status
-    end
-  end
-
   # CV Generation routes
   resources :cv_generations do
     member do

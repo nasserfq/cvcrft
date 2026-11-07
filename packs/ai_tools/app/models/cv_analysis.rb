@@ -3,10 +3,20 @@ class CvAnalysis < ApplicationRecord
 
   # Status constants
   STATUSES = %w[pending processing completed failed].freeze
+  UNFINISHED_STATUSES = %w[pending processing].freeze
   LANGUAGES = %w[ar en].freeze
 
   # Set default status
   after_initialize :set_defaults, if: :new_record?
+
+  # Fails analyses left pending or processing since before `older_than` (a
+  # lost job or a killed worker). Nothing was charged, so nothing is given
+  # back. Returns how many were failed.
+  def self.fail_stale!(older_than:)
+    where(status: UNFINISHED_STATUSES).where(updated_at: ...older_than).find_each.count do |analysis|
+      analysis.fail_unfinished!("timed out")
+    end
+  end
 
   # Validations
   validates :status, presence: true, inclusion: { in: STATUSES }
@@ -39,9 +49,10 @@ class CvAnalysis < ApplicationRecord
 
   # State transitions
   # Progress starts at 3 so the processing page shows movement before the
-  # first streamed chunk arrives; the job raises it to at most 95.
+  # first streamed chunk arrives; the job raises it to at most 95. A retried
+  # attempt starts over, so the last attempt's error is cleared.
   def mark_processing!
-    update!(status: "processing", progress: 3)
+    update!(status: "processing", progress: 3, error_message: nil)
   end
 
   def mark_completed!(results, model_name = nil, tokens = nil)
@@ -59,6 +70,16 @@ class CvAnalysis < ApplicationRecord
       status: "failed",
       error_message: message
     )
+  end
+
+  # Marks the analysis failed unless it finished meanwhile. Returns whether
+  # it changed.
+  def fail_unfinished!(message)
+    with_lock do
+      next false unless status.in?(UNFINISHED_STATUSES)
+
+      mark_failed!(message)
+    end
   end
 
   # Analysis results helpers

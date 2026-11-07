@@ -11,6 +11,14 @@ class Billing::CreditsTest < ActiveSupport::TestCase
     assert_equal 1, @user.credit_ledger_entries.where(reason: "signup_bonus").count
   end
 
+  test "a zero signup bonus grants nothing and billing still works" do
+    stub_const(Billing, :SIGNUP_BONUS, 0) do
+      assert_equal 0, Billing::Credits.balance(@user)
+      assert_not Billing::Credits.spend!(@user, 1, reason: "coach_message", key: "msg:zero")
+      assert_not @user.credit_ledger_entries.exists?(reason: "signup_bonus")
+    end
+  end
+
   test "spend takes credits and records the balance after" do
     assert Billing::Credits.spend!(@user, 1, reason: "coach_message", key: "msg:1")
 

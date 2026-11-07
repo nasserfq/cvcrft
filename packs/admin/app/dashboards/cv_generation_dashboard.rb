@@ -14,7 +14,7 @@ class CvGenerationDashboard < Administrate::BaseDashboard
     job_description: Field::Text,
     metadata: Field::String.with_options(searchable: false),
     resume: Field::BelongsTo,
-    status: Field::String,
+    status: Field::Select.with_options(collection: CvGeneration::STATUSES),
     tokens_used: Field::Number,
     user: UserDetailField,
     created_at: Field::DateTime,
