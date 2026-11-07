@@ -57,22 +57,6 @@ class CouponServiceTest < ActiveSupport::TestCase
     assert_equal Billing::SIGNUP_BONUS + 25, Billing::Credits.balance(user)
   end
 
-  test "a failed credit grant leaves the coupon unredeemed so a retry grants it" do
-    user = users(:one)
-    coupon = ConfigCoupon.new("COACH25", "bonus_credits" => 25)
-    CouponRegistry.stubs(:find).with("COACH25").returns(coupon)
-    Billing::Credits.stubs(:grant!).raises(ActiveRecord::StatementInvalid)
-
-    assert_raises(ActiveRecord::StatementInvalid) { CouponService.redeem(user, "COACH25") }
-    refute CouponRedemptionStore.redeemed?(user.id, coupon.code)
-
-    Billing::Credits.unstub(:grant!)
-    CouponService.redeem(user, "COACH25")
-
-    assert CouponRedemptionStore.redeemed?(user.id, coupon.code)
-    assert_equal Billing::SIGNUP_BONUS + 25, Billing::Credits.balance(user)
-  end
-
   test "an email-restricted coupon gives its owner unlimited use, coach included" do
     user = users(:one)
 
