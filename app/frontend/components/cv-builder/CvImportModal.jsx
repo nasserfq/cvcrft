@@ -1,6 +1,12 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+
+const POLL_MS = 2000;
+// After this the import is still running server-side (the sweeper fails it
+// for real if it is lost), so the modal says it is slow and keeps checking.
+const PATIENCE_MS = 3 * 60 * 1000;
+const SLOW_POLL_MS = 10000;
 
 const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
   const { t } = useTranslation();
@@ -8,13 +14,16 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  // Processing past PATIENCE_MS: "taking longer" with a "check again" button.
+  const [isSlow, setIsSlow] = useState(false);
   const [error, setError] = useState("");
   // Set when the server says a limit was hit and credits can lift it.
   const [upgrade, setUpgrade] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
-  const pollingRef = useRef(null);
-  const pollDeadlineRef = useRef(0);
+  // { token, timer, check, inFlight }: token changes when polling stops, so a
+  // late response from an earlier poll is ignored.
+  const pollRef = useRef({});
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
@@ -63,33 +72,62 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
     [validateAndSetFile]
   );
 
-  const pollStatus = async (importId, statusUrl) => {
-    // Stop after about 3 minutes; the job has given up by then.
-    if (Date.now() > pollDeadlineRef.current) {
-      clearInterval(pollingRef.current);
-      setIsProcessing(false);
-      setError(t("import.processing_failed"));
-      return;
-    }
+  const stopPolling = useCallback(() => {
+    clearTimeout(pollRef.current.timer);
+    pollRef.current = {};
+  }, []);
 
-    try {
-      const response = await fetch(statusUrl);
-      const data = await response.json();
+  useEffect(() => stopPolling, [stopPolling]);
 
-      if (data.completed) {
-        clearInterval(pollingRef.current);
+  const startPolling = (statusUrl) => {
+    stopPolling();
+    const token = {};
+    const startedAt = Date.now();
+    const poll = { token, timer: null, inFlight: false };
+
+    poll.check = async () => {
+      if (pollRef.current.token !== token || poll.inFlight) return;
+      clearTimeout(poll.timer);
+      poll.inFlight = true;
+      let data = null;
+      try {
+        const response = await fetch(statusUrl, {
+          headers: { Accept: "application/json" },
+          credentials: "same-origin",
+        });
+        if (response.ok) data = await response.json();
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+      poll.inFlight = false;
+      if (pollRef.current.token !== token) return;
+
+      if (data?.completed) {
+        stopPolling();
         setIsProcessing(false);
+        setIsSlow(false);
         onImportComplete(data.parsed_data);
         onClose();
-      } else if (data.failed) {
-        clearInterval(pollingRef.current);
-        setIsProcessing(false);
-        setError(data.error_message || t("import.processing_failed"));
+        return;
       }
-    } catch (err) {
-      console.error("Polling error:", err);
-    }
+      if (data?.failed) {
+        stopPolling();
+        setIsProcessing(false);
+        setIsSlow(false);
+        setError(data.error_message || t("import.processing_failed"));
+        return;
+      }
+
+      const slow = Date.now() - startedAt > PATIENCE_MS;
+      if (slow) setIsSlow(true);
+      poll.timer = setTimeout(poll.check, slow ? SLOW_POLL_MS : POLL_MS);
+    };
+
+    pollRef.current = poll;
+    poll.timer = setTimeout(poll.check, 500);
   };
+
+  const checkAgain = () => pollRef.current.check?.();
 
   const handleUpload = async () => {
     if (!file) return;
@@ -127,12 +165,8 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
       setIsProcessing(true);
       setUploadProgress(100);
 
-      pollDeadlineRef.current = Date.now() + 3 * 60 * 1000;
-      pollingRef.current = setInterval(() => {
-        pollStatus(data.id, data.status_url);
-      }, 2000);
-
-      setTimeout(() => pollStatus(data.id, data.status_url), 500);
+      setIsSlow(false);
+      startPolling(data.status_url);
     } catch (err) {
       console.error("Upload error:", err);
       setError(t("import.connection_error"));
@@ -141,14 +175,13 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
   };
 
   const handleClose = () => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-    }
+    stopPolling();
     setFile(null);
     setError("");
     setUpgrade(null);
     setIsUploading(false);
     setIsProcessing(false);
+    setIsSlow(false);
     setUploadProgress(0);
     onClose();
   };
@@ -159,7 +192,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => {
-        if (e.target === e.currentTarget && !isUploading && !isProcessing) {
+        if (e.target === e.currentTarget && !isUploading && (!isProcessing || isSlow)) {
           handleClose();
         }
       }}
@@ -175,7 +208,7 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
           <button
             type="button"
             onClick={handleClose}
-            disabled={isUploading || isProcessing}
+            disabled={isUploading || (isProcessing && !isSlow)}
             className="sr-hit p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
             aria-label={t("actions.close")}
           >
@@ -298,8 +331,23 @@ const CvImportModal = ({ isOpen, onClose, onImportComplete }) => {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <p className="font-medium text-gray-900 dark:text-white mb-2">{t("import.analyzing")}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t("import.ai_extracting")}</p>
+              {isSlow ? (
+                <>
+                  <p className="font-medium text-gray-900 dark:text-white mb-4">{t("import.taking_longer")}</p>
+                  <button
+                    type="button"
+                    onClick={checkAgain}
+                    className="inline-flex items-center justify-center min-h-[44px] px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primaryHover transition-colors"
+                  >
+                    {t("import.check_again")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium text-gray-900 dark:text-white mb-2">{t("import.analyzing")}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t("import.ai_extracting")}</p>
+                </>
+              )}
             </div>
           )}
         </div>

@@ -4,9 +4,9 @@ class CvGenerationsController < ApplicationController
   before_action :authenticate_user!
 
   include UserRateLimit
-  rate_limit_per_user to: 5, within: 1.minute, only: %i[create retry], name: "cv-generation"
+  rate_limit_per_user to: 5, within: 1.minute, only: %i[create retry regenerate], name: "cv-generation"
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
-  before_action :set_cv_generation, only: [ :show, :status, :destroy, :retry, :cancel, :download_pdf, :view_pdf, :preview, :save_draft, :resume_draft ]
+  before_action :set_cv_generation, only: [ :show, :status, :destroy, :retry, :cancel, :regenerate, :download_pdf, :view_pdf, :preview, :save_draft, :resume_draft ]
   before_action :require_saved_resume, only: [ :retry, :resume_draft ]
 
   # Skip CSRF protection for JSON requests from frontend
@@ -15,10 +15,13 @@ class CvGenerationsController < ApplicationController
   # Global limit for job-based CV generation (base; coupons may increase per user)
   MAX_JOB_BASED_GENERATIONS = UserUsageLimits::BASE_JOB_BASED_GENERATIONS
 
+  # Completed AI generations a user may keep (create and count).
+  MAX_CV_GENERATIONS = 150
+
   def index
     if params[:recent_with_pdf] == "true"
       # Return most recent completed CV with PDF as JSON
-      recent_cv = current_user.cv_generations.where(status: "completed")
+      recent_cv = current_user.cv_generations.ai_generated.where(status: "completed")
                              .where("metadata->>'pdf_generated' = 'true'")
                              .order(created_at: :desc)
                              .first
@@ -29,7 +32,7 @@ class CvGenerationsController < ApplicationController
         render json: { error: "No completed CV with PDF found" }, status: 404
       end
     else
-      @cv_generations = current_user.cv_generations.recent
+      @cv_generations = current_user.cv_generations.ai_generated.recent
 
       # Filter by resume_id if provided
       if params[:resume_id].present?
@@ -55,7 +58,7 @@ class CvGenerationsController < ApplicationController
   def new
     @cv_generation = CvGeneration.new
     @resumes = current_user.resumes.limit(10)  # Show user's resumes for selection
-    @recent_cv_generations = current_user.cv_generations.where(status: "completed").recent.limit(3)
+    @recent_cv_generations = current_user.cv_generations.ai_generated.where(status: "completed").recent.limit(3)
     @recent_resumes = current_user.resumes.recent.limit(3)
     @default_ats_template = AtsTemplatePdfService.normalize_template_key(params[:template])
   end
@@ -74,9 +77,9 @@ class CvGenerationsController < ApplicationController
       return
     end
 
-    # Check CV generation limit (150 per user) - overall limit (only count completed)
-    max_cv_generations = 150
-    current_cv_count = current_user.cv_generations.where(status: "completed").count
+    # Overall limit: completed AI generations only
+    max_cv_generations = MAX_CV_GENERATIONS
+    current_cv_count = current_user.cv_generations.ai_generated.where(status: "completed").count
 
     if current_cv_count >= max_cv_generations
       Rails.logger.warn "User #{current_user.id} has reached overall CV generation limit (#{current_cv_count}/#{max_cv_generations})"
@@ -182,7 +185,10 @@ class CvGenerationsController < ApplicationController
     raise
   end
 
+  # A running generation is cancelled first, which gives its credit back;
+  # the job then finds nothing to write.
   def destroy
+    @cv_generation.cancel! if @cv_generation.processing?
     @cv_generation.destroy
     respond_to do |format|
       format.html { redirect_to resumes_path, notice: t("ux_i18n2.cv_generations.deleted") }
@@ -233,6 +239,23 @@ class CvGenerationsController < ApplicationController
     end
   end
 
+  # Re-runs the AI and the PDF on this completed generation, in place. The
+  # new summary and PDF replace the old ones only when both worked; on a
+  # failure the generation keeps its previous summary and PDF and the
+  # credit is given back. Regenerating uses the same allowance as a new
+  # generation, and one run at a time holds the generation's claim.
+  def regenerate
+    return redirect_to(@cv_generation) unless @cv_generation.completed?
+    return redirect_to(new_cv_generation_path, alert: t("cv_generation.choose_resume")) unless @cv_generation.resume_id
+    return redirect_to(@cv_generation, alert: t("ux_i18n2.cv_generations.show.processing_title")) unless @cv_generation.claim_regeneration!
+
+    if (error = regenerate_pdf)
+      redirect_to @cv_generation, alert: error
+    else
+      redirect_to @cv_generation, notice: t("ux_i18n2.cv_generations.show.pdf_ready")
+    end
+  end
+
   def status
     service = CvGenerationService.new(current_user.id, @cv_generation.resume_id)
 
@@ -257,18 +280,16 @@ class CvGenerationsController < ApplicationController
   end
 
   def count
-    cv_count = current_user.cv_generations.where(status: "completed").count
-    max_cv_generations = 150  # Keep consistent with create action
+    cv_count = current_user.cv_generations.ai_generated.where(status: "completed").count
 
     respond_to do |format|
-      format.json { render json: { count: cv_count, limit: max_cv_generations } }
+      format.json { render json: { count: cv_count, limit: MAX_CV_GENERATIONS } }
     end
   end
 
   def download_pdf
-    if params[:regenerate] == "true" && (error = regenerate_pdf)
-      return redirect_to @cv_generation, alert: error
-    end
+    # Old "regenerate" links: regenerating is a POST now (regenerate).
+    return redirect_to(@cv_generation) if params[:regenerate].present?
 
     # Now attempt to send the PDF (original or regenerated)
     if @cv_generation.metadata&.dig("pdf_generated") && @cv_generation.metadata&.dig("pdf_data")
@@ -296,9 +317,8 @@ class CvGenerationsController < ApplicationController
   end
 
   def view_pdf
-    if params[:regenerate] == "true" && (error = regenerate_pdf)
-      return redirect_to @cv_generation, alert: error
-    end
+    # Old "regenerate" links: regenerating is a POST now (regenerate).
+    return redirect_to(@cv_generation) if params[:regenerate].present?
 
     if @cv_generation.metadata&.dig("pdf_generated") && @cv_generation.metadata&.dig("pdf_data")
       pdf_data = Base64.decode64(@cv_generation.metadata["pdf_data"])
@@ -428,36 +448,28 @@ class CvGenerationsController < ApplicationController
 
   private
 
-  # Re-runs the AI and the PDF on this completed generation, in place, so the
-  # page then serves the new PDF. Regenerating uses the same allowance as a
-  # new generation. Returns an error message, or nil when it worked (or there
-  # was nothing to regenerate).
+  # Runs the regenerate under the claim regenerate took. Returns an error
+  # message, or nil when it worked.
   def regenerate_pdf
-    return unless @cv_generation.completed?
-
     charge_key = "regenerate:#{@cv_generation.id}:#{SecureRandom.uuid}"
     charge = charge_generation(charge_key)
-    return t("ux_i18n2.cv_generations.job_credits_used") if charge == :blocked
-
-    begin
-      options = @cv_generation.metadata.slice(
-        "complete_name", "email", "temperature", "max_tokens", "ats_template"
-      ).merge({
-        "cv_generation_id" => @cv_generation.id,
-        "regenerate" => true,
-        "force_pdf_regeneration" => true,
-        "pdf_cache_hours" => 0  # Bypass cache completely
-      })
-
-      CvGeneratorJob.new.perform(@cv_generation.job_description, current_user.id, @cv_generation.resume_id, options)
-      @cv_generation.reload
-      nil
-    rescue => e
-      refund_generation(charge, charge_key)
-      Rails.logger.error "Error regenerating PDF: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-      "Failed to regenerate PDF: #{e.message}"
+    if charge == :blocked
+      @cv_generation.release_regeneration!
+      return t("ux_i18n2.cv_generations.job_credits_used")
     end
+
+    options = @cv_generation.metadata.slice(*CvGeneratorJob::OPTION_KEYS)
+                            .except("overage_key", "source")
+                            .merge("cv_generation_id" => @cv_generation.id, "regenerate" => true)
+    CvGeneratorJob.new.perform(@cv_generation.job_description, current_user.id, @cv_generation.resume_id, options)
+    @cv_generation.release_regeneration!
+    nil
+  rescue => e
+    refund_generation(charge, charge_key)
+    @cv_generation.release_regeneration!
+    Rails.logger.error "Error regenerating PDF: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    "Failed to regenerate PDF: #{e.message}"
   end
 
   # One job-based generation: free allowance first, then credits while

@@ -157,6 +157,85 @@ const AUTOSAVE_DELAY_MS = 1500;
 const RETRY_DELAYS_MS = [3000, 6000, 12000, 30000];
 const SAVE_TIMEOUT_MS = 15000;
 
+// A translation job can take minutes (provider retries), and the server fails
+// a lost one after StaleWorkSweeperJob::STALE_AFTER (30 minutes, swept every
+// 10). So the page polls every second at first, then every 5 seconds, and
+// gives up only once the server would have failed it.
+const TRANSLATION_FAST_POLLS = 30;
+const TRANSLATION_FAST_POLL_MS = 1000;
+const TRANSLATION_SLOW_POLL_MS = 5000;
+const TRANSLATION_POLL_LIMIT_MS = 45 * 60 * 1000;
+
+// Polls /api/translation_status/:jobId. onStatus(status) returns true when the
+// status is final; onSlow runs once when the fast polls are used up; onGiveUp
+// when the whole window has passed. Returns a function that stops polling.
+const pollTranslation = (jobId, { onStatus, onSlow, onGiveUp }) => {
+ const startedAt = Date.now();
+ let polls = 0;
+ let stopped = false;
+ let timer = null;
+
+ const scheduleNext = () => {
+  if (stopped) return;
+  polls += 1;
+  if (Date.now() - startedAt >= TRANSLATION_POLL_LIMIT_MS) {
+   onGiveUp();
+   return;
+  }
+  if (polls === TRANSLATION_FAST_POLLS) onSlow();
+  const delay = polls < TRANSLATION_FAST_POLLS ? TRANSLATION_FAST_POLL_MS : TRANSLATION_SLOW_POLL_MS;
+  timer = setTimeout(poll, delay);
+ };
+
+ const poll = async () => {
+  try {
+   const response = await fetch(`/api/translation_status/${encodeURIComponent(jobId)}`);
+   if (stopped) return;
+   // The row is saved before the job is queued: no row, no translation.
+   if (response.status === 404) {
+    onStatus({ status: "failed" });
+    return;
+   }
+   if (response.ok) {
+    const status = await response.json();
+    if (stopped || onStatus(status)) return;
+   }
+  } catch (error) {
+   console.error("Translation polling error:", error);
+  }
+  scheduleNext();
+ };
+
+ poll();
+ return () => {
+  stopped = true;
+  clearTimeout(timer);
+ };
+};
+
+// An Error whose message can be shown to the user as it is.
+const userFacingError = (message) => {
+ const error = new Error(message);
+ error.userMessage = message;
+ return error;
+};
+
+// The error a failed resume save answered with, for the user.
+const saveResponseError = async (response, prefix) => {
+ const text = await response.text();
+ let message = null;
+ try {
+  const body = JSON.parse(text);
+  if (typeof body.error === "string" && body.error.trim()) message = body.error;
+  else if (Array.isArray(body.errors) && body.errors.length > 0) message = body.errors.join(", ");
+ } catch {
+  // Not JSON: nothing to show.
+ }
+ const error = new Error(`${prefix} ${response.status}: ${text}`);
+ if (message) error.userMessage = message;
+ return error;
+};
+
 // Memoized skeleton loading for steps - prevents re-renders
 const StepLoadingSkeleton = memo(() => (
  <div className="animate-pulse space-y-6">
@@ -624,12 +703,22 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
  });
 
  const [isTranslating, setIsTranslating] = useState(false);
+ // The translation is still running after the fast polls.
+ const [translationSlow, setTranslationSlow] = useState(false);
  const [translationError, setTranslationError] = useState("");
  const [isTranslatingJobs, setIsTranslatingJobs] = useState(false);
+ const [jobTranslationSlow, setJobTranslationSlow] = useState(false);
  const [jobTranslationError, setJobTranslationError] = useState("");
  const [jobTranslationSuccess, setJobTranslationSuccess] = useState(false);
  const [isExporting, setIsExporting] = useState(false);
- const [exportStatus, setExportStatus] = useState("idle"); // idle, processing, completed, failed, timeout
+ const [exportError, setExportError] = useState("");
+ // Stop functions of the running translation pollers (see pollTranslation).
+ const stopSummaryPollRef = useRef(null);
+ const stopJobsPollRef = useRef(null);
+ useEffect(() => () => {
+  stopSummaryPollRef.current?.();
+  stopJobsPollRef.current?.();
+ }, []);
  const [isSavingDraft, setIsSavingDraft] = useState(false);
  const [addingSkillTo, setAddingSkillTo] = useState(null);
  // Separate translation limits for summary and job descriptions
@@ -1565,6 +1654,11 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
     );
     setRemainingSummaryTranslations(0);
     setIsTranslating(false);
+   } else if (response.status === 422) {
+    // The text was refused (nothing was charged); the server says why.
+    const result = await response.json().catch(() => ({}));
+    setTranslationError(result.error || translate("translation.generic_error"));
+    setIsTranslating(false);
    } else {
     throw new Error("Translation request failed");
    }
@@ -1644,6 +1738,11 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
     );
     setRemainingJobsTranslations(0);
     setIsTranslatingJobs(false);
+   } else if (response.status === 422) {
+    // The text was refused (nothing was charged); the server says why.
+    const result = await response.json().catch(() => ({}));
+    setJobTranslationError(result.error || translate("translation.generic_error"));
+    setIsTranslatingJobs(false);
    } else {
     throw new Error("Translation request failed");
    }
@@ -1654,17 +1753,24 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
   }
  };
 
- // Poll for job descriptions translation status
- const pollJobTranslationStatus = async (jobId, originalJobs) => {
-  const maxAttempts = 60; // 60 seconds max for multiple jobs
-  let attempts = 0;
+ // Poll for job descriptions translation status. The result is applied to
+ // the form whenever it arrives, so the next autosave keeps it.
+ const pollJobTranslationStatus = (jobId, originalJobs) => {
+  stopJobsPollRef.current?.();
+  setJobTranslationSlow(false);
+  const finish = () => {
+   stopJobsPollRef.current = null;
+   setJobTranslationSlow(false);
+   setIsTranslatingJobs(false);
+  };
 
-  const poll = async () => {
-   try {
-    const response = await fetch(`/api/translation_status/${jobId}`);
-    if (response.ok) {
-     const status = await response.json();
-
+  stopJobsPollRef.current = pollTranslation(jobId, {
+   onSlow: () => setJobTranslationSlow(true),
+   onGiveUp: () => {
+    setJobTranslationError(translate("translation.timeout"));
+    finish();
+   },
+   onStatus: (status) => {
      const hasTranslatedJobs = status.jobs?.some((job) => job.responsibilities_english?.length > 0);
 
      if (status.status === "completed" && hasTranslatedJobs) {
@@ -1675,7 +1781,12 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
        // Map translated jobs back to original indices
        status.jobs.forEach((translatedJob, idx) => {
         const originalIndex = originalJobs[idx]?.index;
-        if (originalIndex !== undefined && updatedExperience[originalIndex]) {
+        // Skipped when the duties were edited (or the job removed) meanwhile.
+        const sentDuties = JSON.stringify(originalJobs[idx]?.responsibilities || []);
+        const currentDuties = JSON.stringify(
+         (updatedExperience[originalIndex]?.responsibilities || []).filter((r) => r?.trim())
+        );
+        if (originalIndex !== undefined && updatedExperience[originalIndex] && currentDuties === sentDuties) {
          const englishResponsibilities = translatedJob.responsibilities_english || [];
          // Replace Arabic responsibilities with English translations
          if (englishResponsibilities.length > 0) {
@@ -1736,58 +1847,53 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
        });
       }
 
-      setIsTranslatingJobs(false);
+      finish();
       setJobTranslationSuccess(true);
-      return;
+      return true;
      } else if (status.status === "failed" || status.status === "completed") {
       setJobTranslationError(
        status.error_code
         ? `${translate("translation.failed")} (${status.error_code})`
         : translate("translation.failed")
       );
-      setIsTranslatingJobs(false);
-      return;
+      finish();
+      return true;
      }
-    }
-
-    attempts++;
-    if (attempts < maxAttempts) {
-     setTimeout(poll, 1000);
-    } else {
-     setJobTranslationError(translate("translation.timeout"));
-     setIsTranslatingJobs(false);
-    }
-   } catch (error) {
-    console.error("Polling error:", error);
-    attempts++;
-    if (attempts < maxAttempts) {
-     setTimeout(poll, 1000);
-    } else {
-     setJobTranslationError(translate("translation.timeout"));
-     setIsTranslatingJobs(false);
-    }
-   }
-  };
-
-  poll();
+     return false;
+   },
+  });
  };
 
- // Robust resume saving function
- const saveResumeToDatabase = async () => {
+ // Final submit. When the builder already has the resume (the draft it
+ // autosaves, or a finished resume being edited) it finishes that one in
+ // place; it creates a new one only when it has none. It runs in the save
+ // queue so no autosave overlaps it.
+ const saveResumeToDatabase = () => enqueueSave(submitResume);
+
+ const submitResume = async () => {
+  const existingId = resumeIdRef.current;
+  const target = existingId
+   ? { url: `/resumes/${existingId}`, method: "PATCH" }
+   : { url: "/resumes", method: "POST" };
+  // The update moves the resume's updated_at; later autosaves base on it.
+  const rememberSaved = (saved) => {
+   if (existingId && saved.updated_at) baseUpdatedAtRef.current = saved.updated_at;
+   return saved.id;
+  };
 
   // Validate required fields
   if (!formData.complete_name?.trim()) {
-   throw new Error(translate("validation.name_required"));
+   throw userFacingError(translate("validation.name_required"));
   }
   if (!formData.email?.trim()) {
-   throw new Error(translate("validation.email_required"));
+   throw userFacingError(translate("validation.email_required"));
   }
 
   const csrfToken = document
    .querySelector('meta[name="csrf-token"]')
    ?.getAttribute("content");
   if (!csrfToken) {
-   throw new Error(translate("security.csrf_missing"));
+   throw userFacingError(translate("security.csrf_missing"));
   }
 
   // Prepare resume data with all fields
@@ -1854,8 +1960,8 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
 
   // First try: JSON POST request
   try {
-   const response = await fetch("/resumes", {
-    method: "POST",
+   const response = await fetch(target.url, {
+    method: target.method,
     headers: {
      "Content-Type": "application/json",
      "X-CSRF-Token": csrfToken,
@@ -1869,10 +1975,9 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
 
    if (response.ok) {
     const savedResume = await response.json();
-    return savedResume.id;
+    return rememberSaved(savedResume);
    } else {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
+    throw await saveResponseError(response, "HTTP");
    }
   } catch (jsonError) {
 
@@ -2003,8 +2108,8 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
      );
     });
 
-    const response = await fetch("/resumes", {
-     method: "POST",
+    const response = await fetch(target.url, {
+     method: target.method,
      body: formDataToSubmit,
      headers: {
       "X-CSRF-Token": csrfToken,
@@ -2016,15 +2121,16 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
 
     if (response.ok) {
      const result = await response.json();
-     return result.id;
+     return rememberSaved(result);
     } else {
-     const errorText = await response.text();
-     throw new Error(`FormData HTTP ${response.status}: ${errorText}`);
+     throw await saveResponseError(response, "FormData HTTP");
     }
    } catch (formError) {
-    throw new Error(
+    const failure = new Error(
      `Both JSON and FormData submissions failed. Last error: ${formError.message}`
     );
+    failure.userMessage = formError.userMessage || jsonError.userMessage;
+    throw failure;
    }
   }
  };
@@ -2041,282 +2147,43 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
   }
 
   setIsExporting(true);
-  setTranslationError("");
+  setExportError("");
 
   // Track PDF export attempt
   trackEvent("pdf_export_started", { resume_id: resume?.id, template: selectedAtsTemplate });
 
   try {
-
-   let resumeId = null;
-
-   // Step 1: Always save the resume to database first
+   // The PDF is made from the saved resume, so it is saved first. If that
+   // fails, the user is told why and nothing is exported.
+   let resumeId;
    try {
     resumeId = await saveResumeToDatabase();
-
-    // Show success message in console (less intrusive than alert)
-    setTranslationError(""); // Clear any errors
    } catch (saveError) {
-
-    // Validate required fields for PDF generation even if save fails
-    if (!formData.complete_name?.trim() || !formData.email?.trim()) {
-     alert(translate("export.name_email_required"));
-     setIsExporting(false);
-     return;
-    }
-
-    // Still try to export PDF even if save fails
+    console.error("Resume save before export failed:", saveError);
+    setExportError(saveError.userMessage || translate("form.save_error"));
+    return;
    }
 
-   // Export the PDF - either with saved resume ID or directly from form data
-   let response;
-
-   if (resumeId) {
-    // Use saved resume - attempt direct download first
-    try {
-     // Create a download link and trigger it directly - most reliable method
-     const downloadUrl = `/api/export_pdf?resume_id=${resumeId}&direct_download=true&template=${selectedAtsTemplate}&t=${Date.now()}`;
-
-     // Use fetch + Blob approach which is more reliable for binary data
-     const response = await fetch(downloadUrl);
-     if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-     }
-
-     // Create a Blob from the binary PDF data
-     const blob = await response.blob();
-
-     // Create a download link with the Blob URL
-     const blobUrl = URL.createObjectURL(blob);
-     const link = document.createElement("a");
-     link.href = blobUrl;
-     link.download = `resume_${resumeId}.pdf`;
-     document.body.appendChild(link);
-     link.click();
-
-     // Clean up the Blob URL after download starts
-     setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-
-     // Clean up
-     setTimeout(() => {
-      document.body.removeChild(link);
-      setExportStatus("completed");
-      setIsExporting(false);
-     }, 2000);
-
-     // Return early as the download should be initiated
-     return;
-    } catch (e) {
-     console.error("Direct download failed, falling back to JSON response:", e);
-     // Fall back to the fetch + Blob approach which is more reliable in modern browsers
-     response = await fetch(
-      `/api/export_pdf?resume_id=${resumeId}&direct_download=true&template=${selectedAtsTemplate}`,
-      {
-       method: "GET",
-       headers: {
-        "X-CSRF-Token": document
-         .querySelector('meta[name="csrf-token"]')
-         ?.getAttribute("content"),
-       },
-      }
-     );
-
-     // If we got binary data back, use Blob to trigger download
-     if (response.ok) {
-      try {
-       const blob = await response.blob();
-       const url = window.URL.createObjectURL(blob);
-       const link = document.createElement("a");
-       link.href = url;
-       link.setAttribute("download", `resume_${resumeId}.pdf`);
-       document.body.appendChild(link);
-       link.click();
-       link.parentNode.removeChild(link);
-       window.URL.revokeObjectURL(url);
-       setExportStatus("completed");
-       setIsExporting(false);
-       return;
-      } catch (blobError) {
-       console.error("Blob download failed:", blobError);
-      }
-     }
-    }
-   } else {
-    // Export directly from form data
-    response = await fetch("/api/export_pdf", {
-     method: "POST",
-     headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": document
-       .querySelector('meta[name="csrf-token"]')
-       ?.getAttribute("content"),
-     },
-     body: JSON.stringify({
-      template: selectedAtsTemplate,
-      resume: {
-       complete_name: formData.complete_name,
-       email: formData.email,
-       phone_number: formData.phone_number,
-       city: formData.city,
-       country: formData.country,
-       professional_summary: formData.professional_summary,
-       professional_summary_english: englishSummary(formData),
-       educations_attributes: formData.education
-        .filter(
-         (edu) =>
-          edu.degree.trim() !== "" &&
-          edu.institution.trim() !== "" &&
-          edu.start_date.trim() !== ""
-        )
-        .map((edu) => ({
-         degree: edu.degree,
-         institution: edu.institution,
-         start_date: edu.start_date,
-         end_date: edu.end_date,
-         gpa: edu.gpa,
-         is_current: edu.is_current,
-        })),
-       work_experiences_attributes: formData.work_experience
-        .filter(
-         (work) =>
-          work.job_title.trim() !== "" &&
-          work.company.trim() !== "" &&
-          work.start_date.trim() !== ""
-        )
-        .map((work) => ({
-         job_title: work.job_title,
-         company: work.company,
-         start_date: work.start_date,
-         end_date: work.end_date,
-         is_current: work.is_current,
-         responsibilities: work.responsibilities.filter(
-          (resp) => resp.trim() !== ""
-         ),
-        })),
-       skills_attributes: formData.skills
-        .filter(
-         (skill) =>
-          skill.category.trim() !== "" &&
-          skill.skill_names.some((name) => name.trim() !== "")
-        )
-        .map((skill) => ({
-         category: skill.category,
-         skill_names: skill.skill_names.filter((name) => name.trim() !== ""),
-        })),
-       certifications_attributes: formData.certifications
-        .filter(
-         (cert) =>
-          cert.name.trim() !== "" &&
-          cert.organization.trim() !== "" &&
-          cert.date.trim() !== ""
-        )
-        .map((cert) => ({
-         name: cert.name,
-         organization: cert.organization,
-         date: cert.date,
-        })),
-       languages_attributes: formData.languages
-        .filter(
-         (lang) => lang.language.trim() !== "" && lang.proficiency.trim() !== ""
-        )
-        .map((lang) => ({
-         language: lang.language,
-         proficiency: lang.proficiency,
-        })),
-      },
-     }),
-    });
+   const response = await fetch(
+    `/api/export_pdf?resume_id=${resumeId}&template=${encodeURIComponent(selectedAtsTemplate)}`,
+    { cache: "no-store" }
+   );
+   if (!response.ok) {
+    throw new Error(`HTTP error: ${response.status}`);
    }
 
-   if (response.ok) {
-    // Parse the JSON response containing job information
-    const jobInfo = await response.json();
-
-    if (jobInfo.job_id && jobInfo.token) {
-     // Poll for job completion
-     setExportStatus("processing");
-
-     // Set up polling interval
-     const pollingInterval = setInterval(async () => {
-      try {
-       const statusUrl = `/api/pdf_status?job_id=${jobInfo.job_id}&token=${jobInfo.token}`;
-
-       const statusResponse = await fetch(statusUrl, {
-        headers: {
-         "X-CSRF-Token": document
-          .querySelector('meta[name="csrf-token"]')
-          ?.getAttribute("content"),
-        },
-       });
-
-       if (statusResponse.ok) {
-        const statusInfo = await statusResponse.json();
-
-        if (statusInfo.status === "completed") {
-         // Job is complete, download the PDF
-         clearInterval(pollingInterval);
-
-
-         // Trigger the download using a hidden iframe to avoid page navigation
-         const downloadFrame = document.createElement("iframe");
-         downloadFrame.style.display = "none";
-         document.body.appendChild(downloadFrame);
-
-         // Add event listener to clean up after download starts
-         downloadFrame.onload = () => {
-          // Give browser time to process the download
-          setTimeout(() => {
-           document.body.removeChild(downloadFrame);
-          }, 2000);
-         };
-
-         // Make sure we use the complete URL as returned from the server
-         // Check if the download URL is relative (starts with /) or absolute
-         const downloadUrl = statusInfo.download_url.startsWith("/")
-          ? `${window.location.origin}${statusInfo.download_url}`
-          : statusInfo.download_url;
-
-         downloadFrame.src = downloadUrl;
-         setExportStatus("completed");
-         setIsExporting(false);
-        } else if (statusInfo.status === "failed") {
-         // Job failed
-         clearInterval(pollingInterval);
-         setExportStatus("failed");
-         setTranslationError(translate("export.pdf_failed"));
-         setIsExporting(false);
-        }
-        // Otherwise continue polling
-       } else {
-        console.error(
-         "Error checking job status:",
-         await statusResponse.text()
-        );
-       }
-      } catch (error) {
-       console.error("Error during status polling:", error);
-      }
-     }, 2000); // Check every 2 seconds
-
-     // Set timeout to stop polling after 2 minutes
-     setTimeout(() => {
-      clearInterval(pollingInterval);
-      if (setExportStatus === "processing") {
-       setExportStatus("timeout");
-       setTranslationError(translate("export.pdf_timeout"));
-       setIsExporting(false);
-      }
-     }, 120000);
-    } else {
-     throw new Error("Job information missing from response");
-    }
-   } else {
-    const errorText = await response.text();
-    throw new Error("PDF export failed");
-   }
+   const blobUrl = URL.createObjectURL(await response.blob());
+   const link = document.createElement("a");
+   link.href = blobUrl;
+   link.download = `resume_${resumeId}.pdf`;
+   document.body.appendChild(link);
+   link.click();
+   link.remove();
+   // Revoked a little later so the download has started.
+   setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   } catch (error) {
    console.error("PDF export error:", error);
-   setTranslationError(translate("export.pdf_error"));
+   setExportError(translate("export.pdf_error"));
   } finally {
    setIsExporting(false);
   }
@@ -2551,17 +2418,32 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
   </div>
  );
 
- const pollTranslationStatus = async (jobId) => {
-  const maxAttempts = 30; // 30 seconds max
-  let attempts = 0;
+ // Poll for the summary translation. The result is applied to the form
+ // whenever it arrives, so the next autosave keeps it.
+ const pollTranslationStatus = (jobId) => {
+  stopSummaryPollRef.current?.();
+  setTranslationSlow(false);
+  const finish = () => {
+   stopSummaryPollRef.current = null;
+   setTranslationSlow(false);
+   setIsTranslating(false);
+  };
 
-  const poll = async () => {
-   try {
-    const response = await fetch(`/api/translation_status/${jobId}?user_id=1`);
-    if (response.ok) {
-     const status = await response.json();
-
+  stopSummaryPollRef.current = pollTranslation(jobId, {
+   onSlow: () => setTranslationSlow(true),
+   onGiveUp: () => {
+    setTranslationError(translate("translation.timeout"));
+    finish();
+   },
+   onStatus: (status) => {
      if (status.status === "completed") {
+      // The job saved the summary on the resume, which moved its updated_at;
+      // that write is this tab's own, so autosave builds on it.
+      const writtenAt = status.resume_updated_at;
+      if (writtenAt && (!baseUpdatedAtRef.current || new Date(writtenAt) > new Date(baseUpdatedAtRef.current))) {
+       baseUpdatedAtRef.current = writtenAt;
+      }
+
       // Convert extracted skills to the skills section format
       const extractedSkills = status.skills_extracted || [];
 
@@ -2628,8 +2510,8 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
        setRemainingSummaryTranslations(status.remaining_summary);
       }
 
-      setIsTranslating(false);
-      return;
+      finish();
+      return true;
      } else if (status.status === "failed") {
       // Update remaining count from server (failed translations don't count)
       if (status.remaining_summary !== undefined) {
@@ -2640,31 +2522,12 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
         ? `${translate("translation.failed")} (${status.error_code})`
         : translate("translation.failed")
       );
-      setIsTranslating(false);
-      return;
+      finish();
+      return true;
      }
-    }
-
-    attempts++;
-    if (attempts < maxAttempts) {
-     setTimeout(poll, 1000); // Poll every second
-    } else {
-     setTranslationError(translate("translation.timeout"));
-     setIsTranslating(false);
-    }
-   } catch (error) {
-    console.error("Polling error:", error);
-    attempts++;
-    if (attempts < maxAttempts) {
-     setTimeout(poll, 1000);
-    } else {
-     setTranslationError(translate("translation.timeout"));
-     setIsTranslating(false);
-    }
-   }
-  };
-
-  poll();
+     return false;
+   },
+  });
  };
 
  const addLanguage = () => {
@@ -3011,6 +2874,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
    handleInputChange,
    translateProfessionalSummary,
    isTranslating,
+   translationSlow,
    translationError,
    // Separate translation limits for each type
    remainingSummaryTranslations,
@@ -3033,6 +2897,7 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
    // Step 2 translation props
    onTranslateJobDescriptions: translateJobDescriptions,
    isTranslatingJobs,
+   jobTranslationSlow,
    jobTranslationError,
    jobTranslationSuccess,
    // Step 3 props
@@ -3232,6 +3097,9 @@ const MultiStepResumeForm = ({ resume, onSubmit, billingEnabled = false }) => {
          {t('actions.cancel')}
         </a>
        </div>
+       {exportError && currentStep === totalSteps && (
+        <p role="alert" className="text-sm text-red-300 text-center">{exportError}</p>
+       )}
        {currentStep > 1 && (
         <button
          type="button"

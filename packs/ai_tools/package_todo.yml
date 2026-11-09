@@ -14,7 +14,7 @@ packs/resume_builder:
     - packs/ai_tools/app/controllers/api/translations_controller.rb
     - packs/ai_tools/app/controllers/cv_generations_controller.rb
     - packs/ai_tools/app/helpers/cv_generation_helper.rb
-    - packs/ai_tools/app/jobs/cv_generator_job.rb
+    - packs/ai_tools/app/services/cv_generator/pdf_renderer.rb
   "::CvBuilderPdfJob":
     violations:
     - privacy

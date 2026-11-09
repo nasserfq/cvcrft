@@ -6,8 +6,10 @@ class SendOtpEmailJob < ApplicationJob
   # Takes the OtpVerification id, not the code, so the login secret never sits
   # in Redis, the Sidekiq dashboard or an error report's job arguments.
   def perform(otp_verification_id)
-    otp = OtpVerification.find_by(id: otp_verification_id)
-    return unless otp # replaced by a newer code before this ran
+    # Replaced by a newer code, already used, expired or burned before this
+    # ran (e.g. after queue delays or retries): sending it would only confuse.
+    otp = OtpVerification.valid.find_by(id: otp_verification_id)
+    return unless otp
 
     Rails.logger.info "Sending OTP email (otp_verification_id=#{otp.id})"
 

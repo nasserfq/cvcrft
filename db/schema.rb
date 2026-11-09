@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_09_000300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -48,6 +48,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_000100) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "proposals", default: [], null: false
+    t.bigint "resume_id"
+    t.index ["resume_id"], name: "index_coach_chats_on_resume_id"
     t.index ["user_id"], name: "index_coach_chats_on_user_id"
   end
 
@@ -319,6 +321,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_000100) do
   add_foreign_key "ai_translations", "resumes"
   add_foreign_key "ai_translations", "users"
   add_foreign_key "certifications", "resumes"
+  add_foreign_key "coach_chats", "resumes", on_delete: :nullify
   add_foreign_key "coach_chats", "users", on_delete: :cascade
   add_foreign_key "coach_messages", "coach_chats", on_delete: :cascade
   add_foreign_key "coupon_redemptions", "coupons"

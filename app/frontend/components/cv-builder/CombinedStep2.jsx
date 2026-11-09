@@ -63,6 +63,7 @@ const CombinedStep2 = ({
   // Translation props
   onTranslateJobDescriptions,
   isTranslatingJobs = false,
+  jobTranslationSlow = false,
   jobTranslationError = "",
   jobTranslationSuccess = false,
   remainingJobsTranslations = 5,
@@ -252,7 +253,7 @@ const CombinedStep2 = ({
             {isTranslatingJobs ? (
               <>
                 <p className="text-sm text-primary-soft mb-3 text-center">
-                  ⏳ {t('step2.translating_responsibilities')}
+                  ⏳ {jobTranslationSlow ? t('translation.taking_longer') : t('step2.translating_responsibilities')}
                 </p>
                 <button
                   type="button"

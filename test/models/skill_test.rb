@@ -182,8 +182,6 @@ class SkillTest < ActiveSupport::TestCase
   end
 
   test "skill_names can store and retrieve array" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     skill = Skill.create!(
       resume: resumes(:complete_resume),
       category: "technical",

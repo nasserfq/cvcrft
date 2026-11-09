@@ -72,7 +72,7 @@ class CvGenerationService
       tokens_used: generation.tokens_used,
       created_at: generation.created_at,
       updated_at: generation.updated_at,
-      metadata: generation.metadata
+      metadata: generation.client_metadata
     }
   end
 
@@ -118,12 +118,14 @@ class CvGenerationService
         return { error: "CV generation was not retried", blocked: true }
       end
 
+      # Only the run's options go back to the job, never the stored PDF,
+      # AI reply or error of the failed attempt.
       generation.reload
       CvGeneratorJob.perform_async(
         generation.job_description,
         generation.user_id,
         generation.resume_id,
-        generation.metadata.merge("cv_generation_id" => generation.id)
+        (generation.metadata || {}).slice(*CvGeneratorJob::OPTION_KEYS).merge("cv_generation_id" => generation.id)
       )
     rescue
       reset_to_failed(generation)
@@ -208,7 +210,7 @@ class CvGenerationService
   def get_cv_generation_stats
     user = User.find(@user_id)
 
-    generations = user.cv_generations
+    generations = user.cv_generations.ai_generated
 
     {
       total_generations: generations.count,

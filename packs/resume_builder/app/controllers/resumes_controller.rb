@@ -180,10 +180,15 @@ class ResumesController < ApplicationController
   end
 
   def update
-    if @resume.update(resume_params)
-      redirect_to @resume, notice: t("ux_i18n.resumes.updated")
-    else
-      render :edit, status: :unprocessable_entity
+    respond_to do |format|
+      format.html do
+        if @resume.update(resume_params)
+          redirect_to @resume, notice: t("ux_i18n.resumes.updated")
+        else
+          render :edit, status: :unprocessable_entity
+        end
+      end
+      format.json { finish_resume }
     end
   end
 
@@ -320,7 +325,7 @@ class ResumesController < ApplicationController
           success: true,
           message: t("ux_i18n.resumes.draft_saved"),
           resume_id: @resume.id,
-          updated_at: @resume.updated_at.iso8601(6),
+          "updated_at" => @resume.updated_at.iso8601(6),
           draft_data: @resume.draft_data
         } }
       end
@@ -341,9 +346,7 @@ class ResumesController < ApplicationController
     Rails.logger.info "Resume ID: #{@resume.id}"
 
     if @resume.can_be_resumed?
-      # Complete the draft
-      @resume.complete_draft
-
+      # Opens the draft in the builder; it stays a draft until the final submit.
       # Get the step number from draft data
       step_number = @resume.draft_data&.dig("current_step") || 1
 
@@ -369,6 +372,30 @@ class ResumesController < ApplicationController
   end
 
   private
+
+  # The builder's final submit for a resume it already has (a draft it
+  # autosaved, or a finished resume being edited): the form is the whole
+  # resume, so its sections replace the stored ones, and a draft becomes
+  # finished. Same JSON as create, so a retry of this request is harmless.
+  def finish_resume
+    was_draft = @resume.draft?
+    sections = %i[work_experiences educations skills certifications languages]
+    sections.each { |name| @resume.public_send(name).each(&:mark_for_destruction) }
+    @resume.assign_attributes(resume_params)
+    @resume.is_draft = false
+
+    if @resume.save
+      track_event("resume_created", { resume_id: @resume.id }) if was_draft
+      render json: @resume.as_json.merge({
+        "updated_at" => @resume.updated_at.iso8601(6),
+        download_url: "/api/export_pdf?resume_id=#{@resume.id}",
+        view_url: "/api/export_pdf?resume_id=#{@resume.id}&view_in_browser=true",
+        pdf_available: true
+      })
+    else
+      render json: { errors: @resume.errors }, status: :unprocessable_entity
+    end
+  end
 
   def normalize_ats_template(template_key)
     AtsTemplatePdfService.normalize_template_key(template_key.presence || ATS_TEMPLATE_FALLBACK)

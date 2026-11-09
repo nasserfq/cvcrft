@@ -48,8 +48,6 @@ class CertificationTest < ActiveSupport::TestCase
   end
 
   test "should save valid certification" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     cert = Certification.new(
       resume: resumes(:complete_resume),
       name: "Google Cloud Professional",

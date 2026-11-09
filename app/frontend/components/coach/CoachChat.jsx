@@ -12,16 +12,17 @@ const muted = { color: "rgba(238,243,238,0.7)" };
 // With no chunk or `done` for this long the stream is treated as dropped.
 const STREAM_TIMEOUT_MS = 60000;
 
-export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, initialMessages, initialDraft, initialProposals }) {
+export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, initialMessages, initialDraft, initialProposals, initialTurnRunning = false }) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState(initialDraft);
   const [proposals, setProposals] = useState(initialProposals);
-  const [pending, setPending] = useState(null); // streamed text of the reply in flight
+  // Streamed text of the reply in flight. A turn still running when the page loaded starts empty and fills from its next chunk.
+  const [pending, setPending] = useState(initialTurnRunning ? "" : null);
   const [input, setInput] = useState("");
   // { text, kind: "send" | "timeout" | "other", retry: fn | null }, or null
   const [error, setError] = useState(null);
-  const pendingRef = useRef(null); // `done` needs the text without waiting for a render
+  const pendingRef = useRef(initialTurnRunning ? "" : null); // `done` needs the text without waiting for a render
   const listRef = useRef(null);
   const watchdogRef = useRef(null);
   const busy = pending !== null;
@@ -50,7 +51,10 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
     if (text !== null) setMessages((list) => [...list, text]);
   };
 
-  useEffect(() => clearWatchdog, []);
+  useEffect(() => {
+    if (pendingRef.current !== null) armWatchdog();
+    return clearWatchdog;
+  }, []);
 
   useEffect(() => {
     const consumer = createConsumer();
@@ -71,6 +75,8 @@ export default function CoachChat({ chatId, messageUrl, acceptUrl, rejectUrl, in
             finish({ id: data.message_id, role: "assistant", content: data.text, fields: data.fields || [] });
           } else if (data.type === "draft") {
             setDraft(data.draft);
+            // An import's draft lands before its first chunk; the turn is still alive.
+            if (pendingRef.current !== null) armWatchdog();
           } else if (data.type === "proposal") {
             setProposals((list) => [...list, data.proposal]);
           } else if (data.type === "error") {

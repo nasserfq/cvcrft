@@ -1,76 +1,77 @@
 require "test_helper"
 
 class CvGenerationPdfRegeneratorTest < ActiveSupport::TestCase
+  GENERATED_DATA = { "professional_summary" => "Stored summary", "work_experiences" => [], "skills" => [],
+                     "educations" => [], "certifications" => [], "languages" => [] }.freeze
+
   setup do
-    @user = users(:one)
+    @resume = resumes(:complete_resume)
+    @user = @resume.user
+    @pdf = Tempfile.new([ "cv", ".pdf" ])
+    @pdf.write("new pdf")
+    @pdf.flush
+    AtsTemplatePdfService.stubs(:generate_pdf).returns({ path: @pdf.path, filename: "generated_cv.pdf" })
   end
 
-  def create_generation(status: "completed", pdf_generated: true, **attrs)
-    metadata = pdf_generated ? { "pdf_generated" => "true" } : {}
-    create_test_cv_generation(@user, status: status, metadata: metadata, **attrs)
+  teardown do
+    @pdf.close!
   end
 
-  test "processes only completed generations with a generated PDF" do
+  def create_generation(status: "completed", pdf_generated: true, ai_model: "gpt-4", generated_data: GENERATED_DATA, **attrs)
+    metadata = { "pdf_data" => Base64.encode64("old"), "ats_template" => "harvard_classic" }
+    metadata["pdf_generated"] = "true" if pdf_generated
+    metadata["generated_data"] = generated_data if generated_data
+    create_test_cv_generation(@user, resume: @resume, status: status, ai_model: ai_model,
+                                     generated_content: "Stored summary", metadata: metadata, **attrs)
+  end
+
+  test "redraws the PDF from the stored data on the same row, without the AI" do
     target = create_generation
-    create_generation(pdf_generated: false)
-    create_generation(status: "processing")
+    AiModel.expects(:complete).never
+    AtsTemplatePdfService.expects(:generate_pdf)
+                         .with(@resume, GENERATED_DATA.deep_symbolize_keys, template: "harvard_classic")
+                         .returns({ path: @pdf.path, filename: "generated_cv.pdf" })
 
-    CvGeneratorJob.any_instance.expects(:perform)
-      .with(target.job_description, @user.id, target.resume_id,
-            { "cv_generation_id" => target.id, "regenerate" => true, "force_pdf_regeneration" => true })
-      .once
-
-    result = CvGenerationPdfRegenerator.call
-
-    assert_equal({ total: 1, success: 1, failed: 0 }, result)
-  end
-
-  test "counts a generation without a job description as failed and skips the job" do
-    blank = create_generation
-    blank.update_column(:job_description, "")
-
-    CvGeneratorJob.any_instance.expects(:perform).never
-
-    assert_equal({ total: 1, success: 0, failed: 1 }, CvGenerationPdfRegenerator.call)
-  end
-
-  test "a raising job counts as failed and the loop continues" do
-    create_generation(job_description: "First job description that will fail.")
-    create_generation(job_description: "Second job description that will succeed.")
-
-    CvGeneratorJob.any_instance.stubs(:perform)
-    CvGeneratorJob.any_instance.stubs(:perform)
-      .with("First job description that will fail.", anything, anything, anything)
-      .raises(StandardError, "boom")
-
-    assert_equal({ total: 2, success: 1, failed: 1 }, CvGenerationPdfRegenerator.call)
-  end
-
-  test "returns zero counts when nothing matches" do
-    CvGeneratorJob.any_instance.expects(:perform).never
-
-    assert_equal({ total: 0, success: 0, failed: 0 }, CvGenerationPdfRegenerator.call)
-  end
-
-  test "rebuilds the PDF on the existing row instead of creating a new one" do
-    stub_pdf_generation
-    resume = resumes(:complete_resume)
-    target = create_test_cv_generation(resume.user, resume: resume, status: "completed",
-                                                    metadata: { "pdf_generated" => "true", "pdf_data" => Base64.encode64("old") })
-    stub_ai_response({ professional_summary: "Fresh summary." })
-    pdf = Tempfile.new([ "cv", ".pdf" ])
-    pdf.write("new pdf")
-    pdf.flush
-    AtsTemplatePdfService.stubs(:generate_pdf).returns({ path: pdf.path, filename: "generated_cv.pdf" })
-
-    assert_no_difference -> { CvGeneration.count } do
+    result = assert_no_difference -> { CvGeneration.count } do
       CvGenerationPdfRegenerator.call
     end
 
+    assert_equal({ total: 1, success: 1, failed: 0 }, result)
     target.reload
     assert_equal "completed", target.status
+    assert_equal "Stored summary", target.generated_content
     assert_equal Base64.encode64("new pdf"), target.metadata["pdf_data"]
-  ensure
-    pdf&.close!
+    assert_equal GENERATED_DATA, target.metadata["generated_data"]
+  end
+
+  test "processes only completed AI generations with a generated PDF" do
+    create_generation
+    create_generation(pdf_generated: false)
+    create_generation(status: "processing")
+    create_generation(ai_model: "cv_builder")
+
+    assert_equal({ total: 1, success: 1, failed: 0 }, CvGenerationPdfRegenerator.call)
+  end
+
+  test "a generation without stored data counts as failed and keeps its PDF" do
+    target = create_generation(generated_data: nil)
+    AtsTemplatePdfService.expects(:generate_pdf).never
+
+    assert_equal({ total: 1, success: 0, failed: 1 }, CvGenerationPdfRegenerator.call)
+    assert_equal Base64.encode64("old"), target.reload.metadata["pdf_data"]
+  end
+
+  test "a PDF that can't be drawn counts as failed, keeps the old PDF and the loop continues" do
+    broken = create_generation(job_description: "First job description whose PDF will fail.")
+    create_generation(job_description: "Second job description whose PDF will draw.")
+    AtsTemplatePdfService.stubs(:generate_pdf).raises(RuntimeError, "boom").then
+                         .returns({ path: @pdf.path, filename: "generated_cv.pdf" })
+
+    assert_equal({ total: 2, success: 1, failed: 1 }, CvGenerationPdfRegenerator.call)
+    assert_equal Base64.encode64("old"), broken.reload.metadata["pdf_data"]
+  end
+
+  test "returns zero counts when nothing matches" do
+    assert_equal({ total: 0, success: 0, failed: 0 }, CvGenerationPdfRegenerator.call)
   end
 end

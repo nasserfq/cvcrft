@@ -195,7 +195,9 @@
     "connection_error": "Connection error. Please try again",
     "remove_file": "Remove file",
     "analyzing": "Analyzing CV...",
-    "ai_extracting": "AI is being used to extract data. This may take a few seconds."
+    "ai_extracting": "AI is being used to extract data. This may take a few seconds.",
+    "taking_longer": "This is taking longer than usual",
+    "check_again": "Check again"
   },
   "templates": {
     "title": "Select a Template",
@@ -265,7 +267,8 @@
     "unexpected_api": "Unexpected response from translation service",
     "no_responsibilities": "No responsibilities to translate",
     "failed": "Translation failed. Please try again.",
-    "timeout": "Translation timed out. Please try again."
+    "timeout": "Translation timed out. Please try again.",
+    "taking_longer": "This is taking longer than usual"
   },
   "export": {
     "name_email_required": "Please fill in full name and email before exporting",

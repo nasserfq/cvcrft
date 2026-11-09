@@ -26,6 +26,7 @@ Never pollute the root context window with raw search logs, massive diffs, or ex
 - CodeGraph: from a shell use `npx -y @colbymchenry/codegraph@1.6.2 explore "<question>"`, or `callers <Symbol>`, `callees <Symbol>`, `impact <Symbol>`, `query <text>`. Build the local index once per checkout with `npx -y @colbymchenry/codegraph@1.6.2 init`; it lives in `.codegraph/` and is git-ignored. If the `codegraph` MCP server is connected, its `codegraph_explore` tool gives the same answers.
 - Postgres: if the `postgres` MCP server is connected, use it only against the local development database (`cvcraft_development`), read-only. Never point it at production.
 - Skills: `unlazy` is in `.claude/skills/unlazy/`. Use it for long or multi-part tasks.
+- State machines (statuses, transitions, retries, refunds, pollers): read `docs/state-machines.md` before changing any status, AI job, charge or poller, and update it in the same change.
 - Checks CI runs: `bin/rubocop`, `bin/brakeman --no-pager`, `bin/importmap audit`, `bin/rails db:test:prepare test test:system`.
 
 ## Product and design rules

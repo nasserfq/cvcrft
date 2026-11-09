@@ -16,29 +16,9 @@ class Resume < ApplicationRecord
     linkedin_import || (source == "linkedin" ? user.linkedin_imports.completed.order(created_at: :desc).first : nil)
   end
 
-  # Generate PDF after saving a resume - queue it for background processing
-  after_create :queue_pdf_generation
-  after_update :queue_pdf_generation
-
-  # Add a flag to allow skipping validations for PDF generation only
+  # PDFs are rendered on request (Api::TranslationsController#export_pdf ->
+  # CvBuilderPdfJob#perform), never on save. Lets that path skip validations.
   attr_accessor :skip_validations_for_pdf
-
-  # Queue PDF generation in the background
-  def queue_pdf_generation
-    # Only queue if the resume has been persisted
-    if persisted? && !is_draft
-      Rails.logger.info "Queueing PDF generation for Resume ##{id}"
-      CvBuilderPdfJob.schedule_pdf_generation(
-        user_id,
-        id, # resume_id
-        false, # view in browser
-        nil # no resume_params needed as we're using an existing resume
-      )
-    end
-  rescue => e
-    Rails.logger.error "Error queueing PDF generation: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
-  end
 
   # Accept nested attributes
   accepts_nested_attributes_for :work_experiences, allow_destroy: true
@@ -105,8 +85,9 @@ class Resume < ApplicationRecord
     draft_data_has_meaningful_content?
   end
 
+  # Only drafts reopen through resume_draft; a finished resume is edited in place.
   def can_be_resumed?
-    draft? || (created_at > 1.hour.ago && complete_name.blank?)
+    draft?
   end
 
   def resume_data
@@ -170,19 +151,15 @@ class Resume < ApplicationRecord
     JSON.parse(value)
   end
 
+  # Autosave from the builder. A finished resume stays finished: it is
+  # edited in place and must stay in not_drafts (the job CV picker).
   def save_draft(form_data)
     update!(
-      is_draft: true,
       draft_data: form_data,
       updated_at: Time.current
     )
   end
 
-  def complete_draft
-    update!(
-      is_draft: false
-    )
-  end
   def calculate_ats_score
     # Placeholder for ATS score calculation logic
     # This will be implemented in the AtsOptimizationService

@@ -2,7 +2,6 @@ require "test_helper"
 
 class AtsTemplatePdfServiceTest < ActiveSupport::TestCase
   setup do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     @user = users(:one)
     @resume = Resume.create!(
       user: @user,

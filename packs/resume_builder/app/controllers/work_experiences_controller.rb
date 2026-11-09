@@ -3,16 +3,6 @@ class WorkExperiencesController < ApplicationController
   before_action :set_resume
   before_action :set_work_experience, only: [ :update, :destroy ]
 
-  def create
-    @work_experience = @resume.work_experiences.build(work_experience_params)
-
-    if @work_experience.save
-      redirect_to @resume, notice: "Work experience added successfully!"
-    else
-      redirect_to @resume, alert: "Failed to add work experience."
-    end
-  end
-
   def update
     if @work_experience.update(work_experience_params)
       redirect_to @resume, notice: "Work experience updated successfully!"

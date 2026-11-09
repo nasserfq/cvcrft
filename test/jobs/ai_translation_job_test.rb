@@ -66,6 +66,30 @@ class AiTranslationJobTest < ActiveSupport::TestCase
     assert_equal "Project manager and Scrum Master.", @resume.reload.professional_summary_english
   end
 
+  test "a draft with no name yet still gets its translated summary" do
+    @resume = @user.resumes.create!(is_draft: true, complete_name: "Test User", email: "draft@example.com")
+    @resume.update_columns(complete_name: nil, email: nil)
+    body = { english_text: "Project manager and Scrum Master.", skills_extracted: [] }.to_json
+    AiModel.stubs(:complete).returns(Reply.new(body, Tokens.new(10, 20)))
+
+    translation = perform
+    assert_equal "completed", translation.status
+    @resume.reload
+    assert_equal [ "Project manager and Scrum Master." ] * 2, [ @resume.professional_summary_english, @resume.summary ]
+    assert_equal @resume.updated_at.iso8601(6), translation.metadata["resume_updated_at"]
+    assert @resume.is_draft
+  end
+
+  test "a finished resume that fails validation does not take the summary" do
+    assert_not @resume.is_draft
+    @resume.update_column(:complete_name, nil)
+    body = { english_text: "Project manager and Scrum Master.", skills_extracted: [] }.to_json
+    AiModel.stubs(:complete).returns(Reply.new(body, Tokens.new(10, 20)))
+
+    assert_equal "failed", perform.status
+    assert_not_equal "Project manager and Scrum Master.", @resume.reload.professional_summary_english
+  end
+
   def perform_jobs(body, job_id: SecureRandom.hex(6), options: {})
     AiModel.stubs(:complete).returns(Reply.new(body.to_json, Tokens.new(10, 20)))
     AiTranslationJob.new.perform(
@@ -167,5 +191,92 @@ class AiTranslationJobTest < ActiveSupport::TestCase
 
     assert_equal "completed", translation.reload.status
     assert_equal "Project manager.", translation.english_text
+  end
+  # The AI replies in JSON, so its skills arrive with string keys.
+  SKILLS_REPLY = {
+    "english_text" => "Project manager and Scrum Master.",
+    "skills_extracted" => [
+      { "name" => "Scrum", "level" => "Expert", "category" => "technical" },
+      { "name" => "Ruby", "level" => "expert", "category" => "technical" },
+      { "name" => "Stakeholder Management", "level" => "seasoned", "category" => "soft" },
+      { "name" => "x" * 60, "level" => "expert", "category" => "technical" },
+      { "level" => "expert" }
+    ],
+    "translation_notes" => ""
+  }.freeze
+
+  test "skills from a string-keyed reply are reported but not added to the resume" do
+    resume = resumes(:complete_resume)
+    AiModel.stubs(:complete).returns(Reply.new(SKILLS_REPLY.to_json, Tokens.new(10, 20)))
+    job_id = SecureRandom.hex(6)
+
+    assert_no_difference -> { resume.skills.count } do
+      AiTranslationJob.new.perform("مدير مشروع", resume.user_id, resume.id,
+                                   { "professional_summary" => true, "job_id" => job_id })
+    end
+
+    translation = AiTranslation.where("metadata->>'job_id' = ?", job_id).sole
+    assert_equal "completed", translation.status
+    assert_equal [ "Scrum", "Ruby", "Stakeholder Management", "x" * 60 ],
+                 translation.metadata["skills_extracted"].map { |skill| skill["name"] }
+  end
+
+  test "a work experience translation saves the reply's skills as its ATS keywords" do
+    resume = resumes(:complete_resume)
+    experience = work_experiences(:current_job)
+    AiModel.stubs(:complete).returns(Reply.new(SKILLS_REPLY.to_json, Tokens.new(10, 20)))
+
+    assert_no_difference -> { resume.skills.count } do
+      AiTranslationJob.new.perform("مدير مشروع", resume.user_id, resume.id,
+                                   { "work_experience_id" => experience.id, "job_id" => SecureRandom.hex(6) })
+    end
+
+    assert_equal [ "Scrum", "Ruby", "Stakeholder Management", "x" * 60 ], experience.reload.ats_keywords
+  end
+
+  test "skills given as bare names are read as names" do
+    resume = resumes(:complete_resume)
+    experience = work_experiences(:current_job)
+    body = { english_text: "Project manager.", skills_extracted: [ "Kanban" ] }.to_json
+    AiModel.stubs(:complete).returns(Reply.new(body, Tokens.new(10, 20)))
+
+    AiTranslationJob.new.perform("مدير مشروع", resume.user_id, resume.id,
+                                 { "work_experience_id" => experience.id, "job_id" => SecureRandom.hex(6) })
+
+    assert_equal [ "Kanban" ], experience.reload.ats_keywords
+  end
+
+  test "a job loads the pending row the controller saved and completes it" do
+    translation = @user.ai_translations.create!(arabic_text: "مدير مشروع", resume: @resume, ai_model: "test", status: "pending",
+                                                metadata: { "job_id" => "saved-row", "professional_summary" => true })
+    body = { english_text: "Project manager.", skills_extracted: [] }.to_json
+    AiModel.stubs(:complete).returns(Reply.new(body, Tokens.new(10, 20)))
+
+    assert_no_difference -> { AiTranslation.count } do
+      AiTranslationJob.new.perform("مدير مشروع", @user.id, @resume.id,
+                                   { "professional_summary" => true, "job_id" => "saved-row", "translation_id" => translation.id })
+    end
+
+    translation.reload
+    assert_equal [ "completed", "Project manager." ], [ translation.status, translation.english_text ]
+    assert_equal @resume.reload.updated_at.iso8601(6), translation.metadata["resume_updated_at"]
+  end
+
+  test "a row the sweeper failed before the job ran stays failed" do
+    translation = @user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "failed",
+                                                metadata: { "job_id" => "swept" })
+    AiModel.expects(:complete).never
+
+    AiTranslationJob.new.perform("مدير مشروع", @user.id, nil, { "job_id" => "swept", "translation_id" => translation.id })
+
+    assert_equal "failed", translation.reload.status
+  end
+
+  test "a job whose saved row is gone does nothing" do
+    AiModel.expects(:complete).never
+
+    assert_no_difference -> { AiTranslation.count } do
+      AiTranslationJob.new.perform("مدير مشروع", @user.id, nil, { "job_id" => "gone", "translation_id" => -1 })
+    end
   end
 end

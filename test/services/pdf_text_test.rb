@@ -4,7 +4,6 @@ class PdfTextTest < ActiveSupport::TestCase
   WEIRD = "Łukasz Żółć ✓ → 😀 ​ ‮".freeze
 
   setup do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     @resume = Resume.new(
       user: users(:one),
       complete_name: WEIRD,
@@ -72,7 +71,7 @@ class PdfTextTest < ActiveSupport::TestCase
 
   test "CV builder job path renders weird characters" do
     AtsTemplatePdfService.template_catalog.each do |template|
-      result = CvBuilderPdfJob.new.send(:generate_pdf, @resume, "token", template[:key])
+      result = CvBuilderPdfJob.new.send(:generate_pdf, @resume, template[:key])
       assert File.size(result[:path]).positive?, template[:key]
     end
   end

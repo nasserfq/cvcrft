@@ -5,12 +5,12 @@
     <% if flash[:alert].present? %>
       <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #d6b877" role="alert"><%= flash[:alert] %></p>
     <% end %>
-    <%# A plain form post, so the builder opens on the new resume. %>
+    <%# A plain form post, so the builder opens on the chat's resume; coach_chat.jsx stops double clicks. %>
     <%= button_to t('coach.send_to_seera.button'), send_to_seera_coach_chat_path(@chat),
-          form_class: "self-end", class: "sr-btn sr-primary min-h-[48px] px-6 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+          form_class: "self-end", form: { data: { submit_once: true } }, class: "sr-btn sr-primary min-h-[48px] px-6 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
     <%= tag.div id: "coach-chat-root",
           data: { chat_id: @chat.id, message_url: message_coach_chat_path(@chat), messages: @messages, draft: @chat.draft,
-                  proposals: @chat.proposals, accept_url: accept_coach_chat_path(@chat), reject_url: reject_coach_chat_path(@chat) } %>
+                  proposals: @chat.proposals, turn_running: @turn_running, accept_url: accept_coach_chat_path(@chat), reject_url: reject_coach_chat_path(@chat) } %>
   </div>
 </div>
 <%= vite_javascript_tag 'entrypoints/coach_chat.jsx' %>
