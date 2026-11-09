@@ -68,7 +68,8 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "health check returns ok" do
-    # Health check doesn't need basic auth
+    # CI runs without Redis; /up's own tests are in health_check_test.rb.
+    HealthProbe.stubs(:redis_ok?).returns(true)
     get "/up"
     assert_response :success
   end

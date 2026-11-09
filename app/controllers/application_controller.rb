@@ -8,7 +8,8 @@ class ApplicationController < ActionController::Base
   # Safari 16.4 and Chrome 111, import maps need Safari 16.4.
   SUPPORTED_BROWSERS = { safari: 16.4, chrome: 111, firefox: 121, opera: 97, ie: false }.freeze
 
-  allow_browser versions: SUPPORTED_BROWSERS, unless: -> { request.user_agent.to_s.match?(LINK_PREVIEW_CRAWLER) }
+  allow_browser versions: SUPPORTED_BROWSERS,
+                unless: -> { action_name == "health_check" || request.user_agent.to_s.match?(LINK_PREVIEW_CRAWLER) }
 
   # Basic HTTP Authentication (skip for health check)
   # http_basic_authenticate_with name: ENV["BASIC_AUTH_USERNAME"] || "admin",
@@ -25,15 +26,27 @@ class ApplicationController < ActionController::Base
   helper_method :user_signed_in?, :current_user
 
   # Run each request in its locale, restoring the previous one afterwards so it
-  # cannot leak into the next request served by the same thread
-  around_action :switch_locale
+  # cannot leak into the next request served by the same thread. /up skips it:
+  # it reads the session and may set a cookie.
+  around_action :switch_locale, unless: -> { action_name == "health_check" }
 
   # Helper method to get text direction based on locale
   helper_method :text_direction, :current_locale
 
-  # Health check endpoint for Kamal
+  # GET /up, polled by kamal-proxy during deploys and by UptimeRobot. 200 when
+  # Postgres and Redis both answer, 503 naming the part that didn't. Touches no
+  # session or cookie.
   def health_check
-    render json: { status: "ok", timestamp: Time.current }
+    checks = HealthProbe.call
+    failing = checks.reject { |_part, ok| ok }.keys
+
+    response.headers["Cache-Control"] = "no-store"
+    render json: {
+      status: failing.empty? ? "ok" : "error",
+      checks: checks.transform_values { |ok| ok ? "ok" : "error" },
+      failing: failing,
+      timestamp: Time.current
+    }, status: failing.empty? ? :ok : :service_unavailable
   end
 
   protected

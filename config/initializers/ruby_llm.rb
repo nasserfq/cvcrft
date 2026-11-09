@@ -68,10 +68,14 @@ module AiModel
     ask(system, user, temperature, max_tokens, strong)
   end
 
+  # Through AiCircuit: while the provider is failing this raises
+  # AiCircuit::OpenError at once instead of calling it.
   def self.ask(system, user, temperature, max_tokens, model, &block)
-    chat(temperature: temperature, max_tokens: max_tokens, model: model)
-      .with_instructions(system.to_s)
-      .ask(user.to_s, &block)
+    AiCircuit.call do
+      chat(temperature: temperature, max_tokens: max_tokens, model: model)
+        .with_instructions(system.to_s)
+        .ask(user.to_s, &block)
+    end
   end
 
   # Jev's verdict on a reply: true or false, or nil when Jev isn't configured

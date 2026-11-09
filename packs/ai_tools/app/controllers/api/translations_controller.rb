@@ -5,6 +5,8 @@ class Api::TranslationsController < ApplicationController
   include UserRateLimit
   rate_limit_per_user to: 20, within: 1.minute, only: %i[translate_professional_summary translate_job_descriptions], name: "translate"
   rate_limit_per_user to: 10, within: 1.minute, only: :export_pdf, name: "pdf"
+  include AiCapacity
+  refuse_when_ai_busy only: %i[translate_professional_summary translate_job_descriptions]
 
   def translate_professional_summary
     begin

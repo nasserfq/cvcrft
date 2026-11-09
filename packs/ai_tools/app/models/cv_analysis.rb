@@ -1,6 +1,9 @@
 class CvAnalysis < ApplicationRecord
   belongs_to :user
 
+  # Encrypted at rest (config/initializers/active_record_encryption.rb): queries can only test it for nil.
+  encrypts :extracted_text
+
   # Status constants
   STATUSES = %w[pending processing completed failed].freeze
   UNFINISHED_STATUSES = %w[pending processing].freeze

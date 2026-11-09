@@ -3,8 +3,9 @@ class CvImportJob
 
   sidekiq_options retry: 3, backtrace: true
 
-  # Keep every attempt inside the few minutes the page polls for.
-  sidekiq_retry_in { |count| 10 * (count + 1) }
+  # Keep every attempt inside the few minutes the page polls for. An open AI
+  # breaker (AiCircuit) waits for it to close.
+  sidekiq_retry_in { |count, error| AiCircuit.retry_delay(error) || 10 * (count + 1) }
 
   # Between attempts the import stays "processing"; only the last failure
   # marks it failed. An import that ran past the free allowance was paid with

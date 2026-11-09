@@ -1,0 +1,124 @@
+# Puts an earlier release back. The code only: migrations the newer release
+# ran stay in the database (an added column is harmless; a removed one needs
+# a restore, see docs/restore.md).
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Commit SHA to go back to. Empty: the release deployed before the one running now."
+        required: false
+        default: ""
+
+# Same group as Deploy, so a rollback never runs during a deploy.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Load deploy secrets
+        env:
+          DEPLOY_ENV: ${{ secrets.DEPLOY_ENV }}
+        run: |
+          printf '%s\n' "$DEPLOY_ENV" | tr -d '\r' | grep -E '^[A-Z_]+=' | while IFS= read -r line; do
+            echo "::add-mask::${line#*=}"
+            echo "$line" >> "$GITHUB_ENV"
+          done
+
+      # Every other single-line repo secret (e.g. MOYASAR_SECRET_KEY) becomes an
+      # env var too, so a new secret can be added on its own without re-pasting
+      # DEPLOY_ENV.
+      - name: Load separate secrets
+        env:
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+        run: |
+          printf '%s' "$SECRETS_JSON" | jq -r '
+            to_entries[]
+            | select(.key | test("^[A-Z][A-Z0-9_]*$"))
+            | select(.key | IN("DEPLOY_ENV", "SSH_PRIVATE_KEY", "GITHUB_TOKEN") | not)
+            | .value |= sub("[\r\n]+$"; "")
+            | select(.value | contains("\n") | not)
+            | "\(.key)=\(.value)"' >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v7
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Install keys
+        run: |
+          printf '%s' "$RAILS_MASTER_KEY" > config/master.key
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cvcraft_netcup
+          chmod 600 ~/.ssh/cvcraft_netcup config/master.key
+          ssh-keyscan -t ed25519 159.195.9.248 >> ~/.ssh/known_hosts
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/cvcraft_netcup
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+
+      # Kamal keeps the containers of earlier releases (stopped), named
+      # cvcraft-web-<sha>; rollback can only go to one of those.
+      - name: Pick version
+        id: pick
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          containers=$(ssh -o BatchMode=yes -i ~/.ssh/cvcraft_netcup root@159.195.9.248 \
+            "docker ps -a --filter name=^cvcraft-web- --format '{{.Names}} {{.State}}'" | grep -v '_replaced_' || true)
+          echo "Web releases on the server, newest first:"
+          echo "$containers"
+          current=$(echo "$containers" | awk '$2 == "running" { sub(/^cvcraft-web-/, "", $1); print $1; exit }')
+          version=$(printf '%s' "$INPUT_VERSION" | tr -d '[:space:]')
+          if [ -z "$version" ]; then
+            version=$(echo "$containers" | awk -v cur="$current" '{ sub(/^cvcraft-web-/, "", $1) } seen && $1 != cur { print $1; exit } $1 == cur { seen = 1 }')
+          fi
+          if ! [[ "$version" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "::error::No earlier release found on the server. Pass a version (commit SHA) from the list above."
+            exit 1
+          fi
+          if [ "$version" = "$current" ]; then
+            echo "::error::$version is already running."
+            exit 1
+          fi
+          echo "Running now: ${current:-none}. Rolling back to: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Rollback
+        id: rollback
+        env:
+          VERSION: ${{ steps.pick.outputs.version }}
+        run: bin/kamal rollback "$VERSION"
+
+      - name: Release deploy lock
+        if: (failure() || cancelled()) && (steps.rollback.outcome == 'failure' || steps.rollback.outcome == 'cancelled')
+        run: bin/kamal lock release || echo "No lock released (Kamal may have released it already)."
+
+      - name: Smoke test
+        run: |
+          failed=0
+          for path in /up / "/?locale=en" /login /sitemap.xml; do
+            code=000
+            for attempt in 1 2 3 4 5; do
+              code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "https://cvcrft.com$path" || true)
+              [ "$code" = "200" ] && break
+              sleep 10
+            done
+            if [ "$code" = "200" ]; then
+              echo "200 $path"
+            else
+              echo "::error::$path answered $code after 5 tries"
+              failed=1
+            fi
+          done
+          exit "$failed"

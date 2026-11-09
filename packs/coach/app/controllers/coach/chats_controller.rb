@@ -7,6 +7,10 @@ module Coach
     include UserRateLimit
     rate_limit_per_user to: 20, within: 1.minute, only: :message, name: "coach-message"
     rate_limit_per_user to: 10, within: 1.minute, only: :create, name: "coach-chat"
+    include AiCapacity
+    # A plain chat opens with a canned question; an import starts a model turn.
+    refuse_when_ai_busy only: :message, queue: Coach::TurnJob.queue_name
+    refuse_when_ai_busy only: :create, queue: Coach::TurnJob.queue_name, if: -> { params[:path] == "import" }
 
     # Same cap as CvImportsController.
     MAX_PDF_SIZE = 10.megabytes

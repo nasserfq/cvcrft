@@ -19,6 +19,8 @@ gem "jbuilder"
 gem "cssbundling-rails"
 gem "vite_rails"
 gem "paper_trail"
+# Fails unsafe migrations in dev/test/CI (config/initializers/strong_migrations.rb)
+gem "strong_migrations"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 

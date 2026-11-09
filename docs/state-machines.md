@@ -25,6 +25,27 @@ status, a job that writes one, a charge or a poller. Paths are under `packs/` un
 8. **Status JSON never carries backtraces, raw AI replies or PDF bytes** (see
    `CvGeneration::CLIENT_METADATA_KEYS`).
 9. A new async model joins `StaleWorkSweeperJob::MODEL_NAMES` and implements `fail_stale!(older_than:)`.
+10. **AI calls go through `AiCircuit.call`** (`AiModel.ask`, `Coach::TurnJob`), and every action that starts
+    AI work declares `refuse_when_ai_busy` (`AiCapacity`), which runs before any charge. See below.
+
+## AI breaker and backpressure
+
+`app/services/ai_circuit.rb`, state in `Rails.cache` (Solid Cache in prod, shared by web and Sidekiq).
+States: closed → open (5 provider failures — throttling, 5xx, timeouts, lost connections — within
+60 s) → closed (after 60 s, or at once on any success). Our own errors (bad request, keys, bugs) never count.
+
+- Controllers: `AiCapacity#refuse_when_ai_busy` (`app/controllers/concerns/ai_capacity.rb`) is a
+  before_action on CV generation create/retry/regenerate/resume_draft, CV analysis, both translations,
+  CV and LinkedIn import, coach message and coach import. While `AiCircuit.busy?` (open, or the job's
+  Sidekiq queue holds more than `AI_QUEUE_LIMIT`, default 200) it answers 429 JSON or redirects back
+  with `ux_i18n.ai_busy` and `Retry-After`. Nothing is saved or charged.
+- Jobs: while open, `AiModel.ask` raises `AiCircuit::OpenError` without calling the provider. It is
+  retryable everywhere: rows stay `processing` (translation gets `error_code: ai_unavailable`), nothing
+  is charged or refunded, and `sidekiq_retry_in` waits `AiCircuit.retry_delay` (60–90 s) so the retry
+  lands after the breaker closes. Retries exhausted → the usual `failed` + refund.
+- Coach: `TurnJob` never re-raises, so an `OpenError` ends the turn and refunds it like any other error
+  (not sent to Sentry).
+- Regenerate runs inline: an `OpenError` refunds, releases the claim and shows `ux_i18n.ai_busy`.
 
 ## StaleWorkSweeperJob
 

@@ -53,6 +53,12 @@ Rails.application.configure do
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
 
+  # Log N+1 queries (an association loaded one record at a time in a loop)
+  # without raising, so they show up in the log and nothing breaks.
+  config.active_record.strict_loading_by_default = true
+  config.active_record.strict_loading_mode = :n_plus_one_only
+  config.active_record.action_on_strict_loading_violation = :log
+
   # Highlight code that triggered database queries in logs.
   config.active_record.verbose_query_logs = true
 

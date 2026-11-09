@@ -5,6 +5,8 @@ class LinkedinImportsController < ApplicationController
   include UserRateLimit
   rate_limit_per_user to: 5, within: 1.minute, only: :create, name: "linkedin-import"
   before_action :set_linkedin_import, only: [ :status, :show, :update, :destroy, :download_pdf, :save_to_cv ]
+  include AiCapacity
+  refuse_when_ai_busy only: :create
 
   # GET /linkedin-import
   def new

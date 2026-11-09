@@ -48,6 +48,12 @@ Rails.application.configure do
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
 
+  # Log N+1 queries (an association loaded one record at a time in a loop)
+  # without raising, so they show up in the log and nothing breaks.
+  config.active_record.strict_loading_by_default = true
+  config.active_record.strict_loading_mode = :n_plus_one_only
+  config.active_record.action_on_strict_loading_violation = :log
+
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
 end

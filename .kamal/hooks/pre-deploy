@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Dumps the production database on the server before the new release boots
+# (it runs `rails db:prepare`, so migrations run right after this hook).
+# Keeps the newest 5 dumps in /root/cvcraft-db-backup/pre-deploy/. A failed
+# dump stops the deploy; restore steps are in docs/restore.md.
+#
+# Kamal runs this on the machine that runs `kamal deploy` (the Actions runner
+# or a Mac), so it reaches the server over SSH like Kamal does.
+set -euo pipefail
+
+host="${DB_BACKUP_HOST:-root@159.195.9.248}"
+version="${KAMAL_VERSION:-unknown}"
+# Only [A-Za-z0-9._-] reaches the remote shell.
+version="${version//[^A-Za-z0-9._-]/}"
+
+ssh_opts=(-o BatchMode=yes -o ConnectTimeout=15)
+if [ -f "$HOME/.ssh/cvcraft_netcup" ]; then
+  ssh_opts+=(-i "$HOME/.ssh/cvcraft_netcup")
+fi
+
+echo "pre-deploy: dumping cvcraft_production on ${host#*@} before release ${version}"
+
+ssh "${ssh_opts[@]}" "$host" bash -s -- "$version" <<'REMOTE'
+set -euo pipefail
+version="$1"
+dir=/root/cvcraft-db-backup/pre-deploy
+keep=5
+
+if ! docker container inspect cvcraft-db >/dev/null 2>&1; then
+  echo "pre-deploy: no cvcraft-db container yet (first deploy), skipping the dump"
+  exit 0
+fi
+
+mkdir -p "$dir"
+chmod 700 "$dir"
+file="$dir/cvcraft_production-$(date -u +%Y%m%dT%H%M%SZ)-${version}.dump"
+
+# Custom format (compressed); restore with pg_restore. Written to .partial
+# first so a failed dump never looks like a good one.
+docker exec cvcraft-db pg_dump -U cvcraft -d cvcraft_production --format=custom > "$file.partial"
+mv "$file.partial" "$file"
+chmod 600 "$file"
+echo "pre-deploy: wrote $file ($(du -h "$file" | cut -f1))"
+
+rm -f "$dir"/*.partial
+ls -1t "$dir"/*.dump | tail -n +$((keep + 1)) | while IFS= read -r old; do
+  rm -f -- "$old"
+  echo "pre-deploy: removed $old"
+done
+REMOTE
