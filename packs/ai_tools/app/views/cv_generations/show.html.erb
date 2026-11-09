@@ -113,7 +113,8 @@
             (function () {
               var url = <%= raw json_escape(cv_generation_path(@cv_generation, format: :json).to_json) %>;
               var attempts = 0;
-              var maxAttempts = 45;
+              // Every 4 s for as long as the server can keep it processing.
+              var maxAttempts = <%= (CvGeneration::MAX_PROCESSING_TIME / 4.seconds).ceil %>;
               var timer = setInterval(function () {
                 if (!document.getElementById('cvgen-show-processing') || ++attempts > maxAttempts) { clearInterval(timer); return; }
                 fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
@@ -194,7 +195,7 @@
                 <%= link_to view_pdf_cv_generation_path(@cv_generation), target: "_blank", rel: "noopener", class: secondary_class do %>
                   <%= svg.call(:eye) %><%= t("#{tk}.view_pdf") %>
                 <% end %>
-                <%= link_to download_pdf_cv_generation_path(@cv_generation, regenerate: true), class: secondary_class, title: t("#{tk}.regenerate_note", count: Billing::UsageGate.cost(:job_based_generation)), data: { turbo: false } do %>
+                <%= button_to regenerate_cv_generation_path(@cv_generation), method: :post, form: { data: { controller: "submit-once", action: "submit->submit-once#disable" } }, class: secondary_class, title: t("#{tk}.regenerate_note", count: Billing::UsageGate.cost(:job_based_generation)) do %>
                   <%= svg.call(:retry) %><%= t("#{tk}.regenerate_pdf") %>
                 <% end %>
               </div>

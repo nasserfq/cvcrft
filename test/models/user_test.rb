@@ -220,7 +220,6 @@ class UserTest < ActiveSupport::TestCase
   # ============================================
 
   test "destroying a user with imports and coupon redemptions removes them all" do
-    stub_pdf_generation
     user = User.create!(email: "erase-model-#{SecureRandom.hex(4)}@example.com", name: "Erase Model",
                         password: "password123", password_confirmation: "password123")
     resume = create_test_resume(user, complete_name: "Erase Model", email: "erase-model-r-#{SecureRandom.hex(4)}@example.com")

@@ -1,40 +1,43 @@
 module CvGenerator
   # Writes a parsed generation result onto the CvGeneration: the AI's
-  # professional summary, the tokens, and the full structure, whose other
-  # sections come from the saved resume's snapshot. No resume is written.
+  # professional summary, the tokens, the full structure (whose other
+  # sections come from the saved resume's snapshot) and the PDF drawn from
+  # it, all in one update. No resume is written.
   class ResultPersister
+    # Notes left by earlier failed attempts or a regenerate in flight; a
+    # successful write clears them.
+    STALE_KEYS = %w[error error_backtrace pdf_error regenerating_at].freeze
+
     def initialize(cv_generation)
       @cv_generation = cv_generation
     end
 
-    # Store only the professional summary in the main field, but the FULL
-    # structure in metadata. `snapshot` is the source resume's ResumeSnapshot
-    # hash; a saved resume is required. The status is left as it is; a
-    # generation cancelled meanwhile is not written and false is returned.
-    def record!(result, snapshot:)
+    # The structure the PDF is drawn from: the AI's summary, every other
+    # section from `snapshot` (the source resume's ResumeSnapshot hash).
+    def self.generated_data(result, snapshot:)
       raise ArgumentError, "snapshot is required" unless snapshot
 
-      # Use the saved resume's data for every section except the summary
-      Rails.logger.info "Using existing resume data for skills, experience, etc."
-
-      existing_data = snapshot
-      Rails.logger.info "📊 Formatted skills: #{Array(existing_data[:skills]).size}"
-
-      generated_data = {
-        professional_summary: result[:professional_summary], # Only use AI-generated summary
-        work_experiences: existing_data[:work_experiences],
-        skills: existing_data[:skills],
-        educations: existing_data[:educations],
-        certifications: existing_data[:certifications],
-        languages: existing_data[:languages]
+      {
+        professional_summary: result[:professional_summary],
+        work_experiences: snapshot[:work_experiences],
+        skills: snapshot[:skills],
+        educations: snapshot[:educations],
+        certifications: snapshot[:certifications],
+        languages: snapshot[:languages]
       }
+    end
 
-      Rails.logger.info "📦 Generated data skills to be stored: #{Array(generated_data[:skills]).size}"
+    # Stores the summary in the main field and the full structure plus
+    # `pdf_metadata` (CvGenerator::PdfRenderer#call) in metadata. The status
+    # is left as it is; a generation cancelled meanwhile is not written and
+    # false is returned.
+    def record!(result, snapshot:, pdf_metadata: {})
+      generated_data = self.class.generated_data(result, snapshot: snapshot)
 
       @cv_generation.with_lock do
         next false if @cv_generation.cancelled?
 
-        safe_meta = (@cv_generation.metadata || {})
+        safe_meta = (@cv_generation.metadata || {}).except(*STALE_KEYS)
         @cv_generation.update!(
           generated_content: result[:professional_summary],
           tokens_used: result[:tokens_used],
@@ -43,7 +46,7 @@ module CvGenerator
             ats_optimization_notes: result[:ats_optimization_notes],
             generation_notes: result[:generation_notes],
             raw_response: result[:raw_response]
-          }.deep_stringify_keys)
+          }.deep_stringify_keys).merge(pdf_metadata.deep_stringify_keys)
         )
       end
     end

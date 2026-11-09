@@ -6,9 +6,6 @@ class ResumeTest < ActiveSupport::TestCase
   # ============================================
 
   test "fixtures are valid" do
-    # Skip PDF generation in tests
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     assert resumes(:complete_resume).valid?, "complete_resume fixture should be valid"
     assert resumes(:draft_resume).valid?, "draft_resume fixture should be valid"
     assert resumes(:minimal_resume).valid?, "minimal_resume fixture should be valid"
@@ -168,8 +165,6 @@ class ResumeTest < ActiveSupport::TestCase
   end
 
   test "destroying resume destroys work_experiences" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     user = users(:test_user)
     resume = Resume.create!(
       user: user,
@@ -188,8 +183,6 @@ class ResumeTest < ActiveSupport::TestCase
   end
 
   test "destroying resume destroys skills" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     user = users(:test_user)
     resume = Resume.create!(
       user: user,
@@ -267,9 +260,7 @@ class ResumeTest < ActiveSupport::TestCase
   end
 
   test "save_draft updates resume correctly" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
-    resume = resumes(:minimal_resume)
+    resume = resumes(:draft_resume)
     form_data = { "step" => 2, "skills" => [ "Ruby", "Rails" ] }
 
     resume.save_draft(form_data)
@@ -279,9 +270,39 @@ class ResumeTest < ActiveSupport::TestCase
     assert_equal form_data, resume.draft_data
   end
 
-  test "empty_starter_draft ignores default form placeholders in draft_data" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
+  test "save_draft keeps a finished resume finished" do
+    resume = resumes(:minimal_resume)
 
+    resume.save_draft({ "current_step" => 2, "complete_name" => "Edited" })
+
+    assert_not resume.reload.is_draft
+    assert_equal "Edited", resume.draft_data["complete_name"]
+    assert_includes Resume.not_drafts, resume
+  end
+
+  test "can_be_resumed? is false for a new finished resume with a blank name" do
+    resume = resumes(:minimal_resume)
+    resume.created_at = 5.minutes.ago
+    resume.complete_name = ""
+
+    assert_not resume.can_be_resumed?
+  end
+
+  # Its output was never read, and it rewrote professional_summary_english
+  # behind newer edits; PDFs are rendered on export only.
+  test "saving a resume renders no PDF in the background" do
+    Sidekiq::Worker.clear_all
+
+    resume = resumes(:minimal_resume)
+    resume.save_draft({ "current_step" => 3 })
+    resume.update!(city: "Jeddah")
+    resume.update!(skills_attributes: [ { category: "Backend", skill_names: [ "Ruby" ] } ])
+    resumes(:draft_resume).update!(is_draft: false)
+
+    assert_empty Sidekiq::Queues["cv_builder"]
+  end
+
+  test "empty_starter_draft ignores default form placeholders in draft_data" do
     resume = Resume.new(
       user: users(:test_user),
       complete_name: "nonq70007",
@@ -323,8 +344,6 @@ class ResumeTest < ActiveSupport::TestCase
   # ============================================
 
   test "accepts nested attributes for work_experiences" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     user = users(:test_user)
     resume = Resume.new(
       user: user,
@@ -340,8 +359,6 @@ class ResumeTest < ActiveSupport::TestCase
   end
 
   test "accepts nested attributes for skills" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     user = users(:test_user)
     resume = Resume.new(
       user: user,

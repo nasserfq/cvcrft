@@ -35,8 +35,6 @@ class LanguageTest < ActiveSupport::TestCase
   end
 
   test "should save valid language" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     lang = Language.new(
       resume: resumes(:complete_resume),
       language: "German",

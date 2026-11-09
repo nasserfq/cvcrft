@@ -111,4 +111,29 @@ class Coach::TurnJobTest < ActiveJob::TestCase
 
     assert_equal "Here is what I read", chat.messages.order(:id).last.content
   end
+
+  test "a failed turn frees the chat for the next message" do
+    Coach::Agent.any_instance.stubs(:reply).raises(RuntimeError)
+    Sentry.stubs(:capture_exception)
+    assert @chat.turn_running?
+
+    travel(1.second) { Coach::TurnJob.perform_now(@chat.id, @chat.messages.last.id) }
+
+    assert_not @chat.turn_running?
+  end
+
+  test "a failure after the reply is saved keeps the reply and the user's credits spent" do
+    user = @chat.user
+    turn = @chat.messages.last
+    Billing::Credits.spend!(user, 1, reason: "coach_message", key: Coach.charge_key(turn))
+    Coach::Agent.any_instance.stubs(:reply).returns("Hello")
+    Coach.stubs(:broadcast).raises(RuntimeError)
+    Sentry.expects(:capture_exception).with(instance_of(RuntimeError), tags: { pack: "coach" })
+
+    assert_difference -> { @chat.messages.where(role: "assistant").count } do
+      Coach::TurnJob.perform_now(@chat.id, turn.id)
+    end
+    assert_equal Billing::SIGNUP_BONUS - 1, Billing::Credits.balance(user)
+    assert_not CreditLedgerEntry.exists?(reason: "refund")
+  end
 end

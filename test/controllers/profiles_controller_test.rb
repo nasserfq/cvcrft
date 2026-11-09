@@ -6,7 +6,6 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
 
     # Stub PDF generation
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
   end
 
   test "should redirect to login when not authenticated" do

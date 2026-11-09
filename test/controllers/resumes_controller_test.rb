@@ -7,7 +7,6 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
 
     # Create a resume for testing
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     @resume = Resume.create!(
       user: @user,
       complete_name: "Test User",
@@ -169,6 +168,88 @@ class ResumesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to resume_url(@resume)
     @resume.reload
     assert_equal "Updated Name", @resume.complete_name
+  end
+
+  test "final submit finishes the draft in place and replaces its sections" do
+    draft = Resume.create!(user: @user, complete_name: "Draft", email: "draft-#{SecureRandom.hex(4)}@example.com", is_draft: true)
+    draft.skills.create!(category: "Old", skill_names: [ "Stale" ])
+    params = { resume: {
+      complete_name: "Sara Ali", email: "sara-#{SecureRandom.hex(4)}@example.com",
+      work_experiences_attributes: [ { job_title: "Engineer", company: "Acme", start_date: "2020-01", responsibilities: [ "Built APIs" ] } ],
+      skills_attributes: [ { category: "Backend", skill_names: [ "Ruby" ] } ]
+    } }
+
+    assert_no_difference("Resume.count") do
+      2.times do
+        patch resume_url(draft), params: params, as: :json
+        assert_response :success
+      end
+    end
+
+    body = response.parsed_body
+    draft.reload
+    assert_equal draft.id, body["id"]
+    assert_equal draft.updated_at.iso8601(6), body["updated_at"]
+    assert_equal "/api/export_pdf?resume_id=#{draft.id}", body["download_url"]
+    assert_not draft.is_draft
+    assert_equal "Sara Ali", draft.complete_name
+    assert_equal [ "Backend" ], draft.skills.map(&:category)
+    assert_equal [ "Engineer" ], draft.work_experiences.map(&:job_title)
+  end
+
+  test "final submit keeps the draft unchanged when the resume is invalid" do
+    draft = Resume.create!(user: @user, complete_name: "Draft", email: "draft-#{SecureRandom.hex(4)}@example.com", is_draft: true)
+    draft.skills.create!(category: "Kept", skill_names: [ "Ruby" ])
+
+    patch resume_url(draft), params: { resume: { complete_name: "", email: "x@example.com" } }, as: :json
+
+    assert_response :unprocessable_entity
+    assert response.parsed_body["errors"]["complete_name"].present?
+    draft.reload
+    assert draft.is_draft
+    assert_equal [ "Kept" ], draft.skills.map(&:category)
+  end
+
+  test "autosave after a final submit chains on the updated_at it returned" do
+    patch resume_url(@resume), params: { resume: { complete_name: "Final", email: @resume.email } }, as: :json
+    base = response.parsed_body["updated_at"]
+
+    travel 1.second do
+      post save_draft_resume_path(@resume), params: { complete_name: "Later", current_step: 4, base_updated_at: base }, as: :json
+    end
+
+    assert_response :success
+    assert_not @resume.reload.is_draft
+  end
+
+  test "save_draft keeps a finished resume finished" do
+    post save_draft_resume_path(@resume), params: { complete_name: "Edited", current_step: 2 }, as: :json
+
+    assert_response :success
+    assert_not @resume.reload.is_draft
+    assert_equal "Edited", @resume.draft_data["complete_name"]
+  end
+
+  test "resume_draft opens the draft without finishing it" do
+    draft = Resume.create!(user: @user, complete_name: "Draft", email: "draft-#{SecureRandom.hex(4)}@example.com",
+                           is_draft: true, draft_data: { "current_step" => 3 })
+
+    post resume_draft_resume_url(draft)
+
+    assert_redirected_to edit_resume_path(draft, step: 3)
+    assert draft.reload.is_draft
+  end
+
+  test "resume_draft refuses a finished resume" do
+    post resume_draft_resume_url(@resume, format: :json)
+
+    assert_response :unprocessable_entity
+  end
+
+  test "work experiences have no create route" do
+    assert_raises(ActionController::RoutingError) do
+      Rails.application.routes.recognize_path("/resumes/#{@resume.id}/work_experiences", method: :post)
+    end
   end
 
   test "should destroy resume" do

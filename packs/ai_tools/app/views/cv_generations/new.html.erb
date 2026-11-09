@@ -85,6 +85,7 @@
       </div>
       <!-- Pass translations to JavaScript -->
       <script>
+        window.CV_GENERATION_MAX_WAIT_SECONDS = <%= CvGeneration::MAX_PROCESSING_TIME.to_i %>;
         window.CV_TRANSLATIONS = {
           job_description_label: "<%= j t('cv_generation.job_description_label') %>",
           job_description_placeholder: "<%= j t('cv_generation.job_description_placeholder') %>",
@@ -639,6 +640,74 @@
             loadResumesWithGenerations();
           }, []); // Empty dependency array means this effect runs once on mount
 
+          // Waits for a generation to finish. The job keeps running on the
+          // server, so running out of time is never a failure: the progress card
+          // shows its "taking longer" state, and "Check again" opens the
+          // generation's own page.
+          const pollGeneration = (cvGenerationId) => {
+            const startedAt = Date.now();
+            const maxMs = (window.CV_GENERATION_MAX_WAIT_SECONDS || 2400) * 1000;
+            let networkErrors = 0;
+
+            const showTakingLonger = () => {
+              const node = progressNode();
+              if (!node || !window.SeeraProgress) {
+                window.location.href = `/cv_generations/${cvGenerationId}`;
+                return;
+              }
+              window.SeeraProgress.fail(node);
+              const title = node.querySelector('[data-ai-progress-error-title]');
+              const msg = node.querySelector('[data-ai-progress-error]');
+              const recheck = node.querySelector('[data-ai-progress-recheck]');
+              if (title && title.getAttribute('data-timeout')) title.textContent = title.getAttribute('data-timeout');
+              if (msg && msg.getAttribute('data-timeout')) msg.textContent = msg.getAttribute('data-timeout');
+              if (recheck) {
+                recheck.hidden = false;
+                recheck.onclick = () => { window.location.href = `/cv_generations/${cvGenerationId}`; };
+              }
+            };
+
+            const schedule = () => {
+              if (Date.now() - startedAt >= maxMs) { showTakingLonger(); return; }
+              const elapsed = Date.now() - startedAt;
+              setTimeout(check, elapsed < 60000 ? 2000 : elapsed < 300000 ? 5000 : 10000);
+            };
+
+            const check = async () => {
+              let data;
+              try {
+                const res = await fetch(`/cv_generations/${cvGenerationId}.json`, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                data = await res.json();
+              } catch (err) {
+                console.error('Error polling for results:', err);
+                networkErrors += 1;
+                if (networkErrors >= 6) { showTakingLonger(); return; }
+                schedule();
+                return;
+              }
+              networkErrors = 0;
+
+              if (data && data.status === 'completed') {
+                finishProgress(() => {
+                  setCvData(data);
+                  setIsGenerating(false);
+                  const pdfGenerated = data.metadata?.pdf_generated;
+                  if (pdfGenerated === true || pdfGenerated === 'true' || pdfGenerated === 1) setShowPdfModal(true);
+                });
+              } else if (data && data.status === 'failed') {
+                setError(t.generation_failed);
+                setIsGenerating(false);
+              } else if (data && (data.status === 'cancelled' || data.status === 'draft')) {
+                window.location.href = `/cv_generations/${cvGenerationId}`;
+              } else {
+                schedule();
+              }
+            };
+
+            check();
+          };
+
           // Check for CV generation ID in URL on page load (for direct links)
           useEffect(() => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -667,47 +736,7 @@
                       setShowPdfModal(true);
                     }
                   } else if (data && data.status === 'processing') {
-                    // Start polling for completion
-                    let pollAttempts = 0;
-                    const maxPollAttempts = 30;
-
-                    const pollForResults = async () => {
-                      try {
-                        const pollResponse = await fetch(`/cv_generations/${cvGenerationId}.json`);
-                        const pollData = await pollResponse.json();
-
-                        if (pollData && pollData.status === 'completed') {
-                          console.log('✅ CV generation completed!');
-                          finishProgress(() => {
-                            setCvData(pollData);
-                            setIsGenerating(false);
-
-                            if (pollData.metadata?.pdf_generated === true || pollData.metadata?.pdf_generated === 'true') {
-                              setShowPdfModal(true);
-                            }
-                          });
-                        } else if (pollData && pollData.status === 'failed') {
-                          setError(t.generation_failed);
-                          setIsGenerating(false);
-                        } else if (pollData && (pollData.status === 'cancelled' || pollData.status === 'draft')) {
-                          window.location.href = `/cv_generations/${cvGenerationId}`;
-                        } else {
-                          pollAttempts++;
-                          if (pollAttempts < maxPollAttempts) {
-                            setTimeout(pollForResults, 2000);
-                          } else {
-                            setError('CV generation is taking too long');
-                            setIsGenerating(false);
-                          }
-                        }
-                      } catch (err) {
-                        console.error('❌ Error polling for results:', err);
-                        setError('Error checking generation status');
-                        setIsGenerating(false);
-                      }
-                    };
-
-                    pollForResults();
+                    pollGeneration(cvGenerationId);
                   } else if (data && data.status === 'failed') {
                     setError(t.generation_failed);
                     setIsGenerating(false);
@@ -848,62 +877,7 @@
                   const cvGenerationId = result.cv_generation_id;
                   console.log('🔍 Starting to poll for CV ID:', cvGenerationId);
 
-                  // Poll for results
-                  let pollAttempts = 0;
-                  const maxPollAttempts = 30;
-
-                  const pollForResults = async () => {
-                    try {
-                      const pollResponse = await fetch(`/cv_generations/${cvGenerationId}.json`);
-                      const data = await pollResponse.json();
-
-                      if (data && data.status === 'completed') {
-                        console.log('✅ CV generation completed!');
-                        console.log('📊 CV Data:', data);
-                        console.log('📄 PDF Generated:', data.metadata?.pdf_generated);
-                        console.log('📄 PDF Generated Type:', typeof data.metadata?.pdf_generated);
-                        console.log('📄 Has PDF Data:', !!data.metadata?.pdf_data);
-                        finishProgress(() => {
-                          setCvData(data);
-                          setIsGenerating(false);
-
-                          // Show PDF modal immediately if PDF is generated
-                          const pdfGenerated = data.metadata?.pdf_generated;
-                          console.log('📄 PDF Generated Value:', pdfGenerated);
-                          console.log('📄 PDF Generated Type:', typeof pdfGenerated);
-
-                          if (pdfGenerated === true || pdfGenerated === 'true' || pdfGenerated === 1) {
-                            console.log('📄 PDF generated, showing modal immediately');
-                            setShowPdfModal(true);
-                          } else {
-                            console.log('❌ PDF not generated for this CV');
-                            console.log('📄 PDF Error:', data.metadata?.pdf_error);
-                          }
-                        });
-                      } else if (data && data.status === 'failed') {
-                        console.log('❌ CV generation failed');
-                        setError(t.generation_failed);
-                        setIsGenerating(false);
-                      } else if (data && (data.status === 'cancelled' || data.status === 'draft')) {
-                        window.location.href = `/cv_generations/${cvGenerationId}`;
-                      } else {
-                        pollAttempts++;
-                        if (pollAttempts < maxPollAttempts) {
-                          setTimeout(pollForResults, 2000);
-                        } else {
-                          setError('CV generation is taking too long');
-                          setIsGenerating(false);
-                        }
-                      }
-                    } catch (err) {
-                      console.error('❌ Error polling for results:', err);
-                      setError('Error checking generation status');
-                      setIsGenerating(false);
-                    }
-                  };
-
-                  // Start polling immediately
-                  pollForResults();
+                  pollGeneration(cvGenerationId);
                 }
               } else {
                 const errorText = await response.text();

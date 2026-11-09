@@ -30,6 +30,8 @@ module Coach
 
     def show
       @messages = @chat.messages.order(:id).map { |m| m.slice(:id, :role, :content, :fields) }
+      # After a reload the client shows the running turn and picks up its chunks.
+      @turn_running = @chat.turn_running?
     end
 
     def accept
@@ -43,8 +45,13 @@ module Coach
     def send_to_seera
       return redirect_to coach_chat_path(@chat), alert: t("coach.send_to_seera.empty") if @chat.draft.blank?
 
-      resume = ResumeBuilder::PublicApi.create_from_draft(current_user, @chat.draft)
-      redirect_to resume_path(resume)
+      # One resume per chat: a second click opens it. Locked so a double click can't make two.
+      resume_id = @chat.with_lock do
+        mine = @chat.resume_id && ResumeBuilder::PublicApi.list(current_user).any? { |r| r["id"] == @chat.resume_id }
+        @chat.update!(resume_id: ResumeBuilder::PublicApi.create_from_draft(current_user, @chat.draft).id) unless mine
+        @chat.resume_id
+      end
+      redirect_to resume_path(resume_id)
     end
 
     def message
@@ -54,12 +61,16 @@ module Coach
 
       message = @chat.messages.new(role: "user", content: params[:content])
       charge = nil
-      Coach::Message.transaction do
-        next unless message.save
+      busy = false
+      # Locked so two tabs can't both start a turn: overlapping turns answer out of order.
+      @chat.with_lock do
+        busy = @chat.turn_running?
+        next if busy || !message.save
 
         charge = Coach.charge!(current_user, message)
         raise ActiveRecord::Rollback if charge == :blocked
       end
+      return render json: { error: t("coach.error") }, status: :conflict if busy
       return head :unprocessable_entity unless charge
       return render json: { error: no_credits_message, **credits_upsell }, status: :payment_required if charge == :blocked
 
@@ -121,18 +132,24 @@ module Coach
     # Locked and reloaded so a running turn's propose_rewrite can't race it; accept re-validates through Coach::Draft.
     def settle_proposal
       id = params[:proposal_id].to_s
-      found = @chat.with_lock do
+      outcome = @chat.with_lock do
         proposal = @chat.proposals.find { |p| p["id"] == id }
-        proposal && @chat.update!(draft: yield(@chat.draft, proposal), proposals: @chat.proposals - [ proposal ])
+        next :not_found unless proposal
+
+        remaining = @chat.proposals - [ proposal ]
+        begin
+          @chat.update!(draft: yield(@chat.draft, proposal), proposals: remaining)
+          :ok
+        rescue Coach::Draft::Invalid
+          # The draft changed since it was proposed (e.g. that job was removed), so drop it.
+          @chat.update!(proposals: remaining)
+          :unprocessable_entity
+        end
       end
-      return head :not_found unless found
+      return head outcome unless outcome == :ok
 
       Coach.broadcast(@chat, type: "draft", draft: @chat.draft) if @chat.saved_change_to_draft?
       head :ok
-    rescue Coach::Draft::Invalid
-      # The draft changed since it was proposed (e.g. that job was removed), so drop it.
-      @chat.update!(proposals: @chat.proposals.reject { |p| p["id"] == id })
-      head :unprocessable_entity
     end
 
     def no_credits_message

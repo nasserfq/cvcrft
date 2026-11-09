@@ -11,7 +11,6 @@ class CvGenerator::ResultPersisterTest < ActiveSupport::TestCase
   }.freeze
 
   setup do
-    stub_pdf_generation
     @user = users(:test_user)
     @generation = create_test_cv_generation(@user, metadata: { "source" => "form", "ats_template" => "harvard_classic" })
     @persister = CvGenerator::ResultPersister.new(@generation)

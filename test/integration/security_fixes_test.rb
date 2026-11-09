@@ -3,7 +3,6 @@ require "test_helper"
 # Regression tests for the 2026-10-12 security audit.
 class SecurityFixesTest < ActionDispatch::IntegrationTest
   setup do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     @attacker = users(:one)
     @victim = users(:two)
     @attacker_resume = create_test_resume(@attacker)

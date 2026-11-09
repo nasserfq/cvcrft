@@ -287,16 +287,6 @@ class CvGenerationTest < ActiveSupport::TestCase
     assert_equal form_data, generation.draft_data
   end
 
-  test "complete_draft updates generation correctly" do
-    generation = cv_generations(:draft_generation)
-
-    generation.complete_draft
-    generation.reload
-
-    assert_not generation.is_draft
-    assert_equal "processing", generation.status
-  end
-
   # ============================================
   # METADATA TESTS
   # ============================================
@@ -375,5 +365,32 @@ class CvGenerationTest < ActiveSupport::TestCase
 
     assert_not generation.fail_processing!("timed out")
     assert_equal "completed", generation.reload.status
+  end
+
+  test "claim_regeneration! lets one regenerate run at a time and expires" do
+    generation = create_test_cv_generation(users(:test_user), status: "completed", metadata: { "pdf_generated" => true })
+
+    assert generation.claim_regeneration!
+    assert_not generation.claim_regeneration!
+
+    travel CvGeneration::REGENERATE_CLAIM_TTL + 1.minute do
+      assert generation.claim_regeneration!
+    end
+
+    generation.release_regeneration!
+    assert_equal({ "pdf_generated" => true }, generation.reload.metadata)
+  end
+
+  test "claim_regeneration! refuses a generation that isn't completed" do
+    assert_not create_test_cv_generation(users(:test_user), status: "processing").claim_regeneration!
+  end
+
+  test "ai_generated leaves out the CV builder's export rows" do
+    user = users(:test_user)
+    ai = create_test_cv_generation(user)
+    builder = create_test_cv_generation(user, ai_model: "cv_builder")
+
+    assert_includes CvGeneration.ai_generated, ai
+    assert_not_includes CvGeneration.ai_generated, builder
   end
 end

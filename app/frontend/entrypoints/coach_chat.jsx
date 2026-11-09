@@ -22,6 +22,7 @@ function renderApp() {
       initialMessages={JSON.parse(container.dataset.messages || "[]")}
       initialDraft={JSON.parse(container.dataset.draft || "{}")}
       initialProposals={JSON.parse(container.dataset.proposals || "[]")}
+      initialTurnRunning={container.dataset.turnRunning === "true"}
     />
   );
 }
@@ -31,6 +32,15 @@ if (document.readyState === "loading") {
 } else {
   renderApp();
 }
+
+// "Send to Seera" is a full-page post; a double click would send it twice.
+document.addEventListener("submit", (event) => {
+  if (event.target.matches?.("form[data-submit-once]")) event.target.querySelectorAll("button").forEach((b) => (b.disabled = true));
+});
+// Coming back with the back button restores the page as it was left, button disabled.
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) document.querySelectorAll("form[data-submit-once] button").forEach((b) => (b.disabled = false));
+});
 
 // Handle Turbo navigation - use turbo:render which fires after DOM is stable
 document.addEventListener("turbo:render", renderApp);

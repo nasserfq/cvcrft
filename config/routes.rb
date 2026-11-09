@@ -65,7 +65,7 @@ Rails.application.routes.draw do
 
   # Resume routes with nested resources
   resources :resumes do
-    resources :work_experiences, only: [ :create, :update, :destroy ]
+    resources :work_experiences, only: [ :update, :destroy ]
     resources :skills, only: [ :create, :update, :destroy ]
 
     # Custom actions
@@ -89,6 +89,7 @@ Rails.application.routes.draw do
       get :status
       post :retry
       post :cancel
+      post :regenerate
       get :download_pdf
       get :view_pdf
       get :preview
@@ -182,8 +183,6 @@ Rails.application.routes.draw do
     get "translation_status/:id", to: "translations#translation_status"
     get "translation_limit", to: "translations#translation_limit"
     get "export_pdf", to: "translations#export_pdf", as: :export_pdf_translations
-    post "export_pdf", to: "translations#export_pdf", as: :export_pdf_post_translations
-    get "pdf_status", to: "translations#pdf_status", as: :pdf_status_translations
     post "redeem_coupon", to: "coupons#redeem"
   end
 end

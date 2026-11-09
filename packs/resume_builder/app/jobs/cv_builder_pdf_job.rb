@@ -6,7 +6,10 @@ class CvBuilderPdfJob
 
   sidekiq_options retry: 3, backtrace: true, queue: :cv_builder
 
-  # Job will be called with resume_id or resume_params
+  # Renders a resume (resume_id, or unsaved resume_params) to a PDF file and
+  # returns { status: "success", file_path:, filename: } or
+  # { status: "error", message: }. Api::TranslationsController#export_pdf
+  # calls it inline and sends the file.
   def perform(options)
     Rails.logger.info "=== CV BUILDER PDF JOB STARTED ==="
 
@@ -14,21 +17,16 @@ class CvBuilderPdfJob
     resume_id = options["resume_id"]
     user_id = options["user_id"]
     resume_params = options["resume_params"]
-    job_token = options["job_token"]
-    direct_download = options["direct_download"] || false
     template = options["template"]
 
-    Rails.logger.info "Processing PDF job with: user_id=#{user_id}, resume_id=#{resume_id || 'none'}, job_token=#{job_token}"
+    Rails.logger.info "Processing PDF job with: user_id=#{user_id}, resume_id=#{resume_id || 'none'}"
 
     begin
       # Fetch or create the resume
       resume = fetch_or_create_resume(resume_id, resume_params, user_id)
 
       # Generate the PDF
-      pdf_result = generate_pdf(resume, job_token, template)
-
-      # Store the PDF in Redis
-      store_pdf_in_redis(user_id, job_token, pdf_result[:path])
+      pdf_result = generate_pdf(resume, template)
 
       Rails.logger.info "=== CV BUILDER PDF JOB COMPLETED ==="
       { status: "success", file_path: pdf_result[:path], filename: pdf_result[:filename] }
@@ -37,46 +35,6 @@ class CvBuilderPdfJob
       Rails.logger.error e.backtrace.join("\n")
       { status: "error", message: e.message }
     end
-  end
-
-  # Class method to schedule PDF generation
-  def self.schedule_pdf_generation(user_id, resume_id, view_in_browser, resume_params = nil)
-    Rails.logger.info "Scheduling PDF generation with params: user_id=#{user_id}, resume_id=#{resume_id}, view_in_browser=#{view_in_browser}"
-
-    # Build options for the job
-    options = {
-      "user_id" => user_id,
-      "resume_id" => resume_id,
-      "view_in_browser" => view_in_browser,
-      "resume_params" => resume_params
-    }
-
-    # Enqueue the job
-    perform_async(options)
-  rescue => e
-    Rails.logger.error "Error scheduling PDF generation: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
-  end
-
-  # Status for the GET /api/pdf_status poller. store_pdf_in_redis keys the
-  # generated path by job token, so the token is what locates a finished PDF;
-  # resume_id is accepted because the endpoint allows it, but cannot locate one.
-  def self.check_pdf_status(user_id, job_id, token, _resume_id = nil)
-    key_token = token.presence || job_id.presence
-    return { status: "failed", message: "A job token is required to locate the PDF" } if key_token.blank?
-
-    redis = Redis.new(url: ENV["REDIS_URL"] || "redis://localhost:6379/1")
-    pdf_path = redis.get("cv_builder:pdf:#{user_id}:#{key_token}")
-
-    if pdf_path.present? && File.exist?(pdf_path)
-      { status: "completed",
-        download_url: Rails.application.routes.url_helpers.api_export_pdf_translations_path(direct_download: true, token: key_token) }
-    else
-      { status: "processing" }
-    end
-  rescue => e
-    Rails.logger.error "Error checking PDF status: #{e.message}"
-    { status: "failed", message: e.message }
   end
 
   private
@@ -93,7 +51,7 @@ class CvBuilderPdfJob
     end
   end
 
-  def generate_pdf(resume, job_token, template = nil)
+  def generate_pdf(resume, template = nil)
     Rails.logger.info "Generating PDF for resume ID: #{resume.id}"
 
     # Always use the latest AI summary for PDF generation and persist it
@@ -119,12 +77,5 @@ class CvBuilderPdfJob
     Rails.logger.info "PDF generated at #{pdf_result[:path]}"
 
     pdf_result
-  end
-
-  def store_pdf_in_redis(user_id, job_token, pdf_path)
-    redis = Redis.new(url: ENV["REDIS_URL"] || "redis://localhost:6379/1")
-    redis_key = "cv_builder:pdf:#{user_id}:#{job_token}"
-    redis.setex(redis_key, 24.hours.to_i, pdf_path)
-    Rails.logger.info "Stored PDF in Redis with key: #{redis_key}"
   end
 end

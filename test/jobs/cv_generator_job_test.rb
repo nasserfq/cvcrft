@@ -20,7 +20,6 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
   }.freeze
 
   setup do
-    stub_pdf_generation
     @pdf_file = Tempfile.new([ "cv", ".pdf" ])
     @pdf_file.write("%PDF-fake")
     @pdf_file.flush
@@ -107,10 +106,7 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
       expected_data = snapshot_golden.merge("professional_summary" => AI_REPLY[:professional_summary])
       assert_equal expected_data, meta["generated_data"]
       assert_equal Base64.encode64("%PDF-fake"), meta["pdf_data"]
-      assert_match(/\A\h{32}\z/, meta["pdf_cache_key"])
       assert_equal({
-        "force_pdf_regeneration" => false,
-        "pdf_cache_hours" => 24,
         "generated_data" => expected_data,
         "ats_optimization_notes" => "Preserved all existing resume data",
         "generation_notes" => "Updated only professional summary while preserving all existing data",
@@ -121,7 +117,7 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
         "pdf_size" => 9,
         "pdf_version" => "2.1",
         "pdf_generated_at" => Time.now.to_i
-      }, meta.except("pdf_data", "pdf_cache_key"))
+      }, meta.except("pdf_data"))
     end
 
     resume.reload
@@ -313,6 +309,38 @@ class CvGeneratorJobTest < ActiveSupport::TestCase
     assert_equal "completed", generation.status
     assert_equal Base64.encode64("%PDF-fake"), generation.metadata["pdf_data"]
     assert_equal AI_REPLY[:professional_summary], generation.generated_content
+  end
+
+  test "a regenerate whose PDF fails keeps the old summary and PDF" do
+    user = users(:user_with_resumes)
+    resume = resumes(:complete_resume)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION, resume: resume, status: "completed",
+                                                 generated_content: "Old summary",
+                                                 metadata: { "pdf_generated" => true, "pdf_data" => Base64.encode64("old") })
+    stub_ai_response(AI_REPLY)
+    AtsTemplatePdfService.stubs(:generate_pdf).raises(RuntimeError, "prawn broke")
+
+    assert_raises(RuntimeError) do
+      run_job(user, resume.id, { "cv_generation_id" => generation.id, "regenerate" => true })
+    end
+
+    generation.reload
+    assert_equal "completed", generation.status
+    assert_equal "Old summary", generation.generated_content
+    assert_equal({ "pdf_generated" => true, "pdf_data" => Base64.encode64("old") }, generation.metadata)
+  end
+
+  test "a successful run clears the errors of earlier attempts" do
+    user = users(:user_with_resumes)
+    generation = create_test_cv_generation(user, job_description: JOB_DESCRIPTION,
+                                                 metadata: { "error" => "API Error", "error_backtrace" => [ "x" ], "pdf_error" => "old" })
+    stub_ai_response(AI_REPLY)
+
+    run_job(user, resumes(:complete_resume).id, { "cv_generation_id" => generation.id })
+
+    generation.reload
+    assert_equal "completed", generation.status
+    assert_empty generation.metadata.slice("error", "error_backtrace", "pdf_error")
   end
 
   test "a failed regenerate keeps the generation completed" do

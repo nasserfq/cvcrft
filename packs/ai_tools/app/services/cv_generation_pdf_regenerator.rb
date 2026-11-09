@@ -1,62 +1,56 @@
-# Re-runs CvGeneratorJob synchronously for every completed CV generation that
-# has a PDF, forcing the PDF to be rebuilt on that same row (no new rows).
-# Used by the admin area.
+# Redraws the PDF of every completed AI generation from its stored
+# generated data, on the same row (no AI call, no new rows). A generation
+# whose PDF can't be drawn keeps the one it has. Used by the admin area after
+# a template change.
 class CvGenerationPdfRegenerator
   def self.call
     new.call
   end
 
   def call
-    # Get all completed CV generations with metadata
-    cv_generations = CvGeneration.where(status: "completed")
-                                .where("metadata->>'pdf_generated' = 'true'")
+    cv_generations = CvGeneration.ai_generated
+                                 .where(status: "completed")
+                                 .where("metadata->>'pdf_generated' = 'true'")
 
-    # Count of PDFs to process
     total = cv_generations.count
-    processed = 0
-    success = 0
-    failed = 0
+    processed = success = failed = 0
 
     cv_generations.find_each do |cv_gen|
-      begin
-        processed += 1
-
-        # Skip if no data available
-        unless cv_gen.job_description.present? && cv_gen.user_id.present?
-          failed += 1
-          next
-        end
-
-        # Get basic info
-        job_description = cv_gen.job_description
-        user_id = cv_gen.user_id
-        resume_id = cv_gen.resume_id
-
-        # Re-run the job on this row, in place, with force regeneration
-        job = CvGeneratorJob.new
-        job.perform(
-          job_description,
-          user_id,
-          resume_id,
-          { "cv_generation_id" => cv_gen.id, "regenerate" => true, "force_pdf_regeneration" => true }
-        )
-
+      processed += 1
+      if redraw(cv_gen)
         success += 1
-
-        # Log progress every 5 items
-        if processed % 5 == 0
-          Rails.logger.info "PDF Regeneration: #{processed}/#{total} processed, #{success} successful, #{failed} failed"
-        end
-
-      rescue => e
+      else
         failed += 1
-        Rails.logger.error "Failed to regenerate PDF for CV ##{cv_gen.id}: #{e.message}"
       end
+
+      if processed % 5 == 0
+        Rails.logger.info "PDF Regeneration: #{processed}/#{total} processed, #{success} successful, #{failed} failed"
+      end
+    rescue => e
+      failed += 1
+      Rails.logger.error "Failed to regenerate PDF for CV ##{cv_gen.id}: #{e.message}"
     end
 
-    # Final stats
     Rails.logger.info "PDF regeneration complete: #{success}/#{total} successful, #{failed} failed"
 
     { total: total, success: success, failed: failed }
+  end
+
+  private
+
+  # Returns whether the new PDF was stored. Rows without generated data or a
+  # saved resume have nothing to draw from.
+  def redraw(cv_gen)
+    generated_data = cv_gen.metadata&.dig("generated_data")
+    resume = cv_gen.resume
+    return false if generated_data.blank? || resume.nil? || resume.user_id != cv_gen.user_id
+
+    pdf_metadata = CvGenerator::PdfRenderer.new(resume, cv_gen.metadata["ats_template"]).call(generated_data)
+
+    cv_gen.with_lock do
+      next false unless cv_gen.completed?
+
+      cv_gen.update_columns(metadata: cv_gen.metadata.except("pdf_error").merge(pdf_metadata), updated_at: Time.current)
+    end
   end
 end

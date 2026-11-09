@@ -30,18 +30,22 @@ module Coach
       end
       flush.call
       # reply is only the text after the last tool call; save everything the user saw.
-      message = chat.messages.create!(role: "assistant", content: streamed.presence || reply, fields: agent.fields)
-      Coach.broadcast(chat, type: "done", message_id: message.id, text: message.content, fields: message.fields)
+      answer = chat.messages.create!(role: "assistant", content: streamed.presence || reply, fields: agent.fields)
+      Coach.broadcast(chat, type: "done", message_id: answer.id, text: answer.content, fields: answer.fields)
     # Never re-raise: a Sidekiq retry would send the user a second reply.
     rescue => e
       Sentry.capture_exception(e, tags: { pack: "coach" })
-      return unless chat
+      # A saved reply was paid for and shows on reload, so there is nothing to refund or undo.
+      return if chat.nil? || answer&.persisted?
 
       # The user paid for a reply they didn't get. Refund the message this job
       # answers, not the newest one: overlapping turns each refund their own.
       users = chat.messages.where(role: "user")
       turn = message_id ? users.find_by(id: message_id) : users.order(:id).last
-      Coach.refund!(chat.user, turn) if turn
+      if turn
+        turn.end_turn! # frees the chat for the next message
+        Coach.refund!(chat.user, turn)
+      end
       Coach.broadcast(chat, type: "error")
     end
 

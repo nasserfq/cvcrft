@@ -83,6 +83,31 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_enqueued_with(job: Coach::TurnJob, args: [ @chat.id, message.id ], queue: "coach")
   end
 
+  test "a message is refused while the previous turn is still running" do
+    @chat.messages.create!(role: "user", content: "I was a cashier")
+
+    assert_no_difference -> { Coach::Message.count } do
+      assert_no_enqueued_jobs { post message_coach_chat_url(@chat), params: { content: "Hello?" }, as: :json }
+    end
+    assert_response :conflict
+    assert_equal I18n.t("coach.error", locale: :ar), response.parsed_body["error"]
+  end
+
+  test "a turn stuck past the timeout doesn't block the chat" do
+    @chat.messages.create!(role: "user", content: "I was a cashier")
+
+    travel Coach::Chat::TURN_TIMEOUT + 1.second
+    post message_coach_chat_url(@chat), params: { content: "Hello?" }, as: :json
+    assert_response :accepted
+  end
+
+  test "show marks a turn that is still running so the page waits for it" do
+    @chat.messages.create!(role: "user", content: "Hi")
+
+    get coach_chat_url(@chat)
+    assert_select "#coach-chat-root[data-turn-running='true']"
+  end
+
   test "messages past the free allowance cost credits while billing is on" do
     ENV["BILLING_ENABLED"] = "true"
     use_free_messages
@@ -128,7 +153,6 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the import card lists only the user's own resumes" do
-    stub_pdf_generation
     mine = ResumeBuilder::PublicApi.create_from_draft(@user, "complete_name" => "Sara Ali", "email" => "sara@example.com")
     theirs = ResumeBuilder::PublicApi.create_from_draft(users(:two), "complete_name" => "Someone Else", "email" => "else@example.com")
 
@@ -167,7 +191,6 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "picking a Seera resume copies it into the draft" do
-    stub_pdf_generation
     draft = { "complete_name" => "Sara Ali", "email" => "sara@example.com", "professional_summary" => "Cashier.",
               "professional_summary_english" => "Cashier (EN).",
               "work_experience" => [ { "job_title" => "Cashier", "company" => "Panda", "start_date" => "2019-01",
@@ -184,7 +207,6 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "another user's resume is not found" do
-    stub_pdf_generation
     resume = ResumeBuilder::PublicApi.create_from_draft(users(:two), "complete_name" => "Someone Else", "email" => "else@example.com")
 
     assert_no_difference -> { Coach::Chat.count } do
@@ -213,6 +235,19 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_empty chat.proposals
   end
 
+  test "accepting a proposal whose target is gone drops only that proposal" do
+    chat = import_chat_with_proposal
+    stale = { "id" => "gone0001", "section" => "work_experience", "index" => 2, "field" => "responsibilities",
+              "before" => [ "Old" ], "after" => [ "New" ] }
+    chat.update!(proposals: [ stale ] + chat.proposals)
+
+    post accept_coach_chat_url(chat), params: { proposal_id: "gone0001" }, as: :json
+    assert_response :unprocessable_entity
+    chat.reload
+    assert_equal [ "abcd1234" ], chat.proposals.map { |p| p["id"] }
+    assert_equal "I work hard.", chat.draft["professional_summary"]
+  end
+
   test "an unknown proposal is not found" do
     chat = import_chat_with_proposal
 
@@ -233,7 +268,6 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "send_to_seera turns the draft into a resume and opens it" do
-    stub_pdf_generation
     @chat.update!(draft: { "complete_name" => "Sara Ali", "email" => "sara@example.com",
                            "skills" => [ { "category" => "Retail", "skill_names" => [ "Cash handling" ] } ] })
 
@@ -243,6 +277,33 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
     resume = @user.resumes.order(:id).last
     assert_redirected_to resume_path(resume)
     assert_equal [ "coach", "Sara Ali" ], [ resume.source, resume.complete_name ]
+  end
+
+  test "the send_to_seera form posts once" do
+    get coach_chat_url(@chat)
+    assert_select "form[action='#{send_to_seera_coach_chat_path(@chat)}'][data-submit-once]"
+  end
+
+  test "send_to_seera again opens the resume the chat already made" do
+    @chat.update!(draft: { "complete_name" => "Sara Ali", "email" => "sara@example.com" })
+
+    assert_difference -> { @user.resumes.count }, 1 do
+      2.times { post send_to_seera_coach_chat_url(@chat) }
+    end
+    resume = @user.resumes.order(:id).last
+    assert_redirected_to resume_path(resume)
+    assert_equal resume.id, @chat.reload.resume_id
+  end
+
+  test "send_to_seera makes a new resume once the chat's resume is deleted" do
+    @chat.update!(draft: { "complete_name" => "Sara Ali", "email" => "sara@example.com" })
+    post send_to_seera_coach_chat_url(@chat)
+    @user.resumes.find(@chat.reload.resume_id).destroy!
+
+    assert_difference -> { @user.resumes.count } do
+      post send_to_seera_coach_chat_url(@chat)
+    end
+    assert_redirected_to resume_path(@chat.reload.resume_id)
   end
 
   test "send_to_seera on another user's chat is not found" do
@@ -273,7 +334,6 @@ class Coach::ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "an import is refused once today's cap is reached" do
-    stub_pdf_generation
     resume = ResumeBuilder::PublicApi.create_from_draft(@user, "complete_name" => "Sara Ali", "email" => "sara@example.com")
     Coach::DAILY_LIMIT.times { @chat.messages.create!(role: "user", content: "Hi") }
 

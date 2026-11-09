@@ -47,8 +47,6 @@ class EducationTest < ActiveSupport::TestCase
   end
 
   test "should save valid education" do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
     education = Education.new(
       resume: resumes(:complete_resume),
       degree: "Master of Computer Science",

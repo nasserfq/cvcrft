@@ -197,38 +197,12 @@ class Api::TranslationsControllerTest < ActionDispatch::IntegrationTest
     assert_not json_response.key?("upgrade_url")
   end
 
-  # Regression: pdf_status called an undefined CvBuilderPdfJob method, so every
-  # poll from the export flow 500'd.
-  test "pdf_status returns a download url once the PDF path is in Redis" do
-    pdf = Tempfile.new([ "resume", ".pdf" ])
-    Redis.stubs(:new).returns(stub(get: pdf.path))
-
-    get api_pdf_status_translations_url, params: { job_id: "job123", token: "tok123" }
-
-    assert_response :success
-    assert_equal "completed", json_response["status"]
-    assert_equal "/api/export_pdf?direct_download=true&token=tok123", json_response["download_url"]
-  ensure
-    pdf&.close!
-  end
-
-  test "pdf_status stays processing while the PDF is not in Redis yet" do
-    Redis.stubs(:new).returns(stub(get: nil))
-
-    get api_pdf_status_translations_url, params: { job_id: "job123", token: "tok123" }
-
-    assert_response :success
-    assert_equal "processing", json_response["status"]
-  end
-
-  # The builder export records a CvGeneration for usage stats; it used to have
-  # no job_description, fail validation and turn every export into a 422.
-  test "export_pdf for a saved resume records the export and sends the PDF" do
+  test "export_pdf sends the PDF of a saved resume without recording a generation" do
     resume = @user.resumes.first || @user.resumes.create!(complete_name: "Test User", email: "test@example.com", phone_number: "+966500000000")
     pdf = Tempfile.new([ "resume", ".pdf" ])
     CvBuilderPdfJob.any_instance.stubs(:perform).returns({ status: "success", file_path: pdf.path, filename: "resume.pdf" })
 
-    assert_difference -> { @user.cv_generations.where(ai_model: "cv_builder").count }, 1 do
+    assert_no_difference -> { CvGeneration.count } do
       get api_export_pdf_translations_url, params: { resume_id: resume.id }
     end
 
@@ -238,20 +212,92 @@ class Api::TranslationsControllerTest < ActionDispatch::IntegrationTest
     pdf&.close!
   end
 
-  test "export_pdf from posted resume data records the export and sends the PDF" do
-    pdf = Tempfile.new([ "resume", ".pdf" ])
-    CvBuilderPdfJob.any_instance.stubs(:perform).returns({ status: "success", file_path: pdf.path, filename: "resume.pdf" })
+  test "export_pdf without a resume is a bad request" do
+    get api_export_pdf_translations_url
 
-    assert_difference -> { @user.cv_generations.where(ai_model: "cv_builder").count }, 1 do
-      post api_export_pdf_post_translations_url, params: {
-        resume: { complete_name: "Test User", email: "test@example.com", phone_number: "+966500000000", city: "Riyadh", country: "Saudi Arabia" }
-      }
+    assert_response :bad_request
+  end
+
+  test "export_pdf of another user's resume fails without sending it" do
+    other = users(:two).resumes.create!(complete_name: "Other User", email: "other@example.com")
+
+    get api_export_pdf_translations_url, params: { resume_id: other.id }
+
+    assert_response :internal_server_error
+    assert_equal "application/json", response.media_type
+  end
+
+  test "a summary translation is saved pending before its job is queued" do
+    assert_difference -> { AiTranslationJob.jobs.size }, 1 do
+      post api_translate_professional_summary_url, params: { arabic_text: "مهندس برمجيات" }, as: :json
     end
 
     assert_response :success
-    assert_equal "application/pdf", response.media_type
+    translation = @user.ai_translations.where("metadata->>'job_id' = ?", json_response["job_id"]).sole
+    assert_equal "pending", translation.status
+    assert translation.metadata["professional_summary"]
+    assert_equal translation.id, AiTranslationJob.jobs.last["args"][3]["translation_id"]
+
+    get "/api/translation_status/#{json_response['job_id']}"
+    assert_equal "pending", json_response["status"]
+  end
+
+  test "a job descriptions translation is saved pending with its job indices" do
+    post api_translate_job_descriptions_url, params: {
+      job_descriptions: [ { index: 2, job_title: "Dev", company: "Co", responsibilities: [ "تطوير" ] } ]
+    }, as: :json
+
+    assert_response :success
+    translation = @user.ai_translations.where("metadata->>'job_id' = ?", json_response["job_id"]).sole
+    assert_equal [ "pending", [ 2 ], true ], [ translation.status, translation.metadata["job_indices"], translation.metadata["job_descriptions"] ]
+  end
+
+  test "text the translation model refuses is a 422 with nothing charged or queued" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:jobs_translations_count, UserUsageLimits::BASE_JOBS_TRANSLATIONS)
+
+    assert_no_difference [ -> { AiTranslationJob.jobs.size }, -> { @user.ai_translations.count },
+                           -> { @user.credit_ledger_entries.where(reason: "overage_jobs_translation").count } ] do
+      post api_translate_job_descriptions_url, params: {
+        job_descriptions: [ { index: 0, job_title: "Dev", company: "Co", responsibilities: [ "تطوير" * 2000 ] } ]
+      }, as: :json
+    end
+
+    assert_response :unprocessable_entity
+    assert json_response["error"].present?
   ensure
-    pdf&.close!
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "a translation whose job could not be queued is failed and its credit given back" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:summary_translations_count, UserUsageLimits::BASE_SUMMARY_TRANSLATIONS)
+    AiTranslationJob.stubs(:perform_async).raises(RuntimeError, "redis down")
+
+    post api_translate_professional_summary_url, params: { arabic_text: "مهندس برمجيات" }, as: :json
+
+    assert_response :internal_server_error
+    assert_equal "failed", @user.ai_translations.order(:created_at).last.status
+    assert_equal Billing::SIGNUP_BONUS, Billing::Credits.balance(@user)
+  ensure
+    ENV.delete("BILLING_ENABLED")
+  end
+
+  test "translation_status of an unknown translation is not found" do
+    get "/api/translation_status/nope"
+
+    assert_response :not_found
+    assert_equal "not_found", json_response["status"]
+  end
+
+  test "translation_status gives the resume time the job's summary write left" do
+    @user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "completed", english_text: "Manager",
+                                  metadata: { job_id: "summary-done", professional_summary: true,
+                                              resume_updated_at: "2026-11-09T10:00:00.123456Z" })
+
+    get "/api/translation_status/summary-done"
+
+    assert_equal "2026-11-09T10:00:00.123456Z", json_response["resume_updated_at"]
   end
 
   test "translation_status lists the translated jobs" do
@@ -265,5 +311,20 @@ class Api::TranslationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "completed", json_response["status"]
     assert_equal jobs, json_response["jobs"]
+  end
+  test "translation_status leaves out the raw AI reply and the error details" do
+    skills = [ { "name" => "Scrum", "category" => "technical" } ]
+    @user.ai_translations.create!(arabic_text: "مدير مشروع", ai_model: "test", status: "failed",
+                                  english_text: "Translation failed: boom",
+                                  metadata: { job_id: "summary-failed", skills_extracted: skills, raw_response: "{secret}",
+                                              error: "boom", error_code: "internal", backtrace: [ "app/jobs/x.rb:1" ] })
+
+    get "/api/translation_status/summary-failed"
+
+    assert_response :success
+    assert_equal [ "failed", "internal", skills ], json_response.values_at("status", "error_code", "skills_extracted")
+    assert json_response.key?("remaining_summary")
+    assert_not json_response.key?("raw_response")
+    assert_not_includes response.body, "app/jobs/x.rb"
   end
 end

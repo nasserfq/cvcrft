@@ -2,7 +2,6 @@ require "test_helper"
 
 class ResumeBuilder::PublicApiTest < ActiveSupport::TestCase
   setup do
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     @draft = {
       "complete_name" => "Sara Ali",
       "email" => "sara@example.com",
@@ -43,6 +42,14 @@ class ResumeBuilder::PublicApiTest < ActiveSupport::TestCase
     resume = ResumeBuilder::PublicApi.create_from_draft(users(:one), draft)
 
     assert_equal draft, ResumeBuilder::PublicApi.read(users(:one), resume.id).slice(*draft.keys)
+  end
+
+  test "create_from_draft leaves no resume behind when the sync fails" do
+    ResumeDraftSync.stubs(:sync!).raises(ActiveRecord::RecordInvalid.new(Resume.new))
+
+    assert_no_difference -> { users(:one).resumes.count } do
+      assert_raises(ActiveRecord::RecordInvalid) { ResumeBuilder::PublicApi.create_from_draft(users(:one), @draft) }
+    end
   end
 
   test "read only finds the user's own resumes" do

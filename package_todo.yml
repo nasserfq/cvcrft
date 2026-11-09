@@ -111,7 +111,6 @@ packs/resume_builder:
     - test/controllers/cv_generations_controller_test.rb
     - test/controllers/profiles_controller_test.rb
     - test/controllers/resumes_controller_test.rb
-    - test/integration/security_fixes_test.rb
     - test/models/certification_test.rb
     - test/models/education_test.rb
     - test/models/language_test.rb
@@ -135,6 +134,7 @@ packs/resume_builder:
     - privacy
     files:
     - test/controllers/resumes_controller_test.rb
+    - test/services/resume_builder/public_api_test.rb
     - test/services/resume_draft_sync_test.rb
   "::ResumePdfService":
     violations:

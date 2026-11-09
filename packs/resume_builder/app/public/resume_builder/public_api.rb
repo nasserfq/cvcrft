@@ -47,13 +47,16 @@ module ResumeBuilder
 
     def create_from_draft(user, draft)
       d = draft.stringify_keys
-      # Created as a draft so the PDF job fires once, on the final update.
-      resume = user.resumes.create!(
-        d.slice(*%w[complete_name email phone_number city country]).merge(is_draft: true, source: "coach")
-      )
-      ResumeDraftSync.sync!(resume, d)
-      resume.update!(is_draft: false)
-      resume
+      # One transaction, so a failed sync leaves no half-built draft behind.
+      Resume.transaction do
+        # Created as a draft and finished only once every section is synced.
+        resume = user.resumes.create!(
+          d.slice(*%w[complete_name email phone_number city country]).merge(is_draft: true, source: "coach")
+        )
+        ResumeDraftSync.sync!(resume, d)
+        resume.update!(is_draft: false)
+        resume
+      end
     end
 
     # sync! stores the Array's to_s in a text column; same parse as AtsPdfGenerator.

@@ -58,8 +58,6 @@ module ActiveSupport
 
     # Helper to create a valid resume for testing
     def create_test_resume(user, attrs = {})
-      Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
-
       default_attrs = {
         user: user,
         complete_name: "Test User",
@@ -104,11 +102,6 @@ module ActiveSupport
       }
 
       OtpVerification.create!(default_attrs.merge(attrs))
-    end
-
-    # Stub PDF generation for all tests
-    def stub_pdf_generation
-      Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     end
 
     # Assert that a model has specific errors

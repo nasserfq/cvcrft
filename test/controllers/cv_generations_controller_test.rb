@@ -7,7 +7,6 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
 
     # Create a resume first (might be required for cv_generations access)
-    Resume.any_instance.stubs(:queue_pdf_generation).returns(nil)
     @resume = Resume.create!(
       user: @user,
       complete_name: "Test User",
@@ -142,6 +141,52 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # What the pages read from a generation's JSON (cv_generations/new pollers
+  # and list); the PDF bytes, the raw AI reply and the backtrace stay server-side.
+  CLIENT_METADATA = {
+    "pdf_generated" => true, "pdf_size" => 2048, "pdf_filename" => "cv.pdf", "pdf_error" => "late",
+    "complete_name" => "Test User", "email" => "test@example.com"
+  }.freeze
+
+  def generation_with_full_metadata
+    @cv_generation.update!(generated_content: "Tailored summary", metadata: CLIENT_METADATA.merge(
+      "pdf_data" => Base64.strict_encode64("%PDF-1.4"), "raw_response" => "{...}",
+      "generated_data" => { "summary" => "x" }, "error" => "boom", "error_backtrace" => [ "app/jobs/x.rb:1" ]
+    ))
+    @cv_generation
+  end
+
+  test "show JSON carries only the metadata the pages read" do
+    get cv_generation_url(generation_with_full_metadata, format: :json)
+
+    assert_response :success
+    assert_equal CLIENT_METADATA, json_response["metadata"]
+    assert_equal [ @cv_generation.id, "completed", "Tailored summary" ],
+                 json_response.values_at("id", "status", "generated_content")
+    assert json_response.key?("job_description")
+    assert json_response.key?("created_at")
+  end
+
+  test "status JSON carries only the metadata the pages read" do
+    get status_cv_generation_url(generation_with_full_metadata, format: :json)
+
+    assert_response :success
+    assert_equal CLIENT_METADATA, json_response["metadata"]
+    assert_equal "completed", json_response["status"]
+    assert_not_includes response.body, "error_backtrace"
+  end
+
+  test "index JSON carries only the metadata the pages read" do
+    generation_with_full_metadata
+
+    get cv_generations_url(format: :json)
+
+    assert_response :success
+    listed = json_response.find { |row| row["id"] == @cv_generation.id }
+    assert_equal CLIENT_METADATA, listed["metadata"]
+    assert_not_includes response.body, "pdf_data"
+  end
+
   # ============================================
   # STATE TRANSITIONS
   # ============================================
@@ -196,24 +241,76 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "regenerate PDF updates the generation being viewed" do
-    @cv_generation.update!(resume: @resume, metadata: { "pdf_generated" => true, "pdf_data" => Base64.encode64("old pdf") })
-    stub_ai_response({ professional_summary: "Fresh summary for this role." })
+  def with_new_pdf(body = "new pdf")
     pdf = Tempfile.new([ "cv", ".pdf" ])
-    pdf.write("new pdf")
+    pdf.write(body)
     pdf.flush
     AtsTemplatePdfService.stubs(:generate_pdf).returns({ path: pdf.path, filename: "generated_cv.pdf" })
-
-    assert_no_difference -> { CvGeneration.count } do
-      get view_pdf_cv_generation_url(@cv_generation, regenerate: "true")
-    end
-
-    assert_response :success
-    assert_equal "new pdf", response.body
-    assert_equal "completed", @cv_generation.reload.status
-    assert_equal "Fresh summary for this role.", @cv_generation.generated_content
+    yield
   ensure
     pdf&.close!
+  end
+
+  def completed_with_pdf
+    @cv_generation.update!(resume: @resume, generated_content: "Old summary",
+                           metadata: { "pdf_generated" => true, "pdf_data" => Base64.encode64("old pdf") })
+    @cv_generation
+  end
+
+  test "regenerate replaces the summary and PDF of the generation being viewed" do
+    completed_with_pdf
+    stub_ai_response({ professional_summary: "Fresh summary for this role." })
+
+    with_new_pdf do
+      assert_no_difference -> { CvGeneration.count } do
+        post regenerate_cv_generation_url(@cv_generation)
+      end
+    end
+
+    assert_redirected_to cv_generation_path(@cv_generation)
+    @cv_generation.reload
+    assert_equal "completed", @cv_generation.status
+    assert_equal "Fresh summary for this role.", @cv_generation.generated_content
+    assert_equal Base64.encode64("new pdf"), @cv_generation.metadata["pdf_data"]
+    assert_not @cv_generation.metadata.key?("regenerating_at")
+  end
+
+  test "the show page regenerates with a POST form" do
+    get cv_generation_url(completed_with_pdf)
+
+    assert_response :success
+    assert_select "form[action='#{regenerate_cv_generation_path(@cv_generation)}'][method='post']"
+    assert_select "a[href*='regenerate']", count: 0
+  end
+
+  test "a failed regenerate keeps the old summary and PDF and refunds the credit" do
+    with_credit_charges do
+      completed_with_pdf
+      balance = Billing::Credits.balance(@user)
+      stub_ai_response({ professional_summary: "Fresh summary for this role." })
+      AtsTemplatePdfService.stubs(:generate_pdf).raises(RuntimeError, "prawn broke")
+
+      post regenerate_cv_generation_url(@cv_generation)
+
+      assert_redirected_to cv_generation_path(@cv_generation)
+      @cv_generation.reload
+      assert_equal "completed", @cv_generation.status
+      assert_equal "Old summary", @cv_generation.generated_content
+      assert_equal true, @cv_generation.metadata["pdf_generated"]
+      assert_equal Base64.encode64("old pdf"), @cv_generation.metadata["pdf_data"]
+      assert_not @cv_generation.metadata.key?("regenerating_at")
+      assert_equal balance, Billing::Credits.balance(@user)
+    end
+  end
+
+  test "regenerate while another regenerate holds the generation charges nothing and runs nothing" do
+    completed_with_pdf.claim_regeneration!
+    Billing::UsageGate.expects(:allow!).never
+    CvGeneratorJob.any_instance.expects(:perform).never
+
+    post regenerate_cv_generation_url(@cv_generation)
+
+    assert_redirected_to cv_generation_path(@cv_generation)
   end
 
   test "regenerate on a generation that isn't completed charges nothing and runs nothing" do
@@ -221,9 +318,59 @@ class CvGenerationsControllerTest < ActionDispatch::IntegrationTest
     Billing::UsageGate.expects(:allow!).never
     CvGeneratorJob.any_instance.expects(:perform).never
 
-    get download_pdf_cv_generation_url(generation, regenerate: "true")
+    post regenerate_cv_generation_url(generation)
 
     assert_redirected_to cv_generation_path(generation)
+  end
+
+  test "old GET regenerate links only redirect to the generation" do
+    completed_with_pdf
+    Billing::UsageGate.expects(:allow!).never
+    CvGeneratorJob.any_instance.expects(:perform).never
+
+    get download_pdf_cv_generation_url(@cv_generation, regenerate: "true")
+    assert_redirected_to cv_generation_path(@cv_generation)
+
+    get view_pdf_cv_generation_url(@cv_generation, regenerate: "true")
+    assert_redirected_to cv_generation_path(@cv_generation)
+  end
+
+  test "deleting a running generation cancels it first and refunds its credit" do
+    with_credit_charges do
+      balance = Billing::Credits.balance(@user)
+      Billing::UsageGate.allow!(@user, :job_based_generation, key: "delete-key")
+      generation = create_test_cv_generation(@user, resume: @resume, metadata: { "overage_key" => "delete-key" })
+
+      delete cv_generation_url(generation, format: :json)
+
+      assert_response :no_content
+      assert_not CvGeneration.exists?(generation.id)
+      assert_equal balance, Billing::Credits.balance(@user)
+    end
+  end
+
+  test "retry hands the job only the run's options" do
+    generation = create_test_cv_generation(@user, resume: @resume, status: "failed", metadata: {
+      "ats_template" => "harvard_classic", "temperature" => 0.5, "pdf_data" => "abc",
+      "generated_data" => { "x" => 1 }, "raw_response" => "{}", "error" => "boom", "error_backtrace" => [ "x" ]
+    })
+
+    post retry_cv_generation_url(generation)
+
+    assert_redirected_to cv_generation_path(generation)
+    assert_equal({ "ats_template" => "harvard_classic", "temperature" => 0.5, "cv_generation_id" => generation.id },
+                 CvGeneratorJob.jobs.last["args"][3])
+  end
+
+  test "builder export rows are left out of the list and the count" do
+    builder = @user.cv_generations.create!(job_description: "CV Builder PDF export", ai_model: "cv_builder",
+                                           status: "completed", metadata: { "pdf_generated" => true })
+
+    get cv_generations_url(format: :json)
+    assert_not_includes json_response.map { |row| row["id"] }, builder.id
+
+    get count_cv_generations_url(format: :json)
+    assert_equal @user.cv_generations.completed.count - 1, json_response["count"]
   end
 
   %w[processing completed].each do |status|

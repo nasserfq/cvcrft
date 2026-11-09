@@ -44,16 +44,18 @@ class CvGeneratorJob
     generations.where(job_description: job_description, status: "processing").order(created_at: :desc).first
   end
 
-  # Version control for PDF generation - increment this when making layout changes
-  PDF_VERSION = "2.1"  # Incrementing to force regeneration
+  # The options a run reads; anything else in a generation's metadata
+  # (generated data, the PDF, errors) is never passed back to the job.
+  OPTION_KEYS = %w[complete_name email temperature max_tokens ats_template source overage_key].freeze
 
   # options["regenerate"] re-runs a completed generation in place (the
   # controller's regenerate PDF). Any other run needs a processing row and
-  # stops when the row is cancelled meanwhile.
+  # stops when the row is cancelled meanwhile. The new summary and its PDF
+  # are written together only when both worked, so a failed run leaves the
+  # generation as it was.
   def perform(job_description, user_id, resume_id = nil, options = {})
     Rails.logger.info "=== CV GENERATOR JOB STARTED ==="
     Rails.logger.info "Job Description: #{job_description.truncate(200)}"
-    # ... (omitted logging for brevity)
 
     @job_description = job_description
     @user_id = user_id
@@ -70,10 +72,6 @@ class CvGeneratorJob
     # builds a new one. Fail before anything is created.
     raise ArgumentError, "resume_id is required" if @resume_id.blank?
 
-    # Default options for cache handling
-    @options[:force_pdf_regeneration] ||= false
-    @options[:pdf_cache_hours] ||= 24
-
     # Jobs enqueued without an id and with no processing row get a new one
     if @cv_generation.nil?
       Rails.logger.info "Creating CvGeneration record for processing state"
@@ -85,45 +83,32 @@ class CvGeneratorJob
         ai_model: AiModel.default,
         status: "processing",
         tokens_used: nil,
-        metadata: (@options || {}).deep_stringify_keys
+        metadata: @options.deep_stringify_keys
       )
     end
 
-    # Do NOT update any fields or sections of the saved resume. Only use the AI summary in the generated CV metadata/PDF.
-    Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
-      # Load the saved resume data
-      @existing_resume = owned_resume
-      Rails.logger.info "📋 Loaded existing resume ID: #{@existing_resume.id}"
-      Rails.logger.info "📋 Resume has #{@existing_resume.skills.count} skills"
-      Rails.logger.info "📋 First skill ID: #{@existing_resume.skills.first&.id}"
-      @snapshot = CvGenerator::ResumeSnapshot.new(@existing_resume).to_h
+    # The saved resume is only the source: it is never updated here.
+    resume = owned_resume
+    @snapshot = CvGenerator::ResumeSnapshot.new(resume).to_h
 
-      # Process the CV generation using Azure OpenAI
-      result = call_azure_openai_api
+    result = call_azure_openai_api
+    return log_cancelled if CvGeneration.where(id: @cv_generation.id, status: "cancelled").exists?
 
-  # Update the CV generation record with success (full structure stored in metadata)
-  return log_cancelled unless update_cv_generation_success(result)
+    generated_data = CvGenerator::ResultPersister.generated_data(result, snapshot: @snapshot)
+    pdf_metadata = CvGenerator::PdfRenderer.new(resume, selected_ats_template_key).call(generated_data)
 
-      # Reload the saved resume (never mutated) before rendering the PDF
-      create_or_update_resume(result)
+    return log_cancelled unless CvGenerator::ResultPersister.new(@cv_generation).record!(result, snapshot: @snapshot, pdf_metadata: pdf_metadata)
+    return log_cancelled unless mark_completed
 
-      # Generate PDF using the full structured data from metadata
-      generate_pdf_for_resume
+    Rails.logger.info "=== CV GENERATION COMPLETED SUCCESSFULLY ==="
+  rescue => e
+    Rails.logger.error "=== CV GENERATION FAILED ==="
+    Rails.logger.error "Error: #{e.message}"
+    handle_cv_generation_error(e)
+    raise e
+  end
 
-  # Now mark as completed after PDF is generated
-  return log_cancelled unless mark_completed
-      Rails.logger.info "=== CV GENERATION COMPLETED SUCCESSFULLY ==="
-
-    rescue => e
-      Rails.logger.error "=== CV GENERATION FAILED ==="
-      Rails.logger.error "Error: #{e.message}"
-      handle_cv_generation_error(e)
-      raise e
-    end
-
-    private
-
-  # --- Data Fetching and AI Communication (Minimal changes, mostly logging) ---
+  private
 
   # The resume must belong to the user this job runs for; resume_id comes
   # from the request, so never load it unscoped.
@@ -162,156 +147,8 @@ class CvGeneratorJob
     result
   end
 
-  # --- Data Persistence (Crucial Fix for storing full JSON) ---
-
-  def update_cv_generation_success(result)
-    Rails.logger.info "📊 Existing resume skills count: #{@existing_resume.skills.count}"
-    CvGenerator::ResultPersister.new(@cv_generation).record!(result, snapshot: @snapshot)
-  end
-
-  # --- Saved resume (read only; never created or updated here) ---
-
-  def create_or_update_resume(result)
-    # The saved resume is never mutated: do NOT update professional_summary or
-    # any sections. Only the AI summary is used, in the generated CV metadata/PDF.
-    resume = owned_resume
-    Rails.logger.info "✅ Not mutating existing resume #{@resume_id}; using it as source only."
-
-    # Ensure we're not losing any existing data (debug logging)
-    Rails.logger.info "Skills count (source resume): #{resume.skills.count}"
-    Rails.logger.info "Languages count (source resume): #{resume.languages.count}"
-    Rails.logger.info "Certifications count (source resume): #{resume.certifications.count}"
-
-    # Reload to ensure we have the latest data
-    resume.reload
-    resume
-  end
-
-  # --- PDF Generation (Rewritten for ATS compliance) ---
-  def generate_pdf_for_resume
-    Rails.logger.info "=== GENERATING PDF FOR RESUME WITH PRAWN ==="
-
-    begin
-      resume = owned_resume.reload
-
-      # Get the full generated data from the CV generation metadata
-      generated_data = @cv_generation.metadata["generated_data"]
-
-      Rails.logger.info "📦 Raw metadata generated_data keys: #{generated_data.respond_to?(:keys) ? generated_data.keys.inspect : "none"}"
-      Rails.logger.info "📦 Skills in metadata: #{Array(generated_data&.dig('skills')).size}"
-
-      if generated_data.blank?
-        Rails.logger.warn "No generated CV data found in metadata. Using resume data as fallback."
-        # Create a fallback structure if AI data is missing
-        work_experiences_data = resume.work_experiences.map do |we|
-          {
-            company: we.company,
-            job_title: we.job_title,
-            start_date: we.start_date,
-            end_date: we.end_date,
-            # Ensure responsibilities is always an array
-            responsibilities: we.description.to_s.split("\n").map(&:strip).reject(&:blank?)
-          }
-        end
-
-        Rails.logger.info "Created work experiences data from resume: #{work_experiences_data.size} entries"
-
-        generated_data = {
-          professional_summary: resume.professional_summary,
-          work_experiences: work_experiences_data,
-          skills: resume.skills.group_by(&:category).map { |c, s|
-            skill_names = s.flat_map { |skill|
-              if skill.skill_names.present?
-                skill.skill_names
-              elsif skill.name.present?
-                [ skill.name ]
-              else
-                []
-              end
-            }.compact.reject(&:blank?)
-
-            {
-              category: c,
-              names: skill_names,
-              details: skill_names.join(", ")  # Add details for PDF generator
-            }
-          },
-          educations: resume.educations.map(&:attributes),
-          certifications: resume.certifications.map { |cert|
-            { name: cert.name, organization: cert.organization, date: cert.date }
-          },
-          languages: resume.languages.map { |lang|
-            { language: lang.language, proficiency: lang.proficiency }
-          }
-        }.deep_symbolize_keys
-      else
-        generated_data = generated_data.deep_symbolize_keys
-
-        # Normalize work experiences structure
-        if generated_data[:work_experiences].present?
-          generated_data[:work_experiences].each do |exp|
-            # Ensure responsibilities is always a properly formatted array
-            if exp[:responsibilities].blank? && exp[:description].present?
-              # Convert description to responsibilities if responsibilities is missing
-              exp[:responsibilities] = exp[:description].to_s.split("\n").map(&:strip).reject(&:blank?)
-            elsif exp[:responsibilities].is_a?(String)
-              # Convert string responsibilities to array
-              exp[:responsibilities] = exp[:responsibilities].split("\n").map(&:strip).reject(&:blank?)
-            end
-          end
-
-          Rails.logger.info "Normalized work experiences: #{generated_data[:work_experiences].size} entries"
-        end
-      end
-
-      # Force regeneration during initial job run and respect cache control afterward
-      # When a job is first run (status is "processing"), always regenerate regardless of cache settings
-      first_generation = @cv_generation.status == "processing"
-      should_regenerate = first_generation || pdf_regeneration_needed?
-
-      # Log the reason for regeneration
-      if first_generation
-        Rails.logger.info "Generating PDF for first time (initial job run)"
-      elsif should_regenerate
-        Rails.logger.info "Regenerating PDF due to template changes or cache expiration"
-      else
-        Rails.logger.info "Using cached PDF from previous generation"
-      end
-
-      # Always regenerate on first run or when needed
-      if first_generation || should_regenerate
-        template_key = selected_ats_template_key
-        result = AtsTemplatePdfService.generate_pdf(resume, generated_data, template: template_key)
-        pdf = File.read(result[:path])
-        filename = result[:filename]
-
-        # Store PDF with version information and timestamp
-        @cv_generation.update!(
-          metadata: @cv_generation.metadata.merge({
-            ats_template: template_key,
-            pdf_generated: true,
-            pdf_filename: filename,
-            pdf_size: pdf.bytesize,
-            pdf_data: Base64.encode64(pdf),
-            pdf_version: PDF_VERSION,
-            pdf_generated_at: Time.now.to_i,
-            pdf_cache_key: generate_pdf_cache_key(resume, generated_data, template_key)
-          }.stringify_keys)
-        )
-        Rails.logger.info "PDF data stored in database (Base64 encoded)"
-      else
-        Rails.logger.info "Using cached PDF version (#{@cv_generation.metadata['pdf_version']})"
-      end
-
-    rescue => e
-      Rails.logger.error "PDF generation failed: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-      @cv_generation.update!(metadata: @cv_generation.metadata.merge({
-        pdf_generated: false,
-        pdf_error: e.message
-      }.stringify_keys))
-      raise e
-    end
+  def selected_ats_template_key
+    @options[:ats_template] || @cv_generation.metadata&.dig("ats_template")
   end
 
   # A processing row stays processing between attempts, with the error
@@ -337,40 +174,4 @@ class CvGeneratorJob
       )
     end
   end
-
-  def pdf_cache_expired?
-    return true unless @cv_generation.metadata["pdf_generated_at"]
-    pdf_age_hours = (Time.now.to_i - @cv_generation.metadata["pdf_generated_at"].to_i) / 3600.0
-    pdf_age_hours > (@options[:pdf_cache_hours] || 24)
-  end
-
-  def selected_ats_template_key
-    AtsTemplatePdfService.normalize_template_key(
-      @options[:ats_template] || @options["ats_template"] || @cv_generation.metadata["ats_template"]
-    )
-  end
-
-  def pdf_regeneration_needed?
-    return true if @options[:force_pdf_regeneration]
-    return true if pdf_cache_expired?
-
-    resume = owned_resume
-    generated_data = (@cv_generation.metadata["generated_data"] || {}).deep_symbolize_keys
-    template_key = selected_ats_template_key
-    current_cache_key = generate_pdf_cache_key(resume, generated_data, template_key)
-
-    @cv_generation.metadata["pdf_cache_key"] != current_cache_key
-  end
-
-  def generate_pdf_cache_key(resume, data, template_key = nil)
-    template_key ||= selected_ats_template_key
-    key_parts = [
-      resume.complete_name.to_s,
-      resume.updated_at.to_i,
-      PDF_VERSION,
-      template_key,
-      Digest::MD5.hexdigest(data.to_json)
-    ]
-    Digest::MD5.hexdigest(key_parts.join("|"))
-  end
-end # Closing CvGeneratorJob class
+end

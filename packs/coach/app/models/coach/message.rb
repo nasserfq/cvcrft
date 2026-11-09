@@ -6,5 +6,9 @@ module Coach
 
     validates :role, inclusion: { in: ROLES }
     validates :content, presence: true, length: { maximum: 20_000 }
+
+    # A user message is never edited, so a touch marks a turn that ended without a reply (see Chat#turn_running?).
+    def end_turn! = touch
+    def turn_ended? = updated_at > created_at
   end
 end

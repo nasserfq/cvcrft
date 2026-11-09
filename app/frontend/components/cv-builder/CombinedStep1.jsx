@@ -45,6 +45,7 @@ const CombinedStep1 = ({
   handleInputChange,
   translateProfessionalSummary,
   isTranslating,
+  translationSlow = false,
   translationError,
   remainingSummaryTranslations = 5,
   maxSummaryTranslations = 5,
@@ -172,7 +173,7 @@ const CombinedStep1 = ({
               {isTranslating ? (
                 <>
                   <Spinner />
-                  {t('step1.translating')}
+                  {translationSlow ? t('translation.taking_longer') : t('step1.translating')}
                 </>
               ) : (
                 <>

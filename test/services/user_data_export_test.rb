@@ -2,7 +2,6 @@ require "test_helper"
 
 class UserDataExportTest < ActiveSupport::TestCase
   setup do
-    stub_pdf_generation
     @user = User.create!(email: "export-svc-#{SecureRandom.hex(4)}@example.com", name: "Export Service",
                          password: "password123", password_confirmation: "password123")
   end

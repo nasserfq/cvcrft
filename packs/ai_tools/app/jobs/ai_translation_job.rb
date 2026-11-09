@@ -15,18 +15,27 @@ class AiTranslationJob
   # user, so the translation fails and the credit is given back.
   class EmptyTranslationError < StandardError; end
 
-  # Retry soon: the page polls for about 30 seconds.
+  # Retry soon: the page shows the result as soon as it is in.
   sidekiq_retry_in { |count| 5 * (count + 1) }
 
   sidekiq_retries_exhausted do |job, error|
     options = (job["args"][3] || {}).transform_keys(&:to_s)
-    translation = AiTranslation.where(user_id: job["args"][1])
-                               .where("metadata->>'job_id' = ?", options["job_id"].to_s)
-                               .order(created_at: :desc).first
+    translation = find_translation(job["args"][1], options)
     if translation
       translation.fail_unfinished!(error.message, error_code: error_code_for(error))
     else
       refund_overage(job["args"][1], options)
+    end
+  end
+
+  # The row the controller saved before queueing (translation_id); jobs
+  # queued before it did are found by job_id.
+  def self.find_translation(user_id, options)
+    translations = AiTranslation.where(user_id: user_id)
+    if options["translation_id"].present?
+      translations.find_by(id: options["translation_id"])
+    elsif options["job_id"].present?
+      translations.where("metadata->>'job_id' = ?", options["job_id"].to_s).order(created_at: :desc).first
     end
   end
 
@@ -71,8 +80,15 @@ class AiTranslationJob
     # Convert string keys to symbol keys for internal use
     @options = options.transform_keys(&:to_sym)
 
-    # Create AI translation record (or pick up the one a retried attempt made)
     @translation = find_or_create_translation_record
+    return Rails.logger.warn("AI Translation #{@options[:translation_id]} is gone, jid=#{jid}") unless @translation
+
+    # Pending until a worker picks it up. Conditional, so a row the sweeper
+    # failed meanwhile stays failed.
+    if @translation.pending?
+      AiTranslation.where(id: @translation.id, status: "pending").update_all(status: "processing", updated_at: Time.current)
+      @translation.reload
+    end
     # A retry of a translation that already finished must not call the AI again.
     return if @translation.completed? || @translation.failed?
 
@@ -80,11 +96,10 @@ class AiTranslationJob
       result = call_azure_openai_api
       raise EmptyTranslationError, "No translated job descriptions in the reply" if @options[:job_descriptions] && !translated_jobs?(result)
 
-      # The resume, its work experience and skills are saved first, so the
+      # The resume and its work experience are saved first, so the
       # translation is only completed once everything it changes is saved.
       ActiveRecord::Base.transaction do
         update_resume_with_translation(result) if @resume_id
-        create_skills_from_translation(result[:skills_extracted]) if result[:skills_extracted]
         update_translation_success(result)
       end
     rescue *RETRYABLE_ERRORS => e
@@ -98,13 +113,14 @@ class AiTranslationJob
 
   private
 
+  # The controller saves the row before queueing and passes its id. A job
+  # queued before it did so has none, so one is made here (its retries then
+  # find it by job_id). Nil when the saved row is gone.
   def find_or_create_translation_record
-    user = User.find(@user_id)
-    existing = @options[:job_id].present? &&
-      user.ai_translations.where("metadata->>'job_id' = ?", @options[:job_id].to_s).order(created_at: :desc).first
-    return existing if existing
+    existing = self.class.find_translation(@user_id, @options.transform_keys(&:to_s))
+    return existing if existing || @options[:translation_id].present?
 
-    user.ai_translations.create!(
+    User.find(@user_id).ai_translations.create!(
       arabic_text: @arabic_text,
       resume_id: @resume_id,
       ai_model: AiModel.default,
@@ -142,7 +158,7 @@ class AiTranslationJob
     <<~PROMPT
       You are an AI assistant specialized in translating Arabic text to professional English for resumes and CVs.#{' '}
       Your task is to:
-o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about work experience, skills, or professional background, generate a comprehensive professional summary in English that incorporates all the information
+      1. When given 3 descriptive sentences OR at least 50 words in Arabic about work experience, skills, or professional background, generate a comprehensive professional summary in English that incorporates all the information
       2. Translate the Arabic content to English while maintaining professional tone and context
       3. Extract relevant skills and keywords for ATS systems from the content
       4. Ensure the generated summary is suitable for international job applications
@@ -234,7 +250,7 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
         {
           jobs: parsed_content["jobs"] || [],
           english_text: parsed_content.to_json, # Store full response as english_text
-          skills_extracted: parsed_content["skills_extracted"] || [],
+          skills_extracted: normalize_skills(parsed_content["skills_extracted"]),
           translation_notes: parsed_content["translation_notes"],
           tokens_used: AiModel.token_count(response),
           raw_response: content
@@ -243,7 +259,7 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
         # Professional summary format
         {
           english_text: ProfessionalSummaryText.normalize(parsed_content["english_text"]),
-          skills_extracted: parsed_content["skills_extracted"] || [],
+          skills_extracted: normalize_skills(parsed_content["skills_extracted"]),
           translation_notes: parsed_content["translation_notes"],
           tokens_used: AiModel.token_count(response),
           raw_response: content
@@ -258,6 +274,19 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
         tokens_used: AiModel.token_count(response),
         raw_response: content
       }
+    end
+  end
+
+  # The AI's skills come back as JSON, so their keys are strings. Each one is
+  # made readable by `skill[:name]` and `skill["name"]` alike; a bare string is
+  # taken as the skill's name, and anything without a name is dropped.
+  def normalize_skills(skills)
+    Array(skills).filter_map do |skill|
+      skill = { name: skill } if skill.is_a?(String)
+      next unless skill.is_a?(Hash)
+
+      skill = skill.with_indifferent_access
+      skill if skill[:name].to_s.strip.present?
     end
   end
 
@@ -276,8 +305,9 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
       metadata: @translation.metadata.merge({
         skills_extracted: result[:skills_extracted],
         translation_notes: result[:translation_notes],
-        raw_response: result[:raw_response]
-      })
+        raw_response: result[:raw_response],
+        resume_updated_at: @resume_updated_at
+      }.compact)
     )
   end
 
@@ -293,10 +323,9 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     if @options[:professional_summary] && result[:english_text].present?
       # Truncate to 1000 characters if needed
       english_text = ProfessionalSummaryText.normalize(result[:english_text]).to_s[0, 1000]
-      resume.update!(
-        professional_summary_english: english_text,
-        summary: english_text
-      )
+      resume.assign_attributes(professional_summary_english: english_text, summary: english_text)
+      save_translated_resume!(resume, :professional_summary_english, :summary)
+      @resume_updated_at = resume.updated_at.iso8601(6)
     end
 
     # Update work experience if this is a work experience translation
@@ -309,28 +338,17 @@ o     1. When given 3 descriptive sentences OR at least 50 words in Arabic about
     end
   end
 
-  def create_skills_from_translation(skills_data)
-    return unless @resume_id && skills_data.present?
+  # A finished resume is saved with full validation. A draft may still be
+  # missing fields the builder asks for later (a name, an email), which must
+  # not fail a paid translation: only the translated fields are checked, then
+  # it is saved the way builder autosaves drafts (validate: false).
+  def save_translated_resume!(resume, *fields)
+    return resume.save! unless resume.draft?
 
-    resume = Resume.find_by!(id: @resume_id, user_id: @user_id)
+    resume.valid?
+    raise ActiveRecord::RecordInvalid, resume if fields.any? { |field| resume.errors[field].any? }
 
-    skills_data.each do |skill_data|
-      # Skip if skill name is blank
-      next if skill_data[:name].blank?
-
-      # Check if skill already exists (check both name and skill_names)
-      existing_skill = resume.skills.find_by(name: skill_data[:name]) ||
-                      resume.skills.find_by(skill_names: [ skill_data[:name] ])
-
-      unless existing_skill
-        resume.skills.create!(
-          name: skill_data[:name], # Keep legacy field for backward compatibility
-          skill_names: [ skill_data[:name] ], # New field structure
-          level: skill_data[:level] || "intermediate",
-          category: skill_data[:category] || "technical"
-        )
-      end
-    end
+    resume.save!(validate: false)
   end
 
   def calculate_quality_score(result)
