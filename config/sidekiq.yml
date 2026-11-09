@@ -1,4 +1,4 @@
-:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 20) %>
+# Thread count: SIDEKIQ_CONCURRENCY, set in config/initializers/sidekiq.rb.
 :queues:
   - [default, 1]
   - [mailers, 2]

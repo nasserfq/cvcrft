@@ -8,19 +8,15 @@ Sidekiq.configure_server do |config|
   # Configure logging
   config.logger.level = Logger::INFO
 
-  # Configure concurrency
-  config.concurrency = ENV.fetch("SIDEKIQ_CONCURRENCY", 5).to_i
+  # The one place Sidekiq's thread count is set. config/sidekiq.yml has no
+  # :concurrency on purpose: this block runs after the CLI reads that file, so
+  # a value there was always overridden. config/database.yml sizes the DB pool
+  # from the same SIDEKIQ_CONCURRENCY (default 5).
+  config.concurrency = Integer(ENV.fetch("SIDEKIQ_CONCURRENCY", 5))
 
-  # Configure retry (retry_interval is not available in Sidekiq 8.0.4)
-  # config.retry_interval = 60
-
-  # Configure memory monitoring (memory_threshold is not available in Sidekiq 8.0.4)
-  # config.memory_threshold = 1_000_000_000 # 1GB
-
-  # Configure dead job handling (death_handlers is not available in Sidekiq 8.0.4)
-  # config.death_handlers << ->(job, ex) do
-  #   Rails.logger.error "Job #{job['class']} failed with error: #{ex.message}"
-  # end
+  # A job that ran out of retries (or was killed at once) lands in the Dead
+  # set. Tell Sentry, so its new-issue email says so.
+  config.death_handlers << ->(job, exception) { DeadJobReporter.call(job, exception) }
 end
 
 # Recurring jobs (sidekiq-cron). The gem loads config/schedule.yml in its own

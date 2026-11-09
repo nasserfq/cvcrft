@@ -9,6 +9,10 @@ class CvAnalysisJob
 
   sidekiq_options queue: :default, retry: 3
 
+  # An open AI breaker (AiCircuit) waits for it to close; anything else
+  # keeps Sidekiq's default backoff.
+  sidekiq_retry_in { |_count, error| AiCircuit.retry_delay(error) }
+
   # Between attempts the analysis stays processing so the page keeps polling;
   # it only fails once Sidekiq gives up.
   sidekiq_retries_exhausted do |job, error|

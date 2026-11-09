@@ -2,6 +2,9 @@ class CvImport < ApplicationRecord
   belongs_to :user
   belongs_to :resume, optional: true
 
+  # Encrypted at rest (config/initializers/active_record_encryption.rb): queries can only test it for nil.
+  encrypts :extracted_text
+
   # Status constants
   STATUSES = %w[pending processing completed failed].freeze
   # A failed import is final: it is written only once Sidekiq's retries are

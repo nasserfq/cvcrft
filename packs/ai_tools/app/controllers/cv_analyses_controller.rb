@@ -4,6 +4,8 @@ class CvAnalysesController < ApplicationController
   include UserRateLimit
   rate_limit_per_user to: 5, within: 1.minute, only: :create, name: "cv-analysis"
   before_action :set_cv_analysis, only: [ :show, :status ]
+  include AiCapacity
+  refuse_when_ai_busy only: :create
 
   # GET /cv-analysis
   def new

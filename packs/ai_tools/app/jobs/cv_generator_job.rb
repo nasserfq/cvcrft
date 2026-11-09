@@ -12,8 +12,11 @@ class CvGeneratorJob
 
   # Errors a retry can't fix go straight to retries_exhausted.
   NON_RETRYABLE_ERRORS = [ ArgumentError, ActiveRecord::RecordNotFound ].freeze
+  # An open AI breaker (AiCircuit) waits for it to close.
   sidekiq_retry_in do |_count, error|
-    :kill if NON_RETRYABLE_ERRORS.any? { |klass| error.is_a?(klass) }
+    next :kill if NON_RETRYABLE_ERRORS.any? { |klass| error.is_a?(klass) }
+
+    AiCircuit.retry_delay(error)
   end
 
   # A generation that ran past the free allowance was paid with a credit

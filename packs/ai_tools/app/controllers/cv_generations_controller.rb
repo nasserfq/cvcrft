@@ -8,6 +8,8 @@ class CvGenerationsController < ApplicationController
   before_action :ensure_user_has_resume, only: [ :index, :new, :create, :stats ]
   before_action :set_cv_generation, only: [ :show, :status, :destroy, :retry, :cancel, :regenerate, :download_pdf, :view_pdf, :preview, :save_draft, :resume_draft ]
   before_action :require_saved_resume, only: [ :retry, :resume_draft ]
+  include AiCapacity
+  refuse_when_ai_busy only: %i[create retry regenerate resume_draft]
 
   # Skip CSRF protection for JSON requests from frontend
   skip_before_action :verify_authenticity_token, only: [ :create ], if: -> { request.format.json? }
@@ -464,6 +466,10 @@ class CvGenerationsController < ApplicationController
     CvGeneratorJob.new.perform(@cv_generation.job_description, current_user.id, @cv_generation.resume_id, options)
     @cv_generation.release_regeneration!
     nil
+  rescue AiCircuit::OpenError
+    refund_generation(charge, charge_key)
+    @cv_generation.release_regeneration!
+    t("ux_i18n.ai_busy")
   rescue => e
     refund_generation(charge, charge_key)
     @cv_generation.release_regeneration!

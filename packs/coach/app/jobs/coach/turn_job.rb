@@ -10,7 +10,7 @@ module Coach
       chat = Coach::Chat.find(chat_id)
       # Extracted here, not in the upload request, so the request never waits on the LLM.
       if chat.path == "import" && chat.draft.blank?
-        chat.update!(draft: Coach::Extract.call(chat.messages.order(:id).first.content))
+        chat.update!(draft: AiCircuit.call { Coach::Extract.call(chat.messages.order(:id).first.content) })
         Coach.broadcast(chat, type: "draft", draft: chat.draft)
       end
       # Action Cable can deliver broadcasts out of order, so each chunk carries the whole text so far.
@@ -23,10 +23,14 @@ module Coach
         flushed_at = now
       end
 
+      # Through AiCircuit like every Bedrock call: while it is open the turn
+      # ends below with a refund, without calling the model.
       agent = Coach::Agent.new(chat)
-      reply = agent.reply do |text|
-        streamed << text
-        flush.call if now - flushed_at >= FLUSH_EVERY
+      reply = AiCircuit.call do
+        agent.reply do |text|
+          streamed << text
+          flush.call if now - flushed_at >= FLUSH_EVERY
+        end
       end
       flush.call
       # reply is only the text after the last tool call; save everything the user saw.
@@ -34,7 +38,7 @@ module Coach
       Coach.broadcast(chat, type: "done", message_id: answer.id, text: answer.content, fields: answer.fields)
     # Never re-raise: a Sidekiq retry would send the user a second reply.
     rescue => e
-      Sentry.capture_exception(e, tags: { pack: "coach" })
+      Sentry.capture_exception(e, tags: { pack: "coach" }) unless e.is_a?(AiCircuit::OpenError)
       # A saved reply was paid for and shows on reload, so there is nothing to refund or undo.
       return if chat.nil? || answer&.persisted?
 

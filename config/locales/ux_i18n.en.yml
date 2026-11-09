@@ -19,6 +19,7 @@ en:
       malformed_file: "The file is corrupted or invalid"
       processing_error: "Something went wrong while processing the file"
       not_found: "Analysis not found"
+    ai_busy: "AI is busy. Try again in a minute."
     rate_limited: "Too many requests. Try again in a minute."
     resumes:
       deleted: "Resume deleted successfully"

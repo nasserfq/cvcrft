@@ -44,9 +44,11 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
-# Clean install JavaScript dependencies to fix native module issues
-RUN rm -rf node_modules package-lock.json && \
-    npm install --include=optional && \
+# Install exactly the JavaScript packages pinned in package-lock.json, so two
+# builds of the same commit get the same packages (bun.lock and yarn.lock are
+# not used here). @parcel/watcher is rebuilt from source for this platform.
+RUN rm -rf node_modules && \
+    npm ci --include=optional && \
     npm rebuild @parcel/watcher --build-from-source
 
 # Use real npm for CSS building

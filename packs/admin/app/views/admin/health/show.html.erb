@@ -1,0 +1,79 @@
+<% content_for(:title) { "Health" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title" id="page-title"><%= content_for(:title) %></h1>
+  <%= link_to "Sidekiq", "/sidekiq", class: "button" %>
+</header>
+
+<section class="main-content__body">
+  <dl>
+    <% @checks.each do |part, ok| %>
+      <dt class="attribute-label"><%= part.to_s.humanize %></dt>
+      <dd class="attribute-data" data-health-check="<%= part %>"><%= ok ? "OK" : "Down" %></dd>
+    <% end %>
+    <dt class="attribute-label">AI success SLO</dt>
+    <dd class="attribute-data">
+      <%= number_to_percentage(ServiceLevels::AI_SUCCESS_TARGET * 100, precision: 1) %>
+      / <%= ServiceLevels::AI_SUCCESS_WINDOW %>, ≥ <%= ServiceLevels::AI_SUCCESS_MIN_FINISHED %> finished
+    </dd>
+    <dt class="attribute-label">Uptime SLO</dt>
+    <dd class="attribute-data"><%= number_to_percentage(ServiceLevels::UPTIME_TARGET * 100, precision: 1) %> (UptimeRobot)</dd>
+  </dl>
+</section>
+
+<% @work.each do |window, kinds| %>
+  <section class="main-content__body">
+    <h2><%= window %></h2>
+    <table aria-label="AI work <%= window %>">
+      <thead>
+        <tr>
+          <th class="cell-label" scope="col">Kind</th>
+          <th class="cell-label" scope="col">Completed</th>
+          <th class="cell-label" scope="col">Failed</th>
+          <th class="cell-label" scope="col">Success</th>
+          <th class="cell-label" scope="col">p50 (s)</th>
+          <th class="cell-label" scope="col">p95 (s)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% kinds.each do |kind, stats| %>
+          <% missed = window == ServiceLevels::AI_SUCCESS_WINDOW && @breaches.key?(kind) %>
+          <tr data-kind="<%= kind %>">
+            <td class="cell-data"><%= kind.humanize %></td>
+            <td class="cell-data"><%= stats[:completed] %></td>
+            <td class="cell-data"><%= stats[:failed] %></td>
+            <td class="cell-data">
+              <% if stats[:success_rate] %>
+                <%= number_to_percentage(stats[:success_rate] * 100, precision: 1) %><%= " (below SLO)" if missed %>
+              <% else %>
+                –
+              <% end %>
+            </td>
+            <td class="cell-data"><%= stats[:p50] || "–" %></td>
+            <td class="cell-data"><%= stats[:p95] || "–" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% end %>
+
+<section class="main-content__body">
+  <h2>Sidekiq</h2>
+  <% if @sidekiq %>
+    <dl>
+      <dt class="attribute-label">Enqueued</dt>
+      <dd class="attribute-data"><%= @sidekiq[:enqueued] %></dd>
+      <dt class="attribute-label">Retry</dt>
+      <dd class="attribute-data"><%= @sidekiq[:retry] %></dd>
+      <dt class="attribute-label">Dead</dt>
+      <dd class="attribute-data"><%= @sidekiq[:dead] %></dd>
+      <% @sidekiq[:queues].each do |queue, size| %>
+        <dt class="attribute-label"><%= queue %></dt>
+        <dd class="attribute-data"><%= size %></dd>
+      <% end %>
+    </dl>
+  <% else %>
+    <p>Unavailable</p>
+  <% end %>
+</section>

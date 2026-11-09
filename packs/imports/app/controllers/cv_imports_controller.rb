@@ -6,6 +6,8 @@ class CvImportsController < ApplicationController
   include UserRateLimit
   rate_limit_per_user to: 5, within: 1.minute, only: :create, name: "cv-import"
   before_action :set_cv_import, only: [ :status, :show ]
+  include AiCapacity
+  refuse_when_ai_busy only: :create
 
   # POST /cv-import
   # Accepts PDF file upload, extracts text, validates language, and queues for AI processing

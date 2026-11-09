@@ -15,9 +15,10 @@
 default: &default
  adapter: postgresql
  encoding: unicode
- # For details on connection pooling, see Rails configuration guide
- # https://guides.rubyonrails.org/configuring.html#database-pooling
- pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+ # One connection per Puma or Sidekiq thread (Sidekiq's count is set in
+ # config/initializers/sidekiq.rb), plus 5 for the threads CvAnalysisJob starts
+ # for its parts. https://guides.rubyonrails.org/configuring.html#database-pooling
+ pool: <%= [ Integer(ENV.fetch("RAILS_MAX_THREADS", 5)), Integer(ENV.fetch("SIDEKIQ_CONCURRENCY", 5)) ].max + 5 %>
 
 development:
  <<: *default

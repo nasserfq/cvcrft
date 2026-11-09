@@ -8,15 +8,17 @@ class AiTranslationJob
   # showing a failure the retry may fix.
   RETRYABLE_ERRORS = [
     RubyLLM::RateLimitError, RubyLLM::OverloadedError, RubyLLM::ServerError,
-    RubyLLM::ServiceUnavailableError, Faraday::TimeoutError, Faraday::ConnectionFailed
+    RubyLLM::ServiceUnavailableError, Faraday::TimeoutError, Faraday::ConnectionFailed,
+    AiCircuit::OpenError
   ].freeze
 
   # A job descriptions reply with no translated duties: nothing to give the
   # user, so the translation fails and the credit is given back.
   class EmptyTranslationError < StandardError; end
 
-  # Retry soon: the page shows the result as soon as it is in.
-  sidekiq_retry_in { |count| 5 * (count + 1) }
+  # Retry soon: the page shows the result as soon as it is in. An open AI
+  # breaker (AiCircuit) waits for it to close.
+  sidekiq_retry_in { |count, error| AiCircuit.retry_delay(error) || 5 * (count + 1) }
 
   sidekiq_retries_exhausted do |job, error|
     options = (job["args"][3] || {}).transform_keys(&:to_s)

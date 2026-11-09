@@ -121,6 +121,7 @@ Rails.application.routes.draw do
     resources :certifications
     resources :educations
     resources :languages
+    get "health", to: "health#show", as: :health
 
     # Email load testing routes
     resources :email_load_test, only: [ :index ] do

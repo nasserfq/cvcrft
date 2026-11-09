@@ -19,4 +19,5 @@ EmailLoadTest model for it and raises, which broke every admin page.
   <% end %>
 
   <%= link_to("Email load test", admin_email_load_test_index_path, class: "navigation__link navigation__link--inactive") %>
+  <%= link_to("Health", admin_health_path, class: "navigation__link navigation__link--#{controller_name == "health" ? "active" : "inactive"}") %>
 </nav>
