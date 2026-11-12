@@ -19,6 +19,7 @@ require "rails/test_unit/railtie"
 Bundler.require(*Rails.groups)
 require_relative "../lib/trailing_slash_redirect"
 require_relative "../lib/strip_client_ip_header"
+require_relative "../lib/cloudflare_remote_ip"
 
 module Cvcraft
   class Application < Rails::Application
@@ -66,5 +67,6 @@ module Cvcraft
 
     config.middleware.insert_before 0, TrailingSlashRedirect
     config.middleware.insert_before 0, StripClientIpHeader
+    config.middleware.insert_after ActionDispatch::RemoteIp, CloudflareRemoteIp
   end
 end
