@@ -167,6 +167,20 @@ the user's, not ended (`Message#turn_ended?` = `updated_at > created_at`), and y
   the user, otherwise creates one with `create_from_draft` and stores its id.
 - Client: `CoachChat.jsx` watchdog, 60 s without a chunk → timeout notice with reload.
 
+## Seera Apply fetch and match
+
+No status column. `job_applications/app/jobs/job_applications/fetch_postings_job.rb`, daily 04:30
+(`config/schedule.yml`), no-op unless `SEERA_APPLY_ENABLED` or `SEERA_APPLY_TESTERS`.
+
+- Fetch: re-seeds `apply_employers` from `config/employers.yml`, then per employer upserts postings by
+  `[employer_id, external_id]` and sets `closed_at` on ones the feed no longer lists. A failing feed
+  writes `last_error` and never stops the run. Retention: closed > 90 days deleted (matches cascade),
+  `apply_ai_usages` > 30 days deleted. Then enqueues `MatchJob`.
+- Match: `MatchJob(user_id = nil)`; also enqueued by `PreferencesController#update` (skipped while
+  `AiCircuit.busy?`). A posting is scored once per user (unique `[user_id, posting_id]`, `insert_all`).
+  Budget: `DAILY_SCORE_LIMIT` (40) postings per user per day in `apply_ai_usages.scores`, bumped after each
+  AI call; `AiCircuit::OpenError` bumps nothing and ends the run. No charge, so nothing to refund.
+
 ## Credit purchase (Moyasar)
 
 `billing/app/models/credit_purchase.rb` — `status` (default `pending`), `paid_at`, `moyasar_invoice_id`

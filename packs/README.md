@@ -15,6 +15,7 @@ names don't change: `packs/accounts/app/models/user.rb` is still `User`.
 | `billing` | Credits (ledger and balance), credit packs, Moyasar checkout. Off unless `BILLING_ENABLED` |
 | `admin` | Administrate dashboards, admin controllers, email load tests |
 | `coach` | AI Coach. Off unless `COACH_ENABLED` |
+| `job_applications` | Seera Apply: daily ATS job feeds, AI job matching, "Jobs for you". Off unless `SEERA_APPLY_ENABLED` |
 
 What stays in `app/`: the shared base classes (`ApplicationController`,
 `ApplicationRecord`, `ApplicationJob`), the landing, SEO, static pages and
@@ -31,4 +32,5 @@ would have under `app/`. A new pack is a new folder under `packs/` with an
 
 Packwerk checks boundaries (`bin/packwerk check` in CI); existing violations live in `package_todo.yml`.
 `coach` may only depend on the root package (`.`), `accounts`, `imports` and `resume_builder`.
+`job_applications` may only depend on the root package (`.`), `accounts` and `resume_builder`.
 New code in other packs reaches `resume_builder` only through `ResumeBuilder::PublicApi`.

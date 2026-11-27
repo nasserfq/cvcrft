@@ -22,3 +22,10 @@ slo_check:
   cron: "5 * * * *"
   class: "SloCheckJob"
   queue: default
+
+# Seera Apply (packs/job_applications): reads public ATS job feeds, then scores
+# new jobs for testers. Returns at once unless SEERA_APPLY_ENABLED/TESTERS.
+seera_apply_fetch:
+  cron: "30 4 * * *"
+  class: "JobApplications::FetchPostingsJob"
+  queue: default

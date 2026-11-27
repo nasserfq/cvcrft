@@ -28,6 +28,12 @@ module ResumeBuilder
       end
     end
 
+    # Newest finished (non-draft) resume, as {"id"=>..., "title"=>..., "updated_at"=>...}, or nil.
+    def latest_complete(user)
+      resume = user.resumes.not_drafts.order(updated_at: :desc, id: :desc).first
+      resume && { "id" => resume.id, "title" => resume.title.presence || resume.complete_name, "updated_at" => resume.updated_at }
+    end
+
     def read(user, resume_id)
       resume = user.resumes.find(resume_id)
 
