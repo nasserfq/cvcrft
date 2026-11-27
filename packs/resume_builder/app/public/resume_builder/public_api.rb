@@ -51,6 +51,17 @@ module ResumeBuilder
       )
     end
 
+    # The user's own resume as a PDF, drawn with the default template. A given
+    # professional_summary replaces the stored one; nothing else changes.
+    def pdf(user, resume_id, professional_summary: nil)
+      resume = user.resumes.find(resume_id)
+      result = ResumePdfService.generate_pdf(resume, professional_summary:)
+      path = result[:path].to_s
+      { "filename" => result[:filename].to_s, "data" => File.binread(path) }
+    ensure
+      File.delete(path) if path.present? && File.exist?(path)
+    end
+
     def create_from_draft(user, draft)
       d = draft.stringify_keys
       # One transaction, so a failed sync leaves no half-built draft behind.

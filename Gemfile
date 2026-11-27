@@ -92,6 +92,9 @@ gem "prawn-table"
 # PDF text extraction (for LinkedIn import)
 gem "pdf-reader"
 
+# Drives headless Chromium over the DevTools protocol for Seera Apply's browser submitters (packs/job_applications)
+gem "ferrum", "~> 0.20.1"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

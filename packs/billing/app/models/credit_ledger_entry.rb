@@ -2,7 +2,7 @@ class CreditLedgerEntry < ApplicationRecord
   REASONS = %w[
     signup_bonus purchase coupon coach_message refund admin_adjustment
     overage_summary_translation overage_jobs_translation
-    overage_job_based_generation overage_document_ai
+    overage_job_based_generation overage_document_ai overage_job_application
   ].freeze
 
   belongs_to :user

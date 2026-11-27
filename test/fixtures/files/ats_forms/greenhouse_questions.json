@@ -1,0 +1,42 @@
+{
+  "id": 4567,
+  "title": "Senior Product Manager",
+  "absolute_url": "https://job-boards.greenhouse.io/acme/jobs/4567",
+  "location": { "name": "Riyadh, Saudi Arabia" },
+  "questions": [
+    { "required": true, "label": "First Name", "description": null, "fields": [ { "name": "first_name", "type": "input_text", "values": [] } ] },
+    { "required": true, "label": "Last Name", "description": null, "fields": [ { "name": "last_name", "type": "input_text", "values": [] } ] },
+    { "required": true, "label": "Email", "description": null, "fields": [ { "name": "email", "type": "input_text", "values": [] } ] },
+    { "required": false, "label": "Phone", "description": null, "fields": [ { "name": "phone", "type": "input_text", "values": [] } ] },
+    { "required": true, "label": "Resume/CV", "description": null, "fields": [
+      { "name": "resume", "type": "input_file", "values": [] },
+      { "name": "resume_text", "type": "textarea", "values": [] } ] },
+    { "required": false, "label": "Cover Letter", "description": null, "fields": [
+      { "name": "cover_letter", "type": "input_file", "values": [] },
+      { "name": "cover_letter_text", "type": "textarea", "values": [] } ] },
+    { "required": false, "label": "LinkedIn Profile", "description": null, "fields": [ { "name": "question_30001", "type": "input_text", "values": [] } ] },
+    { "required": true, "label": "Are you legally authorized to work in Saudi Arabia?", "description": null, "fields": [
+      { "name": "question_30002", "type": "multi_value_single_select", "values": [ { "label": "Yes", "value": 1 }, { "label": "No", "value": 0 } ] } ] },
+    { "required": false, "label": "Which tools have you used?", "description": null, "fields": [
+      { "name": "question_30003[]", "type": "multi_value_multi_select", "values": [ { "label": "Jira", "value": 11 }, { "label": "Figma", "value": 12 }, { "label": "SQL", "value": 13 } ] } ] },
+    { "required": false, "label": "Anything else?", "description": null, "fields": [ { "name": "question_30004", "type": "textarea", "values": [] } ] },
+    { "required": false, "label": "Security", "description": null, "fields": [ { "name": "security_code", "type": "input_hidden", "values": [] } ] }
+  ],
+  "location_questions": [
+    { "required": false, "label": "Location (City)", "description": null, "fields": [ { "name": "candidate_location", "type": "input_text", "values": [] } ] }
+  ],
+  "compliance": [
+    { "type": "eeoc", "description": "<p>Voluntary self-identification</p>", "questions": [
+      { "required": false, "label": "Gender", "description": null, "fields": [
+        { "name": "gender", "type": "multi_value_single_select", "values": [ { "label": "Male", "value": 1 }, { "label": "Female", "value": 2 }, { "label": "Decline To Self Identify", "value": 3 } ] } ] }
+    ] }
+  ],
+  "demographic_questions": {
+    "header": "Diversity survey",
+    "description": "<p>Optional.</p>",
+    "questions": [
+      { "id": 9001, "label": "How would you describe your ethnicity?", "required": false, "type": "multi_value_multi_select",
+        "answer_options": [ { "id": 1, "label": "Arab", "free_form": false }, { "id": 2, "label": "Prefer not to say", "free_form": false } ] }
+    ]
+  }
+}

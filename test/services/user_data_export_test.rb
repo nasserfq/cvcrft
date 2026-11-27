@@ -70,6 +70,27 @@ class UserDataExportTest < ActiveSupport::TestCase
     assert JobApplications::Posting.exists?(posting.id)
   end
 
+  test "exports Seera Apply profile, applications and disclosures, and account deletion removes every apply row" do
+    create_profile(@user)
+    application = create_application(@user, status: "sent", answers: { "q1" => "Yes" })
+    add_cv_pdf(application)
+    JobApplications::Disclosure.record!(application)
+
+    data = UserDataExport.new(@user).as_json["seera_apply"]
+
+    assert_equal "+966 500000000", data["profile"]["phone"]
+    exported = data["applications"].sole
+    assert_equal [ application.id, "sent", { "q1" => "Yes" } ], exported.values_at("id", "status", "answers")
+    assert_not_includes data.to_json, "%PDF"
+    assert_equal "Acme", data["disclosures"].sole["employer_name"]
+
+    @user.destroy!
+    assert_not JobApplications::Profile.exists?(user_id: @user.id)
+    assert_not JobApplications::Application.exists?(user_id: @user.id)
+    assert_not JobApplications::Document.exists?(application_id: application.id)
+    assert_not JobApplications::Disclosure.exists?(user_id: @user.id)
+  end
+
   test "filename carries the export date" do
     export = UserDataExport.new(@user, now: Time.zone.local(2026, 10, 19, 8))
     assert_equal "seera-data-2026-10-19.json", export.filename

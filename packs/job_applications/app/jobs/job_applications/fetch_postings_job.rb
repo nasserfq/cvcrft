@@ -29,10 +29,12 @@ module JobApplications
       Posting.transaction do
         if postings.any?
           rows = postings.map do |p|
-            p.to_h.merge(employer_id: employer.id, city: GulfLocation.city_for(p.location), fetched_at: now, closed_at: nil)
+            p.to_h.merge(employer_id: employer.id, city: GulfLocation.city_for(p.location), apply_email: ApplyEmail.from(p.description),
+                         fetched_at: now, closed_at: nil)
           end
           Posting.upsert_all(rows, unique_by: %i[employer_id external_id],
-                                   update_only: %i[title location country city url apply_url description posted_at fetched_at closed_at])
+                                   update_only: %i[title location country city url apply_url apply_email description posted_at fetched_at
+                                                   closed_at])
         end
         employer.postings.open.where.not(external_id: postings.map(&:external_id)).update_all(closed_at: now, updated_at: now)
         employer.update!(last_fetched_at: now, last_error: nil)
@@ -44,8 +46,10 @@ module JobApplications
       employer.update_columns(last_error: "#{e.class}: #{e.message}".first(1_000), updated_at: Time.current)
     end
 
-    # Retention: closed postings (their matches cascade) and old AI counters.
+    # Retention: closed postings (their matches cascade), old AI counters,
+    # and the documents and answers of long-finished applications.
     def clean_up
+      Application.purge_old!
       Posting.where(closed_at: ...CLOSED_RETENTION.ago).delete_all
       AiUsage.where(day: ...AI_USAGE_RETENTION.ago.to_date).delete_all
     end

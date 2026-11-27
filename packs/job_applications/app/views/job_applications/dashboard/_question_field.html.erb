@@ -1,0 +1,53 @@
+<%# One missing question on a Needs answer card, as answers[<question id>]. %>
+<% id = question["id"].to_s %>
+<% type = question["type"].to_s %>
+<% required = question["required"] == true %>
+<% name = "answers[#{id}]" %>
+<% dom = "answer_#{application.id}_#{id.parameterize(separator: '_')}" %>
+<% field = "glass-soft rounded-2xl px-4 min-h-[52px] text-[16px] w-full" %>
+<% options = Array(question["options"]).map { |o| o.is_a?(Hash) ? [ (o["label"] || o["value"]).to_s, (o["value"] || o["label"]).to_s ] : [ o.to_s, o.to_s ] } %>
+<% label = question["label"].to_s.presence || id %>
+
+<% if %w[radio checkbox].include?(type) && options.any? %>
+  <fieldset class="m-0 p-0 border-0 flex flex-col gap-2" data-question="<%= id %>">
+    <legend class="mb-2 text-[14px] font-semibold" dir="auto"><%= label %></legend>
+    <div class="flex flex-wrap gap-2">
+      <% options.each_with_index do |(text, value), i| %>
+        <label class="glass-soft sr-btn rounded-full min-h-[44px] px-4 flex items-center gap-2 cursor-pointer text-[15px] has-[:checked]:border-[#2fa36b] has-[:checked]:bg-[rgba(47,163,107,0.18)]">
+          <% if type == "radio" %>
+            <%= radio_button_tag name, value, false, id: "#{dom}_#{i}", required:, class: "accent-[#2fa36b] w-4 h-4" %>
+          <% else %>
+            <%= check_box_tag "#{name}[]", value, false, id: "#{dom}_#{i}", class: "accent-[#2fa36b] w-4 h-4" %>
+          <% end %>
+          <span dir="auto"><%= text %></span>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+<% elsif %w[radio checkbox].include?(type) %>
+  <label class="flex items-start gap-3 text-[15px] cursor-pointer" data-question="<%= id %>">
+    <%= check_box_tag name, "1", false, id: dom, required:, class: "accent-[#2fa36b] w-5 h-5 mt-0.5 shrink-0" %>
+    <span dir="auto"><%= label %></span>
+  </label>
+<% elsif type == "file" %>
+  <div class="flex flex-col gap-2 text-[14px]" data-question="<%= id %>">
+    <span class="font-semibold" dir="auto"><%= label %></span>
+    <%= link_to application.posting.apply_url.presence || application.posting.url, class: "sr-btn inline-flex items-center gap-1.5 min-h-[44px] text-[15px]", style: "color: #7fd3a6", target: "_blank", rel: "noopener noreferrer" do %>
+      <%= seera_icon("solar:link-bold", width: 16) %>
+      <span><%= t('seera_apply.apply.open_job') %></span>
+    <% end %>
+  </div>
+<% else %>
+  <label class="flex flex-col gap-2 text-[14px]" for="<%= dom %>" data-question="<%= id %>">
+    <span class="font-semibold" dir="auto"><%= label %></span>
+    <% if type == "select" %>
+      <%= select_tag name, options_for_select(options), prompt: t('seera_apply.setup.choose'), id: dom, required:, class: field, style: "color: #eef3ee" %>
+    <% elsif type == "textarea" %>
+      <%= text_area_tag name, nil, id: dom, required:, rows: 4, maxlength: 4000, class: "#{field} py-3", style: "color: #eef3ee" %>
+    <% else %>
+      <% input_type = { "email" => "email", "tel" => "tel", "url" => "url", "number" => "number" }.fetch(type, "text") %>
+      <%= tag.input type: input_type, name:, id: dom, required:, maxlength: (500 unless input_type == "number"),
+            dir: (%w[email tel url number].include?(input_type) ? "ltr" : nil), class: field, style: "color: #eef3ee" %>
+    <% end %>
+  </label>
+<% end %>

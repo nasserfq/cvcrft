@@ -29,3 +29,10 @@ seera_apply_fetch:
   cron: "30 4 * * *"
   class: "JobApplications::FetchPostingsJob"
   queue: default
+
+# Seera Apply (packs/job_applications): one SendJob per user for their oldest
+# queued application. Returns at once unless SEERA_APPLY_ENABLED/TESTERS.
+seera_apply_dispatch:
+  cron: "*/15 * * * *"
+  class: "JobApplications::DispatchJob"
+  queue: default

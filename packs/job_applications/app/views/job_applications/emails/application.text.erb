@@ -1,0 +1,22 @@
+Dear <%= employer %> hiring team,
+
+I would like to apply for the <%= title %> role. My CV is attached.
+<% if summary.present? %>
+
+<%= summary %>
+<% end %>
+
+Notice period: <%= notice_period %>
+Work status: <%= visa_status %>
+<% if salary.present? %>
+Expected salary: SAR <%= number_with_delimiter(salary) %> per month
+<% end %>
+Phone: <%= phone %>
+LinkedIn: <%= linkedin_url %>
+Email: <%= email %>
+
+Kind regards,
+<%= name %>
+
+--
+Sent by Seera (cvcrft.com) at <%= name %>'s request. Reply to this email to reach <%= name %> directly.

@@ -22,6 +22,9 @@
         <%= render "job_applications/dashboard/preferences", preference: @preference %>
       </section>
     <% else %>
+      <%= render "job_applications/dashboard/tracker", profile: @profile, tab_counts: @tab_counts, tab: @tab,
+                 applications: @applications, document_kinds: @document_kinds %>
+
       <section class="glass sr-up rounded-[32px] p-7 sm:p-10" data-testid="count">
         <h1 class="m-0 flex flex-wrap items-baseline gap-x-4 gap-y-1 font-semibold">
           <span class="sr-mono" dir="ltr" style="font-size: clamp(40px, 6vw, 64px); line-height: 1; letter-spacing: -0.03em; color: #7fd3a6"><%= @count %></span>

@@ -1,0 +1,35 @@
+{
+  "data": {
+    "jobPosting": {
+      "id": "3f2a1c9e-1111-4c2d-9e8f-000000000001",
+      "title": "Senior Data Analyst",
+      "applicationForm": {
+        "sections": [
+          {
+            "title": null,
+            "fieldEntries": [
+              { "id": "e1", "isRequired": true, "field": { "id": "f1", "path": "_systemfield_name", "title": "Name", "type": "String", "isNullable": false } },
+              { "id": "e2", "isRequired": true, "field": { "id": "f2", "path": "_systemfield_email", "title": "Email", "type": "Email", "isNullable": false } },
+              { "id": "e3", "isRequired": false, "field": { "id": "f3", "path": "_systemfield_phone", "title": "Phone", "type": "Phone", "isNullable": true } },
+              { "id": "e4", "isRequired": true, "field": { "id": "f4", "path": "_systemfield_resume", "title": "Resume", "type": "File", "isNullable": false } },
+              { "id": "e5", "isRequired": false, "field": { "id": "f5", "path": "8c1d2e3f-aaaa-4bbb-8ccc-000000000005", "title": "LinkedIn", "type": "SocialLink", "isNullable": true } },
+              { "id": "e6", "isRequired": true, "field": { "id": "f6", "path": "8c1d2e3f-aaaa-4bbb-8ccc-000000000006", "title": "Do you need visa sponsorship to work in Saudi Arabia?", "type": "Boolean", "isNullable": false } },
+              { "id": "e7", "isRequired": true, "field": { "id": "f7", "path": "8c1d2e3f-aaaa-4bbb-8ccc-000000000007", "title": "Notice period", "type": "ValueSelect", "isNullable": false,
+                "selectableValues": [ { "label": "Immediately", "value": "immediately" }, { "label": "1 month", "value": "1m" }, { "label": "3 months", "value": "3m" } ] } },
+              { "id": "e8", "isRequired": false, "field": { "id": "f8", "path": "8c1d2e3f-aaaa-4bbb-8ccc-000000000008", "title": "Why this role?", "type": "LongText", "isNullable": true } },
+              { "id": "e9", "field": { "id": "f9", "path": "8c1d2e3f-aaaa-4bbb-8ccc-000000000009", "title": "Years of SQL", "type": "Number", "isNullable": true } },
+              { "id": "e10", "isRequired": false, "field": { "id": "f10", "path": "8c1d2e3f-aaaa-4bbb-8ccc-000000000010", "title": "Unsupported widget", "type": "Signature", "isNullable": true } }
+            ]
+          },
+          {
+            "title": "Voluntary demographic survey",
+            "fieldEntries": [
+              { "id": "e11", "isRequired": false, "field": { "id": "f11", "path": "8c1d2e3f-aaaa-4bbb-8ccc-000000000011", "title": "Gender", "type": "ValueSelect", "isNullable": true,
+                "selectableValues": [ { "label": "Woman", "value": "w" }, { "label": "Man", "value": "m" }, { "label": "Prefer not to say", "value": "n" } ] } }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

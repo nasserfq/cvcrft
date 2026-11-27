@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<!-- apply.workable.com/{account}/j/{code}/apply/ markup, scripts removed.
+     The action points at the local confirmation page. -->
+<html lang="en">
+<head><meta charset="utf-8"><title>Operations Manager - Acme</title></head>
+<body>
+<main data-ui="application-form">
+  <form action="workable_confirmation.html" method="get" enctype="multipart/form-data" data-ui="application-form">
+    <section data-ui="personal-information">
+      <h2>Personal information</h2>
+      <div class="styles--3aPac"><label for="firstname">First name<strong aria-hidden="true">*</strong></label>
+        <input id="firstname" name="firstname" data-ui="firstname" type="text" required aria-required="true"></div>
+      <div class="styles--3aPac"><label for="lastname">Last name<strong aria-hidden="true">*</strong></label>
+        <input id="lastname" name="lastname" data-ui="lastname" type="text" required aria-required="true"></div>
+      <div class="styles--3aPac"><label for="email">Email<strong aria-hidden="true">*</strong></label>
+        <input id="email" name="email" data-ui="email" type="email" required aria-required="true"></div>
+      <div class="styles--3aPac"><label for="phone">Phone</label>
+        <input id="phone" name="phone" data-ui="phone" type="tel"></div>
+      <div class="styles--3aPac"><span id="resume-label">Resume<strong aria-hidden="true">*</strong></span>
+        <input id="resume" name="resume" data-ui="resume" type="file" accept=".pdf,.doc,.docx,.odt,.rtf" required aria-labelledby="resume-label"></div>
+    </section>
+    <section data-ui="questions">
+      <h2>Questions</h2>
+      <fieldset data-ui="QA_6170001"><legend>Do you hold a valid Iqama?<strong aria-hidden="true">*</strong></legend>
+        <label><input type="radio" name="QA_6170001" value="true" required> Yes</label>
+        <label><input type="radio" name="QA_6170001" value="false" required> No</label>
+      </fieldset>
+      <div class="styles--3aPac"><label for="QA_6170002">Preferred city</label>
+        <select id="QA_6170002" name="QA_6170002" data-ui="QA_6170002"><option value=""></option><option value="1">Riyadh</option><option value="2">Jeddah</option></select></div>
+      <fieldset data-ui="QA_6170003"><legend>Languages</legend>
+        <label><input type="checkbox" name="QA_6170003" value="1"> Arabic</label>
+        <label><input type="checkbox" name="QA_6170003" value="2"> English</label>
+      </fieldset>
+      <div class="styles--3aPac"><label for="QA_6170004">Tell us about yourself</label>
+        <textarea id="QA_6170004" name="QA_6170004" data-ui="QA_6170004"></textarea></div>
+    </section>
+    <button type="submit" data-ui="apply-button" class="button--2de5X">Submit application</button>
+  </form>
+</main>
+</body>
+</html>

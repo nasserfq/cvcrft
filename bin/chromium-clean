@@ -1,0 +1,5 @@
+#!/bin/sh
+# Starts Chromium for Seera Apply's browser submitters (packs/job_applications)
+# with an empty environment, so the browser never inherits RAILS_MASTER_KEY,
+# AWS keys or any other secret of the app process.
+exec env -i PATH=/usr/bin:/bin HOME=/tmp LANG=C.UTF-8 /usr/bin/chromium "$@"

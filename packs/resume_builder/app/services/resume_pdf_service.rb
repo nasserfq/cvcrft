@@ -1,4 +1,6 @@
 class ResumePdfService
+  # options: template:, and professional_summary: to draw this summary in place
+  # of the stored one (Seera Apply's tailored CV); every other section is the resume's own.
   def self.generate_pdf(resume, options = {})
     # Build educations with fallback to draft data if needed
     educations_data = resume.educations.map { |e| {
@@ -23,7 +25,7 @@ class ResumePdfService
     end
 
     AtsTemplatePdfService.generate_pdf(resume, {
-      professional_summary: resume.professional_summary,
+      professional_summary: options[:professional_summary].presence || resume.professional_summary,
       work_experiences: resume.work_experiences.map(&:attributes),
       # Build skills details from stored structure (skill_names array or legacy fields)
       skills: resume.skills.map do |s|

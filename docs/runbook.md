@@ -39,6 +39,10 @@ AWS Health dashboard.
 **Jobs piling up.** `/admin/health` queue sizes. New AI work is refused above the queue limit, so users see
 "busy" instead of waiting forever. Restart the worker: `bin/kamal app boot -r worker`.
 
+**Seera Apply sends failing with `unknown_field`.** An ATS changed its form markup; the test fixtures are
+snapshots, so this shows as a rise in `unknown_field` fallbacks (`apply_applications.error_code`), not a
+test failure. Refresh `test/fixtures/files/ats_forms/` from the live form and update that submitter.
+
 ## 3. Service levels
 
 | SLI | SLO | Where |

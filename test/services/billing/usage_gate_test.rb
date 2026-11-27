@@ -111,6 +111,32 @@ class Billing::UsageGateTest < ActiveSupport::TestCase
     assert_operator Billing::UsageGate.cost(:job_based_generation), :>, Billing::UsageGate.cost(:summary_translation)
   end
 
+  test "a job application costs 5 credits past the 3 free ones" do
+    ENV["BILLING_ENABLED"] = "true"
+    3.times { |i| assert_equal :free, Billing::UsageGate.allow!(@user, :job_application, key: "job_application:#{i}") }
+
+    assert_equal :credit, Billing::UsageGate.allow!(@user, :job_application, key: "job_application:3")
+    assert_equal(-5, CreditLedgerEntry.find_by!(reason: "overage_job_application").amount)
+    assert_equal 3, @user.reload.job_applications_count
+  end
+
+  test "a job application is blocked past 3 while billing is off" do
+    @user.update_column(:job_applications_count, UserUsageLimits::BASE_JOB_APPLICATIONS)
+
+    assert_not Billing::UsageGate.available?(@user, :job_application)
+    assert_equal :blocked, Billing::UsageGate.allow!(@user, :job_application, key: "job_application:9")
+  end
+
+  test "quote includes job applications" do
+    ENV["BILLING_ENABLED"] = "true"
+    @user.update_column(:job_applications_count, UserUsageLimits::BASE_JOB_APPLICATIONS)
+
+    quote = Billing::UsageGate.quote(@user, %i[job_application summary_translation])
+
+    assert_equal({ free_available: false, will_use_credit: true, allowed: true, cost: 5 }, quote[:job_application])
+    assert quote[:summary_translation][:free_available]
+  end
+
   test "rejects unknown kinds and blank keys" do
     assert_raises(KeyError) { Billing::UsageGate.allow!(@user, :nope, key: "k") }
     assert_raises(ArgumentError) { Billing::UsageGate.allow!(@user, :summary_translation, key: "") }

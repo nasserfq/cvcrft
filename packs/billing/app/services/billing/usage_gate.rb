@@ -15,14 +15,16 @@ module Billing
       jobs_translation: 1,
       document_ai: 2,
       job_based_generation: 3,
-      coach_message: 1
+      coach_message: 1,
+      job_application: 5
     }.freeze
 
     REASONS = {
       summary_translation: "overage_summary_translation",
       jobs_translation: "overage_jobs_translation",
       job_based_generation: "overage_job_based_generation",
-      document_ai: "overage_document_ai"
+      document_ai: "overage_document_ai",
+      job_application: "overage_job_application"
     }.freeze
 
     class << self

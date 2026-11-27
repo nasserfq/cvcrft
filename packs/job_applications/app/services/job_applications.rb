@@ -23,6 +23,18 @@ module JobApplications
   MIN_SCORE = 7          # matches below this are kept (never rescored) but not shown
   CITIES = %w[riyadh jeddah dammam remote].freeze
 
+  # Sending (plans/seera-apply-send.md, docs/state-machines.md "Seera Apply applications").
+  APPLY_MIN_SCORE = 8      # matches at or above this get an apply pack
+  DAILY_SEND_LIMIT = 5     # applications sent or sending per user per day (Asia/Riyadh)
+  DAILY_PACK_LIMIT = 10    # apply packs built per user per day (apply_ai_usages.packs)
+  APPROVALS_REQUIRED = 3   # sent applications before the rest go out without approval
+  CONSENT_VERSION = "2026-11-28"
+  SUBMITTERS = %w[greenhouse ashby].freeze # lever, workable join after a live tester run passes
+  TIME_ZONE = "Asia/Riyadh"
+
+  # Fill and screenshot, never click Submit.
+  def self.dry_run? = ENV["SEERA_APPLY_DRY_RUN"] == "true"
+
   # The user's Seera Apply data for UserDataExport.
   def self.export_for(user)
     matches = Match.where(user:).includes(posting: :employer).order(:id).map do |match|
@@ -31,6 +43,9 @@ module JobApplications
         "posting" => { "title" => posting.title, "company" => posting.employer.name, "url" => posting.url, "city" => posting.city }
       )
     end
-    { "preference" => Preference.find_by(user:)&.attributes, "matches" => matches }
+    applications = Application.where(user:).order(:id).map(&:attributes)
+    disclosures = Disclosure.where(user:).order(:id).map(&:attributes)
+    { "preference" => Preference.find_by(user:)&.attributes, "matches" => matches,
+      "profile" => Profile.find_by(user:)&.attributes, "applications" => applications, "disclosures" => disclosures }
   end
 end

@@ -4,6 +4,9 @@ require_relative "../../support/seera_apply_helper"
 class JobApplications::MatchJobTest < ActiveJob::TestCase
   include SeeraApplyHelper
 
+  # config.active_job.queue_adapter is :sidekiq in every env.
+  def queue_adapter_for_test = ActiveJob::QueueAdapters::TestAdapter.new
+
   setup do
     @tester = users(:one)
     @other = users(:two)
@@ -16,6 +19,15 @@ class JobApplications::MatchJobTest < ActiveJob::TestCase
     JobApplications::Matcher.expects(:new).with(@other).never
 
     with_seera_apply_for(@tester) { JobApplications::MatchJob.perform_now }
+  end
+
+  test "queues applications for each user it matched" do
+    JobApplications::Matcher.stubs(:new).returns(stub(call: 1))
+
+    with_seera_apply_for(@tester) { JobApplications::MatchJob.perform_now }
+
+    assert_enqueued_with(job: JobApplications::QueueJob, args: [ @tester.id ])
+    assert_enqueued_jobs 1, only: JobApplications::QueueJob
   end
 
   test "skips preferences without titles or cities" do

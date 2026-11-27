@@ -1,0 +1,107 @@
+<% posting = application.posting %>
+<% primary = "sr-btn sr-primary inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+<% primary_shadow = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+<% secondary = "glass-soft sr-btn inline-flex items-center justify-center gap-2 min-h-[48px] px-5 rounded-2xl text-[15px] cursor-pointer" %>
+<% muted = "color: rgba(238,243,238,0.7)" %>
+<% status = application.status %>
+<%# The tab already names the status, so the chip shows only what it adds. %>
+<% chip_text, chip_color =
+     if status == "failed_fallback" then [ t("seera_apply.errors.#{application.error_code || 'send_error'}"), "#f2a7a0" ]
+     elsif status == "queued" && application.hold then [ t("seera_apply.hold.#{application.hold}"), "#d6b877" ]
+     elsif %w[preparing queued sending].include?(status) then [ t("seera_apply.status.#{status}"), "#eef3ee" ]
+     end %>
+
+<li id="<%= dom_id(application) %>" class="glass sr-up rounded-[28px] p-6 sm:p-7 flex flex-col gap-5"
+    style="animation-delay: <%= [ 0.05 * index, 0.6 ].min.round(2) %>s" data-status="<%= status %>">
+  <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-2 min-w-0">
+      <h3 class="m-0 text-[18px] sm:text-[20px] font-semibold leading-snug break-words"><%= posting.title %></h3>
+      <p class="m-0 inline-flex items-center gap-1.5 min-w-0 text-[14px]" style="<%= muted %>">
+        <%= seera_icon("solar:case-bold", width: 16, class: "shrink-0") %>
+        <span class="break-words"><%= posting.employer.name %></span>
+      </p>
+    </div>
+    <% if application.hold == "no_credits" && status == "queued" && Billing.enabled_for?(current_user) %>
+      <%= link_to chip_text, credits_path, class: "glass-soft sr-btn shrink-0 rounded-full px-3 py-1.5 text-[13px] font-semibold", style: "color: #{chip_color}", data: { testid: "status" } %>
+    <% elsif chip_text %>
+      <span class="glass-soft shrink-0 rounded-full px-3 py-1.5 text-[13px] font-semibold" style="color: <%= chip_color %>" data-testid="status"><%= chip_text %></span>
+    <% end %>
+  </div>
+
+  <% cv_link = capture do %>
+    <% if kinds.include?("cv_pdf") %>
+      <%= link_to cv_my_jobs_application_path(application), class: secondary, target: "_blank", rel: "noopener", data: { testid: "cv" } do %>
+        <%= seera_icon("solar:document-text-bold", width: 18) %>
+        <span><%= t('seera_apply.apply.cv') %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% case status %>
+  <% when "needs_approval" %>
+    <div class="flex flex-wrap gap-2">
+      <%= button_to approve_my_jobs_application_path(application), method: :patch, form: { data: { turbo: false } }, class: primary, style: primary_shadow do %>
+        <%= seera_icon("solar:check-circle-bold", width: 18) %>
+        <span><%= t('seera_apply.apply.approve') %></span>
+      <% end %>
+      <%= button_to t('seera_apply.apply.skip'), skip_my_jobs_application_path(application), method: :patch, form: { data: { turbo: false } }, class: secondary %>
+      <%= cv_link %>
+    </div>
+    <% answered = application.questions.select { |q| application.answers[q["id"].to_s].present? } %>
+    <% if answered.any? %>
+      <details class="group">
+        <summary class="sr-btn cursor-pointer list-none inline-flex items-center gap-2 min-h-[44px] text-[15px] font-semibold">
+          <span><%= t('seera_apply.apply.answers') %></span>
+          <%= seera_icon("solar:alt-arrow-left-linear", width: 16, class: "-rotate-90 transition-transform group-open:rotate-90") %>
+        </summary>
+        <dl class="m-0 mt-3 flex flex-col gap-3 text-[15px]">
+          <% answered.each do |question| %>
+            <div class="flex flex-col gap-0.5">
+              <dt class="text-[13px]" style="<%= muted %>" dir="auto"><%= question["label"] %></dt>
+              <% labels = Array(question["options"]).grep(Hash).to_h { |o| [ o["value"].to_s, o["label"] ] } %>
+              <dd class="m-0 break-words" dir="auto"><%= Array(application.answers[question["id"].to_s]).map { |v| labels[v.to_s] || v }.join(", ") %></dd>
+            </div>
+          <% end %>
+        </dl>
+      </details>
+    <% end %>
+  <% when "needs_answer" %>
+    <% form_id = "answer_#{application.id}" %>
+    <%= form_with url: answer_my_jobs_application_path(application), method: :patch, id: form_id, data: { turbo: false }, class: "flex flex-col gap-4" do %>
+      <% application.missing.each do |id| %>
+        <% question = application.questions.find { |q| q["id"].to_s == id } || { "id" => id, "label" => id, "type" => "text" } %>
+        <%= render "job_applications/dashboard/question_field", application:, question: %>
+      <% end %>
+    <% end %>
+    <div class="flex flex-wrap gap-2">
+      <button type="submit" form="<%= form_id %>" class="<%= primary %>" style="<%= primary_shadow %>"><%= t('seera_apply.apply.send') %></button>
+      <%= button_to t('seera_apply.apply.skip'), skip_my_jobs_application_path(application), method: :patch, form: { data: { turbo: false } }, class: secondary %>
+      <%= cv_link %>
+    </div>
+  <% when "sent" %>
+    <div class="flex flex-wrap items-center gap-3">
+      <% if application.sent_at %>
+        <span class="sr-mono text-[14px]" dir="ltr" style="<%= muted %>" data-testid="sent-at"><%= application.sent_at.in_time_zone(JobApplications::TIME_ZONE).strftime("%Y-%m-%d") %></span>
+      <% end %>
+      <% if kinds.include?("proof") %>
+        <%= link_to proof_my_jobs_application_path(application), class: secondary, target: "_blank", rel: "noopener", data: { testid: "proof" } do %>
+          <%= seera_icon("solar:shield-check-bold", width: 18) %>
+          <span><%= t('seera_apply.apply.proof') %></span>
+        <% end %>
+      <% end %>
+      <%= cv_link %>
+    </div>
+  <% when "failed_fallback" %>
+    <div class="flex flex-wrap gap-2">
+      <%= link_to posting.apply_url.presence || posting.url, class: primary, style: primary_shadow, target: "_blank", rel: "noopener noreferrer", data: { testid: "open-job" } do %>
+        <%= seera_icon("solar:link-bold", width: 18) %>
+        <span><%= t('seera_apply.apply.open_job') %></span>
+      <% end %>
+      <%= cv_link %>
+    </div>
+  <% when "queued" %>
+    <% if cv_link.present? %>
+      <div class="flex flex-wrap gap-2"><%= cv_link %></div>
+    <% end %>
+  <% end %>
+</li>

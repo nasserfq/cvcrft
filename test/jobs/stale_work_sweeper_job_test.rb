@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../support/seera_apply_helper"
 
 class StaleWorkSweeperJobTest < ActiveSupport::TestCase
+  include SeeraApplyHelper
+
   test "fails stale work on every model that can and reports the counts" do
     stale = create_test_cv_generation(users(:test_user))
     stale.update_column(:updated_at, 1.hour.ago)
@@ -11,6 +14,19 @@ class StaleWorkSweeperJobTest < ActiveSupport::TestCase
     assert_equal 1, counts["cv_generations"]
     assert_equal "failed", stale.reload.status
     assert_equal "processing", fresh.reload.status
+  end
+
+  test "sweeps Seera Apply applications too" do
+    CouponRedemptionStore.stubs(:redeemed_codes_for).returns([])
+    user = users(:one)
+    stuck = create_application(user, status: "sending", attempts: 1, claimed_at: 1.hour.ago, submit_clicked_at: 1.hour.ago)
+    uncharged = create_application(user, status: "sent", sent_at: 1.hour.ago)
+
+    counts = StaleWorkSweeperJob.perform_now
+
+    assert_equal 2, counts["job_applications_applications"]
+    assert_equal %w[failed_fallback unconfirmed], stuck.reload.values_at(:status, :error_code)
+    assert_equal "free", uncharged.reload.charge
   end
 
   test "passes the 30 minute cutoff to each model" do
