@@ -38,6 +38,9 @@ module JobApplications
         return Result.fallback("unsupported") if posting.apply_email.blank? || user.email.blank?
 
         mail = build
+        # Built but never sent; the proof shows what would have gone out.
+        return Result.fallback("dry_run", proof_bytes: proof(mail), proof_type: PROOF_TYPE) if JobApplications.dry_run?
+
         message_id = send_raw(mail)
         application.mark_submit_clicked!
         Result.sent(proof_bytes: proof(mail), proof_type: PROOF_TYPE, message_id:, url: nil,

@@ -193,13 +193,15 @@ No status column. `job_applications/app/jobs/job_applications/fetch_postings_job
 | new → preparing | `QueueJob` (score ≥ 8, `profile.sending?`, `DAILY_PACK_LIMIT`), `insert_all` unique `[user_id, posting_id]` |
 | preparing → needs_answer / needs_approval / queued | `finish_pack!` (missing required answers / fewer than 3 sent / otherwise) |
 | preparing → failed_fallback | `unsupported` (manual channel, pack kept) or `prepare_failed` (retries exhausted) |
+| needs_answer → needs_answer | `answer!` with some required answers still missing (answers merged, `missing` shrinks) |
 | needs_answer → needs_approval / queued | `answer!` |
 | needs_approval → queued | `approve!` (sets `approved_at`, enqueues `SendJob`) |
 | needs_* / queued → skipped | `skip!` |
+| queued → failed_fallback | `closed` (posting closed, found by `Sender#claim!`) |
 | queued → sending | `Sender#claim!` under `profile.with_lock`; holds (`paused`, `daily_cap`, `no_credits`) keep it queued |
 | sending → sent | confirmed submit or SES MessageId; then `charge!` (`UsageGate.allow!`, key `job_application:<id>`) |
 | sending → queued | `Retryable` before Submit, `attempts < 3` |
-| sending → failed_fallback | `captcha`, `unknown_field`, `timeout`, `closed`, `dry_run`, `unconfirmed` (error after the click), `send_error` (other error before it) |
+| sending → failed_fallback | `captcha`, `unknown_field`, `no_form`, `timeout`, `dry_run` (proof kept), `unconfirmed` (error after the click), `send_error` (other error before it); before any disclosure: `unsupported` (no submitter, or no recipient host/email), `prepare_failed` (no CV PDF) |
 
 - Charge only after `sent` is committed. Nothing is ever charged on a failure, so there are no refunds.
   The first 3 are free (`UserUsageLimits` `job_application`); after that it costs 5 credits, or the row is
@@ -225,7 +227,7 @@ No status column. `job_applications/app/jobs/job_applications/fetch_postings_job
   - `sent` with `charge` nil → `charge!`.
 - Retention: `purge_old!` (called by the fetch job) deletes the documents of terminal rows untouched for
   90 days and clears `answers`/`cover_letter` after 180. Postings deleted by the fetch cleanup cascade.
-- PDPL: one `apply_disclosures` row per send attempt, written before the submit, `outcome`
+- PDPL: one `apply_disclosures` row per send attempt that reaches a submitter, written before the submit, `outcome`
   `sent | fallback | retry | error` afterwards. Kept for the life of the account.
 
 ## Credit purchase (Moyasar)

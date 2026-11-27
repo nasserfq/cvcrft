@@ -83,6 +83,21 @@ class JobApplications::Submitters::EmailTest < ActiveSupport::TestCase
     assert_nil @app.charge
   end
 
+  test "a dry run builds the email, keeps it as the proof and sends nothing" do
+    ENV["SEERA_APPLY_DRY_RUN"] = "true"
+
+    JobApplications::Sender.new(@app).call
+    @app.reload
+
+    assert_empty @sent
+    assert_equal [ "failed_fallback", "dry_run", nil, nil ], @app.values_at(:status, :error_code, :submit_clicked_at, :charge)
+    assert_equal "message/rfc822", @app.proof.content_type
+    assert_equal [ "jobs@acme.sa" ], Mail.new(@app.proof.data).to
+    assert_equal 0, @user.reload.job_applications_count
+  ensure
+    ENV.delete("SEERA_APPLY_DRY_RUN")
+  end
+
   test "a posting without an address falls back and sends nothing" do
     @app.posting.update_columns(apply_email: nil)
 

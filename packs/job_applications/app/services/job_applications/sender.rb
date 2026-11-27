@@ -15,14 +15,22 @@ module JobApplications
     def call
       return unless claim!
 
-      disclosure = Disclosure.record!(application)
+      # Checked before the disclosure: nothing is disclosed when nothing can be sent.
       submitter = Submitters.for(application)
+      return finish_fallback("unsupported", nil) unless submitter && Disclosure.recipient_for(application).present?
+
       cv = application.cv_pdf
-      return finish_fallback("unsupported", disclosure) unless submitter
-      return finish_fallback("prepare_failed", disclosure) unless cv
+      return finish_fallback("prepare_failed", nil) unless cv
+
+      disclosure = Disclosure.record!(application)
 
       result = submitter.new(application, cv_pdf: cv.data).call
-      result.sent? ? finish_sent(result, disclosure) : finish_fallback(result.error_code.presence || "send_error", disclosure)
+      return finish_sent(result, disclosure) if result.sent?
+
+      # A dry run's screenshot or unsent email is kept so testers can check it.
+      store_proof(result) if application.fallback!(result.error_code.presence || "send_error")
+      disclosure.mark!("fallback")
+      nil
     rescue Submitters::Retryable => e
       retry_or_fail(e, disclosure)
     rescue StandardError => e
@@ -144,7 +152,8 @@ module JobApplications
       Sentry.capture_exception(error, tags: { pack: "job_applications" })
       application.reload
       application.fallback!(application.submit_clicked_at ? "unconfirmed" : "send_error") if application.status == "sending"
-      disclosure&.mark!("error")
+      # A row already sent (the charge failed afterwards) keeps its "sent" disclosure.
+      disclosure&.mark!("error") unless application.status == "sent"
       nil
     end
   end

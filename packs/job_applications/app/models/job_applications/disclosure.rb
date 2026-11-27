@@ -27,7 +27,7 @@ module JobApplications
       posting = application.posting
       return posting.apply_email.to_s if application.channel == "email"
 
-      URI.parse(posting.apply_url).host.to_s.presence || posting.apply_url
+      URI.parse(posting.apply_url.to_s).host.to_s.presence || posting.apply_url
     rescue URI::InvalidURIError
       posting.apply_url
     end

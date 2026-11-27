@@ -222,4 +222,99 @@ class JobApplications::SenderTest < ActiveSupport::TestCase
     assert_equal :blocked, JobApplications::Sender.new(app).charge!
     assert_equal "uncollected", app.reload.charge
   end
+
+  test "an email row with no address falls back before any disclosure" do
+    app = queued(channel: "email")
+    Sentry.expects(:capture_exception).never
+
+    send!(app)
+
+    assert_equal %w[failed_fallback unsupported], app.reload.values_at(:status, :error_code)
+    assert_equal 0, FakeSubmitter.calls
+    assert_equal 0, JobApplications::Disclosure.count
+  end
+
+  test "a missing CV falls back as prepare_failed before any disclosure" do
+    app = create_application(@user, status: "queued")
+
+    send!(app)
+
+    assert_equal %w[failed_fallback prepare_failed], app.reload.values_at(:status, :error_code)
+    assert_equal 0, JobApplications::Disclosure.count
+  end
+
+  test "a charge that raises after a confirmed send keeps the row and its disclosure sent" do
+    Billing::UsageGate.stubs(:allow!).raises(ActiveRecord::Deadlocked)
+    Sentry.stubs(:capture_exception)
+    app = queued
+
+    send!(app)
+
+    assert_equal [ "sent", nil ], app.reload.values_at(:status, :charge)
+    assert_equal "sent", JobApplications::Disclosure.find_by!(application_id: app.id).outcome
+  end
+
+  test "a dry-run fallback keeps its screenshot as the proof" do
+    FakeSubmitter.behaviour = ->(_app) { Result.fallback("dry_run", proof_bytes: "jpeg", proof_type: "image/jpeg") }
+    app = queued
+
+    send!(app)
+
+    assert_equal %w[failed_fallback dry_run], app.reload.values_at(:status, :error_code)
+    assert_equal "jpeg", app.proof.data
+  end
+end
+
+# Real threads, each with its own connection, so the profile lock is exercised.
+class JobApplications::SenderRaceTest < ActiveSupport::TestCase
+  include SeeraApplyHelper
+
+  self.use_transactional_tests = false
+
+  setup do
+    CouponRedemptionStore.stubs(:redeemed_codes_for).returns([])
+    @user = User.create!(email: "apply-race-#{SecureRandom.hex(4)}@example.com", name: "Race User", password: "password123")
+    create_profile(@user)
+    @posting = create_posting
+    @app = create_application(@user, posting: @posting, status: "needs_approval")
+    add_cv_pdf(@app)
+    @calls = Concurrent::AtomicFixnum.new
+    calls = @calls
+    submitter = Class.new do
+      define_method(:initialize) { |application, cv_pdf:| @application = application }
+      define_method(:call) do
+        calls.increment
+        sleep 0.05
+        @application.mark_submit_clicked!
+        JobApplications::Submitters::Result.sent(url: "https://x/confirmation")
+      end
+    end
+    JobApplications::Submitters.stubs(:for).returns(submitter)
+    JobApplications::BrowserSlot.stubs(:acquire).returns("token")
+    JobApplications::BrowserSlot.stubs(:release)
+  end
+
+  teardown do
+    @user&.destroy
+    @posting&.employer&.destroy
+    ENV.delete("SEERA_APPLY_TESTERS")
+  end
+
+  test "approve! and DispatchJob on the same row submit exactly once" do
+    ENV["SEERA_APPLY_TESTERS"] = @user.email
+    enqueued = []
+    JobApplications::SendJob.stubs(:perform_later).with { |id| enqueued << id }
+
+    assert @app.approve!
+    JobApplications::DispatchJob.perform_now
+    assert_equal [ @app.id, @app.id ], enqueued
+
+    enqueued.map do |id|
+      Thread.new { ActiveRecord::Base.connection_pool.with_connection { JobApplications::SendJob.perform_now(id) } }
+    end.each(&:join)
+
+    assert_equal 1, @calls.value
+    assert_equal [ "sent", 1 ], @app.reload.values_at(:status, :attempts)
+    assert_equal 1, JobApplications::Disclosure.where(application_id: @app.id).count
+  end
 end
