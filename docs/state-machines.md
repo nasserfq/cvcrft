@@ -178,8 +178,9 @@ No status column. `job_applications/app/jobs/job_applications/fetch_postings_job
   `apply_ai_usages` > 30 days deleted. Then enqueues `MatchJob`.
 - Match: `MatchJob(user_id = nil)`; also enqueued by `PreferencesController#update` (skipped while
   `AiCircuit.busy?`). A posting is scored once per user (unique `[user_id, posting_id]`, `insert_all`).
-  Budget: `DAILY_SCORE_LIMIT` (40) postings per user per day in `apply_ai_usages.scores`, bumped after each
-  AI call; `AiCircuit::OpenError` bumps nothing and ends the run. No charge, so nothing to refund.
+  Budget: `DAILY_SCORE_LIMIT` (40) postings per user per day in `apply_ai_usages.scores`, reserved per batch
+  before each AI call under a row lock (`AiUsage.reserve!`), so concurrent runs can't exceed it; a failed call
+  keeps its reservation. `AiCircuit::OpenError` gives the reservation back and ends the run. No charge.
 
 ## Credit purchase (Moyasar)
 

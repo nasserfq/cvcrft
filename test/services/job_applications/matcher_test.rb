@@ -67,6 +67,20 @@ class JobApplications::MatcherTest < ActiveSupport::TestCase
     assert_equal 4, postings.size
   end
 
+  test "a run that overlaps another for the same user stays within the daily limit" do
+    Array.new(10) { create_posting }
+    JobApplications::AiUsage.bump!(@user, :scores, JobApplications::DAILY_SCORE_LIMIT - 10)
+    # While the first batch is out, another run spends the rest of today's budget.
+    AiModel.expects(:complete).once.with { |**|
+      JobApplications::AiUsage.reserve!(@user, :scores, 5, JobApplications::DAILY_SCORE_LIMIT)
+      true
+    }.returns(reply([]))
+
+    JobApplications::Matcher.new(@user).call
+
+    assert_equal JobApplications::DAILY_SCORE_LIMIT, JobApplications::AiUsage.for(@user).scores
+  end
+
   test "batches five postings per call" do
     Array.new(7) { create_posting }
     AiModel.expects(:complete).twice.returns(reply([]))

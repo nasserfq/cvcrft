@@ -89,6 +89,24 @@ class JobApplications::FetchersTest < ActiveSupport::TestCase
     assert_equal 3.days.ago.beginning_of_day.to_date, posting.posted_at.to_date
   end
 
+  test "drops postings whose link is not an http(s) page, and falls back from a bad apply link" do
+    data = ats_fixture("lever")
+    good = data.first
+    data = [
+      good.merge("id" => "js", "hostedUrl" => "javascript:alert(1)"),
+      good.merge("id" => "data", "hostedUrl" => "data:text/html;base64,PHNjcmlwdD4="),
+      good.merge("id" => "relative", "hostedUrl" => "/jobs/1"),
+      good.merge("id" => "ok", "applyUrl" => "javascript:alert(1)")
+    ]
+    fetcher = F::Lever.new(employer(ats: "lever", identifier: "gulflever", country: "AE"))
+    fetcher.stubs(:http_get).returns(data)
+
+    posting = fetcher.call.sole
+
+    assert_equal "ok", posting.external_id
+    assert_equal good["hostedUrl"], posting.apply_url
+  end
+
   test "workday without host and site raises" do
     assert_raises(F::FetchError) { F::Workday.new(employer(ats: "workday")).call }
   end

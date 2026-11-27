@@ -24,16 +24,16 @@ module JobApplications
 
       private
 
-      # Keeps a posting only when it is in the Gulf, and stamps its country.
+      # Keeps a posting only when it is in the Gulf and links to an http(s) page, and stamps its country.
       def gulf(postings)
         postings.filter_map do |posting|
-          next if posting.external_id.blank? || posting.title.blank? || posting.url.blank?
+          next if posting.external_id.blank? || posting.title.blank? || !WebUrl.valid?(posting.url)
 
           code = GulfLocation.for_posting(location: posting.location, country: posting.country, fallback: employer.country)
           next unless code
 
           posting.country = code
-          posting.apply_url = posting.apply_url.presence || posting.url
+          posting.apply_url = WebUrl.valid?(posting.apply_url) ? posting.apply_url : posting.url
           posting
         end
       end

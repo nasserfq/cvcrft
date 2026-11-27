@@ -29,7 +29,15 @@ module JobApplications
       return 0 if remaining.zero?
 
       facts = CvFacts.new(user, resume["id"]).to_prompt
-      candidates.first(remaining).each_slice(BATCH).sum { |batch| score(batch, facts) }
+      written = 0
+      candidates.first(remaining).each_slice(BATCH) do |batch|
+        # Reserved before the call, so a second run for this user can't overspend.
+        taken = AiUsage.reserve!(user, :scores, batch.size, DAILY_SCORE_LIMIT)
+        break if taken.zero?
+
+        written += score(batch.first(taken), facts)
+      end
+      written
     end
 
     # Open, recently fetched postings in the user's cities whose title shares a word with one of theirs.
@@ -53,16 +61,14 @@ module JobApplications
       0
     end
 
-    # One AI call. Counted once it has reached the provider, failed or not;
-    # an open breaker made no call, so it counts nothing and ends the run.
+    # One AI call. Its reservation stays once it has reached the provider, failed
+    # or not; an open breaker made no call, so it gives the reservation back and ends the run.
     def ask(batch, facts)
-      message = AiModel.complete(system: SYSTEM_PROMPT, user: prompt(batch, facts), temperature: 0.2, max_tokens: 800)
-      AiUsage.bump!(user, :scores, batch.size)
-      message
+      AiModel.complete(system: SYSTEM_PROMPT, user: prompt(batch, facts), temperature: 0.2, max_tokens: 800)
     rescue AiCircuit::OpenError
+      AiUsage.bump!(user, :scores, -batch.size)
       raise
     rescue StandardError => e
-      AiUsage.bump!(user, :scores, batch.size)
       Rails.logger.error("[seera_apply] matcher AI call failed for user #{user.id}: #{e.class}: #{e.message}")
       nil
     end
