@@ -1,0 +1,22 @@
+# Test copy of packs/job_applications/config/employers.yml (same format, made-up entries).
+- name: Acme Riyadh
+  ats: greenhouse
+  identifier: acme
+  host: null
+  site: null
+  country: SA
+  verified: true
+- name: Gulf Lever Co
+  ats: lever
+  identifier: gulflever
+  host: null
+  site: null
+  country: AE
+  verified: true
+- name: Desert Workday
+  ats: workday
+  identifier: desert
+  host: desert.wd3.myworkdayjobs.com
+  site: Careers
+  country: SA
+  verified: false

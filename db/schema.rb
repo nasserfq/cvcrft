@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_09_000300) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -29,6 +29,73 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_000300) do
     t.index ["metadata"], name: "index_ai_translations_on_metadata", using: :gin
     t.index ["resume_id"], name: "index_ai_translations_on_resume_id"
     t.index ["user_id"], name: "index_ai_translations_on_user_id"
+  end
+
+  create_table "apply_ai_usages", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "day", null: false
+    t.integer "scores", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "day"], name: "index_apply_ai_usages_on_user_id_and_day", unique: true
+  end
+
+  create_table "apply_employers", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "ats", null: false
+    t.string "identifier", null: false
+    t.string "host"
+    t.string "site"
+    t.string "country"
+    t.boolean "verified", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "last_fetched_at"
+    t.text "last_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ats", "identifier"], name: "index_apply_employers_on_ats_and_identifier", unique: true
+  end
+
+  create_table "apply_matches", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "posting_id", null: false
+    t.integer "score", null: false
+    t.text "score_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["posting_id"], name: "index_apply_matches_on_posting_id"
+    t.index ["user_id", "posting_id"], name: "index_apply_matches_on_user_id_and_posting_id", unique: true
+    t.index ["user_id", "score"], name: "index_apply_matches_on_user_id_and_score"
+  end
+
+  create_table "apply_postings", force: :cascade do |t|
+    t.bigint "employer_id", null: false
+    t.string "external_id", null: false
+    t.string "title", null: false
+    t.string "url", null: false
+    t.string "apply_url", null: false
+    t.string "location"
+    t.string "country"
+    t.string "city"
+    t.text "description"
+    t.datetime "posted_at"
+    t.datetime "fetched_at", null: false
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["city", "closed_at"], name: "index_apply_postings_on_city_and_closed_at"
+    t.index ["employer_id", "external_id"], name: "index_apply_postings_on_employer_id_and_external_id", unique: true
+    t.index ["employer_id"], name: "index_apply_postings_on_employer_id"
+    t.index ["posted_at"], name: "index_apply_postings_on_posted_at"
+  end
+
+  create_table "apply_preferences", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "titles", default: [], null: false, array: true
+    t.string "cities", default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_apply_preferences_on_user_id", unique: true
   end
 
   create_table "certifications", force: :cascade do |t|
@@ -320,6 +387,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_000300) do
 
   add_foreign_key "ai_translations", "resumes"
   add_foreign_key "ai_translations", "users"
+  add_foreign_key "apply_ai_usages", "users", on_delete: :cascade
+  add_foreign_key "apply_matches", "apply_postings", column: "posting_id", on_delete: :cascade
+  add_foreign_key "apply_matches", "users", on_delete: :cascade
+  add_foreign_key "apply_postings", "apply_employers", column: "employer_id", on_delete: :cascade
+  add_foreign_key "apply_preferences", "users", on_delete: :cascade
   add_foreign_key "certifications", "resumes"
   add_foreign_key "coach_chats", "resumes", on_delete: :nullify
   add_foreign_key "coach_chats", "users", on_delete: :cascade

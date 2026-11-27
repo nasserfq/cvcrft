@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../support/seera_apply_helper"
 
 class UserDataExportTest < ActiveSupport::TestCase
+  include SeeraApplyHelper
+
   setup do
     @user = User.create!(email: "export-svc-#{SecureRandom.hex(4)}@example.com", name: "Export Service",
                          password: "password123", password_confirmation: "password123")
@@ -16,7 +19,7 @@ class UserDataExportTest < ActiveSupport::TestCase
     data = UserDataExport.new(@user).as_json
 
     expected = %w[user resumes cv_analyses cv_imports linkedin_imports cv_generations ai_translations
-                  coach_chats credit_ledger_entries credit_purchases identities exported_at privacy_policy_version]
+                  coach_chats credit_ledger_entries credit_purchases seera_apply identities exported_at privacy_policy_version]
     assert_equal expected.sort, data.keys.sort
     assert_equal PrivacyPolicy::VERSION, data["privacy_policy_version"]
     assert_equal "Service Resume", data["resumes"].first["title"]
@@ -45,6 +48,26 @@ class UserDataExportTest < ActiveSupport::TestCase
 
     assert_equal %w[created_at email provider uid], identity.keys.sort
     assert_equal [ "apple", "apple-uid-1", "relay@privaterelay.appleid.com" ], identity.values_at("provider", "uid", "email")
+  end
+
+  test "exports Seera Apply preferences and matches, and account deletion removes them" do
+    create_preference(@user, titles: [ "Nurse" ], cities: [ "jeddah" ])
+    posting = create_posting(create_employer(name: "Hospital"), title: "Nurse", city: "jeddah")
+    create_match(@user, posting:, score: 9)
+    JobApplications::AiUsage.bump!(@user, :scores, 1)
+
+    data = UserDataExport.new(@user).as_json["seera_apply"]
+
+    assert_equal [ "Nurse" ], data["preference"]["titles"]
+    match = data["matches"].sole
+    assert_equal 9, match["score"]
+    assert_equal({ "title" => "Nurse", "company" => "Hospital", "url" => posting.url, "city" => "jeddah" }, match["posting"])
+
+    @user.destroy!
+    assert_not JobApplications::Preference.exists?(user_id: @user.id)
+    assert_not JobApplications::Match.exists?(user_id: @user.id)
+    assert_not JobApplications::AiUsage.exists?(user_id: @user.id)
+    assert JobApplications::Posting.exists?(posting.id)
   end
 
   test "filename carries the export date" do

@@ -1,0 +1,51 @@
+<% content_for :title, t('seera_apply.title') %>
+<% primary = "sr-btn sr-primary inline-flex items-center justify-center min-h-[52px] px-6 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer" %>
+<% primary_shadow = "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+
+<div dir="<%= text_direction %>" class="sr-page relative leading-relaxed" style="color: #eef3ee">
+  <div class="relative mx-auto max-w-[1040px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-6">
+    <% if flash[:alert].present? %>
+      <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #d6b877" role="alert"><%= flash[:alert] %></p>
+    <% end %>
+    <% if flash[:notice].present? %>
+      <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #7fd3a6" role="status"><%= flash[:notice] %></p>
+    <% end %>
+
+    <% if @resume.nil? %>
+      <section class="glass sr-up rounded-[28px] p-7 sm:p-10 flex flex-col items-start gap-6" data-testid="no-cv">
+        <h1 class="m-0 font-semibold" style="font-size: clamp(26px, 4vw, 36px); line-height: 1.25; letter-spacing: -0.02em"><%= t('seera_apply.no_cv') %></h1>
+        <%= link_to t('seera_apply.build_cv'), new_resume_path, class: primary, style: primary_shadow %>
+      </section>
+    <% elsif !@preference.ready? %>
+      <section class="glass sr-up rounded-[28px] p-7 sm:p-10 flex flex-col gap-6" data-testid="preferences">
+        <h1 class="m-0 font-semibold" style="font-size: clamp(26px, 4vw, 36px); line-height: 1.25; letter-spacing: -0.02em"><%= t('seera_apply.title') %></h1>
+        <%= render "job_applications/dashboard/preferences", preference: @preference %>
+      </section>
+    <% else %>
+      <section class="glass sr-up rounded-[32px] p-7 sm:p-10" data-testid="count">
+        <h1 class="m-0 flex flex-wrap items-baseline gap-x-4 gap-y-1 font-semibold">
+          <span class="sr-mono" dir="ltr" style="font-size: clamp(40px, 6vw, 64px); line-height: 1; letter-spacing: -0.03em; color: #7fd3a6"><%= @count %></span>
+          <span style="font-size: clamp(20px, 3vw, 28px); line-height: 1.3"><%= t('seera_apply.count') %></span>
+        </h1>
+      </section>
+
+      <% if @matches.any? %>
+        <ul class="m-0 p-0 list-none flex flex-col gap-4" data-testid="matches">
+          <% @matches.each_with_index do |match, i| %>
+            <%= render "job_applications/dashboard/match_row", match:, index: i %>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <details class="glass sr-up rounded-[28px] group">
+        <summary class="sr-btn cursor-pointer list-none rounded-[28px] px-7 py-5 text-[16px] font-semibold flex items-center justify-between gap-4">
+          <span><%= t('seera_apply.edit') %></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <div class="px-7 pb-7">
+          <%= render "job_applications/dashboard/preferences", preference: @preference %>
+        </div>
+      </details>
+    <% end %>
+  </div>
+</div>

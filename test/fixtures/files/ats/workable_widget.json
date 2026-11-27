@@ -1,0 +1,4 @@
+{"name":"Acme","jobs":[
+ {"title":"Accountant","shortcode":"AB12CD","url":"https://apply.workable.com/j/AB12CD","application_url":"https://apply.workable.com/j/AB12CD/apply","published_on":"2026-10-10","description":"<p>Books.</p>","locations":[{"country":"Jordan","countryCode":"JO","city":"Amman","hidden":false},{"country":"Saudi Arabia","countryCode":"SA","city":"Riyadh","hidden":false}]},
+ {"title":"Chef","shortcode":"ZZ99","url":"https://apply.workable.com/j/ZZ99","published_on":"2026-10-10","locations":[{"country":"Lebanon","countryCode":"LB","city":"Beirut","hidden":false}]}
+]}

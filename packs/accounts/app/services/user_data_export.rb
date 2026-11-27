@@ -28,6 +28,7 @@ class UserDataExport
       "coach_chats" => coach_chats,
       "credit_ledger_entries" => rows(user.credit_ledger_entries),
       "credit_purchases" => rows(user.credit_purchases),
+      "seera_apply" => JobApplications.export_for(user),
       "identities" => identities,
       "exported_at" => now.iso8601,
       "privacy_policy_version" => PrivacyPolicy::VERSION

@@ -1,0 +1,6 @@
+enforce_dependencies: true
+enforce_privacy: false
+dependencies:
+  - "."
+  - packs/accounts
+  - packs/resume_builder
