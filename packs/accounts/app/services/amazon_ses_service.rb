@@ -31,4 +31,13 @@ class AmazonSesService
     Rails.logger.error "Amazon SES Error: #{e.message}"
     raise e
   end
+
+  # Sends a built Mail::Message as is (attachments, Cc and Reply-To included).
+  # SES takes the sender and recipients from its headers. Returns the SES MessageId.
+  def send_raw(mail)
+    @client.send_raw_email(raw_message: { data: mail.to_s }).message_id
+  rescue Aws::SES::Errors::ServiceError => e
+    Rails.logger.error "Amazon SES Error: #{e.message}"
+    raise e
+  end
 end

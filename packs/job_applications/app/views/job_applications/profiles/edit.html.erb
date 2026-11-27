@@ -1,0 +1,83 @@
+<% content_for :title, t('seera_apply.setup.title') %>
+<% field = "glass-soft rounded-2xl px-4 min-h-[52px] text-[16px] w-full" %>
+<% invalid = "border-[#f2a7a0]" %>
+<% errors = @profile.errors %>
+<% fields_with_errors = errors.attribute_names.uniq %>
+
+<div dir="<%= text_direction %>" class="sr-page relative leading-relaxed" style="color: #eef3ee">
+  <div class="relative mx-auto max-w-[640px] px-4 sm:px-6 pt-10 pb-20 flex flex-col gap-6">
+    <%= link_to my_jobs_root_path, class: "sr-btn self-start inline-flex items-center gap-2 min-h-[44px] text-[15px]", style: "color: rgba(238,243,238,0.75)" do %>
+      <%= seera_icon(text_direction == "rtl" ? "solar:arrow-right-bold" : "solar:arrow-left-bold", width: 18) %>
+      <span><%= t('seera_apply.title') %></span>
+    <% end %>
+
+    <% if fields_with_errors.any? || @consent_missing %>
+      <p class="glass-soft sr-up m-0 rounded-2xl px-5 py-4 text-[15px]" style="color: #d6b877" role="alert" data-testid="setup-errors">
+        <%= [ (t('seera_apply.flash.invalid', fields: fields_with_errors.map { |a| t("seera_apply.setup.#{a}", default: a.to_s.humanize) }.to_sentence) if fields_with_errors.any?),
+              (t('seera_apply.setup.consent_required') if @consent_missing) ].compact.join(" · ") %>
+      </p>
+    <% end %>
+
+    <section class="glass sr-up rounded-[28px] p-7 sm:p-10 flex flex-col gap-6">
+      <h1 class="m-0 font-semibold" style="font-size: clamp(26px, 4vw, 36px); line-height: 1.25; letter-spacing: -0.02em"><%= t('seera_apply.setup.title') %></h1>
+
+      <%= form_with model: @profile, scope: :profile, url: my_jobs_setup_path, method: :patch, data: { turbo: false }, class: "flex flex-col gap-5" do |f| %>
+        <label class="flex flex-col gap-2 text-[14px]">
+          <span class="font-semibold"><%= t('seera_apply.setup.nationality') %></span>
+          <%= f.text_field :nationality, maxlength: 60, required: true, autocomplete: "off",
+                class: "#{field} #{invalid if errors[:nationality].any?}", style: "color: #eef3ee", aria: { invalid: errors[:nationality].any? } %>
+        </label>
+
+        <label class="flex flex-col gap-2 text-[14px]">
+          <span class="font-semibold"><%= t('seera_apply.setup.visa_status') %></span>
+          <%= f.select :visa_status, JobApplications::Profile::VISA_STATUSES.map { |s| [ t("seera_apply.setup.visa_statuses.#{s}"), s ] },
+                { prompt: t('seera_apply.setup.choose') },
+                required: true, class: "#{field} #{invalid if errors[:visa_status].any?}", style: "color: #eef3ee", aria: { invalid: errors[:visa_status].any? } %>
+        </label>
+
+        <label class="flex flex-col gap-2 text-[14px]">
+          <span class="font-semibold"><%= t('seera_apply.setup.notice_period') %></span>
+          <%= f.select :notice_period, JobApplications::Profile::NOTICE_PERIODS.map { |s| [ t("seera_apply.setup.notice_periods.#{s}"), s ] },
+                { prompt: t('seera_apply.setup.choose') },
+                required: true, class: "#{field} #{invalid if errors[:notice_period].any?}", style: "color: #eef3ee", aria: { invalid: errors[:notice_period].any? } %>
+        </label>
+
+        <label class="flex flex-col gap-2 text-[14px]">
+          <span class="font-semibold"><%= t('seera_apply.setup.expected_salary_sar') %></span>
+          <%= f.number_field :expected_salary_sar, min: 1, max: 9_999_999, step: 1, inputmode: "numeric", dir: "ltr",
+                class: "#{field} sr-mono #{invalid if errors[:expected_salary_sar].any?}", style: "color: #eef3ee", aria: { invalid: errors[:expected_salary_sar].any? } %>
+        </label>
+
+        <label class="flex flex-col gap-2 text-[14px]">
+          <span class="font-semibold"><%= t('seera_apply.setup.phone') %></span>
+          <%= f.telephone_field :phone, required: true, pattern: "\\+?[0-9 ]{8,16}", maxlength: 16, autocomplete: "tel", dir: "ltr",
+                class: "#{field} sr-mono #{invalid if errors[:phone].any?}", style: "color: #eef3ee", aria: { invalid: errors[:phone].any? } %>
+        </label>
+
+        <label class="flex flex-col gap-2 text-[14px]">
+          <span class="font-semibold"><%= t('seera_apply.setup.linkedin_url') %></span>
+          <%= f.url_field :linkedin_url, required: true, maxlength: 300, placeholder: "https://www.linkedin.com/in/", dir: "ltr",
+                class: "#{field} #{invalid if errors[:linkedin_url].any?}", style: "color: #eef3ee", aria: { invalid: errors[:linkedin_url].any? } %>
+        </label>
+
+        <div class="glass-soft rounded-2xl p-5 flex flex-col gap-3" data-testid="consent">
+          <label class="flex items-start gap-3 text-[15px] font-semibold cursor-pointer">
+            <%= check_box_tag :consent, "1", @profile.consented? || params[:consent] == "1", required: true,
+                  class: "accent-[#2fa36b] w-5 h-5 mt-0.5 shrink-0", aria: { invalid: @consent_missing.present? } %>
+            <span><%= t('seera_apply.setup.consent') %></span>
+          </label>
+          <p class="m-0 text-[14px]" style="color: rgba(238,243,238,0.7)">
+            <%= t('seera_apply.setup.data_line') %>
+            <%= link_to t('seera_apply.setup.privacy'), "#{privacy_path}#seera-apply", class: "underline underline-offset-4", style: "color: #7fd3a6" %>
+          </p>
+        </div>
+
+        <div>
+          <%= f.button (@profile.consented? ? t('seera_apply.setup.save') : t('seera_apply.setup.turn_on')), type: "submit",
+                class: "sr-btn sr-primary inline-flex items-center justify-center min-h-[52px] px-8 rounded-2xl font-semibold text-[15px] border-0 cursor-pointer",
+                style: "box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 18px 40px -18px rgba(0,140,78,0.6)" %>
+        </div>
+      <% end %>
+    </section>
+  </div>
+</div>

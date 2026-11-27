@@ -72,6 +72,11 @@ RUN npm run build:css && mkdir -p public/assets && cp app/assets/builds/applicat
 # Final stage for app image
 FROM base
 
+# Seera Apply browser submitters (packs/job_applications): headless Chromium driven by Ferrum.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y chromium fonts-liberation fonts-dejavu-core && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
 # Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails

@@ -71,4 +71,23 @@ class ResumeBuilder::PublicApiTest < ActiveSupport::TestCase
     assert_equal list.sort_by { |r| r["updated_at"] }.reverse, list
     assert_equal [ "Sara B", "Old CV" ], [ newer.id, older.id ].map { |id| list.find { |r| r["id"] == id }["title"] }
   end
+
+  test "pdf with a summary override changes only the summary text" do
+    resume = ResumeBuilder::PublicApi.create_from_draft(users(:one), @draft)
+    text = ->(pdf) { PDF::Reader.new(StringIO.new(pdf["data"])).pages.map(&:text).join(" ").squish }
+
+    original = ResumeBuilder::PublicApi.pdf(users(:one), resume.id)
+    tailored = ResumeBuilder::PublicApi.pdf(users(:one), resume.id, professional_summary: "Payments engineer for Riyadh fintech.")
+
+    assert_equal "sara-ali_resume.pdf", tailored["filename"]
+    assert_includes text.call(original), "Backend engineer."
+    assert_not_includes text.call(tailored), "Backend engineer."
+    assert_equal text.call(original).sub("Backend engineer.", "Payments engineer for Riyadh fintech."), text.call(tailored)
+  end
+
+  test "pdf only finds the user's own resumes" do
+    resume = ResumeBuilder::PublicApi.create_from_draft(users(:one), @draft)
+
+    assert_raises(ActiveRecord::RecordNotFound) { ResumeBuilder::PublicApi.pdf(users(:two), resume.id) }
+  end
 end

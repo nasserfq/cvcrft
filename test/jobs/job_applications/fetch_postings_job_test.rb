@@ -79,4 +79,26 @@ class JobApplications::FetchPostingsJobTest < ActiveJob::TestCase
     assert_not JobApplications::Match.exists?(match.id)
     assert_equal [ Date.current ], JobApplications::AiUsage.where(user: users(:one)).pluck(:day)
   end
+
+  test "keeps the address a posting asks applicants to email" do
+    data = ats_fixture("greenhouse")
+    data["jobs"][0]["content"] = "&lt;p&gt;Send your CV to &lt;b&gt;Careers@Acme.sa&lt;/b&gt;.&lt;/p&gt;"
+    stub_greenhouse(data)
+    JobApplications::FetchPostingsJob.perform_now
+
+    assert_equal [ "careers@acme.sa", nil ], @employer.postings.order(:external_id).pluck(:apply_email)
+
+    data["jobs"][0]["content"] = "&lt;p&gt;Apply on our site.&lt;/p&gt;"
+    stub_greenhouse(data)
+    JobApplications::FetchPostingsJob.perform_now
+
+    assert_nil @employer.postings.find_by!(external_id: "101").apply_email
+  end
+
+  test "purges old application documents on every run" do
+    JobApplications::Application.expects(:purge_old!).once
+    stub_greenhouse
+
+    JobApplications::FetchPostingsJob.perform_now
+  end
 end

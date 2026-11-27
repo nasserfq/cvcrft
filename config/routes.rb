@@ -67,6 +67,18 @@ Rails.application.routes.draw do
   scope "my-jobs", module: :job_applications, as: :my_jobs do
     get "/", to: "dashboard#show", as: :root
     patch "preferences", to: "preferences#update", as: :preferences
+    get "setup", to: "profiles#edit", as: :setup
+    patch "setup", to: "profiles#update"
+    patch "sending", to: "profiles#sending", as: :sending
+    resources :applications, only: [] do
+      member do
+        patch :approve
+        patch :skip
+        patch :answer
+        get :cv
+        get :proof
+      end
+    end
   end
 
   # Resume routes with nested resources

@@ -175,6 +175,11 @@ GEM
       net-http (~> 0.5)
     faraday-retry (2.4.0)
       faraday (~> 2.0)
+    ferrum (0.20.1)
+      addressable (~> 2.5)
+      base64 (~> 0.2)
+      concurrent-ruby (~> 1.1)
+      websocket-driver (~> 0.7)
     ffi (1.17.3-aarch64-linux-gnu)
     ffi (1.17.3-aarch64-linux-musl)
     ffi (1.17.3-arm-linux-gnu)
@@ -636,6 +641,7 @@ DEPENDENCIES
   cssbundling-rails
   debug
   devise
+  ferrum (~> 0.20.1)
   image_processing (~> 1.2)
   importmap-rails
   jbuilder

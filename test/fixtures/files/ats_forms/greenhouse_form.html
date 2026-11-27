@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!-- job-boards.greenhouse.io/embed/job_app markup, scripts removed. The one
+     inline script stands in for react-select, which keeps Enter from
+     submitting the form. The action points at the local confirmation page. -->
+<html lang="en">
+<head><meta charset="utf-8"><title>Job Application for Senior Product Manager at Acme</title></head>
+<body>
+<div id="app_body" class="job__application">
+  <h1 class="section-header">Apply for this job</h1>
+  <form id="application-form" class="application--form" action="greenhouse_confirmation.html" method="get" enctype="multipart/form-data">
+    <div class="application--questions">
+      <div class="text-input-wrapper">
+        <label id="first_name-label" for="first_name" class="label">First Name<span aria-hidden="true">*</span></label>
+        <input id="first_name" name="first_name" class="input input__single-line" type="text" aria-required="true" autocomplete="given-name">
+      </div>
+      <div class="text-input-wrapper">
+        <label id="last_name-label" for="last_name" class="label">Last Name<span aria-hidden="true">*</span></label>
+        <input id="last_name" name="last_name" class="input input__single-line" type="text" aria-required="true" autocomplete="family-name">
+      </div>
+      <div class="text-input-wrapper">
+        <label id="email-label" for="email" class="label">Email<span aria-hidden="true">*</span></label>
+        <input id="email" name="email" class="input input__single-line" type="text" aria-required="true" autocomplete="email">
+      </div>
+      <div class="text-input-wrapper">
+        <label id="phone-label" for="phone" class="label">Phone</label>
+        <input id="phone" name="phone" class="input input__single-line" type="tel" aria-required="false" autocomplete="tel">
+      </div>
+      <div class="file-upload" role="group" aria-labelledby="upload-label-resume">
+        <div id="upload-label-resume" class="label upload-label">Resume/CV<span aria-hidden="true">*</span></div>
+        <div class="file-upload__wrapper">
+          <button type="button" class="btn btn--pill">Attach</button>
+          <input id="resume" name="resume" class="visually-hidden" type="file" accept=".pdf,.doc,.docx,.txt,.rtf" required>
+        </div>
+      </div>
+      <div class="file-upload" role="group" aria-labelledby="upload-label-cover_letter">
+        <div id="upload-label-cover_letter" class="label upload-label">Cover Letter</div>
+        <div class="file-upload__wrapper">
+          <button type="button" class="btn btn--pill">Attach</button>
+          <input id="cover_letter" name="cover_letter" class="visually-hidden" type="file" accept=".pdf,.doc,.docx,.txt,.rtf">
+        </div>
+      </div>
+      <div class="text-input-wrapper">
+        <label id="question_30001-label" for="question_30001" class="label">LinkedIn Profile</label>
+        <input id="question_30001" name="question_30001" class="input input__single-line" type="text" aria-required="false">
+      </div>
+      <div class="select">
+        <label id="question_30002-label" for="question_30002" class="label select__label">Are you legally authorized to work in Saudi Arabia?<span aria-hidden="true">*</span></label>
+        <div class="select__container">
+          <div class="select__control">
+            <div class="select__value-container">
+              <div class="select__placeholder">Select...</div>
+              <div class="select__input-container">
+                <input id="question_30002" name="question_30002" class="select__input" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true" aria-required="true" autocomplete="off">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <fieldset class="checkbox">
+        <legend class="label">Which tools have you used?</legend>
+        <div class="checkbox__wrapper"><input type="checkbox" id="question_30003[]_11" name="question_30003[]" value="11"><label for="question_30003[]_11">Jira</label></div>
+        <div class="checkbox__wrapper"><input type="checkbox" id="question_30003[]_12" name="question_30003[]" value="12"><label for="question_30003[]_12">Figma</label></div>
+        <div class="checkbox__wrapper"><input type="checkbox" id="question_30003[]_13" name="question_30003[]" value="13"><label for="question_30003[]_13">SQL</label></div>
+      </fieldset>
+      <div class="text-input-wrapper">
+        <label id="question_30004-label" for="question_30004" class="label">Anything else?</label>
+        <textarea id="question_30004" name="question_30004" class="input input__multi-line" aria-required="false"></textarea>
+      </div>
+      <input type="hidden" name="security_code" value="">
+    </div>
+    <div class="application--questions eeoc">
+      <h2 class="section-header">Voluntary Self-Identification</h2>
+      <div class="select">
+        <label id="gender-label" for="gender" class="label select__label">Gender</label>
+        <input id="gender" name="gender" class="select__input" type="text" role="combobox" aria-required="false" autocomplete="off">
+      </div>
+    </div>
+    <div class="application--submit">
+      <button type="submit" class="btn btn--pill">Submit application</button>
+    </div>
+  </form>
+</div>
+<script>
+  document.querySelectorAll('[role="combobox"]').forEach(function (input) {
+    input.addEventListener("keydown", function (event) { if (event.key === "Enter") event.preventDefault(); });
+  });
+</script>
+</body>
+</html>

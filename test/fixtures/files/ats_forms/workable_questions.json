@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Personal information",
+    "fields": [
+      { "id": "firstname", "label": "First name", "type": "text", "required": true },
+      { "id": "lastname", "label": "Last name", "type": "text", "required": true },
+      { "id": "email", "label": "Email", "type": "email", "required": true },
+      { "id": "phone", "label": "Phone", "type": "phone", "required": false },
+      { "id": "resume", "label": "Resume", "type": "file", "required": true }
+    ]
+  },
+  {
+    "name": "Questions",
+    "fields": [
+      { "id": "QA_6170001", "label": "Do you hold a valid Iqama?", "type": "boolean", "required": true },
+      { "id": "QA_6170002", "label": "Preferred city", "type": "dropdown", "required": false,
+        "choices": [ { "id": "1", "body": "Riyadh" }, { "id": "2", "body": "Jeddah" } ] },
+      { "id": "QA_6170003", "label": "Languages", "type": "multiple", "required": false, "singleOption": false,
+        "choices": [ { "id": "1", "body": "Arabic" }, { "id": "2", "body": "English" } ] },
+      { "id": "QA_6170004", "label": "Tell us about yourself", "type": "paragraph", "required": false },
+      { "id": "QA_6170005", "label": "Video intro", "type": "video", "required": false }
+    ]
+  }
+]
