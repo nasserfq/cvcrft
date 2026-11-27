@@ -72,6 +72,11 @@ env:
     # us.anthropic.claude-haiku-4-5-20251001-v1:0 if replies are too weak, or
     # remove it to go back to Sonnet (the code default).
     COACH_MODEL: us.amazon.nova-lite-v1:0
+    # Seera Apply (packs/job_applications): only these emails see /my-jobs
+    # until SEERA_APPLY_ENABLED is set to "true". DRY_RUN fills forms and saves
+    # screenshots but never presses Submit or sends email; remove it to go live.
+    SEERA_APPLY_TESTERS: non1993@protonmail.com
+    SEERA_APPLY_DRY_RUN: "true"
     # Sentry DSNs are meant to be public (they only allow sending events).
     SENTRY_DSN: https://058e816b8430efc0f1c2913d87129bc8@o4512250318618624.ingest.us.sentry.io/4512250323140608
 
