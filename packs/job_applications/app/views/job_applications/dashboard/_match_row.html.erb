@@ -1,0 +1,24 @@
+<% posting = match.posting %>
+<% place = posting.city ? t("seera_apply.cities.#{posting.city}") : posting.location %>
+<li id="<%= dom_id(match) %>">
+  <a href="<%= posting.url %>" target="_blank" rel="noopener noreferrer"
+     class="glass sr-lift sr-up rounded-[28px] p-6 sm:p-7 flex items-start justify-between gap-5"
+     style="animation-delay: <%= [ 0.05 * index, 0.6 ].min.round(2) %>s">
+    <div class="flex flex-col gap-2 min-w-0">
+      <h2 class="m-0 text-[19px] sm:text-[21px] font-semibold leading-snug break-words"><%= posting.title %></h2>
+      <p class="m-0 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px]" style="color: rgba(238,243,238,0.7)">
+        <span class="inline-flex items-center gap-1.5 min-w-0">
+          <%= seera_icon("solar:case-bold", width: 16, class: "shrink-0") %>
+          <span class="break-words"><%= posting.employer.name %></span>
+        </span>
+        <% if place.present? %>
+          <span class="inline-flex items-center gap-1.5 min-w-0">
+            <%= seera_icon("solar:map-point-bold", width: 16, class: "shrink-0") %>
+            <span class="break-words"><%= place %></span>
+          </span>
+        <% end %>
+      </p>
+    </div>
+    <span class="glass-soft sr-mono shrink-0 rounded-full px-3 py-1.5 text-[14px] font-semibold" dir="ltr" style="color: #7fd3a6" data-testid="score"><%= t('seera_apply.score', score: match.score) %></span>
+  </a>
+</li>

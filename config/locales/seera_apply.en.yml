@@ -1,0 +1,18 @@
+en:
+  seera_apply:
+    title: "Jobs for you"
+    count: "jobs match you"
+    no_cv: "Build your CV first"
+    build_cv: "Build my CV"
+    titles: "Job titles"
+    cities:
+      riyadh: "Riyadh"
+      jeddah: "Jeddah"
+      dammam: "Dammam"
+      remote: "Remote"
+    save: "Save"
+    edit: "Edit preferences"
+    score: "%{score}/10"
+    flash:
+      saved: "Saved"
+      invalid: "Check %{fields}"

@@ -63,6 +63,12 @@ Rails.application.routes.draw do
     end
   end
 
+  # Seera Apply (packs/job_applications), off unless SEERA_APPLY_ENABLED
+  scope "my-jobs", module: :job_applications, as: :my_jobs do
+    get "/", to: "dashboard#show", as: :root
+    patch "preferences", to: "preferences#update", as: :preferences
+  end
+
   # Resume routes with nested resources
   resources :resumes do
     resources :work_experiences, only: [ :update, :destroy ]

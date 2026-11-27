@@ -1,0 +1,18 @@
+ar:
+  seera_apply:
+    title: "وظائف لك"
+    count: "وظيفة تناسبك"
+    no_cv: "أنشئ سيرتك أولاً"
+    build_cv: "أنشئ سيرتي"
+    titles: "المسميات الوظيفية"
+    cities:
+      riyadh: "الرياض"
+      jeddah: "جدة"
+      dammam: "الدمام"
+      remote: "عن بعد"
+    save: "حفظ"
+    edit: "تعديل التفضيلات"
+    score: "%{score}/10"
+    flash:
+      saved: "تم الحفظ"
+      invalid: "راجع %{fields}"
