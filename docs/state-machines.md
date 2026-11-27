@@ -51,7 +51,7 @@ States: closed → open (5 provider failures — throttling, 5xx, timeouts, lost
 
 `ai_tools/app/jobs/stale_work_sweeper_job.rb`, every 10 minutes (`config/schedule.yml`).
 Calls `fail_stale!(older_than: 30.minutes.ago)` on CvGeneration, CvAnalysis, AiTranslation, CvImport,
-LinkedinImport. Each skips rows that finished meanwhile and refunds credits where one was charged.
+LinkedinImport, JobApplications::Application. Each skips rows that finished meanwhile and refunds credits where one was charged.
 `CvGeneration::MAX_PROCESSING_TIME` = `STALE_AFTER + 10.minutes` (40 min) is the longest a row can stay
 unfinished; pollers use it.
 
@@ -182,6 +182,52 @@ No status column. `job_applications/app/jobs/job_applications/fetch_postings_job
   before each AI call under a row lock (`AiUsage.reserve!`), so concurrent runs can't exceed it; a failed call
   keeps its reservation. `AiCircuit::OpenError` gives the reservation back and ends the run. No charge.
 
+## Seera Apply applications
+
+`job_applications/app/models/job_applications/application.rb`: `apply_applications.status` (default
+`preparing`), `hold`, `error_code`, `attempts`, `claimed_at`, `submit_clicked_at`, `charge`. One row per
+(user, posting). Terminal: `sent | failed_fallback | skipped`. Gate: `JobApplications.enabled_for?`.
+
+| From → to | Where |
+|---|---|
+| new → preparing | `QueueJob` (score ≥ 8, `profile.sending?`, `DAILY_PACK_LIMIT`), `insert_all` unique `[user_id, posting_id]` |
+| preparing → needs_answer / needs_approval / queued | `finish_pack!` (missing required answers / fewer than 3 sent / otherwise) |
+| preparing → failed_fallback | `unsupported` (manual channel, pack kept) or `prepare_failed` (retries exhausted) |
+| needs_answer → needs_approval / queued | `answer!` |
+| needs_approval → queued | `approve!` (sets `approved_at`, enqueues `SendJob`) |
+| needs_* / queued → skipped | `skip!` |
+| queued → sending | `Sender#claim!` under `profile.with_lock`; holds (`paused`, `daily_cap`, `no_credits`) keep it queued |
+| sending → sent | confirmed submit or SES MessageId; then `charge!` (`UsageGate.allow!`, key `job_application:<id>`) |
+| sending → queued | `Retryable` before Submit, `attempts < 3` |
+| sending → failed_fallback | `captcha`, `unknown_field`, `timeout`, `closed`, `dry_run`, `unconfirmed` (error after the click), `send_error` (other error before it) |
+
+- Charge only after `sent` is committed. Nothing is ever charged on a failure, so there are no refunds.
+  The first 3 are free (`UserUsageLimits` `job_application`); after that it costs 5 credits, or the row is
+  held as `no_credits` while billing is off for the user. `charge!` runs under the application row lock
+  and only while `charge` is nil, so a free use is never consumed twice; `:blocked` after a confirmed
+  send is stored as `uncollected` and reported to Sentry.
+- Never resubmit after `submit_clicked_at` is set. Submitters set it with `mark_submit_clicked!`
+  (conditional on `sending` and no earlier click) and don't click when it returns false.
+- Claim holds: consent withdrawn or paused → `paused` (an approved row still goes while paused, owner
+  decision 7); 5 sent or sending today (Asia/Riyadh, by `claimed_at`) → `daily_cap`;
+  `UsageGate.available?` false → `no_credits`. Another of the user's rows `sending` leaves it queued
+  with no hold. Only one row per user is `sending` at a time.
+- Auto-queued rows (from `finish_pack!` or `answer!`) wait for `DispatchJob`, which paces sends; only
+  `approve!` enqueues `SendJob` at once.
+- Jobs: `PrepareJob` (`default`, AI retries as in "AI breaker", 3 attempts for other errors),
+  `SendJob` (`apply_browser`, no retry, one Chromium per host through `BrowserSlot`, Redis key
+  `seera_apply:browser`, 300 s TTL; busy slot → re-enqueued in 1 minute), `DispatchJob` (`*/15`, one
+  `SendJob` per user per run, skipping users with a row `sending`).
+- Sweeper: `Application.fail_stale!(older_than: 30.minutes.ago)`:
+  - `preparing` → `failed_fallback`/`prepare_failed`;
+  - `sending` with no click → `queued` (or fallback `timeout` once attempts are used up);
+  - `sending` after the click → `failed_fallback`/`unconfirmed`;
+  - `sent` with `charge` nil → `charge!`.
+- Retention: `purge_old!` (called by the fetch job) deletes the documents of terminal rows untouched for
+  90 days and clears `answers`/`cover_letter` after 180. Postings deleted by the fetch cleanup cascade.
+- PDPL: one `apply_disclosures` row per send attempt, written before the submit, `outcome`
+  `sent | fallback | retry | error` afterwards. Kept for the life of the account.
+
 ## Credit purchase (Moyasar)
 
 `billing/app/models/credit_purchase.rb` — `status` (default `pending`), `paid_at`, `moyasar_invoice_id`
@@ -203,7 +249,7 @@ Refunds are `grant!` with key `refund:<charge key>`. Reasons: `CreditLedgerEntry
 ## Free-tier counters
 
 `users.summary_translations_count`, `jobs_translations_count`, `job_based_generations_count`,
-`document_ai_count`. Only increase, only via `UserUsageLimits#consume!` (`accounts/app/services/user_usage_limits.rb`)
+`document_ai_count`, `job_applications_count` (Seera Apply sends, consumed only after a confirmed send). Only increase, only via `UserUsageLimits#consume!` (`accounts/app/services/user_usage_limits.rb`)
 under the user row lock. `UsageGate.allow!` uses them before credits. Never decremented on failure.
 
 ## OTP

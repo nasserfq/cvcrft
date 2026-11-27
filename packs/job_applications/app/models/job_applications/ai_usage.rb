@@ -1,7 +1,7 @@
 module JobApplications
-  # AI scoring per user per day, so matching stays within DAILY_SCORE_LIMIT.
+  # AI work per user per day: scores (DAILY_SCORE_LIMIT) and apply packs (DAILY_PACK_LIMIT).
   class AiUsage < ApplicationRecord
-    COUNTERS = %i[scores].freeze
+    COUNTERS = %i[scores packs].freeze
 
     belongs_to :user
 

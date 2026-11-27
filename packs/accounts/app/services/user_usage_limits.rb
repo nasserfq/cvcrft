@@ -4,6 +4,8 @@ class UserUsageLimits
   BASE_JOB_BASED_GENERATIONS = 20
   # CV analysis, CV import and LinkedIn import share one allowance.
   BASE_DOCUMENT_AI = 20
+  # Seera Apply: applications sent for the user (packs/job_applications).
+  BASE_JOB_APPLICATIONS = 3
 
   # kind => counter column on users. Counters only go up, so deleting content
   # never gives quota back, and they are bumped before the AI work is queued.
@@ -11,7 +13,8 @@ class UserUsageLimits
     summary_translation: :summary_translations_count,
     jobs_translation: :jobs_translations_count,
     job_based_generation: :job_based_generations_count,
-    document_ai: :document_ai_count
+    document_ai: :document_ai_count,
+    job_application: :job_applications_count
   }.freeze
 
   def initialize(user)
@@ -50,6 +53,12 @@ class UserUsageLimits
     BASE_DOCUMENT_AI
   end
 
+  def max_job_applications
+    return nil if unlimited?
+
+    BASE_JOB_APPLICATIONS
+  end
+
   # Usage is the counter, or the legacy count of completed rows for accounts
   # that used features before the counters existed, whichever is higher.
   def summary_translations_used
@@ -70,6 +79,10 @@ class UserUsageLimits
 
   def document_ai_used
     @user.document_ai_count
+  end
+
+  def job_applications_used
+    @user.job_applications_count
   end
 
   def job_based_generations_used
@@ -104,6 +117,12 @@ class UserUsageLimits
     [ max_document_ai - document_ai_used, 0 ].max
   end
 
+  def remaining_job_applications
+    return nil if unlimited?
+
+    [ max_job_applications - job_applications_used, 0 ].max
+  end
+
   def can_use_document_ai?
     unlimited? || remaining_document_ai.positive?
   end
@@ -131,6 +150,7 @@ class UserUsageLimits
     when :jobs_translation then can_translate_jobs?
     when :job_based_generation then can_generate_job_based?
     when :document_ai then can_use_document_ai?
+    when :job_application then unlimited? || remaining_job_applications.positive?
     else raise KeyError, "unknown usage kind: #{kind.inspect}"
     end
   end
@@ -173,6 +193,7 @@ class UserUsageLimits
     when :jobs_translation then remaining_jobs_translations
     when :job_based_generation then remaining_job_based_generations
     when :document_ai then remaining_document_ai
+    when :job_application then remaining_job_applications
     end
   end
 

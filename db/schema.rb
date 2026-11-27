@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_27_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_28_000200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -37,7 +37,62 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_000100) do
     t.integer "scores", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "packs", default: 0, null: false
     t.index ["user_id", "day"], name: "index_apply_ai_usages_on_user_id_and_day", unique: true
+  end
+
+  create_table "apply_applications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "posting_id", null: false
+    t.string "status", default: "preparing", null: false
+    t.string "channel", null: false
+    t.boolean "approval_required", default: false, null: false
+    t.datetime "approved_at"
+    t.jsonb "questions", default: [], null: false
+    t.jsonb "answers", default: {}, null: false
+    t.jsonb "missing", default: [], null: false
+    t.text "summary"
+    t.text "cover_letter"
+    t.string "hold"
+    t.string "error_code"
+    t.integer "attempts", default: 0, null: false
+    t.datetime "claimed_at"
+    t.datetime "submit_clicked_at"
+    t.datetime "sent_at"
+    t.string "charge"
+    t.jsonb "confirmation", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["posting_id"], name: "index_apply_applications_on_posting_id"
+    t.index ["status", "updated_at"], name: "index_apply_applications_on_status_and_updated_at"
+    t.index ["user_id", "posting_id"], name: "index_apply_applications_on_user_id_and_posting_id", unique: true
+    t.index ["user_id", "status"], name: "index_apply_applications_on_user_id_and_status"
+  end
+
+  create_table "apply_disclosures", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "application_id"
+    t.string "employer_name", null: false
+    t.string "channel", null: false
+    t.string "recipient", null: false
+    t.string "data_categories", default: [], null: false, array: true
+    t.string "consent_version", null: false
+    t.string "outcome"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "created_at"], name: "index_apply_disclosures_on_user_id_and_created_at"
+  end
+
+  create_table "apply_documents", force: :cascade do |t|
+    t.bigint "application_id", null: false
+    t.string "kind", null: false
+    t.string "content_type", null: false
+    t.string "filename", null: false
+    t.integer "byte_size", null: false
+    t.binary "data", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["application_id", "kind"], name: "index_apply_documents_on_application_id_and_kind", unique: true
   end
 
   create_table "apply_employers", force: :cascade do |t|
@@ -83,6 +138,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_000100) do
     t.datetime "closed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "apply_email"
     t.index ["city", "closed_at"], name: "index_apply_postings_on_city_and_closed_at"
     t.index ["employer_id", "external_id"], name: "index_apply_postings_on_employer_id_and_external_id", unique: true
     t.index ["employer_id"], name: "index_apply_postings_on_employer_id"
@@ -96,6 +152,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_000100) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_apply_preferences_on_user_id", unique: true
+  end
+
+  create_table "apply_profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "nationality"
+    t.string "visa_status"
+    t.string "notice_period"
+    t.integer "expected_salary_sar"
+    t.string "phone"
+    t.string "linkedin_url"
+    t.string "state", default: "off", null: false
+    t.string "consent_version"
+    t.datetime "consented_at"
+    t.jsonb "saved_answers", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_apply_profiles_on_user_id", unique: true
   end
 
   create_table "certifications", force: :cascade do |t|
@@ -364,6 +437,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_000100) do
     t.integer "credit_balance", default: 0, null: false
     t.datetime "privacy_accepted_at"
     t.string "privacy_policy_version"
+    t.integer "job_applications_count", default: 0, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -388,10 +462,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_000100) do
   add_foreign_key "ai_translations", "resumes"
   add_foreign_key "ai_translations", "users"
   add_foreign_key "apply_ai_usages", "users", on_delete: :cascade
+  add_foreign_key "apply_applications", "apply_postings", column: "posting_id", on_delete: :cascade
+  add_foreign_key "apply_applications", "users", on_delete: :cascade
+  add_foreign_key "apply_disclosures", "users", on_delete: :cascade
+  add_foreign_key "apply_documents", "apply_applications", column: "application_id", on_delete: :cascade
   add_foreign_key "apply_matches", "apply_postings", column: "posting_id", on_delete: :cascade
   add_foreign_key "apply_matches", "users", on_delete: :cascade
   add_foreign_key "apply_postings", "apply_employers", column: "employer_id", on_delete: :cascade
   add_foreign_key "apply_preferences", "users", on_delete: :cascade
+  add_foreign_key "apply_profiles", "users", on_delete: :cascade
   add_foreign_key "certifications", "resumes"
   add_foreign_key "coach_chats", "resumes", on_delete: :nullify
   add_foreign_key "coach_chats", "users", on_delete: :cascade

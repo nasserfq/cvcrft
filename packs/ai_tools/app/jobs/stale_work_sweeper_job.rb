@@ -5,7 +5,7 @@ class StaleWorkSweeperJob < ApplicationJob
   queue_as :default
 
   STALE_AFTER = 30.minutes
-  MODEL_NAMES = %w[CvGeneration CvAnalysis AiTranslation CvImport LinkedinImport].freeze
+  MODEL_NAMES = %w[CvGeneration CvAnalysis AiTranslation CvImport LinkedinImport JobApplications::Application].freeze
 
   def perform
     cutoff = STALE_AFTER.ago

@@ -21,6 +21,7 @@ module JobApplications
       return unless JobApplications.enabled_for?(user)
 
       Matcher.new(user).call
+      QueueJob.perform_later(user.id)
     rescue AiCircuit::OpenError
       raise
     rescue StandardError => e

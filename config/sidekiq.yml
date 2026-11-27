@@ -6,6 +6,8 @@
   - [coach, 3]
   - [pdf_generation, 4]
   - [cv_builder, 5]
+  # Seera Apply sends (packs/job_applications); one Chromium per host via BrowserSlot.
+  - [apply_browser, 1]
 
 :max_retries: 3
 :retry_interval: 60
