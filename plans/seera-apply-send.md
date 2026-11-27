@@ -579,3 +579,5 @@ bin/rails db:test:prepare test test:system
 9. **Legal.** Automated submission may break an ATS's or an employer's terms. Have the consent text,
    the Arabic privacy paragraph and the cross-border statement reviewed before testers outside the team
    use this.
+
+**Decided (2026-11-27, owner approved the flow; defaults chosen):** 1 Postgres bytea. 3 leave optional EEO blank. 4 `SEERA_APPLY_DRY_RUN` exists but defaults to off (the first 3 user approvals are the safety net). 5 score 8. 6 existing SES `from_email`, Cc the user. 7 Approve sends while paused. 2, 8, 9 are left to the owner after merge.
